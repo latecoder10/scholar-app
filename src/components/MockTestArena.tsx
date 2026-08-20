@@ -30,6 +30,7 @@ import { Subject, Chapter, Question, UserProgress, UserAnswerSubmission } from "
 import { EXAM_REGISTRY, resolveExamForSubject, resolveExamForEntry } from "../../shared/exams";
 import { getExamColorClasses, getColorClasses } from "../lib/examTheme";
 import RichText from "./RichText";
+import { fetchChapter } from "../lib/contentStore";
 
 interface MockTestArenaProps {
   subjects: Subject[];
@@ -234,13 +235,8 @@ export default function MockTestArena({
     setActiveView("instructions");
     
     try {
-      const res = await fetch(`/api/chapter/mock-tests/${exam.chapterId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setQuestions(data.questions || []);
-      } else {
-        console.error("Failed to load mock questions. Retrying with local discovery.");
-      }
+      const data = await fetchChapter(exam.subject, exam.chapterId);
+      setQuestions((data.questions || []) as Question[]);
     } catch (e) {
       console.error("Error loading mock questions:", e);
     } finally {

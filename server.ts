@@ -10,6 +10,7 @@ import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import { findExamByExactMatch, getExamById, buildAiPrompt, GENERIC_AI_PROMPT_PERSONA } from "./shared/exams";
 import { recordAnswer, clearAllProgress, clearMistakes } from "./shared/progress";
+import { discoverSubjects, findChapterFile } from "./server/contentDiscovery";
 import {
   resolveCapabilities,
   capabilityDisabledMessage,
@@ -102,46 +103,6 @@ async function startServer() {
       .replace(/-+$/, ""); // Trim - from end
   }
 
-  // Walks content/<examId>/modules/<moduleSlug>/<chapterId>.json looking for a matching
-  // file. `subjectSlug` in the calling routes' URLs has always been decorative (derived
-  // client-side from a human-readable subject name, not the physical module folder) — the
-  // chapter id alone is the real lookup key, exactly as before this content/ restructure.
-  function findChapterFile(chapterId: string): string | null {
-    if (!fs.existsSync(CONTENT_DIR)) return null;
-    const examFolders = fs.readdirSync(CONTENT_DIR, { withFileTypes: true }).filter((f) => f.isDirectory());
-    for (const examFolder of examFolders) {
-      const modulesDir = path.join(CONTENT_DIR, examFolder.name, "modules");
-      if (!fs.existsSync(modulesDir)) continue;
-      const moduleFolders = fs.readdirSync(modulesDir, { withFileTypes: true }).filter((f) => f.isDirectory());
-      for (const moduleFolder of moduleFolders) {
-        const filePath = path.join(modulesDir, moduleFolder.name, `${chapterId}.json`);
-        if (fs.existsSync(filePath)) return filePath;
-      }
-    }
-    return null;
-  }
-
-  function getPaperForSubject(subjectName: string): "Paper-I" | "Paper-II" {
-    const normalized = subjectName.toLowerCase().replace(/[^a-z0-9]/g, "");
-    if (
-      normalized.includes("aptitude") ||
-      normalized.includes("quantitative") ||
-      normalized.includes("numerical") ||
-      normalized.includes("reasoning") ||
-      normalized.includes("english") ||
-      normalized.includes("awareness") ||
-      normalized.includes("knowledge") ||
-      normalized.includes("gk") ||
-      normalized.includes("verbal") ||
-      normalized.includes("nontech") ||
-      normalized.includes("paper1") ||
-      normalized.includes("paperi")
-    ) {
-      return "Paper-I";
-    }
-    return "Paper-II";
-  }
-
   function getProgress() {
     try {
       if (fs.existsSync(PROGRESS_FILE)) {
@@ -197,125 +158,7 @@ async function startServer() {
   // new exam folder is discovered immediately, even before it has a registry entry.
   app.get("/api/content", (req, res) => {
     try {
-      const subjectsMap: Record<string, any> = {};
-
-      if (!fs.existsSync(CONTENT_DIR)) {
-        return res.json({ subjects: [] });
-      }
-
-      const examFolders = fs.readdirSync(CONTENT_DIR, { withFileTypes: true }).filter((f) => f.isDirectory());
-
-      for (const examFolder of examFolders) {
-        const examId = examFolder.name; // e.g. "claude-ccaf"
-        const registeredExam = getExamById(examId);
-        const examDisplayName =
-          registeredExam?.matchExam || examId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-        const examPapers = registeredExam?.papers;
-
-        const modulesDir = path.join(CONTENT_DIR, examId, "modules");
-        if (!fs.existsSync(modulesDir)) continue;
-
-        const moduleFolders = fs.readdirSync(modulesDir, { withFileTypes: true }).filter((f) => f.isDirectory());
-
-        moduleFolders.forEach((moduleFolder, moduleIndex) => {
-          const moduleName = moduleFolder.name; // e.g. "computer-networks"
-          const modulePath = path.join(modulesDir, moduleName);
-          const files = fs.readdirSync(modulePath);
-
-          for (const file of files) {
-            if (!file.endsWith(".json")) continue;
-            const filePath = path.join(modulePath, file);
-            try {
-              const fileContent = fs.readFileSync(filePath, "utf8");
-              const chapterData = JSON.parse(fileContent) as any;
-
-              // Determine Exam
-              const exam = chapterData.exam || examDisplayName;
-
-              // Extract subject name directly from JSON or module folder name if not defined
-              let jsonSubject = chapterData.subject || moduleName.replace(/-/g, " ");
-              const examPrefix = `${examDisplayName} - `;
-              if (jsonSubject.startsWith(examPrefix)) {
-                jsonSubject = jsonSubject.slice(examPrefix.length);
-              }
-              const chapterName = chapterData.chapter || file.replace(".json", "").replace(/-/g, " ");
-
-              let paper = chapterData.paper;
-              if (!paper) {
-                if (examPapers && examPapers.length > 0) {
-                  paper = getPaperForSubject(jsonSubject);
-                } else {
-                  paper = "Domain-" + (moduleIndex + 1);
-                }
-              }
-
-              // Clean Paper format
-              if (typeof paper === "string") {
-                const cleanedPaper = paper.toLowerCase().replace(/[^a-z0-9]/g, "");
-                if (
-                  cleanedPaper === "paperi" ||
-                  cleanedPaper === "paper1" ||
-                  cleanedPaper === "stagei" ||
-                  cleanedPaper === "stage1"
-                ) {
-                  paper = "Paper-I";
-                } else if (
-                  cleanedPaper === "paperii" ||
-                  cleanedPaper === "paper2" ||
-                  cleanedPaper === "stageii" ||
-                  cleanedPaper === "stage2"
-                ) {
-                  paper = "Paper-II";
-                }
-              }
-
-              const mapKey = `${exam}:::${jsonSubject}`;
-
-              if (!subjectsMap[mapKey]) {
-                subjectsMap[mapKey] = {
-                  name: jsonSubject,
-                  exam: exam,
-                  chapters: [],
-                  totalQuestions: 0,
-                  paper: paper,
-                };
-              }
-
-              const questions = chapterData.questions || [];
-              const difficultyCount = { Easy: 0, Medium: 0, Hard: 0 } as Record<string, number>;
-              questions.forEach((q: any) => {
-                const diff = q.difficulty || "Medium";
-                if (diff === "Easy" || diff === "Medium" || diff === "Hard") {
-                  difficultyCount[diff]++;
-                } else {
-                  difficultyCount["Medium"]++;
-                }
-              });
-
-              // Chapter ID is derived from file path slug
-              const chapterId = file.replace(".json", "");
-
-              subjectsMap[mapKey].chapters.push({
-                id: chapterId,
-                name: chapterName,
-                subject: jsonSubject,
-                exam: exam,
-                description: chapterData.description || "",
-                questionsCount: questions.length,
-                difficultyBreakdown: difficultyCount,
-                paper: paper,
-              });
-
-              subjectsMap[mapKey].totalQuestions += questions.length;
-            } catch (err) {
-              console.error(`Error parsing JSON file: ${filePath}`, err);
-            }
-          }
-        });
-      }
-
-      const subjectsList = Object.values(subjectsMap);
-      res.json({ subjects: subjectsList });
+      res.json({ subjects: discoverSubjects(CONTENT_DIR) });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -325,7 +168,7 @@ async function startServer() {
   app.get("/api/chapter/:subjectSlug/:chapterId", (req, res) => {
     try {
       const { chapterId } = req.params;
-      const foundFile = findChapterFile(chapterId);
+      const foundFile = findChapterFile(CONTENT_DIR, chapterId);
 
       if (!foundFile) {
         return res.status(404).json({ error: `Chapter ${chapterId} not found.` });
@@ -354,7 +197,7 @@ async function startServer() {
         });
       }
 
-      const foundFile = findChapterFile(chapterId);
+      const foundFile = findChapterFile(CONTENT_DIR, chapterId);
 
       if (!foundFile) {
         return res.status(404).json({ error: `Chapter ${chapterId} not found.` });

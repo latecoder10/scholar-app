@@ -109,6 +109,38 @@ Binds to `$PORT` when a host provides one, otherwise `3000`.
 
 ---
 
+## ☁️ Deploying
+
+The app runs in two shapes from one codebase, chosen automatically at runtime by [src/lib/contentStore.ts](src/lib/contentStore.ts): it probes `/api/content`, and falls back to prebuilt static JSON when no API answers.
+
+### Static hosting (Firebase Hosting, Cloudflare Pages, GitHub Pages)
+No server, no cold starts, free tier, no credit card.
+
+```bash
+npm run build:static     # vite build + bakes content into dist/static-content/
+npx firebase-tools login
+npx firebase-tools projects:create scholar-app   # or reuse an existing project
+npx firebase-tools deploy --only hosting
+```
+Gives you `https://<project>.web.app`. [firebase.json](firebase.json) is already configured — `dist` as the public dir, SPA rewrites, and cache headers.
+
+`npm run preview:static` serves `dist/` locally to check it before deploying.
+
+The static build has no server, so authoring is inherently off (see below) and progress lives in the browser's IndexedDB. To add content: commit JSON to `content/`, re-run `build:static`, redeploy.
+
+### Node hosting (Render, Fly, Railway)
+Runs the Express server, so the uploader and AI expand can be switched on.
+
+| Setting | Value |
+|---|---|
+| Build Command | `npm install --include=dev && npm run build` |
+| Start Command | `npm start` |
+| Env | `NODE_ENV=production` |
+
+`--include=dev` is required: `esbuild` is a devDependency and `NODE_ENV=production` makes npm skip devDependencies.
+
+---
+
 ## 🔐 Authoring Mode
 
 Two features write into `content/` at runtime — the Content Manager uploader and the AI mock expander. Free and serverless hosts have **ephemeral disks**, so those writes appear to succeed and then vanish on the next restart. Both therefore sit behind a capability flag resolved in [shared/capabilities.ts](shared/capabilities.ts) and enforced by the server, with the UI hiding the controls to match.

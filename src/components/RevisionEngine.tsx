@@ -19,6 +19,7 @@ import {
 import { Subject, UserProgress, Question, Chapter, parseProgressKey } from "../types";
 import { resolveExamForSubject } from "../../shared/exams";
 import RichText from "./RichText";
+import { fetchChapter } from "../lib/contentStore";
 
 interface RevisionEngineProps {
   subjects: Subject[];
@@ -153,12 +154,12 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
     // Fetch chapters data concurrently
     try {
       const fetchPromises = chaptersToFetch.map(async (c) => {
-        const res = await fetch(`/api/chapter/${encodeURIComponent(c.subject.replace(/\s+/g, "-"))}/${encodeURIComponent(c.chapterId)}`);
-        if (res.ok) {
-          const data = await res.json();
-          return { ...c, questions: data.questions as Question[] };
+        try {
+          const data = await fetchChapter(c.subject, c.chapterId);
+          return { ...c, questions: (data.questions || []) as Question[] };
+        } catch {
+          return { ...c, questions: [] as Question[] };
         }
-        return { ...c, questions: [] };
       });
 
       const fetchedChapters = await Promise.all(fetchPromises);

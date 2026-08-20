@@ -44,6 +44,7 @@ import { EXAM_REGISTRY, ExamDefinition, getExamById, resolveExamForSubject, reso
 import { getExamIcon, getExamColorClasses, ExamColorClasses } from "./lib/examTheme";
 import { getProgressStore } from "./lib/progressStore";
 import { getCapabilities } from "./lib/capabilityStore";
+import { fetchSubjects, fetchChapter } from "./lib/contentStore";
 import { NO_CAPABILITIES, type AppCapabilities } from "../shared/capabilities";
 
 // Nav items double as the route map — each id's path is the single source of truth
@@ -477,11 +478,7 @@ export default function App() {
   // Fetch all curriculum subjects & chapters (Auto Discovery API)
   const fetchCurriculum = async () => {
     try {
-      const res = await fetch("/api/content");
-      if (res.ok) {
-        const data = await res.json();
-        setSubjects(data.subjects || []);
-      }
+      setSubjects(await fetchSubjects());
     } catch (e) {
       console.error("Error fetching discovered content packs", e);
     }
@@ -612,10 +609,8 @@ export default function App() {
   // Skip the chapter-detail screen and jump straight into a practice session.
   const handleQuickPractice = async (subjectName: string, chapter: Chapter) => {
     try {
-      const res = await fetch(`/api/chapter/${encodeURIComponent(subjectName.replace(/\s+/g, "-"))}/${encodeURIComponent(chapter.id)}`);
-      if (!res.ok) throw new Error("Failed to load chapter questions");
-      const data = await res.json();
-      handleStartSession(data.questions || [], "practice", chapter.id, chapter.name, subjectName);
+      const data = await fetchChapter(subjectName, chapter.id);
+      handleStartSession((data.questions || []) as Question[], "practice", chapter.id, chapter.name, subjectName);
     } catch (e) {
       console.error("Quick practice failed", e);
       showToastNotification("Couldn't start practice — please try again.");

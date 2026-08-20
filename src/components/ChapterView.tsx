@@ -19,6 +19,7 @@ import {
   BookOpen
 } from "lucide-react";
 import { Chapter, UserProgress, Question, parseProgressKey } from "../types";
+import { fetchChapter } from "../lib/contentStore";
 import { resolveExamForEntry } from "../../shared/exams";
 
 interface ChapterViewProps {
@@ -70,13 +71,8 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
       try {
         setLoading(true);
         setError(null);
-        // We URI encode the parameters to ensure path safeness
-        const res = await fetch(`/api/chapter/${encodeURIComponent(subjectName.replace(/\s+/g, "-"))}/${encodeURIComponent(chapter.id)}`);
-        if (!res.ok) {
-          throw new Error(`Failed to load chapter questions: ${res.statusText}`);
-        }
-        const data = await res.json();
-        setQuestions(data.questions || []);
+        const data = await fetchChapter(subjectName, chapter.id);
+        setQuestions((data.questions || []) as Question[]);
       } catch (err: any) {
         console.error(err);
         setError(err.message || "Could not load questions. Check file integrity.");

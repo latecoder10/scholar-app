@@ -9,7 +9,9 @@
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "verify:gemini": "tsx scripts/verify-gemini-key.ts"
+    "verify:gemini": "tsx scripts/verify-gemini-key.ts",
+    "build:static": "vite build && tsx scripts/build-static-content.ts",
+    "preview:static": "npx --yes serve dist -l 5055"
   },
   "dependencies": {
     "@google/genai": "^2.10.0",
