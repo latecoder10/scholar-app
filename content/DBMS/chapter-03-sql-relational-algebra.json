@@ -1,0 +1,143 @@
+{
+  "subject": "DBMS",
+  "chapter": "SQL and Relational Algebra",
+  "description": "Reviews relational operations (selection, projection, joins, division), tuple calculus, and SQL queries (nested, aggregate, group by, joins).",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following relational algebra operations is NOT a basic/primitive operation?",
+      "options": [
+        "Selection (σ)",
+        "Projection (π)",
+        "Cartesian Product (x)",
+        "Natural Join (⋈)"
+      ],
+      "answer": "Natural Join (⋈)",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020 / GATE CS",
+      "explanation": "The five basic/primitive operations in relational algebra are Selection (σ), Projection (π), Union (∪), Set Difference (-), and Cartesian Product (x). All other operations, including Natural Join (⋈), Intersection (∩), and Division (÷), can be expressed in terms of these primitive operations. For instance, R ⋈ S = π(σ(R x S)) where selection and projection filters match attributes.",
+      "examTrick": "Basic Relational Algebra operations are: σ, π, ∪, -, x, and ρ (rename). If any other operation can be derived from these, it's non-primitive! Natural Join, Intersection, and Division are non-primitive.",
+      "importance": "High",
+      "tags": ["Relational Algebra", "Primitive Operations", "Database Theory"]
+    },
+    {
+      "id": 2,
+      "question": "Consider a relation R(A, B, C) where A is the primary key. Which of the following SQL queries is syntactically invalid?",
+      "options": [
+        "SELECT B, COUNT(C) FROM R GROUP BY B;",
+        "SELECT B, C, COUNT(A) FROM R GROUP BY B;",
+        "SELECT B, MAX(C) FROM R GROUP BY B HAVING MAX(C) > 10;",
+        "SELECT B FROM R WHERE COUNT(C) > 5 GROUP BY B;"
+      ],
+      "answer": "SELECT B FROM R WHERE COUNT(C) > 5 GROUP BY B;",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021 / PSU CS",
+      "explanation": "Let's review the syntax rules of SQL queries:\n- Aggregate functions (like `COUNT`, `SUM`, `AVG`, `MAX`, `MIN`) are NOT allowed in the `WHERE` clause because the `WHERE` clause filters individual rows before groups are formed.\n- To filter based on aggregate function results, the `HAVING` clause must be used instead (e.g., `GROUP BY B HAVING COUNT(C) > 5`).\n- In option 2, grouping by B while selecting C without grouping/aggregating C is invalid in standard ANSI SQL, but some dialects allow it, whereas option 4 is strictly universally invalid due to the aggregate function in the WHERE clause.",
+      "examTrick": "WHERE vs HAVING: WHERE is applied to individual rows BEFORE group by. HAVING is applied to groups AFTER group by. Therefore, aggregate functions like COUNT/SUM are forbidden in WHERE clauses!",
+      "importance": "High",
+      "tags": ["SQL Queries", "Group By", "Having Clause", "Aggregate Functions"]
+    },
+    {
+      "id": 3,
+      "question": "What is the result of the relational algebra expression R ÷ S (Division), where R(A, B) and S(B) are two relations?",
+      "options": [
+        "The set of all tuples in R that do not match S",
+        "The set of all values of A that are associated with some values of B in S",
+        "The set of all values of A in R that are associated with ALL values of B in S",
+        "The Cartesian product of A and B minus the intersection of R and S"
+      ],
+      "answer": "The set of all values of A in R that are associated with ALL values of B in S",
+      "difficulty": "Hard",
+      "source": "GATE CS 2012 / PSU Exam",
+      "explanation": "The division operator (÷) is used for queries involving the 'for all' or 'all' condition. R ÷ S yields a relation over the schema (R - S), which in this case is (A), containing all values of A from R that are paired with every single value of B present in S.",
+      "examTrick": "Division (÷) = 'ALL' query! Whenever you see questions like 'Find employees who work on ALL projects', the relational algebra representation will use the division operator.",
+      "importance": "High",
+      "tags": ["Relational Algebra", "Division Operator", "Database Theory"]
+    },
+    {
+      "id": 4,
+      "question": "Consider the following SQL query over a table Employee(id, name, salary, dept_id):\nSELECT name FROM Employee e1 WHERE salary > (SELECT AVG(salary) FROM Employee e2 WHERE e1.dept_id = e2.dept_id);\nWhat type of subquery is this, and what does it retrieve?",
+      "options": [
+        "A non-correlated subquery; it retrieves employees earning more than the company's average salary.",
+        "A correlated subquery; it retrieves employees earning more than their respective department's average salary.",
+        "A nested view; it retrieves employees earning less than their department's average salary.",
+        "An invalid query due to referencing e1 inside the subquery."
+      ],
+      "answer": "A correlated subquery; it retrieves employees earning more than their respective department's average salary.",
+      "difficulty": "Medium",
+      "source": "PSU Computer Science",
+      "explanation": "A subquery is 'correlated' if it references variables/columns from the outer query (in this case, `e1.dept_id`). It is evaluated once for each row processed by the outer query. This query computes the average salary for each employee's department and selects those employees whose salaries exceed their department's average.",
+      "examTrick": "Correlated Subquery: Outer table reference (e.g. e1) is present inside the subquery. This means the subquery cannot be executed independently of the outer query!",
+      "importance": "Medium",
+      "tags": ["SQL Queries", "Correlated Subquery", "Joins"]
+    },
+    {
+      "id": 5,
+      "question": "In SQL, what is the behavior of the outer join operation (e.g., LEFT OUTER JOIN)?",
+      "options": [
+        "It returns only the rows that have matching values in both tables.",
+        "It returns all rows from the left table, and the matched rows from the right table. For unmatched rows of the right table, NULL values are filled.",
+        "It returns all rows from the right table, and the matched rows from the left table.",
+        "It returns the Cartesian product of both tables regardless of the join condition."
+      ],
+      "answer": "It returns all rows from the left table, and the matched rows from the right table. For unmatched rows of the right table, NULL values are filled.",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "A LEFT OUTER JOIN returns all records from the left table, along with the matching records from the right table. If there is no match, the result will contain NULL for all columns of the right table. This ensures no data from the left table is lost during the join.",
+      "examTrick": "Outer Joins ensure that unmatched rows are preserved! Left outer preserves the left table, Right outer preserves the right table, and Full outer preserves both tables. Unmatched columns are filled with NULLs.",
+      "importance": "High",
+      "tags": ["SQL Queries", "Joins", "Left Outer Join"]
+    },
+    {
+      "id": 6,
+      "question": "Consider the standard logical query execution order in an SQL engine. Given the query: SELECT dept_id, AVG(salary) AS avg_sal FROM Employee WHERE salary > 30000 GROUP BY dept_id HAVING avg_sal > 50000 ORDER BY avg_sal; Which clause in this query will trigger a syntax/compilation error in standard SQL, and why?",
+      "options": [
+        "The WHERE clause, because aggregate functions cannot be used there.",
+        "The HAVING clause, because the column alias 'avg_sal' is used before it is logically defined.",
+        "The ORDER BY clause, because it runs before the SELECT clause.",
+        "The GROUP BY clause, because you cannot group by dept_id if it is also in the SELECT clause."
+      ],
+      "answer": "The HAVING clause, because the column alias 'avg_sal' is used before it is logically defined.",
+      "difficulty": "Hard",
+      "source": "CIL MT 2021 / GATE CS",
+      "explanation": "The logical query execution order of SQL is: FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY. Because the SELECT clause (Step 5) defines the column alias avg_sal (as AVG(salary) AS avg_sal), this alias does not exist yet when the HAVING clause (Step 4) runs. Thus, using avg_sal in the HAVING clause causes a compilation error. It should be written as 'HAVING AVG(salary) > 50000'. However, the alias avg_sal is perfectly valid in the ORDER BY clause (Step 6) because SELECT has already executed by then.",
+      "examTrick": "SQL Phase Flow: FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> ORDER BY. Remember that SELECT is 5th, and ORDER BY is 6th! Thus, aliases created in SELECT are only visible in ORDER BY, never in WHERE, GROUP BY, or HAVING.",
+      "importance": "High",
+      "tags": ["SQL Queries", "Query Execution Order", "Aliases"]
+    },
+    {
+      "id": 7,
+      "question": "In Tuple Relational Calculus (TRC), a query expression must be 'safe' to guarantee that it terminates and returns a finite result set. Which of the following TRC expressions is UNSAFE?",
+      "options": [
+        "{ t | ¬(t ∈ Employee) }",
+        "{ t | t ∈ Employee ∧ t.salary > 50000 }",
+        "{ t | t ∈ Employee ∧ ∃s(s ∈ Department ∧ s.dept_id = t.dept_id) }",
+        "All of the above are safe expressions."
+      ],
+      "answer": "{ t | ¬(t ∈ Employee) }",
+      "difficulty": "Hard",
+      "source": "GATE CS 2013 / PSU CS",
+      "explanation": "An expression in Relational Calculus is defined as safe if the set of tuples it can return is finite. Under the formal safety criteria (such as the DOM(P) condition), the expression { t | ¬(t ∈ Employee) } is unsafe because the variable t is unconstrained to any finite database domain. It represents 'all tuples in the universe that are NOT in the Employee table'. Since the universe of possible tuples is infinite, evaluating this query would yield an infinite result set and never terminate.",
+      "examTrick": "Negation without domain boundary = Unsafe! If you see a free variable on the left of the bar, and it is negated on the right without being tied to a positive relation, it represents an infinite set and is unsafe.",
+      "importance": "High",
+      "tags": ["Relational Calculus", "TRC Safety", "Database Theory"]
+    },
+    {
+      "id": 8,
+      "question": "The Division Operator (R ÷ S) in Relational Algebra is used for queries involving 'for all' or 'every' conditions (e.g. 'Find students who have registered for every course'). Since standard SQL does not have a native FORALL operator, how is this logically expressed in SQL using existential quantifiers and double negation?",
+      "options": [
+        "Find students where EXISTS a course that they have registered for.",
+        "Find students where NOT EXISTS a course for which there is a registration.",
+        "Find students where NOT EXISTS a course such that NOT EXISTS a registration record matching both the student and the course.",
+        "Find students where EXISTS a registration record for some course."
+      ],
+      "answer": "Find students where NOT EXISTS a course such that NOT EXISTS a registration record matching both the student and the course.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2016 / CIL MT",
+      "explanation": "By mathematical quantifier duality: ∀c (ϕ(c)) ≡ ¬∃c (¬ϕ(c)). To find students who have taken ALL courses, we rewrite it as: 'Find students such that there does NOT exist any course for which there does NOT exist a registration record showing they took that course'. In SQL, this translates to a double-nested NOT EXISTS query.",
+      "examTrick": "Division in SQL: Look for double-nested NOT EXISTS! 'Students who took all courses' = 'Students for whom NO course exists that they did NOT take'.",
+      "importance": "High",
+      "tags": ["SQL Queries", "Relational Algebra", "Division Operator", "Double Negation"]
+    }
+  ]
+}

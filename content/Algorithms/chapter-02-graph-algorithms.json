@@ -1,0 +1,347 @@
+{
+  "subject": "Algorithms",
+  "chapter": "Graph Algorithms and Hashing",
+  "description": "Reviews graph traversals (BFS, DFS), cycle detection, minimum spanning trees (Prim's, Kruskal's, Boruvka's), shortest paths (Dijkstra, Bellman-Ford, Floyd-Warshall), and collision resolution in hashing.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which auxiliary data structure is used to implement Breadth-First Search (BFS) traversal of a graph?",
+      "options": [
+        "Stack",
+        "Queue",
+        "Binary Heap",
+        "Linked List"
+      ],
+      "answer": "Queue",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "Breadth-First Search (BFS) is an algorithm for traversing or searching tree or graph data structures. It starts at an arbitrary node and explores neighbor nodes at the current depth before moving to next level. To ensure nodes are visited in FIFO order, BFS uses a Queue as its primary auxiliary structure.",
+      "examTrick": "BFS = Breadth-First = Queue (FIFO). DFS = Depth-First = Stack/Recursion (LIFO). Standard, high-yield PSU question!",
+      "importance": "High",
+      "tags": ["Graph Theory", "BFS", "Queue", "CIL PYQ"]
+    },
+    {
+      "id": 2,
+      "question": "A vertex v in an undirected connected graph G is called an 'articulation point' if:",
+      "options": [
+        "Removing v and its associated edges increases the number of connected components in G",
+        "Removing v and its associated edges decreases the number of connected components in G",
+        "v is connected to all other vertices in G",
+        "v lies on a cycle in G"
+      ],
+      "answer": "Removing v and its associated edges increases the number of connected components in G",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "An articulation point (or cut vertex) in an undirected connected graph is a vertex whose removal (along with all edges incident to it) disconnects the remaining graph, thereby increasing the number of connected components. Articulation points represent critical single points of failure in a network.",
+      "examTrick": "Articulation Point = Cut Vertex. Removing it breaks the graph into multiple isolated parts. Found in O(V+E) time using DFS!",
+      "importance": "Medium",
+      "tags": ["Graph Theory", "Articulation Points", "CIL PYQ"]
+    },
+    {
+      "id": 3,
+      "question": "Which of the following describes Prim's algorithm for finding the Minimum Spanning Tree (MST) of a connected, weighted undirected graph?",
+      "options": [
+        "It starts with a single vertex and grows the MST by repeatedly adding the cheapest edge connecting a vertex in the tree to a vertex outside the tree.",
+        "It sorts all edges in ascending order of weights and repeatedly adds the smallest edge that does not form a cycle.",
+        "It is a dynamic programming algorithm that finds shortest paths.",
+        "It computes shortest paths starting from a source vertex."
+      ],
+      "answer": "It starts with a single vertex and grows the MST by repeatedly adding the cheapest edge connecting a vertex in the tree to a vertex outside the tree.",
+      "difficulty": "Easy",
+      "source": "GATE CS / PSU",
+      "explanation": "Prim's algorithm is a greedy algorithm that finds the MST of a weighted undirected graph. It maintains a growing set of vertices representing the tree, and in each step, greedily selects the minimum weight edge that connects a vertex inside the tree to a vertex outside the tree.\n- Kruskal's algorithm, on the other hand, is the one that sorts all edges and checks for cycles (disjoint sets).",
+      "examTrick": "Prim's = Vertex-centric (grows from a seed vertex). Kruskal's = Edge-centric (picks edges globally, avoiding cycles). Both find the exact same MST!",
+      "importance": "High",
+      "tags": ["Graph Theory", "Minimum Spanning Tree", "Prim's Algorithm"]
+    },
+    {
+      "id": 4,
+      "question": "What is the worst-case time complexity of Dijkstra's single-source shortest path algorithm on a graph with V vertices and E edges, when implemented using a binary heap?",
+      "options": [
+        "O(V^2)",
+        "O(E log V)",
+        "O(V log V + E)",
+        "O(V + E)"
+      ],
+      "answer": "O(E log V)",
+      "difficulty": "Hard",
+      "source": "GATE CS / CIL MT",
+      "explanation": "Dijkstra's algorithm implemented with a binary heap (priority queue) has a time complexity of O((V + E) log V). In connected graphs, E is usually greater than or equal to V, so this simplifies to O(E log V). If implemented with a Fibonacci Heap, it is O(E + V log V).",
+      "examTrick": "Binary Heap implementation: O(E log V). Simple Array implementation: O(V^2). Fibonacci Heap implementation: O(E + V log V). Select the answer based on the heap specified!",
+      "importance": "High",
+      "tags": ["Graph Theory", "Shortest Path", "Dijkstra's", "Time Complexity"]
+    },
+    {
+      "id": 5,
+      "question": "In hashing with open addressing, if a collision occurs when trying to insert an item, what is 'quadratic probing'?",
+      "options": [
+        "Probing successive slots according to a linear function: h(k, i) = (h'(k) + i) mod m",
+        "Probing successive slots according to a quadratic function: h(k, i) = (h'(k) + c1*i + c2*i^2) mod m",
+        "Creating a linked list at the collided index to hold duplicate elements",
+        "Computing a second hash function to find the next slot"
+      ],
+      "answer": "Probing successive slots according to a quadratic function: h(k, i) = (h'(k) + c1*i + c2*i^2) mod m",
+      "difficulty": "Medium",
+      "source": "PSU Hashing Theory",
+      "explanation": "In open addressing, collisions are resolved by scanning alternative slots. In quadratic probing, the slot sequence is determined by a quadratic polynomial in terms of the probe attempt number i. That is, h(k, i) = (h'(k) + c1*i + c2*i^2) mod m. It reduces the primary clustering issue found in linear probing.",
+      "examTrick": "Open Addressing probing modes:\n1. Linear Probing: offset is linear (+i).\n2. Quadratic Probing: offset is quadratic (+c1*i + c2*i^2). Reduces primary clustering.\n3. Double Hashing: offset uses a second hash function (+i * h2(k)). Eliminates secondary clustering.",
+      "importance": "High",
+      "tags": ["Hashing", "Collision Resolution", "Quadratic Probing"]
+    },
+    {
+      "id": 6,
+      "question": "Compare the space complexities of Breadth-First Search (BFS) and Depth-First Search (DFS) when traversing a balanced d-ary tree of depth h and branching factor b. What are the correct bounds for the auxiliary memory required by BFS and DFS respectively?",
+      "options": [
+        "BFS: O(b^h), DFS: O(bh)",
+        "BFS: O(bh), DFS: O(b^h)",
+        "BFS: O(d), DFS: O(h)",
+        "BFS: O(V + E), DFS: O(V + E)"
+      ],
+      "answer": "BFS: O(b^h), DFS: O(bh)",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "1. BFS stores vertices level-by-level in a queue. In a balanced tree, the widest level is the leaf level, which contains b^h nodes. Thus, the worst-case space complexity of BFS is proportional to the width of the tree, which is O(b^h).\n2. DFS stores vertices along a single active path in the recursion stack. The maximum stack depth is equal to the height h, and at each level, we may store information for up to b sibling branches. Thus, the worst-case space complexity of DFS is proportional to the height of the tree, which is O(bh).",
+      "examTrick": "Breadth is expensive in wide structures; depth is expensive in deep structures! For a balanced tree, BFS space = O(b^h) (exponential), while DFS space = O(bh) (linear). Always remember BFS tracks width (queue) and DFS tracks depth (stack)!",
+      "importance": "High",
+      "tags": ["Graph Theory", "BFS vs DFS", "Space Complexity"]
+    },
+    {
+      "id": 7,
+      "question": "In graph theory, which of the following rules correctly matches the structural condition used to detect cycles in Directed and Undirected graphs respectively during Depth-First Search (DFS)?",
+      "options": [
+        "Directed: Back-edge (visiting a node currently in the recursion stack); Undirected: Visiting an already visited node that is not the immediate parent.",
+        "Directed: Forward-edge (visiting a descendant); Undirected: Back-edge (visiting an ancestor in the stack).",
+        "Directed: Cross-edge (visiting a sibling subtree); Undirected: Visiting a leaf node twice.",
+        "Both Directed and Undirected use the exact same condition: detecting any edge leading to an already visited vertex."
+      ],
+      "answer": "Directed: Back-edge (visiting a node currently in the recursion stack); Undirected: Visiting an already visited node that is not the immediate parent.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021 / GATE CS",
+      "explanation": "According to Page 72 of the Algorithms PDF:\n1. In a Directed Graph, a cycle exists if and only if DFS encounters a 'back-edge'. A back-edge is an edge to an ancestor in the DFS tree that is currently active (on the recursion stack).\n2. In an Undirected Graph, a cycle exists if we visit a vertex that has already been visited, provided that the vertex is not the immediate parent of the current vertex in the DFS traversal tree.",
+      "examTrick": "Directed Cycle = Back-edge (active on recursion stack). Undirected Cycle = Visited & Not-Parent. Memorize this exact distinction for quick MCQ solving!",
+      "importance": "High",
+      "tags": ["Graph Theory", "Cycle Detection", "DFS", "Directed vs Undirected"]
+    },
+    {
+      "id": 8,
+      "question": "A Disjoint Set Union (DSU) data structure is used to maintain partition states of n elements. If we implement the DSU with both 'Path Compression' and 'Union by Rank/Size' optimizations, what is the worst-case amortized time complexity of executing a sequence of m find and union operations?",
+      "options": [
+        "O(m log n)",
+        "O(m * alpha(n))",
+        "O(n + m log* n)",
+        "O(m)"
+      ],
+      "answer": "O(m * alpha(n))",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "According to Page 72 of the Algorithms PDF, when both Path Compression and Union by Rank/Size are applied:\n- Path Compression flattens the tree by making every searched node point directly to the root during a `find` call.\n- Union by Rank/Size attaches the smaller tree under the root of the larger tree to keep the tree flat.\nTogether, these optimizations reduce the amortized cost per operation to O(alpha(n)), where alpha is the inverse Ackermann function. For any practical value of n, alpha(n) < 5, making the operations run in virtually O(1) constant time. A sequence of m operations takes O(m * alpha(n)) time.",
+      "examTrick": "DSU Optimizations: Only Rank = O(log n). Only Path Compression = O(log n) amortized. Both optimizations combined = O(alpha(n)) amortized, which is effectively constant time!",
+      "importance": "High",
+      "tags": ["Data Structures", "DSU", "Union-Find", "Amortized Analysis"]
+    },
+    {
+      "id": 9,
+      "question": "Consider a directed graph G with V vertices and E edges containing negative edge weights. The Bellman-Ford single-source shortest path algorithm is executed to find shortest distances. During which step can we mathematically guarantee the detection of a negative-weight cycle in G?",
+      "options": [
+        "If any distance value gets updated during the (V-1)-th iteration of relaxing all E edges.",
+        "If any distance value gets updated during the V-th iteration of relaxing all E edges, after completing V-1 iterations.",
+        "If all distance values remain unchanged during the first iteration.",
+        "If the sum of all edge weights is negative."
+      ],
+      "answer": "If any distance value gets updated during the V-th iteration of relaxing all E edges, after completing V-1 iterations.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2022 / GATE CS",
+      "explanation": "The Bellman-Ford algorithm relies on the principle that the shortest path in a graph with V vertices can contain at most V-1 edges (if there are no cycles). Thus, relaxing all E edges V-1 times is guaranteed to find all shortest paths in the absence of negative cycles.\n- If we run a V-th relaxation pass and any distance decreases (i.e., dist[v] > dist[u] + weight(u, v)), it means there exists a path containing V or more edges that is shorter than any path containing fewer edges. This is mathematically possible only if there is a negative-weight cycle. Thus, the V-th iteration is the cycle checker.",
+      "examTrick": "Bellman-Ford relaxation rule: V-1 passes are required to finalize shortest paths. The V-th pass is solely used to detect negative cycles. If any value changes in the V-th pass, a negative cycle exists!",
+      "importance": "High",
+      "tags": ["Graph Theory", "Bellman-Ford", "Shortest Path", "Negative Cycles"]
+    },
+    {
+      "id": 10,
+      "question": "The Floyd-Warshall all-pairs shortest path algorithm uses a dynamic programming approach with three nested loops. To ensure correctness, which variable must be iterated in the outermost loop, and what are the respective time and space complexities?",
+      "options": [
+        "The outermost loop must iterate over the intermediate vertex k; Time: O(V^3), Space: O(V^2)",
+        "The outermost loop must iterate over the source vertex i; Time: O(V^3), Space: O(V^3)",
+        "The outermost loop must iterate over the destination vertex j; Time: O(V^2 log V), Space: O(V^2)",
+        "The outermost loop can be i, j, or k interchangeably; Time: O(V^3), Space: O(V^2)"
+      ],
+      "answer": "The outermost loop must iterate over the intermediate vertex k; Time: O(V^3), Space: O(V^2)",
+      "difficulty": "Hard",
+      "source": "GATE CS 2016 / PSU",
+      "explanation": "Floyd-Warshall defines dist[i][j][k] as the shortest path from vertex i to vertex j using only vertices from the set {1, 2, ..., k} as intermediate vertices.\n- The recurrence relation is: dist[i][j][k] = min(dist[i][j][k-1], dist[i][k][k-1] + dist[k][j][k-1]).\n- For this recurrence to resolve correctly, the states for k-1 must be fully computed before computing states for k. Therefore, the loop for the intermediate vertex k MUST be the outermost loop. Iterating over i or j first would result in incorrect path calculations.\n- There are V choices for k, V for i, and V for j, leading to O(V^3) time. The space complexity can be optimized to O(V^2) by dropping the k dimension.",
+      "examTrick": "Floyd-Warshall loop order is strictly K-I-J (K outermost)! If K is not outermost, the algorithm computes local paths instead of global shortest paths. Time is always O(V^3) and Space is O(V^2).",
+      "importance": "High",
+      "tags": ["Graph Theory", "Floyd-Warshall", "DP on Graphs", "Loop Ordering"]
+    },
+    {
+      "id": 11,
+      "question": "According to the fundamental properties of Minimum Spanning Trees (MST) of a weighted connected graph G, which of the following statements is mathematically true?",
+      "options": [
+        "Cycle Property: For any cycle in G, the edge with the strictly largest weight cannot be part of any MST of G.",
+        "Cut Property: For any partition (cut) of G, the maximum weight edge crossing the cut must be in the MST.",
+        "An MST of a graph G with V vertices always contains exactly V edges and V-1 vertices.",
+        "If all edge weights in G are distinct, there can still be multiple different MSTs."
+      ],
+      "answer": "Cycle Property: For any cycle in G, the edge with the strictly largest weight cannot be part of any MST of G.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2015 / ISRO",
+      "explanation": "Let's review the core MST properties from Page 67 of the Algorithms PDF:\n- **Cycle Property:** For any cycle in a graph, the edge with the strictly largest weight in that cycle cannot be in any Minimum Spanning Tree of G. (If it were, we could remove it and add a cheaper edge from the cycle to get a lower weight spanning tree).\n- **Cut Property:** For any cut, the minimum weight edge crossing the cut must be in the MST.\n- **Fixed Edges:** An MST contains exactly V-1 edges and V vertices.\n- **Uniqueness:** If all edge weights in the graph are distinct, the MST is guaranteed to be unique.",
+      "examTrick": "MST Theory Shortcuts:\n- Max edge in cycle = Excluded from MST!\n- Min edge crossing cut = Included in MST!\n- Distinct edge weights = Unique MST!",
+      "importance": "High",
+      "tags": ["Graph Theory", "MST Properties", "Cycle Property", "Cut Property"]
+    },
+    {
+      "id": 12,
+      "question": "Topological sorting of a directed graph G represents a linear ordering of its vertices such that for every directed edge u -> v, vertex u comes before v. Under which graph structure is topological sort possible, and which algorithm computes it using in-degrees of nodes?",
+      "options": [
+        "Possible in any Directed Acyclic Graph (DAG); Computed via Kahn's Algorithm.",
+        "Possible in any Connected Directed Graph; Computed via Prim's Algorithm.",
+        "Possible only in Directed Graphs with negative cycles; Computed via Bellman-Ford.",
+        "Possible only in Bipartite Directed Graphs; Computed via Kosaraju's Algorithm."
+      ],
+      "answer": "Possible in any Directed Acyclic Graph (DAG); Computed via Kahn's Algorithm.",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "Topological sort is only possible for Directed Acyclic Graphs (DAGs). If G contains a cycle, no valid linear order can exist because a circular dependency (e.g., u -> v -> u) violates the ordering condition.\n- **Kahn's Algorithm** is a BFS-based topological sort algorithm that repeatedly identifies nodes with an in-degree of 0, removes them from the graph, and updates the in-degrees of their neighbors. If the number of sorted elements is less than V, G contains a cycle.",
+      "examTrick": "Topo Sort = DAGs only! Kahn's = BFS in-degree 0 reduction. DFS-based topological sort pushes nodes to a stack at the end of DFS visit, and the topo order is the reverse of finishing times.",
+      "importance": "High",
+      "tags": ["Graph Theory", "Topological Sort", "DAG", "Kahn's Algorithm"]
+    },
+    {
+      "id": 13,
+      "question": "A double hashing scheme resolves collisions in a hash table of size M = 11 using the primary hash function h1(k) = k mod 11 and a secondary hash function h2(k) = 7 - (k mod 7). If we insert the key k = 27 into an initially empty table, and find that slot h1(27) is already occupied, what is the next probe slot checked by the double hashing algorithm?",
+      "options": [
+        "Slot 6",
+        "Slot 7",
+        "Slot 8",
+        "Slot 5"
+      ],
+      "answer": "Slot 6",
+      "difficulty": "Hard",
+      "source": "GATE CS 2018 / PSU Exam",
+      "explanation": "Let's perform the double hashing calculations step-by-step using the formula from Page 81 of the PDF:\nFormula: h(k, i) = (h1(k) + i * h2(k)) mod M\nWhere i represents the probe number (i = 0, 1, 2, ...).\n\n1. For k = 27, calculate primary hash h1(27):\n   h1(27) = 27 mod 11 = 5.\n   Since slot 5 is occupied, we must probe further.\n\n2. Calculate secondary hash h2(27):\n   h2(27) = 7 - (27 mod 7) = 7 - 6 = 1.\n   The step size is 1.\n\n3. Calculate the first probe (i = 1):\n   h(27, 1) = (h1(27) + 1 * h2(27)) mod 11\n   h(27, 1) = (5 + 1 * 1) mod 11 = 6.\n   Thus, the next slot checked is slot 6.",
+      "examTrick": "Double Hashing step calculation: h2(k) is the fixed step size for key k. First probe is simply (h1(k) + h2(k)) mod M. Here, 5 + 1 = 6. Fast and flawless!",
+      "importance": "High",
+      "tags": ["Hashing", "Collision Resolution", "Double Hashing", "Probing Calculations"]
+    },
+    {
+      "id": 14,
+      "question": "In hashing with open addressing, 'Linear Probing' is highly cache-friendly but suffers from a major performance degradation issue called 'Primary Clustering'. Which of the following describes this issue?",
+      "options": [
+        "Long consecutive blocks of occupied slots build up, making collision search times approach O(N) as the table fills.",
+        "Keys with different initial hash values follow identical quadratic probe sequences, causing secondary collisions.",
+        "The linked lists at each hash index grow too long, degrading search to linear scan.",
+        "The secondary hash function evaluates to 0, locking the search in an infinite loop."
+      ],
+      "answer": "Long consecutive blocks of occupied slots build up, making collision search times approach O(N) as the table fills.",
+      "difficulty": "Medium",
+      "source": "PSU Computer Systems",
+      "explanation": "In linear probing, if a collision occurs, we probe successive slots sequentially (index+1, index+2, etc.). This sequential probe causes any collision in a block of filled slots to resolve at the end of that block, making the block grow even longer. This phenomenon is called 'Primary Clustering'. As consecutive blocks of occupied slots grow, any key hashing into or near the block must scan through the entire block, degrading average search time from O(1) to O(N).",
+      "examTrick": "Primary Clustering = Linear Probing side effect (long sequential blocks of occupied slots). Secondary Clustering = Quadratic Probing side effect (same initial hash values follow the exact same non-consecutive path). Double Hashing eliminates both!",
+      "importance": "High",
+      "tags": ["Hashing", "Linear Probing", "Primary Clustering"]
+    },
+    {
+      "id": 15,
+      "question": "A hash table has M = 100 slots and stores n = 70 elements, resulting in a load factor alpha = 0.70. According to the expected search complexity formulas, how do Separate Chaining and Open Addressing (Linear Probing) compare regarding the expected number of comparisons for a successful search?",
+      "options": [
+        "Separate Chaining: 1.35 comparisons; Linear Probing: 3.33 comparisons",
+        "Separate Chaining: 1.70 comparisons; Linear Probing: 1.35 comparisons",
+        "Separate Chaining: 3.33 comparisons; Linear Probing: 1.35 comparisons",
+        "Both require exactly 1.70 comparisons on average."
+      ],
+      "answer": "Separate Chaining: 1.35 comparisons; Linear Probing: 3.33 comparisons",
+      "difficulty": "Hard",
+      "source": "GATE CS / CIL MT Exam",
+      "explanation": "Let's use the load factor formulas from Page 83 of the Algorithms PDF:\nGiven:\n- M = 100 slots, n = 70 elements.\n- Load factor alpha = n / M = 70 / 100 = 0.70.\n\n1. **Separate Chaining Expected Successful Search Time:**\n   Formula: 1 + alpha / 2\n   Calculation: 1 + 0.70 / 2 = 1 + 0.35 = 1.35 comparisons.\n\n2. **Open Addressing (Linear Probing) Expected Successful Search Time:**\n   Formula: 1 / (1 - alpha)\n   Calculation: 1 / (1 - 0.70) = 1 / 0.30 ≈ 3.33 comparisons.\n\nThus, Separate Chaining is about 2.5x faster in terms of comparisons due to the primary clustering overhead in Linear Probing.",
+      "examTrick": "Search formulas for load factor alpha:\n- Chaining: 1 + alpha / 2 (always smaller, handles alpha > 1).\n- Linear Probing: 1 / (1 - alpha) (grows rapidly as alpha approaches 1, fails if alpha >= 1).",
+      "importance": "High",
+      "tags": ["Hashing", "Load Factor", "Expected Search Time", "Separate Chaining"]
+    },
+    {
+      "id": 16,
+      "question": "Kosaraju's algorithm is an efficient DFS-based technique used to find the Strongly Connected Components (SCCs) of a directed graph G. Which sequence of steps correctly describes this algorithm, and what is its time complexity?",
+      "options": [
+        "1) Perform DFS on G and push vertices to stack by finishing times; 2) Reverse all directed edges in G; 3) Pop from stack and perform DFS on the reversed graph to find SCCs. Time: O(V + E)",
+        "1) Sort all edge weights; 2) Run BFS from the source vertex; 3) Build a spanning tree avoiding cycles. Time: O(E log V)",
+        "1) Partition graph into bipartite sets; 2) Run Dijkstra's algorithm from each source; 3) Combine shortest paths. Time: O(V^3)",
+        "1) Build an adjacency matrix; 2) Perform matrix multiplication; 3) Identify zero rows. Time: O(V^2)"
+      ],
+      "answer": "1) Perform DFS on G and push vertices to stack by finishing times; 2) Reverse all directed edges in G; 3) Pop from stack and perform DFS on the reversed graph to find SCCs. Time: O(V + E)",
+      "difficulty": "Medium",
+      "source": "GATE CS 2011 / PSU Exam",
+      "explanation": "Kosaraju's algorithm computes SCCs of a directed graph in linear time O(V + E). It works as follows:\n1. DFS is run on G. As each vertex finishes (all its descendants are visited), it is pushed onto a stack. This sorts vertices in decreasing order of their finishing times.\n2. The transpose/reversed graph G^T is constructed (direction of all edges is flipped).\n3. Vertices are popped from the stack. If a vertex is unvisited, DFS is run from it on G^T. The set of vertices visited in this DFS pass forms a Strongly Connected Component.",
+      "examTrick": "Kosaraju is 'DFS - Transpose - DFS'! Since both DFS passes and the graph transposition take linear time, the entire algorithm runs in optimal O(V+E) time.",
+      "importance": "High",
+      "tags": ["Graph Theory", "Kosaraju's Algorithm", "SCC", "DFS"]
+    },
+    {
+      "id": 17,
+      "question": "Boruvka's algorithm is a historical Minimum Spanning Tree (MST) algorithm. What is its key operational mechanism, and why is it considered highly advantageous in modern high-performance computing architectures?",
+      "options": [
+        "It grows several components simultaneously by connecting each component to its cheapest neighbor; highly advantageous because it is naturally parallelizable.",
+        "It always selects edges starting from a single root node; advantageous because it uses less stack space than DFS.",
+        "It replaces the graph representation with a dense matrix; advantageous because it avoids pointer chasing in cache memories.",
+        "It utilizes a second hash function to rehash edge lists; advantageous because it avoids cycles in O(1) time."
+      ],
+      "answer": "It grows several components simultaneously by connecting each component to its cheapest neighbor; highly advantageous because it is naturally parallelizable.",
+      "difficulty": "Medium",
+      "source": "PSU Advanced Algorithms",
+      "explanation": "According to Page 66 of the Algorithms PDF:\n- Boruvka's algorithm is the oldest MST algorithm. It starts with V individual components (each vertex is its own component).\n- In each phase, every component independently finds its cheapest outgoing edge and connects to another component, merging them.\n- This process is repeated until only one component remains.\n- Because each component can look for its minimum outgoing edge independently of other components, Boruvka's algorithm can be heavily parallelized on multicore and distributed processors, unlike Prim's or Kruskal's which are sequential.",
+      "examTrick": "Boruvka = Multi-component parallel growth! If a question asks about parallelizable MST algorithms, the answer is always Boruvka!",
+      "importance": "Medium",
+      "tags": ["Graph Theory", "Boruvka's Algorithm", "MST", "Parallelism"]
+    },
+    {
+      "id": 18,
+      "question": "A bipartite graph is a graph whose vertices can be divided into two disjoint sets such that no two adjacent vertices belong to the same set. Which cycle condition characterizes bipartite graphs, and what is the time complexity to verify this property?",
+      "options": [
+        "The graph must contain no cycles of odd length; verified in O(V + E) using BFS or DFS.",
+        "The graph must contain only cycles of even length; verified in O(V^2) using Floyd-Warshall.",
+        "The graph must contain no cycles of any length; verified in O(V log V) using disjoint sets.",
+        "The graph must be a tree structure; verified in O(E log E) using Kruskal's."
+      ],
+      "answer": "The graph must contain no cycles of odd length; verified in O(V + E) using BFS or DFS.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021 / GATE CS",
+      "explanation": "A fundamental theorem in graph theory states that an undirected graph is bipartite if and only if it contains no odd-length cycles.\n- We can verify this property by performing a BFS or DFS traversal and coloring the nodes with 2 colors (e.g., Red and Blue) such that adjacent nodes always have different colors.\n- If we encounter an edge between two nodes of the same color, we have found an odd cycle, meaning the graph is not bipartite. This coloring check runs in linear time O(V + E).",
+      "examTrick": "Bipartite = No odd cycles (2-colorable)! Verified instantly in O(V+E) by running standard BFS or DFS. A tree is always bipartite since it has no cycles!",
+      "importance": "High",
+      "tags": ["Graph Theory", "Bipartite Graph", "Graph Coloring", "Cycle Checking"]
+    },
+    {
+      "id": 19,
+      "question": "In hash function designs, why is the 'Division Method' formula h(k) = k mod M implemented ideally with M chosen as a prime number that is not close to a power of 2?",
+      "options": [
+        "Because if M has small factors, keys that share those common factors will all map to the same slots, causing severe clustering.",
+        "Because modulo division with prime numbers executes faster in standard CPU ALUs.",
+        "Because prime table sizes automatically eliminate all collisions by the Pigeonhole Principle.",
+        "Because prime numbers prevent the load factor from ever exceeding 0.70."
+      ],
+      "answer": "Because if M has small factors, keys that share those common factors will all map to the same slots, causing severe clustering.",
+      "difficulty": "Medium",
+      "source": "CIL MT CS 2020",
+      "explanation": "According to Page 76 of the Algorithms PDF:\n- The division method maps a key k to a slot index using the remainder of dividing k by the table size M: h(k) = k mod M.\n- If M is a power of 2 (e.g., 2^p), then h(k) is simply the p lowest-order bits of k. The higher-order bits would be completely ignored, causing keys with identical low bits to collide regardless of their other bits.\n- If M has small factors (e.g., is an even number, M=2k), then any key that shares those factors will map to slots sharing those factors (even keys to even slots, odd to odd), which leads to non-uniform distribution and severe clustering. Choosing a prime number M not close to a power of 2 ensures all bits of the key contribute to the hash, reducing collisions.",
+      "examTrick": "Hash Table size M = Prime number not near a power of 2! This spreads keys uniformly across the table and prevents patterns in the input keys from clustering together in a few slots.",
+      "importance": "Medium",
+      "tags": ["Hashing", "Division Method", "Hash Functions", "Clustering"]
+    },
+    {
+      "id": 20,
+      "question": "In hashing with open addressing, what is the operation of 'Rehashing', and when is it executed?",
+      "options": [
+        "Allocating a new table of size roughly 2x, and reinserting all existing keys using a modified hash function; executed when the load factor alpha exceeds a threshold (typically 0.70).",
+        "Applying a second hash function to the collided slot to locate another index; executed on every collision.",
+        "Converting a separate chaining hash table into a red-black tree; executed when a linked list length exceeds 8.",
+        "Clearing all 'deleted' tombstone markers from the table; executed when the table is empty."
+      ],
+      "answer": "Allocating a new larger table (usually 2x size), and re-inserting all existing keys using a new hash function because M has changed; executed when the load factor alpha exceeds a threshold (typically 0.7).",
+      "difficulty": "Easy",
+      "source": "Standard Hashing Theory",
+      "explanation": "According to Page 84 of the Algorithms PDF:\n- In open addressing, the table cannot hold more than M elements (alpha < 1). As the load factor alpha approaches 1, the number of collisions increases drastically, and performance degrades to O(N).\n- To prevent this, when alpha exceeds a specific threshold (commonly 0.70 for open addressing), the system performs **Rehashing**.\n- This involves creating a new hash table that is typically double the size of the current table, and re-inserting all existing keys into the new table using a new hash function (since the table size M has changed).\n- While a single rehash takes O(N) time, it occurs infrequently, and the amortized cost per insertion remains O(1).",
+      "examTrick": "Rehashing threshold = alpha > 0.7! It doubles table size and re-inserts all items. Amortized cost is still O(1) per insert, keeping hashing extremely fast!",
+      "importance": "High",
+      "tags": ["Hashing", "Rehashing", "Load Factor", "Amortized Complexity"]
+    }
+  ]
+}

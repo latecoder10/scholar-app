@@ -1,0 +1,127 @@
+{
+  "subject": "General Awareness",
+  "chapter": "Polity, History, Geography, and Indian Economy",
+  "description": "Reviews the Indian Constitution, national history milestones, geography of major river basins and mineral deposits, and key parameters of the Indian economy.",
+  "paper": "Paper-I",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Under the Indian Constitution, the 'Right to Property' was deleted from the list of Fundamental Rights and made a simple legal right under Article 300A by which Constitutional Amendment Act?",
+      "options": [
+        "42nd Amendment Act, 1976",
+        "44th Amendment Act, 1978",
+        "52nd Amendment Act, 1985",
+        "86th Amendment Act, 2002"
+      ],
+      "answer": "44th Amendment Act, 1978",
+      "difficulty": "Medium",
+      "source": "Indian Polity & Constitution",
+      "explanation": "Let's review the constitutional amendments:\n1. Originally, the Right to Property was a Fundamental Right under Article 19(1)(f) and Article 31.\n2. The 44th Amendment Act of 1978, passed by the Janata Party Government, deleted the Right to Property as a Fundamental Right and inserted it as a legal/constitutional right under Article 300-A in Part XII.\n3. The 42nd Amendment Act of 1976 (known as the 'Mini-Constitution') added words like Secular, Socialist, and Integrity to the Preamble.\n4. The 52nd Amendment Act of 1985 introduced the Anti-Defection Law (10th Schedule).\n5. The 86th Amendment Act of 2002 made the Right to Education a Fundamental Right under Article 21A.",
+      "examTrick": "Amendment Association: The 42nd Amendment (1976) introduced several restrictions during Emergency, while the 44th Amendment (1978) restored democratic balances and deleted the controversial Right to Property!",
+      "importance": "High",
+      "tags": ["Polity", "Indian Constitution", "Amendments"]
+    },
+    {
+      "id": 2,
+      "question": "Which of the following geographical regions contains the oldest and most significant coalfields of India, namely the Raniganj and Jharia coalfields?",
+      "options": [
+        "Narmada River Valley",
+        "Damodar River Valley",
+        "Mahanadi River Valley",
+        "Godavari River Valley"
+      ],
+      "answer": "Damodar River Valley",
+      "difficulty": "Easy",
+      "source": "Indian Geography / Mineral Resources",
+      "explanation": "Let's examine India's major coalfields:\n1. About 98% of India's coal reserves belong to the Gondwana rock structure (formed around 250 million years ago).\n2. The Damodar River Valley (spanning Jharkhand and West Bengal) is the absolute powerhouse of Indian coal, hosting major Gondwana coalfields like Jharia (the largest source of metallurgical coking coal in India) and Raniganj (India's first coal mining field, started in 1774).\n3. Mahanadi Valley holds Talcher coalfields, and Godavari Valley holds Singareni coalfields.",
+      "examTrick": "Damodar River Valley is also popularly known as the 'Ruhr of India' due to its immense mineral and coal wealth, analogous to the Ruhr industrial region of Germany!",
+      "importance": "High",
+      "tags": ["Indian Geography", "Coal Reserves", "Mineral Deposits"]
+    },
+    {
+      "id": 3,
+      "question": "Who presided over the historic Lahore Session of the Indian National Congress in December 1929, where the resolution of 'Purna Swaraj' (Complete Independence) was adopted?",
+      "options": [
+        "Mahatma Gandhi",
+        "Subhas Chandra Bose",
+        "Jawaharlal Nehru",
+        "Motilal Nehru"
+      ],
+      "answer": "Jawaharlal Nehru",
+      "difficulty": "Medium",
+      "source": "Indian History / Freedom Movement",
+      "explanation": "Let's review the milestones of the Indian National Movement:\n1. In the Lahore Session of the Indian National Congress in December 1929, presided over by Jawaharlal Nehru, the historic resolution of 'Purna Swaraj' (Complete Independence) was formally passed.\n2. Consequently, January 26, 1930, was declared as the first Independence Day, marked by the unfurling of the tricolor on the banks of the Ravi River.\n3. This historical date (January 26) was later chosen to promulgate the Constitution of India in 1950, establishing Republic Day.",
+      "examTrick": "Purna Swaraj = Young Leadership: It was Jawaharlal Nehru who unfurled the flag on Ravi's bank at midnight on Dec 31, 1929, representing the shift to radical demands!",
+      "importance": "High",
+      "tags": ["Indian History", "National Movement"]
+    },
+    {
+      "id": 4,
+      "question": "Which of the following bodies is responsible for officially presenting the 'Union Budget' of India, and under which Constitutional Article is it presented as the 'Annual Financial Statement'?",
+      "options": [
+        "NITI Aayog, Article 110",
+        "Ministry of Finance, Article 112",
+        "Reserve Bank of India, Article 280",
+        "Finance Commission, Article 360"
+      ],
+      "answer": "Ministry of Finance, Article 112",
+      "difficulty": "Easy",
+      "source": "Indian Polity / Economy",
+      "explanation": "Let's check the constitutional provisions for public finance:\n1. The word 'Budget' is not explicitly used in the Constitution of India.\n2. Instead, Article 112 refers to it as the 'Annual Financial Statement'.\n3. It is a statement of estimated receipts and expenditures of the Government of India for that financial year, prepared by the Budget Division of the Department of Economic Affairs under the Ministry of Finance and presented by the Union Finance Minister.",
+      "examTrick": "Remember 'Article 112' for Annual Financial Statement (Union Budget) and 'Article 110' for Money Bills! 112 represents the financial blueprint of the country.",
+      "importance": "High",
+      "tags": ["Polity", "Union Budget", "Indian Economy"]
+    },
+    {
+      "id": 5,
+      "question": "In the Indian economy, which of the following is designated as the 'base year' for the calculation of the Consumer Price Index (CPI) and Index of Industrial Production (IIP)?",
+      "options": [
+        "2004-05",
+        "2011-12",
+        "2015-16",
+        "2018-19"
+      ],
+      "answer": "2011-12",
+      "difficulty": "Medium",
+      "source": "Indian Economy / Statistics",
+      "explanation": "Let's look at economic base years:\n- The Central Statistics Office (CSO) revised the base year for national accounts, including Gross Domestic Product (GDP), Index of Industrial Production (IIP), and Consumer Price Index (CPI) to 2011-12 to better capture the structural changes in the Indian economy.\n- Wholesales Price Index (WPI) also utilizes 2011-12 as its base year.",
+      "examTrick": "For almost all major macroeconomic indices in India (GDP, CPI, WPI, IIP), the current active baseline is 2011-12! Memory hook: The year India won its second Cricket World Cup is the baseline year of the economy.",
+      "importance": "High",
+      "tags": ["Indian Economy", "Base Years", "Macroeconomics"]
+    },
+    {
+      "id": 6,
+      "question": "Which major sea port of India, located on the East Coast in Odisha, is highly crucial for the massive export of iron ore and coal to East Asian countries like Japan?",
+      "options": [
+        "Haldia Port",
+        "Visakhapatnam Port",
+        "Paradip Port",
+        "Ennore Port"
+      ],
+      "answer": "Paradip Port",
+      "difficulty": "Medium",
+      "source": "Indian Geography / Infrastructure",
+      "explanation": "Let's analyze the sea ports on the East Coast:\n- Paradip Port is a deep-water, artificial port located at the confluence of the Mahanadi river and the Bay of Bengal in Jagatsinghpur district, Odisha. It is the premier port for exporting iron ore and coal mined from the mineral-rich hinterlands of Odisha and Jharkhand.\n- Visakhapatnam is a landlocked, deep-water port in Andhra Pradesh.\n- Haldia is a riverine port in West Bengal.\n- Ennore is a corporate port in Tamil Nadu.",
+      "examTrick": "Mahanadi basin runs through Chhattisgarh and Odisha, draining near Paradip. Thus, Paradip Port is the natural geographical exit channel for raw minerals from Odisha and Chhattisgarh!",
+      "importance": "High",
+      "tags": ["Indian Geography", "Ports & Infrastructure", "Coal Logistics"]
+    },
+    {
+      "id": 7,
+      "question": "The famous Ellora Caves, a UNESCO World Heritage site consisting of 34 major rock-cut cave temples representing Hinduism, Buddhism, and Jainism, were constructed primarily under the patronage of which dynasty?",
+      "options": [
+        "Chola Dynasty",
+        "Gupta Dynasty",
+        "Rashtrakuta Dynasty",
+        "Pallava Dynasty"
+      ],
+      "answer": "Rashtrakuta Dynasty",
+      "difficulty": "Hard",
+      "source": "Indian History & Culture / Monuments",
+      "explanation": "Let's review the historical art and architecture:\n1. The Ellora Caves (located in Aurangabad district, Maharashtra) were excavated between the 6th and 10th centuries AD.\n2. They were built primarily under the patronage of the Rashtrakuta Dynasty (who carved the magnificent monolithic Kailash Temple, Cave 16) and Yadava Dynasty.\n3. The caves represent a harmonious coexistence of three major religions: Buddhist (Caves 1-12), Hindu (Caves 13-29), and Jain (Caves 30-34).",
+      "examTrick": "Rashtrakuta King Krishna I is explicitly credited with carving the breathtaking Kailash Temple (Cave 16) out of a single mountain side at Ellora! Think 'R-K-E' (Rashtrakuta - Kailash - Ellora).",
+      "importance": "High",
+      "tags": ["Indian History", "Art & Architecture", "Monuments"]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "subject": "Claude CCAF: Tool Design & MCP Integration",
+  "chapter": "2.5 Built-in Tools vs Custom Client Tools",
+  "exam": "Claude CCAF",
+  "paper": "Domain-2",
+  "description": "Server vs client tools, Bash vs Grep vs Glob, computer_use, code_execution, and hybrid architecture patterns.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which built-in tools run on Anthropic's infrastructure with no handler code, and which execute in the developer's environment requiring a handler?",
+      "options": [
+        "web_search and code_execution are server tools (Anthropic infra, no handler); computer_use, bash, and text_editor are client tools (developer's environment, still need handler code even though schema authoring is skipped).",
+        "All five run entirely on Anthropic's infrastructure with zero developer-side code.",
+        "computer_use and code_execution are server tools; web_search, bash, and text_editor are client tools.",
+        "The server/client distinction doesn't apply to built-in tools, only to custom MCP tools."
+      ],
+      "answer": "web_search and code_execution are server tools (Anthropic infra, no handler); computer_use, bash, and text_editor are client tools (developer's environment, still need handler code even though schema authoring is skipped).",
+      "difficulty": "Hard",
+      "source": "GEN2-058 | Tool use overview — client vs. server tools · Code execution tool",
+      "explanation": "Server tools (web_search, code_execution) execute on Anthropic servers with zero client handler code. Client tools (bash, text_editor, computer_use) execute inside your local environment.",
+      "examTrick": "Server tools (Anthropic infra) = web_search, code_execution. Client tools (local infra) = bash, text_editor, computer_use.",
+      "importance": "High",
+      "tags": [
+        "Server vs Client Tools",
+        "Built-in Tools"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Find all files matching **/*.test.tsx across a large codebase. Which built-in tool?",
+      "options": [
+        "Read",
+        "Glob",
+        "Bash",
+        "Grep"
+      ],
+      "answer": "Glob",
+      "difficulty": "Easy",
+      "source": "UD2-029 | Claude Code — built-in tools",
+      "explanation": "Glob is purpose-built for filename pattern matching. Grep searches file contents. Read opens a specific file.",
+      "examTrick": "Search file names / directory paths = Glob. Search file contents = Grep.",
+      "importance": "High",
+      "tags": [
+        "Glob",
+        "Grep",
+        "Built-in Tools"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "A security review asks which built-in tools could theoretically be tricked into reaching the company's private internal network. Which can, and why?",
+      "options": [
+        "Client tools like bash, text_editor, and computer_use can reach private resources, because they run in the developer's own environment, wherever that environment is connected; server tools like web_search and code_execution stay inside Anthropic's boundary and cannot reach a company's private network at all.",
+        "All built-in tools can equally reach a private network, since they're all controlled by the same model.",
+        "Only web_search can, since it makes outbound requests.",
+        "None of the built-in tools can ever reach a private network."
+      ],
+      "answer": "Client tools like bash, text_editor, and computer_use can reach private resources, because they run in the developer's own environment, wherever that environment is connected; server tools like web_search and code_execution stay inside Anthropic's boundary and cannot reach a company's private network at all.",
+      "difficulty": "Hard",
+      "source": "GEN2-067 | Tool use overview — client vs. server tools · Claude Code security",
+      "explanation": "Network reach follows execution location. Client tools execute inside your private subnet/VPC; server tools execute on Anthropic infrastructure with no routing into your private network.",
+      "examTrick": "Private network access: Only Client Tools (bash, text_editor) run inside your perimeter.",
+      "importance": "High",
+      "tags": [
+        "Network Security",
+        "Client vs Server Tools",
+        "SSRF"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Inserting a helper function between two existing functions in a 150-line module; Edit fails because old_string cannot find unique text (repetitive docstrings, names, structure). Most reliable way?",
+      "options": [
+        "Use Edit with a 30+ line old_string to guarantee uniqueness.",
+        "Use Edit's replace_all to target a common pattern and embed the new function in the replacement.",
+        "Use Bash to append the function to the end of the file with a heredoc.",
+        "Use Read to load the file, add the function at the appropriate location, then Write the updated file."
+      ],
+      "answer": "Use Read to load the file, add the function at the appropriate location, then Write the updated file.",
+      "difficulty": "Medium",
+      "source": "CS2-001 (§2.5) | Claude Code — built-in tools · Best practices",
+      "explanation": "When old_string uniqueness fails in repetitive files, Read-modify-Write bypasses anchor matching: load the file, place the function in context, and Write the full updated file.",
+      "examTrick": "Edit unique anchor match fails -> Fall back to Read-modify-Write pattern.",
+      "importance": "High",
+      "tags": [
+        "Read-Modify-Write",
+        "Edit Tool",
+        "Built-in Tools"
+      ]
+    }
+  ]
+}

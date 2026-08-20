@@ -1,0 +1,127 @@
+{
+  "subject": "English",
+  "chapter": "Lexicon, Grammar, and Sentence Correction",
+  "description": "Strengthens mastery over advanced Synonyms, Antonyms, Spotting Grammatical Errors, Subject-Verb Agreement, Prepositions, and Idiomatic English usage.",
+  "paper": "Paper-I",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Choose the word that is most nearly SYNONYMOUS in meaning to the word in capital letters:\n\nEPHEMERAL",
+      "options": [
+        "Eternal",
+        "Transient",
+        "Abundant",
+        "Ethereal"
+      ],
+      "answer": "Transient",
+      "difficulty": "Easy",
+      "source": "CIL MT English Paper-I",
+      "explanation": "Let's define the words:\n- EPHEMERAL means lasting for a very short time; transient, fleeting, or short-lived.\n- Transient means lasting only for a short time; impermanent.\n- Eternal means lasting or existing forever; without end (which is an antonym of ephemeral).\n- Abundant means existing or available in large quantities; plentiful.\n- Ethereal means extremely delicate and light in a way that seems too perfect for this world.",
+      "examTrick": "Mnemonic: 'Ephemeral' sounds like 'E-Femur-all' or 'E-Paper-all'—think of newspapers (daily prints) which are read and discarded. They have a short-lived, transient utility!",
+      "importance": "High",
+      "tags": ["Synonyms", "Vocabulary"]
+    },
+    {
+      "id": 2,
+      "question": "Choose the word that is most nearly ANTONYMOUS in meaning to the word in capital letters:\n\nCONSPICUOUS",
+      "options": [
+        "Obvious",
+        "Unobtrusive",
+        "Prominent",
+        "Ostentatious"
+      ],
+      "answer": "Unobtrusive",
+      "difficulty": "Easy",
+      "source": "CIL MT English Paper-I",
+      "explanation": "Let's look at the definitions:\n- CONSPICUOUS means standing out so as to be clearly visible; attracting notice or attention.\n- Unobtrusive means not conspicuous or attracting attention; subtle and blended in. This is the exact antonym!\n- Obvious and Prominent are direct synonyms of conspicuous.\n- Ostentatious means characterized by pretentious or showy display designed to impress, which is conceptually similar to conspicuous.",
+      "examTrick": "Conspicuous = Standing out ('Con' = thoroughly + 'Spec' = to look; easy to see). Unobtrusive = Blending in ('Un' = not + 'Ob' = in front + 'Trud' = to push; not pushed in front).",
+      "importance": "High",
+      "tags": ["Antonyms", "Vocabulary"]
+    },
+    {
+      "id": 3,
+      "question": "In the following sentence, identify the segment that contains a grammatical error. If there is no error, choose 'No error':\n\n'Neither the supervisor nor the miners was aware of the sudden buildup of methane gas in the gallery.'",
+      "options": [
+        "Neither the supervisor nor",
+        "the miners was aware of",
+        "the sudden buildup of methane gas",
+        "No error"
+      ],
+      "answer": "the miners was aware of",
+      "difficulty": "Medium",
+      "source": "Error Spotting / Grammar",
+      "explanation": "Let's analyze the rules of Subject-Verb Agreement:\n1. When two subjects are joined by 'neither... nor' or 'either... or', the verb must agree in number with the subject closest to it.\n2. In this sentence, the subjects are 'the supervisor' (singular) and 'the miners' (plural).\n3. The subject closest to the verb 'was/were' is 'the miners' (plural).\n4. Therefore, the verb must be plural: 'were' instead of 'was'.\n5. Correct sentence: 'Neither the supervisor nor the miners were aware of the sudden buildup...'",
+      "examTrick": "Rule of Proximity: For 'Neither A nor B' and 'Either A or B', the verb always matches subject B (the closer one). Here, 'miners' is plural, so use 'were'!",
+      "importance": "High",
+      "tags": ["Error Spotting", "Subject-Verb Agreement", "Grammar"]
+    },
+    {
+      "id": 4,
+      "question": "Identify the option that represents the grammatically correct and most appropriate rewrite of the underlined section:\n\n'The CEO along with his board members, <u>are visiting the coal washery facility tomorrow morning</u>.'",
+      "options": [
+        "are visiting the coal washery facility tomorrow morning",
+        "is visiting the coal washery facility tomorrow morning",
+        "have visited the coal washery facility tomorrow morning",
+        "were visiting the coal washery facility tomorrow morning"
+      ],
+      "answer": "is visiting the coal washery facility tomorrow morning",
+      "difficulty": "Medium",
+      "source": "Sentence Correction",
+      "explanation": "Let's review the grammatical rule for parenthetical expressions:\n1. Words or phrases like 'along with', 'together with', 'as well as', 'accompanied by', and 'in addition to' do not affect the grammatical number of the true subject.\n2. The true subject of the sentence is 'The CEO' (singular noun).\n3. 'along with his board members' is an parenthetical prepositional phrase and must be ignored for subject-verb agreement.\n4. Since 'The CEO' is singular, the singular auxiliary verb 'is' must be used instead of 'are', 'have', or 'were'.",
+      "examTrick": "Isolation Trick: Mentally strike out any clause starting with 'along with', 'as well as', or 'together with'. The sentence becomes: 'The CEO [is] visiting...', which makes the correct singular choice immediately obvious!",
+      "importance": "High",
+      "tags": ["Sentence Correction", "Grammar", "Subject-Verb Agreement"]
+    },
+    {
+      "id": 5,
+      "question": "Fill in the blanks with the correct pair of prepositions:\n\n'The mining equipment must comply _______ the latest safety standards, and operations must be carried _______ in accordance with the regulatory act.'",
+      "options": [
+        "with, out",
+        "by, on",
+        "to, off",
+        "with, through"
+      ],
+      "answer": "with, out",
+      "difficulty": "Easy",
+      "source": "Fill in the Blanks",
+      "explanation": "Let's look at the fixed preposition and phrasal verb combinations:\n1. The verb 'comply' is always followed by the preposition 'with' when referring to rules or standards (e.g., 'comply with the guidelines').\n2. The phrasal verb 'carry out' means to perform or execute a task or instruction (e.g., 'carried out in accordance with').\n3. Combining these, the correct prepositions are 'with' and 'out' respectively.",
+      "examTrick": "Collocation Pairing: Remember that 'Comply' + 'with' and 'Conform' + 'to' are absolute standard pairings. Since we have 'comply', the first blank must be 'with'. This leaves only two possibilities, and 'carry out' (perform) fits perfectly!",
+      "importance": "High",
+      "tags": ["Prepositions", "Phrasal Verbs", "Fill in Blanks"]
+    },
+    {
+      "id": 6,
+      "question": "What is the meaning of the idiomatic expression underlined in the sentence below?\n\n'The project manager was asked to <u>cut corners</u> to finish the dispatch reports before the auditing committee arrived.'",
+      "options": [
+        "To work overtime and put extra effort",
+        "To perform a task in a sloppy, cheap, or fast way by ignoring rules or standards",
+        "To divide a square piece of land into equal parts",
+        "To resolve a complex dispute between two labor unions"
+      ],
+      "answer": "To perform a task in a sloppy, cheap, or fast way by ignoring rules or standards",
+      "difficulty": "Easy",
+      "source": "Idiomatic Use of Words",
+      "explanation": "Let's evaluate the idiom:\n- 'Cut corners' is a popular idiom which means to do something in the easiest, cheapest, or fastest way, often sacrificing quality, safety, or strictly prescribed rules in the process.",
+      "examTrick": "To 'cut corners' means instead of traveling along the safe, proper perimeter of a track (following rules), you slice diagonally across the corners to save time, compromising on quality and safety!",
+      "importance": "High",
+      "tags": ["Idioms", "Vocabulary", "Language Usage"]
+    },
+    {
+      "id": 7,
+      "question": "Select the correct word to fill in the blank to maintain grammatical correctness and sentence coherence:\n\n'The persistent decline in international coal prices has had a severe _______ on the company's export profit margins.'",
+      "options": [
+        "affect",
+        "effect",
+        "effective",
+        "affective"
+      ],
+      "answer": "effect",
+      "difficulty": "Medium",
+      "source": "Fill in the Blanks",
+      "explanation": "Let's distinguish between 'affect' and 'effect':\n- 'Affect' is typically a verb meaning to influence or produce a change in (e.g., 'The prices affect the margins').\n- 'Effect' is typically a noun meaning the result, consequence, or outcome of an action (e.g., 'had a severe effect on'). Here, the article 'a' and adjective 'severe' indicate that we need a noun.\n- 'Effective' is an adjective meaning successful in producing a desired result.\n- 'Affective' is an adjective relating to moods, feelings, and attitudes.",
+      "examTrick": "The 'RAVEN' Rule: Remember: R - Remember, A - Affect is a Verb, E - Effect is a Noun! Since the blank is preceded by the adjective 'severe', we need the noun 'effect'.",
+      "importance": "High",
+      "tags": ["Homophones", "Grammar", "Word Choice"]
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "subject": "Claude CCAF: Tool Design & MCP Integration",
+  "chapter": "2.4 MCP Server Integration & Protocols",
+  "exam": "Claude CCAF",
+  "paper": "Domain-2",
+  "description": "Tools vs Resources vs Prompts, STDIO vs StreamableHTTP transports, Roots, Sampling, and enterprise plugin distribution.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Users should be able to click a button to trigger a \"summarize document\" workflow. Which MCP primitive?",
+      "options": [
+        "Resources — because you need to fetch document data.",
+        "Functions — because it involves processing.",
+        "Prompts — because users control when to start the workflow.",
+        "Tools — because the AI needs new capabilities."
+      ],
+      "answer": "Prompts — because users control when to start the workflow.",
+      "difficulty": "Easy",
+      "source": "UD2-050 | MCP — prompts · MCP specification",
+      "explanation": "Prompts are user-controlled templates surfaced in UI slash menus. Tools are model-controlled actions. Resources are application-controlled data context.",
+      "examTrick": "MCP primitive ownership: Prompts = User-controlled. Tools = Model-controlled. Resources = App-controlled.",
+      "importance": "High",
+      "tags": [
+        "MCP Primitives",
+        "Prompts vs Tools vs Resources"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Which transport requires both client and server to run on the same machine?",
+      "options": [
+        "TCP transport",
+        "Stdio transport",
+        "WebSocket transport",
+        "HTTP transport"
+      ],
+      "answer": "Stdio transport",
+      "difficulty": "Easy",
+      "source": "UD2-057 | MCP specification — transports",
+      "explanation": "STDIO communicates via standard input/output streams of a spawned child process, requiring same-machine execution. StreamableHTTP is networked for remote connections.",
+      "examTrick": "Same-machine child process = STDIO. Remote/networked multi-client = StreamableHTTP.",
+      "importance": "High",
+      "tags": [
+        "MCP Transports",
+        "STDIO vs StreamableHTTP"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "What is sampling in MCP?",
+      "options": [
+        "A method for collecting data from multiple sources.",
+        "A way for servers to access language models through connected MCP clients.",
+        "A process for validating client credentials.",
+        "A technique for optimizing server performance."
+      ],
+      "answer": "A way for servers to access language models through connected MCP clients.",
+      "difficulty": "Medium",
+      "source": "UD2-058 | MCP — sampling · MCP specification",
+      "explanation": "Sampling allows an MCP server to request LLM completions through the host client, leveraging the client's API keys, billing, and user approval gates.",
+      "examTrick": "MCP Sampling = Server requests LLM generation routed through the host client.",
+      "importance": "High",
+      "tags": [
+        "MCP Sampling",
+        "Host-Mediated LLM Calls"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Correct sequence for MCP connection initialization?",
+      "options": [
+        "Initialized Notification -> Initialize Request -> Initialize Result",
+        "Initialize Request -> Initialized Notification -> Initialize Result",
+        "Initialize Result -> Initialize Request -> Initialized Notification",
+        "Initialize Request -> Initialize Result -> Initialized Notification"
+      ],
+      "answer": "Initialize Request -> Initialize Result -> Initialized Notification",
+      "difficulty": "Easy",
+      "source": "UD2-063 | MCP specification — lifecycle",
+      "explanation": "Handshake sequence: Client sends Initialize Request -> Server responds with Initialize Result -> Client sends Initialized Notification to begin normal operation.",
+      "examTrick": "MCP Handshake: Initialize Request -> Initialize Result -> Initialized Notification.",
+      "importance": "High",
+      "tags": [
+        "MCP Handshake",
+        "Protocol Lifecycle"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "All engineers should have three approved internal MCP servers available from Day 1 without configuring them manually. Correct architecture?",
+      "options": [
+        "Add the servers to allowedMcpServers in managed-settings.json.",
+        "Add the configs to the shared .mcp.json in the team's main repository.",
+        "Bundle the MCP server configs into a plugin, assign the engineering SCIM group to it via RBAC, and deploy org-wide.",
+        "Send each developer the configuration file and include setup steps in the onboarding doc."
+      ],
+      "answer": "Bundle the MCP server configs into a plugin, assign the engineering SCIM group to it via RBAC, and deploy org-wide.",
+      "difficulty": "Hard",
+      "source": "UD2-069 | Claude Code plugins · Claude Code IAM",
+      "explanation": "Enterprise distribution uses Plugins assigned to SCIM user groups via RBAC for zero-touch configuration. allowedMcpServers only permits servers but does not distribute them.",
+      "examTrick": "Zero-touch MCP enterprise distribution = Plugins + SCIM Group RBAC.",
+      "importance": "High",
+      "tags": [
+        "Enterprise MCP",
+        "Plugins",
+        "SCIM RBAC"
+      ]
+    }
+  ]
+}

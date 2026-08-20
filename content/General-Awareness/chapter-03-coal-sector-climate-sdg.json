@@ -1,0 +1,127 @@
+{
+  "subject": "General Awareness",
+  "chapter": "Coal Sector in India, Climate Change, and SDGs",
+  "description": "Explores the corporate structure of Coal India Limited (CIL), state-wise coal distributions, national clean-coal initiatives, India's Net-Zero commitments, UNFCCC COP agreements, and the UN Sustainable Development Goals (SDGs).",
+  "paper": "Paper-I",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following Indian states has the highest estimated geological reserves of coal as per the latest inventory of the Geological Survey of India (GSI)?",
+      "options": [
+        "Chhattisgarh",
+        "Odisha",
+        "Jharkhand",
+        "Madhya Pradesh"
+      ],
+      "answer": "Jharkhand",
+      "difficulty": "Easy",
+      "source": "Coal Sector in India / GSI Database",
+      "explanation": "Let's distinguish between Coal Reserves vs. Coal Production in India:\n1. Geological Coal Reserves (As of latest GSI data): Jharkhand possesses the largest estimated coal reserves (over 26% of the country's total), followed by Odisha (25%) and Chhattisgarh (18%).\n2. Coal Production: Chhattisgarh and Odisha are consistently the top-producing states annually, ahead of Jharkhand.",
+      "examTrick": "Reserves vs. Production Rule: Jharkhand holds the crown for the highest 'Geological Reserves' (buried wealth), but Odisha and Chhattisgarh often lead in actual 'Annual Production'!",
+      "importance": "High",
+      "tags": ["Coal Sector", "Indian States", "Reserves"]
+    },
+    {
+      "id": 2,
+      "question": "Which subsidiary of Coal India Limited (CIL) holds the prestigious title of being the single largest coal-producing company in India, operating major projects like Gevra and Dipka?",
+      "options": [
+        "Mahanadi Coalfields Limited (MCL)",
+        "South Eastern Coalfields Limited (SECL)",
+        "Northern Coalfields Limited (NCL)",
+        "Eastern Coalfields Limited (ECL)"
+      ],
+      "answer": "South Eastern Coalfields Limited (SECL)",
+      "difficulty": "Medium",
+      "source": "Coal India Limited corporate profile",
+      "explanation": "Let's review CIL's subsidiaries:\n- South Eastern Coalfields Limited (SECL), headquartered in Bilaspur, Chhattisgarh, is the largest coal-producing subsidiary of CIL, operating mega open-cast mines like Gevra (one of the largest open-cast coal mines in Asia) and Dipka.\n- Mahanadi Coalfields Limited (MCL), headquartered in Sambalpur, Odisha, is another giant producer closely competing with SECL.\n- Northern Coalfields Limited (NCL) is centered around Singrauli, Madhya Pradesh/UP.",
+      "examTrick": "Gevra and Bilaspur are keywords for SECL! Gevra is Asia's crown jewel of open-cast mining and is managed entirely by South Eastern Coalfields.",
+      "importance": "High",
+      "tags": ["Coal Sector", "CIL Subsidiaries", "Open Cast Mining"]
+    },
+    {
+      "id": 3,
+      "question": "Under India's Nationally Determined Contributions (NDCs) updated in 2022, what target year has India officially committed to for achieving 'Net-Zero' greenhouse gas emissions?",
+      "options": [
+        "2050",
+        "2060",
+        "2070",
+        "2100"
+      ],
+      "answer": "2070",
+      "difficulty": "Easy",
+      "source": "Climate Change & Environment",
+      "explanation": "At the COP26 climate summit in Glasgow (2021), India's Prime Minister announced the 'Panchamrit' (five nectar elements) climate commitments, including the official target year of 2070 to achieve net-zero carbon emissions. This was subsequently formalized in India's updated Nationally Determined Contributions (NDCs) submitted to the UNFCCC in August 2022.",
+      "examTrick": "India's landmark 2070 Net-Zero target is 20 years after the developed nations' baseline of 2050, allowing India a realistic developmental runway while progressively decarbonizing the industrial base.",
+      "importance": "High",
+      "tags": ["Climate Change", "Net-Zero", "COP26"]
+    },
+    {
+      "id": 4,
+      "question": "Which United Nations Sustainable Development Goal (SDG) explicitly aims to ensure 'Affordable and Clean Energy' for all by the year 2030?",
+      "options": [
+        "SDG 6",
+        "SDG 7",
+        "SDG 9",
+        "SDG 13"
+      ],
+      "answer": "SDG 7",
+      "difficulty": "Easy",
+      "source": "Sustainable Development Goals (SDGs)",
+      "explanation": "Let's trace the relevant Sustainable Development Goals (SDGs) for the energy sector:\n- SDG 7: Ensure access to affordable, reliable, sustainable, and modern energy for all.\n- SDG 6: Clean Water and Sanitation.\n- SDG 9: Industry, Innovation, and Infrastructure.\n- SDG 13: Urgent action to combat climate change and its impacts.",
+      "examTrick": "Memory Hook: Think of 'Seven' as resembling an electric lighting bolt ⚡! Hence, SDG 7 stands for Clean and Affordable Energy.",
+      "importance": "High",
+      "tags": ["SDGs", "Clean Energy", "UN Goals"]
+    },
+    {
+      "id": 5,
+      "question": "In the context of clean coal technologies, the Ministry of Coal has launched a National Mission to achieve coal gasification of how many million tonnes (MT) of coal by the year 2030?",
+      "options": [
+        "50 MT",
+        "100 MT",
+        "150 MT",
+        "200 MT"
+      ],
+      "answer": "100 MT",
+      "difficulty": "Hard",
+      "source": "Coal Sector / Government Programs",
+      "explanation": "To reduce import dependency and promote environmental sustainability, the Ministry of Coal, Government of India, has established a National Mission on Coal Gasification, targeting the gasification of 100 Million Tonnes (MT) of coal by 2030 through clean coal technology (CCT) and syngas production (which can be used for chemicals, synthetic natural gas, and fertilizers).",
+      "examTrick": "Target 100: India targets a clean century—100 Million Tonnes of coal gasification by the turn of the decade (2030)!",
+      "importance": "High",
+      "tags": ["Coal Sector", "Clean Coal Technology", "Coal Gasification"]
+    },
+    {
+      "id": 6,
+      "question": "The 'Kyoto Protocol', an international treaty adopted in 1997 under the UNFCCC, is famously known for introducing which of the following market-based compliance mechanisms?",
+      "options": [
+        "Loss and Damage Fund",
+        "Clean Development Mechanism (CDM)",
+        "Global Green Growth Institute",
+        "Technology Executive Committee"
+      ],
+      "answer": "Clean Development Mechanism (CDM)",
+      "difficulty": "Medium",
+      "source": "Climate Change / Environmental Treaties",
+      "explanation": "The Kyoto Protocol (adopted in 1997, entered into force in 2005) introduced three flexible, market-based mechanisms to help developed nations meet their emission reduction targets:\n1. Joint Implementation (JI)\n2. International Emissions Trading (IET)\n3. Clean Development Mechanism (CDM): Allows developed countries to invest in green, emission-reduction projects in developing nations (like India) to earn certified emission reduction (CER) credits, commonly called carbon credits.",
+      "examTrick": "CDM is the Kyoto Protocol's engine of carbon credits trading between developed and developing nations, allowing cost-effective emissions abatement globally.",
+      "importance": "High",
+      "tags": ["Climate Change", "Kyoto Protocol", "Carbon Credits"]
+    },
+    {
+      "id": 7,
+      "question": "Which of the following coal mining techniques involves leaving solid pillars of coal to support the roof of the mine, while excavating a network of intersecting galleries, and is widely practiced in India's underground coal operations?",
+      "options": [
+        "Longwall Mining",
+        "Board and Pillar (Room and Pillar) Mining",
+        "Opencast Strip Mining",
+        "Hydraulic Mining"
+      ],
+      "answer": "Board and Pillar (Room and Pillar) Mining",
+      "difficulty": "Medium",
+      "source": "Coal Sector / Mining Methods",
+      "explanation": "Let's review underground coal mining methods:\n- Board and Pillar (also called Room and Pillar): A grid of coal pillars is left behind to support the overlying rock weight while coal is extracted from the 'rooms' or 'boards'. Later, these pillars are systematically extracted ('depillaring') which is a delicate, high-risk operation.\n- Longwall Mining: Involves extracting a continuous block of coal along a single face using a mechanical shearer under hydraulic self-advancing roof supports, allowing the roof behind to cave in.",
+      "examTrick": "Pillar support is the traditional hallmark of Indian underground mining (over 90% of underground production). The pillars literally hold up the ceiling of the mine!",
+      "importance": "High",
+      "tags": ["Coal Sector", "Mining Engineering", "General Awareness"]
+    }
+  ]
+}

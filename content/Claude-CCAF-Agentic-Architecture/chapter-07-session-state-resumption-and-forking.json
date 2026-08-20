@@ -1,0 +1,110 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.7 Session State, Resumption & Forking",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "Session persistence, --resume vs --continue vs fork_session, stale context invalidation, and checkpoint recovery.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Explore two distinct refactoring approaches from the same codebase analysis without context contamination. Which session technique?",
+      "options": [
+        "Resume the same session and clearly label each approach in the prompts.",
+        "Use fork_session to create two independent branches from the shared analysis baseline.",
+        "Use a single session but instruct the agent to keep the approaches in separate mental namespaces.",
+        "Start two completely fresh sessions, repeating the codebase analysis in each."
+      ],
+      "answer": "Use fork_session to create two independent branches from the shared analysis baseline.",
+      "difficulty": "Medium",
+      "source": "UD1-051 | Claude Agent SDK — session forking",
+      "explanation": "fork_session branches from a completed baseline analysis, giving both explorations identical starting context with zero cross-contamination.",
+      "examTrick": "Divergent exploration from common baseline = fork_session.",
+      "importance": "High",
+      "tags": [
+        "Session Forking",
+        "Divergent Exploration"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "What does the --resume flag do in Claude Code?",
+      "options": [
+        "It continues a specific named prior conversation session.",
+        "It restores the last auto-saved scratchpad file.",
+        "It reloads all CLAUDE.md configuration files.",
+        "It re-runs the last command with fresh context."
+      ],
+      "answer": "It continues a specific named prior conversation session.",
+      "difficulty": "Easy",
+      "source": "UD1-060 | Claude Code CLI reference",
+      "explanation": "--resume <session-name> loads and continues a specific named session. In contrast, --continue picks up the most recent session.",
+      "examTrick": "--resume <name> = Target specific session. --continue = Pick up latest session.",
+      "importance": "High",
+      "tags": [
+        "CLI Flags",
+        "Session Resumption"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "After 45 minutes, several early file reads are stale because a colleague pushed changes, and the agent is making recommendations from outdated contents. Best recovery strategy?",
+      "options": [
+        "Continue in the current session and ask the agent to re-read the changed files.",
+        "Start a completely new session with no context from the previous one.",
+        "Start a fresh session with a summary of the key findings and decisions, then read the changed files for current state.",
+        "Use fork_session to create a new branch that excludes the stale tool results."
+      ],
+      "answer": "Start a fresh session with a summary of the key findings and decisions, then read the changed files for current state.",
+      "difficulty": "Hard",
+      "source": "UD1-085 | Effective context engineering for AI agents · Claude Code CLI",
+      "explanation": "When context contains broad stale reads and contaminated reasoning, starting fresh with an injected summary of durable decisions sheds stale baggage and re-establishes clean state.",
+      "examTrick": "Broad context staleness / contaminated reasoning = Fresh session + injected summary + re-read.",
+      "importance": "High",
+      "tags": [
+        "Stale Context",
+        "Session Hygiene"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "A multi-agent pipeline crashes at subagent 7 of 12. How should the system recover without reprocessing the first 6?",
+      "options": [
+        "Re-run the full pipeline with a faster model.",
+        "Store the full conversation history in memory and replay it on restart.",
+        "Log all intermediate results to a database and query it on restart.",
+        "Have each agent export structured state to a known file location; the coordinator loads a manifest on resume and injects agent states into prompts."
+      ],
+      "answer": "Have each agent export structured state to a known file location; the coordinator loads a manifest on resume and injects agent states into prompts.",
+      "difficulty": "Hard",
+      "source": "UD1-059 | Effective context engineering for AI agents · Multi-agent research system",
+      "explanation": "State durability requires: (1) each agent persisting structured outputs, (2) coordinator reading a completion manifest, and (3) injecting completed state into downstream prompts.",
+      "examTrick": "Crash recovery = Persisted structured state files + Coordinator manifest loading + Prompt injection.",
+      "importance": "High",
+      "tags": [
+        "Crash Recovery",
+        "State Persistence",
+        "Checkpoints"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "Resuming a session where only one specific file changed and the rest of the prior findings are still valid. Most efficient reliable approach?",
+      "options": [
+        "Resume without mentioning the change at all.",
+        "Use fork_session to create a branch specifically to handle the changed file.",
+        "Inform the resumed session about the specific file change for targeted re-analysis, rather than requiring full re-exploration.",
+        "Discard the entire session and start fresh."
+      ],
+      "answer": "Inform the resumed session about the specific file change for targeted re-analysis, rather than requiring full re-exploration.",
+      "difficulty": "Medium",
+      "source": "QD1S-40 | Claude Code CLI reference · Effective context engineering",
+      "explanation": "When staleness is narrow and known (one file), resuming the session and explicitly informing Claude of the changed file scopes the re-read while preserving all still-valid architectural context.",
+      "examTrick": "Narrow, isolated file change = Resume session + explicitly prompt about the changed file.",
+      "importance": "High",
+      "tags": [
+        "Targeted Re-analysis",
+        "Session Resumption"
+      ]
+    }
+  ]
+}

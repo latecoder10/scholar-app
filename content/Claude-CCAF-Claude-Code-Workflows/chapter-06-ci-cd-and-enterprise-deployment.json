@@ -1,0 +1,51 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.6 Claude Code in CI/CD & Enterprise Deployment",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "Non-interactive mode (-p), GitHub Actions, corporate proxies, Zero Data Retention (ZDR), and OpenTelemetry chargeback.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A CI script runs claude 'Analyze this PR for security issues' and hangs indefinitely waiting for interactive input. Correct fix?",
+      "options": [
+        "Add the -p flag: claude -p 'Analyze this PR for security issues'",
+        "Add a --batch flag.",
+        "Redirect stdin: ... < /dev/null.",
+        "Set CLAUDE_HEADLESS=true before running."
+      ],
+      "answer": "Add the -p flag: claude -p 'Analyze this PR for security issues'",
+      "difficulty": "Easy",
+      "source": "UD3-039 | Claude Code CLI reference — -p · GitHub Actions",
+      "explanation": "-p (print / non-interactive mode) runs Claude Code headlessly, outputting results directly to stdout and exiting without prompting for interactive input.",
+      "examTrick": "Unattended CI execution = claude -p 'prompt'.",
+      "importance": "High",
+      "tags": [
+        "CI/CD",
+        "Headless Mode",
+        "-p Flag"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "CI runs behave inconsistently versus local runs because developers have different CLAUDE.md files, skills, and MCP servers. What ensures consistent CI execution?",
+      "options": [
+        "Using the --bare flag, which skips auto-discovery of all local configuration (hooks, skills, plugins, MCP, CLAUDE.md).",
+        "Setting a CLAUDE_CI=true environment variable.",
+        "Storing all developer configurations in version control and loading them in CI.",
+        "Running CI jobs on standardized Docker containers with identical configurations."
+      ],
+      "answer": "Using the --bare flag, which skips auto-discovery of all local configuration (hooks, skills, plugins, MCP, CLAUDE.md).",
+      "difficulty": "Hard",
+      "source": "UD2-039 | Claude Code CLI reference · Settings",
+      "explanation": "--bare skips auto-discovery of local hooks, skills, and memory files, providing an isolated, deterministic execution baseline in CI.",
+      "examTrick": "Deterministic CI baseline = --bare flag to disable local auto-discovery.",
+      "importance": "High",
+      "tags": [
+        "CI Consistency",
+        "--bare Flag",
+        "Hermetic Execution"
+      ]
+    }
+  ]
+}

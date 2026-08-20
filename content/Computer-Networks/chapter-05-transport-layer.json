@@ -1,0 +1,262 @@
+{
+  "subject": "Computer Networks",
+  "chapter": "Transport Layer and Congestion Control",
+  "description": "Explores connection management (TCP 3-way handshake), flow control (sliding window), silly window syndrome, socket programming, and TCP Congestion Control algorithms.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "In TCP Congestion Control, suppose the current congestion window (cwnd) is 16 KB and the slow start threshold (ssthresh) is 8 KB. If the sender is in the Congestion Avoidance phase and successfully transmits one full window of segments, what will be the new value of cwnd?",
+      "options": [
+        "17 KB",
+        "32 KB",
+        "8 KB",
+        "24 KB"
+      ],
+      "answer": "17 KB",
+      "difficulty": "Medium",
+      "source": "GATE CS 2014 / PSU Exam",
+      "explanation": "During the Slow Start phase (when cwnd < ssthresh), cwnd increases exponentially (doubling every round-trip time, RTT). Once cwnd >= ssthresh, TCP enters the Congestion Avoidance phase. In this phase, cwnd increases linearly by approximately 1 MSS (Maximum Segment Size) for each RTT (i.e., after one full window of successful transmissions). Here, since the sender is in Congestion Avoidance, cwnd increases from 16 KB to 16 + 1 = 17 KB.",
+      "examTrick": "Slow Start = Exponential growth (double cwnd per RTT).\nCongestion Avoidance = Linear growth (+1 segment size per RTT). Simple but highly tested logic!",
+      "importance": "High",
+      "tags": ["TCP Congestion Control", "Congestion Avoidance", "Slow Start"]
+    },
+    {
+      "id": 2,
+      "question": "A TCP connection is undergoing slow start. Suppose its cwnd is 32 segments and a packet timeout occurs. What are the new values of ssthresh and cwnd respectively (assuming standard TCP Tahoe)?",
+      "options": [
+        "ssthresh = 16, cwnd = 1",
+        "ssthresh = 16, cwnd = 1",
+        "ssthresh = 32, cwnd = 1",
+        "ssthresh = 8, cwnd = 1"
+      ],
+      "answer": "ssthresh = 16, cwnd = 1",
+      "difficulty": "Hard",
+      "source": "GATE CS / CIL MT",
+      "explanation": "When a packet loss is detected via a timeout in standard TCP Tahoe/Reno:\n1. The slow start threshold (ssthresh) is set to half of the current congestion window: ssthresh = cwnd / 2 = 32 / 2 = 16 segments.\n2. The congestion window (cwnd) is reset to 1 segment (cwnd = 1 MSS).\n3. The sender then resumes Slow Start from cwnd = 1 up to the new ssthresh = 16.",
+      "examTrick": "For Timeout: cwnd is always reset to 1 segment. ssthresh becomes half of the cwnd at the time of loss. (In TCP Reno, for 3 duplicate ACKs, cwnd is halved instead of going to 1 - known as Fast Recovery).",
+      "importance": "High",
+      "tags": ["TCP Congestion Control", "Timeout", "Tahoe"]
+    },
+    {
+      "id": 3,
+      "question": "Which of the following transport layer phenomena describes 'Silly Window Syndrome' (SWS)?",
+      "options": [
+        "The sender transmits huge chunks of data that overflow the receiver's main buffer.",
+        "The receiver continually advertises tiny window sizes (e.g., a few bytes) and the sender transmits tiny segments to match, leading to high header overhead.",
+        "The network routers drop packets because the TCP window size is configured too high.",
+        "A sequence number wrap-around causes TCP segments to arrive completely out of order."
+      ],
+      "answer": "The receiver continually advertises tiny window sizes (e.g., a few bytes) and the sender transmits tiny segments to match, leading to high header overhead.",
+      "difficulty": "Medium",
+      "source": "PSU Computer Networks",
+      "explanation": "Silly Window Syndrome occurs when either the receiver announces a tiny free buffer space (window) or the sender transmits very small pieces of data. Because a standard TCP/IP packet has a 40-byte header (20 bytes TCP + 20 bytes IP), transmitting 1 byte of data in a 41-byte packet results in massive network overhead. It is resolved using Nagle's Algorithm (sender side) and Clark's Solution or Delayed ACKs (receiver side).",
+      "examTrick": "Silly Window Syndrome = tiny data segment overhead! Resolved by Nagle's Algorithm on the sender side.",
+      "importance": "Medium",
+      "tags": ["SWS", "Flow Control", "Nagle's Algorithm"]
+    },
+    {
+      "id": 4,
+      "question": "Host A is opening a TCP connection to Host B. Host A sends a SYN segment with Sequence Number = 1000. Host B accepts the connection and responds with a SYN-ACK segment. What is the Acknowledgment Number in Host B's response?",
+      "options": [
+        "1000",
+        "1001",
+        "2000",
+        "1002"
+      ],
+      "answer": "1001",
+      "difficulty": "Easy",
+      "source": "GATE CS 2017 / CIL MT",
+      "explanation": "During the TCP 3-way handshake: 1. Host A sends SYN (Seq = X). 2. Host B responds with SYN-ACK (Seq = Y, Ack = X + 1). Here, Host A sends SYN with Seq = 1000. Therefore, Host B acknowledges receipt by setting Ack = 1000 + 1 = 1001. This indicates that Host B expects Host A's next packet to start with Sequence Number 1001.",
+      "examTrick": "SYN and FIN control flags consume exactly 1 logical sequence number, even though they contain zero payload bytes! Therefore, the ACK is always Seq + 1.",
+      "importance": "High",
+      "tags": ["TCP Handshake", "Sequence Numbers", "Connection Management"]
+    },
+    {
+      "id": 5,
+      "question": "What is the key difference between User Datagram Protocol (UDP) and Transmission Control Protocol (TCP) headers?",
+      "options": [
+        "UDP headers do not contain any port numbers.",
+        "UDP has a fixed 8-byte header size with no options, whereas TCP has a minimum 20-byte header.",
+        "UDP headers are dynamic and can expand up to 100 bytes using option fields.",
+        "UDP headers do not include a checksum field."
+      ],
+      "answer": "UDP has a fixed 8-byte header size with no options, whereas TCP has a minimum 20-byte header.",
+      "difficulty": "Easy",
+      "source": "PSU Computer Networks",
+      "explanation": "The UDP header is extremely lightweight, containing only four fields: Source Port (2 bytes), Destination Port (2 bytes), Length (2 bytes), and Checksum (2 bytes), giving a fixed size of 8 bytes. The TCP header has a minimum size of 20 bytes and can expand up to 60 bytes to support options (e.g., MSS, Window Scale, Timestamps).",
+      "examTrick": "UDP header is fixed at 8 bytes. TCP header is minimum 20 bytes (maximum 60 bytes). Keep these numbers memorized for quick PSU questions!",
+      "importance": "High",
+      "tags": ["UDP Header", "TCP Header", "Transport Layer"]
+    },
+    {
+      "id": 6,
+      "question": "In network socket programming, which system call is used on the server-side to associate a local IP address and port number with a socket descriptor?",
+      "options": [
+        "socket()",
+        "listen()",
+        "connect()",
+        "bind()"
+      ],
+      "answer": "bind()",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "In socket programming, the server-side flow is: socket() -> bind() -> listen() -> accept(). The bind() system call assigns a physical IP address and a port number to the socket descriptor created by socket().",
+      "examTrick": "Server socket flow: S-B-L-A (Socket, Bind, Listen, Accept). Client socket flow: S-C (Socket, Connect). connect() is purely a client-side call!",
+      "importance": "Medium",
+      "tags": ["Socket Programming", "System Calls", "Sockets"]
+    },
+    {
+      "id": 7,
+      "question": "In TCP Reno congestion control, what happens to the congestion window (cwnd) and slow start threshold (ssthresh) when a loss is detected via 3 Duplicate ACKs (Fast Retransmit)?",
+      "options": [
+        "cwnd is reset to 1 segment, ssthresh is halved",
+        "cwnd is halved, ssthresh is set to this halved value (Fast Recovery), and linear increase resumes",
+        "cwnd is doubled, ssthresh remains unchanged",
+        "No action is taken; the sender waits for a timeout"
+      ],
+      "answer": "cwnd is halved, ssthresh is set to this halved value (Fast Recovery), and linear increase resumes",
+      "difficulty": "Hard",
+      "source": "CIL MT CS 2021 / GATE CS",
+      "explanation": "When loss is detected via 3 duplicate ACKs (indicating mild congestion), TCP Reno triggers Fast Retransmit (retransmits the missing segment immediately) and Fast Recovery. Under Fast Recovery, instead of resetting cwnd to 1, ssthresh is set to cwnd / 2, and cwnd is set to ssthresh + 3 MSS (to account for the segments that have left the pipe and are buffered at the receiver). The sender then enters Congestion Avoidance directly, avoiding the slow start phase.",
+      "examTrick": "Reno halving (3 Dup ACKs) vs Tahoe resetting (reset to 1). Timeout ALWAYS resets cwnd to 1 in both Reno and Tahoe! 3 Dup ACKs is mild, so Reno just halves cwnd (Fast Recovery).",
+      "importance": "High",
+      "tags": ["TCP Congestion Control", "Fast Recovery", "3 Duplicate ACKs"]
+    },
+    {
+      "id": 8,
+      "question": "Which of the following correctly describes the behavioral difference between a Leaky Bucket traffic shaper and a Token Bucket traffic shaper?",
+      "options": [
+        "Leaky Bucket permits bursty data transmission; Token Bucket releases packets at a strictly constant, uniform rate",
+        "Leaky Bucket drops all packets; Token Bucket compresses packets",
+        "Leaky Bucket releases packets at a strictly constant, uniform rate; Token Bucket generates tokens at a constant rate, permitting bursty data transmission when tokens are accumulated",
+        "There is no functional difference; they are identical traffic shaping models"
+      ],
+      "answer": "Leaky Bucket releases packets at a strictly constant, uniform rate; Token Bucket generates tokens at a constant rate, permitting bursty data transmission when tokens are accumulated",
+      "difficulty": "Hard",
+      "source": "CN Reference PDF Section 4.4.1",
+      "explanation": "As documented in the Congestion Control reference materials, a Leaky Bucket traffic shaper drops bursty traffic and releases packets at a strictly constant, uniform rate. A Token Bucket traffic shaper generates tokens at a constant rate, accumulating them in a bucket. If tokens are accumulated, a burst of packets can be sent immediately, allowing flexible bursty transmissions while still enforcing a long-term average rate limit.",
+      "examTrick": "Leaky Bucket = Strict constant rate (No bursts allowed!). Token Bucket = Average rate over time, but permits bursts when bucket is full of tokens!",
+      "importance": "High",
+      "tags": ["Traffic Shaping", "Leaky Bucket", "Token Bucket"]
+    },
+    {
+      "id": 9,
+      "question": "During a TCP connection teardown (Four-way handshake), why does the host that initiates the active close enter the TIME-WAIT state and wait for 2 * MSL (Maximum Segment Lifetime) before fully closing the socket?",
+      "options": [
+        "To allow any duplicate, delayed packets in the network to die out and to guarantee that the final ACK was received by the peer",
+        "To download any remaining payload packets",
+        "To calculate the final checksum of the session",
+        "To request a new IP address from the DHCP server"
+      ],
+      "answer": "To allow any duplicate, delayed packets in the network to die out and to guarantee that the final ACK was received by the peer",
+      "difficulty": "Hard",
+      "source": "GATE CS 2018",
+      "explanation": "The TIME-WAIT state serves two main purposes: 1. To ensure that the final ACK (Segment 4 of the 4-way teardown) was received by the other peer. If the ACK is lost, the peer will retransmit its FIN, and the host in TIME-WAIT can re-send the ACK. 2. To allow any old, delayed, duplicated packets belonging to this connection to expire in the network, preventing them from corrupting future sessions using the same socket pair.",
+      "examTrick": "TIME-WAIT = 2 * MSL (usually 4 minutes). It prevents old delayed duplicates from popping up and corrupting a newly opened connection on the same ports.",
+      "importance": "High",
+      "tags": ["TCP", "Teardown", "TIME-WAIT"]
+    },
+    {
+      "id": 10,
+      "question": "Which of the following statements is technically accurate regarding the UDP Checksum field in IPv4 vs. IPv6?",
+      "options": [
+        "UDP Checksum is mandatory in both IPv4 and IPv6",
+        "UDP Checksum is optional in both IPv4 and IPv6",
+        "UDP Checksum is optional in IPv4 (if not calculated, set to all 0s), but is strictly mandatory in IPv6",
+        "UDP Checksum is mandatory in IPv4, but is optional in IPv6"
+      ],
+      "answer": "UDP Checksum is optional in IPv4 (if not calculated, set to all 0s), but is strictly mandatory in IPv6",
+      "difficulty": "Hard",
+      "source": "GATE CSE standard",
+      "explanation": "In IPv4, calculating the UDP checksum is optional to reduce processing overhead. If a sender does not calculate it, the checksum field is set to all 0s. In IPv6, however, because intermediate routers no longer verify or compute checksums (which was dropped from the IPv6 header to speed up routing), the UDP checksum is strictly mandatory at the end-nodes for packet integrity.",
+      "examTrick": "IPv6 has NO header checksum, so UDP checksum becomes MANDATORY in IPv6 to maintain packet integrity! In IPv4, it is optional.",
+      "importance": "High",
+      "tags": ["UDP Checksum", "IPv6", "IPv4"]
+    },
+    {
+      "id": 11,
+      "question": "In server-side socket programming, what does the second parameter (backlog) of the listen(int sockfd, int backlog) system primitive represent?",
+      "options": [
+        "The maximum speed of the link in Mbps",
+        "The maximum number of fully established, pending connections that can be queued waiting for the application to accept() them",
+        "The size of the socket's transmission buffer in bytes",
+        "The timeout duration in seconds for receiving packets"
+      ],
+      "answer": "The maximum number of fully established, pending connections that can be queued waiting for the application to accept() them",
+      "difficulty": "Medium",
+      "source": "ISRO CS 2021",
+      "explanation": "The backlog parameter in listen() specifies the maximum length to which the queue of pending connections (connection requests that have completed the 3-way handshake but have not yet been accepted by the application via accept()) may grow. If a connection request arrives when the queue is full, the client may receive an error (or TCP ignores the SYN so the client retries).",
+      "examTrick": "Backlog = Waiting room size! It limits how many fully established connections can queue up waiting for accept() before the server starts turning clients away.",
+      "importance": "Medium",
+      "tags": ["Socket Programming", "listen()", "Backlog"]
+    },
+    {
+      "id": 12,
+      "question": "How do TCP and UDP compare in terms of their flow control mechanisms?",
+      "options": [
+        "TCP uses a sliding window size advertised by the receiver; UDP has zero flow control and depends on the application layer to prevent buffer overflow",
+        "Both TCP and UDP use identical sliding window flow control",
+        "TCP has no flow control; UDP uses credit-based flow control",
+        "TCP uses rate-limiting; UDP uses window-based flow control"
+      ],
+      "answer": "TCP uses a sliding window size advertised by the receiver; UDP has zero flow control and depends on the application layer to prevent buffer overflow",
+      "difficulty": "Easy",
+      "source": "BARC CS 2020",
+      "explanation": "TCP has built-in flow control using a sliding window where the receiver advertises its available buffer size in the 'Receiver Window Size' header field, preventing the sender from overwhelming the receiver. UDP is connectionless and has no flow control mechanism whatsoever in its header; it simply pushes packets as fast as possible. If the receiver's buffer overflows, UDP packets are dropped.",
+      "examTrick": "TCP = Receiver Window flow control (reliable pacing). UDP = No flow control (blast and pray). Applications using UDP must handle pacing themselves if needed!",
+      "importance": "High",
+      "tags": ["Flow Control", "TCP", "UDP"]
+    },
+    {
+      "id": 13,
+      "question": "What is the relationship between the TCP Maximum Segment Size (MSS) and the IP Maximum Transmission Unit (MTU) on a standard link?",
+      "options": [
+        "MSS is always twice the size of the MTU",
+        "MSS is equal to the MTU of the link",
+        "MSS = MTU - (IP Header Size + TCP Header Size), which is typically MTU - 40 bytes",
+        "MSS has no relationship to MTU"
+      ],
+      "answer": "MSS = MTU - (IP Header Size + TCP Header Size), which is typically MTU - 40 bytes",
+      "difficulty": "Hard",
+      "source": "CIL MT CS Syllabus",
+      "explanation": "The Maximum Segment Size (MSS) represents the maximum size of the TCP data payload that can be sent in a single segment without causing IP fragmentation. On a typical Ethernet link where the MTU is 1500 bytes, the MSS is calculated as: 1500 - 20 bytes (IP header) - 20 bytes (TCP header) = 1460 bytes.",
+      "examTrick": "MSS = MTU - 40! It represents data payload size only. For standard Ethernet: MTU is 1500, base headers are 40, so MSS is 1460.",
+      "importance": "High",
+      "tags": ["TCP", "MSS", "MTU"]
+    },
+    {
+      "id": 14,
+      "question": "In which of the following scenarios will a host send a TCP segment with the RST (Reset) control flag set to 1?",
+      "options": [
+        "To request the peer to slow down its transmission rate due to network congestion",
+        "When a client attempts to connect to a port on a server where no application is listening",
+        "During a normal, graceful four-way teardown",
+        "To acknowledge the receipt of an urgent out-of-band data segment"
+      ],
+      "answer": "When a client attempts to connect to a port on a server where no application is listening",
+      "difficulty": "Medium",
+      "source": "GATE CS 2012",
+      "explanation": "The RST flag is used to immediately abort a connection. If a host receives a TCP segment (like a SYN) destined for a port on which no application is listening, the host's operating system responds with a segment where RST = 1 and ACK = 1 to explicitly inform the caller that the connection is refused and should not be retried.",
+      "examTrick": "RST = Hard abort / Connection refused! It is sent when a packet arrives at a closed port or when a connection gets severely desynchronized.",
+      "importance": "High",
+      "tags": ["TCP", "RST Flag", "Connection Management"]
+    },
+    {
+      "id": 15,
+      "question": "How does the TCP Selective Acknowledgment (SACK) option improve over the standard Cumulative Acknowledgment scheme during multiple packet losses?",
+      "options": [
+        "By encrypting the retransmitted segments",
+        "By allowing the receiver to inform the sender of all non-contiguous segments received correctly, preventing the sender from having to retransmit segments that have already arrived",
+        "By forcing the sender to use UDP instead of TCP",
+        "By increasing the IP packet size to 65,535 bytes"
+      ],
+      "answer": "By allowing the receiver to inform the sender of all non-contiguous segments received correctly, preventing the sender from having to retransmit segments that have already arrived",
+      "difficulty": "Hard",
+      "source": "GATE CSE standard",
+      "explanation": "With standard cumulative ACKs, if segments 1, 3, and 4 arrive but 2 is lost, the receiver can only send ACK 2. The sender does not know if 3 and 4 arrived and may have to retransmit them. SACK is an option that allows the receiver to append blocks of successfully received non-contiguous data ranges, so the sender only retransmits the truly missing segments (segment 2 in this case).",
+      "examTrick": "SACK = Selective ACK blocks! It prevents redundant retransmissions when multiple packets are lost in a single window.",
+      "importance": "High",
+      "tags": ["SACK", "TCP Options", "Acknowledgments"]
+    }
+  ]
+}

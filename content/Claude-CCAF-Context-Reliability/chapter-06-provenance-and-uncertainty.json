@@ -1,0 +1,93 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.6 Provenance, Attribution & Multi-Source Uncertainty",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "Claim-to-source mappings, custom_id batch correlation, temporal trend reconciliation, and amendment handling.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Batch API processing 50 documents; results must be matched to original documents and the batch returns them unordered. How do you correlate?",
+      "options": [
+        "Use the custom_id field in batch requests to correlate results with document IDs.",
+        "Sequential processing with the real-time API for guaranteed ordering.",
+        "Results return in submission order, enabling positional array correlation.",
+        "Store batch request IDs in a database for post-processing correlation."
+      ],
+      "answer": "Use the custom_id field in batch requests to correlate results with document IDs.",
+      "difficulty": "Easy",
+      "source": "UD5-001 | Batch processing · Message Batches API",
+      "explanation": "custom_id round-trips through the Batch API, enabling order-independent, deterministic correlation between submitted documents and returned results.",
+      "examTrick": "Batch API result correlation = Match via custom_id parameter.",
+      "importance": "High",
+      "tags": [
+        "Batch API",
+        "custom_id",
+        "Correlation"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "A synthesis report attributes some claims to the wrong sources; provenance tracking failed. How do you maintain provenance in multi-agent synthesis?",
+      "options": [
+        "The coordinator tracks which subagent produced which information.",
+        "Natural language source attribution in subagent responses is sufficient.",
+        "A separate provenance tracking subagent logging all information sources.",
+        "Subagents emit structured claim-source mappings in results passed to the coordinator."
+      ],
+      "answer": "Subagents emit structured claim-source mappings in results passed to the coordinator.",
+      "difficulty": "Hard",
+      "source": "UD5-003 | Multi-agent research system — citations · Citations",
+      "explanation": "Provenance must be bound at extraction time. Structured claim-source mappings ({claim, source_url, location}) survive synthesis merging and rewriting without misattribution.",
+      "examTrick": "Preserve multi-agent provenance = Subagents emit structured claim-source mappings.",
+      "importance": "High",
+      "tags": [
+        "Provenance",
+        "Claim-Source Mappings",
+        "Citations"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "Web search returns \"2024: 35% adoption\"; document analysis returns \"2022: 18% adoption\". The synthesis agent flags these as contradictory rather than recognising growth over time. What change best enables correct interpretation?",
+      "options": [
+        "Require subagents to include publication or data collection dates in their structured outputs.",
+        "Add a conflict resolution agent that automatically discards older data when newer data exists.",
+        "Configure the web search agent to only return results from the past 6 months.",
+        "Instruct the synthesis agent to always treat the most recent data as authoritative and place older findings in a historical appendix."
+      ],
+      "answer": "Require subagents to include publication or data collection dates in their structured outputs.",
+      "difficulty": "Medium",
+      "source": "CS5-002 (§5.6) | Multi-agent research system · Structured outputs",
+      "explanation": "Attaching publication/collection dates to structured findings transforms apparent contradictions into recognized time-series trends (growth from 18% in 2022 to 35% in 2024).",
+      "examTrick": "Reconcile metric discrepancies over time = Require dates in structured findings.",
+      "importance": "High",
+      "tags": [
+        "Temporal Reconciliation",
+        "Time-Series Data",
+        "Discrepancy Resolution"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Contracts frequently include amendments (original \"30-day payment terms\", Amendment 1 changes it to \"45 days\"); the model inconsistently extracts one value or the other with no indication of which applies. Most effective approach?",
+      "options": [
+        "Redesign the schema so amended fields capture multiple values, each with source location and effective date.",
+        "Prompt instructions to always extract the most recent amendment and ignore superseded original terms.",
+        "Preprocess documents with a classifier that identifies and removes superseded sections before extraction.",
+        "Post-extraction validation using pattern matching to detect amendments and flag them for manual review."
+      ],
+      "answer": "Redesign the schema so amended fields capture multiple values, each with source location and effective date.",
+      "difficulty": "Hard",
+      "source": "CS5-006 (§5.6) | Structured outputs · Citations",
+      "explanation": "Contracts with amendments contain multiple valid terms over different effective periods. Structuring the schema as an array of entries with source location and effective date captures full legal provenance.",
+      "examTrick": "Contract amendments = Schema with array of {value, source_clause, effective_date}.",
+      "importance": "High",
+      "tags": [
+        "Contract Amendments",
+        "Legal Provenance",
+        "Schema Design"
+      ]
+    }
+  ]
+}

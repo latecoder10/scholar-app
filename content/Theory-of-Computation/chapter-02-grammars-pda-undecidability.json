@@ -1,0 +1,92 @@
+{
+  "subject": "Theory of Computation",
+  "chapter": "CFGs, Pushdown Automata, and Undecidability",
+  "description": "Deep dive into Context-Free Grammars (CFGs), Pushdown Automata (PDA), Turing Machines, Halting Problem, Decidability, and the Chomsky Hierarchy.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following problems is DECIDABLE?",
+      "options": [
+        "Whether a given Turing Machine halts on all inputs",
+        "Whether a given Context-Free Grammar is ambiguous",
+        "Whether two given regular expressions represent the same language",
+        "Whether a given Turing Machine accepts any string at all"
+      ],
+      "answer": "Whether two given regular expressions represent the same language",
+      "difficulty": "Hard",
+      "source": "GATE CS / CIL MT",
+      "explanation": "Let's analyze the decidability of each problem:\n1. Turing Machine halting on all inputs (Halting Problem / Totality Problem): Undecidable (RE but not recursive).\n2. CFG ambiguity: Undecidable (known to be an undecidable problem for CFGs).\n3. Equivalence of regular expressions / DFAs: Decidable! We can convert regular expressions to minimized DFAs and compare their transition graphs for isomorphism (or use the cross-product DFA construction to see if (L1 ∩ L2') ∪ (L1' ∩ L2) is empty).\n4. Turing Machine emptiness problem (accepts any string): Undecidable (Rice's Theorem).",
+      "examTrick": "For Regular languages, almost ALL questions (emptiness, finiteness, equivalence, containment, membership) are DECIDABLE. For CFLs, equivalence and containment are undecidable, but membership and emptiness are decidable. For Recursively Enumerable languages, almost everything is UNDECIDABLE!",
+      "importance": "High",
+      "tags": ["Decidability", "Turing Machines", "Regular Languages", "Ambiguity"]
+    },
+    {
+      "id": 2,
+      "question": "What is the relationship between deterministic and non-deterministic machines for Context-Free Languages (CFL) and Regular Languages?",
+      "options": [
+        "NFA = DFA in power; NPDA = DPDA in power",
+        "NFA = DFA in power; NPDA is strictly more powerful than DPDA",
+        "NFA is strictly more powerful than DFA; NPDA = DPDA in power",
+        "NFA is strictly more powerful than DFA; NPDA is strictly more powerful than DPDA"
+      ],
+      "answer": "NFA = DFA in power; NPDA is strictly more powerful than DPDA",
+      "difficulty": "Medium",
+      "source": "GATE CS 2013 / ISRO",
+      "explanation": "- For regular languages, non-deterministic finite automata (NFA) can be converted to deterministic finite automata (DFA) using the subset construction. Thus, NFA and DFA have equal expressive power.\n- For context-free languages, a Non-deterministic Pushdown Automaton (NPDA) is strictly more powerful than a Deterministic Pushdown Automaton (DPDA). For example, L = {ww^R | w ∈ {0,1}*} (even-length palindromes) can be accepted by an NPDA but not by any DPDA.",
+      "examTrick": "Finite Automata: DFA ≡ NFA.\nPushdown Automata: DPDA ⊂ NPDA (NPDA is more powerful).\nTuring Machines: DTM ≡ NTM (Non-determinism does not increase the class of languages accepted by Turing Machines).",
+      "importance": "High",
+      "tags": ["Automata Power", "PDA", "DFA vs NFA", "DPDA vs NPDA"]
+    },
+    {
+      "id": 3,
+      "question": "A grammar is defined as G = (V, Σ, R, S) where V = {S}, Σ = {a, b}, and rules R are:\nS → aSb | SS | ε\nWhat language does this grammar generate?",
+      "options": [
+        "All strings with equal number of a's and b's",
+        "All balanced strings of parentheses where 'a' represents '(' and 'b' represents ')'",
+        "The language {a^n b^n | n >= 0}",
+        "All binary strings ending with 'ab'"
+      ],
+      "answer": "All balanced strings of parentheses where 'a' represents '(' and 'b' represents ')'",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "Let's analyze the rules:\n- S → aSb nests an 'a' and a 'b' (like '(' and ')').\n- S → SS allows concatenation of balanced groups (like '()()').\n- S → ε allows the empty string.\nThis is the classic grammar for the Dyck language (the language of balanced parenthetical expressions), where 'a' is the opening bracket and 'b' is the closing bracket.",
+      "examTrick": "The production S → SS generates concatenation, while S → aSb generates nesting. Combined, they generate all balanced nested strings. Extremely common grammar in computer science!",
+      "importance": "Medium",
+      "tags": ["Grammars", "CFGs", "Dyck Language"]
+    },
+    {
+      "id": 4,
+      "question": "According to Rice's Theorem, any non-trivial semantic property of a recursively enumerable language is:",
+      "options": [
+        "Decidable",
+        "Undecidable",
+        "Context-Free",
+        "Regular"
+      ],
+      "answer": "Undecidable",
+      "difficulty": "Hard",
+      "source": "GATE CS / CIL MT",
+      "explanation": "Rice's Theorem states that any non-trivial semantic property (a property of the language accepted by a Turing Machine, rather than a syntactic property of the Turing Machine's description itself) of recursively enumerable languages is undecidable. Examples of undecidable semantic properties include: checking if L(M) is empty, finite, regular, context-free, or contains a specific string.",
+      "examTrick": "Rice's Theorem shortcut: If a property depends on the LANGUAGE of the Turing Machine (e.g., 'Does L(M) have property X?') and it is non-trivial (some TMs have it, some don't), it is automatically UNDECIDABLE!",
+      "importance": "High",
+      "tags": ["Decidability", "Rice's Theorem", "Turing Machines"]
+    },
+    {
+      "id": 5,
+      "question": "Which of the following classes of languages is accepted by a Linear Bounded Automaton (LBA)?",
+      "options": [
+        "Regular Languages",
+        "Context-Free Languages",
+        "Context-Sensitive Languages",
+        "Recursively Enumerable Languages"
+      ],
+      "answer": "Context-Sensitive Languages",
+      "difficulty": "Medium",
+      "source": "Chomsky Hierarchy",
+      "explanation": "In the Chomsky Hierarchy of languages:\n- Type-3 (Regular): Accepted by Finite Automata (FA).\n- Type-2 (Context-Free): Accepted by Pushdown Automata (PDA).\n- Type-1 (Context-Sensitive): Accepted by Linear Bounded Automata (LBA).\n- Type-0 (Unrestricted / Recursively Enumerable): Accepted by Turing Machines (TM).",
+      "examTrick": "Chomsky Hierarchy matching mnemonic: FA-Regular, PDA-CFL, LBA-CSL, TM-Unrestricted. Keep this sequence memorized!",
+      "importance": "Medium",
+      "tags": ["Chomsky Hierarchy", "LBA", "Context-Sensitive Languages"]
+    }
+  ]
+}

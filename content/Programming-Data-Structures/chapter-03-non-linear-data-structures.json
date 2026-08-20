@@ -1,0 +1,347 @@
+{
+  "subject": "Programming and Data Structures",
+  "chapter": "Non-Linear Data Structures",
+  "description": "Explores hierarchical and network-like models, including binary trees, binary search trees (BST), self-balancing AVL & Red-Black trees, binary heaps, and graphs with spanning trees.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "In any strictly binary tree (where every non-leaf node has exactly two child nodes), what is the relationship between the number of leaf nodes (L) and the number of internal nodes (I)?",
+      "options": [
+        "L = I + 1",
+        "L = 2 * I",
+        "L = I - 1",
+        "L = I / 2"
+      ],
+      "answer": "L = I + 1",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021 / GATE CS",
+      "explanation": "According to Section 7.2 of the non-linear data structures PDF:\n- Let N be the total number of nodes in a strictly binary tree.\n- Let I be the number of internal nodes, and L be the number of leaf nodes. Thus, N = I + L.\n- Since every node except the root has exactly 1 parent edge, total edges E = N - 1.\n- Since only internal nodes produce child edges (exactly 2 child edges per internal node in a strict binary tree), total edges E = 2 * I.\n- Equating the two expressions for E: N - 1 = 2 * I\n  Substituting N = I + L: I + L - 1 = 2 * I\n  Simplifying: L = I + 1.",
+      "examTrick": "A strict binary tree always has exactly one more leaf than internal nodes: L = I + 1. If you have 100 internal nodes, you have exactly 101 leaves! Save this formula as an instant 10-second exam solver.",
+      "importance": "High",
+      "tags": ["Trees", "Binary Trees", "Strict Binary Tree", "Node Formulas"]
+    },
+    {
+      "id": 2,
+      "question": "What is the maximum number of nodes in a perfect binary tree of height h (where height of root node is 0)? If a perfect binary tree has a height of 4, what is the total number of nodes present?",
+      "options": [
+        "31 nodes; formula is 2^(h+1) - 1",
+        "15 nodes; formula is 2^h - 1",
+        "32 nodes; formula is 2^(h+1)",
+        "63 nodes; formula is 2^(h+2) - 1"
+      ],
+      "answer": "31 nodes; formula is 2^(h+1) - 1",
+      "difficulty": "Medium",
+      "source": "PSU Computer Science",
+      "explanation": "According to Section 7.2 of the non-linear data structures PDF:\n- In a perfect binary tree of height h, the number of nodes at any level L is 2^L.\n- Total nodes N is the sum of nodes across all levels L = 0 to L = h:\n  N = 2^0 + 2^1 + 2^2 + ... + 2^h = 2^(h+1) - 1.\n- Given height h = 4:\n  N = 2^(4+1) - 1 = 2^5 - 1 = 32 - 1 = 31 nodes.",
+      "examTrick": "Perfect tree node count: 2^(height + 1) - 1. For height 0: 2^1 - 1 = 1. Height 1: 3. Height 2: 7. Height 3: 15. Height 4: 31 nodes. Simply memorize this powers-of-two sequence!",
+      "importance": "High",
+      "tags": ["Trees", "Binary Trees", "Perfect Binary Tree", "Height Limits"]
+    },
+    {
+      "id": 3,
+      "question": "What is the minimum height (h) of a binary tree containing exactly N nodes, and what is the minimum height possible for a tree with N = 31 nodes (assuming height of root is 0)?",
+      "options": [
+        "4; formula is ceil(log2(N + 1)) - 1",
+        "5; formula is floor(log2(N))",
+        "4; formula is ceil(log2(N)) - 1",
+        "3; formula is floor(log2(N + 1))"
+      ],
+      "answer": "4; formula is ceil(log2(N + 1)) - 1",
+      "difficulty": "Medium",
+      "source": "GATE CS 2013",
+      "explanation": "According to Section 7.2 of the non-linear data structures PDF:\n- To minimize the height for a given number of nodes N, we must pack nodes as densely as possible (forming a perfect or complete binary tree).\n- From the node count bound N <= 2^(h+1) - 1, we solve for h:\n  N + 1 <= 2^(h+1) \n  log2(N + 1) <= h + 1\n  h >= ceil(log2(N + 1)) - 1.\n- For N = 31:\n  h >= ceil(log2(32)) - 1 = 5 - 1 = 4.",
+      "examTrick": "Minimum height formula given N nodes: ceil(log2(N + 1)) - 1. For N = 31: log2(32) is exactly 5, so 5 - 1 = 4. Direct and rapid calculation!",
+      "importance": "High",
+      "tags": ["Trees", "Binary Trees", "Tree Height", "Mathematical Bounds"]
+    },
+    {
+      "id": 4,
+      "question": "Consider the following Inorder and Preorder traversal of a binary tree:\nInorder: D B E F A G H C\nPreorder: A B D E F C G H\nWhat is the Postorder Traversal of the same tree?",
+      "options": [
+        "D F E B H G C A",
+        "D F E B H C G A",
+        "D F E B G H C A",
+        "D F E H B G C A"
+      ],
+      "answer": "D F E B H G C A",
+      "difficulty": "Hard",
+      "source": "CIL MT 2020",
+      "explanation": "Let's reconstruct the binary tree step-by-step from Preorder (Root-Left-Right) and Inorder (Left-Root-Right):\n1. From Preorder, the first element is the root of the tree: Root = A.\n2. In Inorder, locate A: Left sub-tree has nodes {D, B, E, F}, and Right sub-tree has {G, H, C}.\n3. Sub-tree {D, B, E, F}:\n   - Corresponding Preorder portion is {B, D, E, F} -> Root is B.\n   - In Inorder, B partitions it into Left = {D}, and Right = {E, F}.\n   - For {E, F}, Preorder is {E, F} -> Root is E, Left is empty, Right is F.\n4. Sub-tree {G, H, C}:\n   - Preorder portion is {C, G, H} -> Root is C.\n   - In Inorder, C has Left = {G, H}, Right = empty.\n   - For {G, H}, Preorder is {G, H} -> Root is G, Left is empty, Right is H.\n\nNow construct Postorder (Left-Right-Root):\n- Left subtree of A: Postorder({D, B, E, F}) -> {D, F, E, B}\n- Right subtree of A: Postorder({G, H, C}) -> {H, G, C}\n- Tree Root: A\nCombined Postorder: D F E B H G C A.",
+      "examTrick": "The Postorder traversal of any tree always ends with the ROOT node! Since 'A' is the first element in Preorder, it is the root, so Postorder MUST end with 'A'. This eliminates option choices that do not end in A, saving massive time!",
+      "importance": "High",
+      "tags": ["Trees", "Tree Traversals", "Postorder Reconstruction", "CIL PYQ"]
+    },
+    {
+      "id": 5,
+      "question": "Suppose the following numbers are inserted in sequence into an empty Binary Search Tree (BST):\n50, 70, 30, 40, 20, 80, 60, 90, 85\nHow many nodes will be present in the Left Sub-Tree (LST) and the Right Sub-Tree (RST) of the root node respectively?",
+      "options": [
+        "LST - 3, RST - 5",
+        "LST - 4, RST - 4",
+        "LST - 3, RST - 6",
+        "LST - 5, RST - 3"
+      ],
+      "answer": "LST - 3, RST - 5",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020 Variant",
+      "explanation": "The root of the BST is the first inserted element: Root = 50.\nSubsequent insertions follow the BST property (smaller values go to the left subtree, larger values go to the right subtree):\n- 70: > 50, goes to Right Sub-Tree (RST).\n- 30: < 50, goes to Left Sub-Tree (LST).\n- 40: < 50, then > 30, goes to Right of 30 (LST).\n- 20: < 50, then < 30, goes to Left of 30 (LST).\n- 80: > 50, then > 70, goes to Right of 70 (RST).\n- 60: > 50, then < 70, goes to Left of 70 (RST).\n- 90: > 50, then > 70, then > 80, goes to Right of 80 (RST).\n- 85: > 50, then > 70, then > 80, then < 90, goes to Left of 90 (RST).\n\nLet's count:\n- Left Sub-Tree (LST) of root 50 contains elements: {30, 40, 20} -> Exactly 3 nodes.\n- Right Sub-Tree (RST) of root 50 contains elements: {70, 80, 60, 90, 85} -> Exactly 5 nodes.\nThus, LST = 3, RST = 5.",
+      "examTrick": "The root node partitions the BST! Every element smaller than the root (50) automatically lands in the Left Sub-Tree, and every element larger lands in the Right Sub-Tree. \n- Elements < 50: {30, 40, 20} -> 3 elements.\n- Elements > 50: {70, 80, 60, 90, 85} -> 5 elements.\nYou don't even need to construct or draw the tree! Quick partition and count saves you 2 minutes.",
+      "importance": "High",
+      "tags": ["BST", "Binary Search Tree", "LST/RST Counts", "Node Partitioning"]
+    },
+    {
+      "id": 6,
+      "question": "What is the balance factor of a node in an AVL Tree, and what is the range of permissible balance factors for any node in a valid AVL Tree to remain balanced?",
+      "options": [
+        "Height(Left Subtree) - Height(Right Subtree); Allowed range is {-1, 0, 1}",
+        "Height(Left Subtree) + Height(Right Subtree); Allowed range is {0, 1, 2}",
+        "Height(Right Subtree) - Height(Left Subtree); Allowed range is {-2, 0, 2}",
+        "Nodes(Left Subtree) - Nodes(Right Subtree); Allowed range is {-1, 0, 1}"
+      ],
+      "answer": "Height(Left Subtree) - Height(Right Subtree); Allowed range is {-1, 0, 1}",
+      "difficulty": "Easy",
+      "source": "PSU Computer Science",
+      "explanation": "According to Section 8.1 of the non-linear data structures PDF:\n- An AVL Tree is a strictly self-balancing binary search tree.\n- The Balance Factor (BF) of any node is defined as: BF = Height(Left Subtree) - Height(Right Subtree) [some implementations use Right - Left, which is equivalent].\n- To maintain height balance and guarantee O(log N) operations, the balance factor of every single node in the tree must be strictly restricted to the set {-1, 0, 1}. If any insertion or deletion causes the balance factor to become -2 or +2, rotations are executed to re-balance.",
+      "examTrick": "AVL balance factor formula: BF = H_left - H_right. Permitted values: -1, 0, 1. If it deviates to ±2, it's unbalanced and requires rotation immediately!",
+      "importance": "High",
+      "tags": ["AVL Trees", "Self Balancing", "Balance Factor", "Height Balance"]
+    },
+    {
+      "id": 7,
+      "question": "In an AVL tree, we insert a node that causes a balance violation of +2 at a node 'A'. If the insertion was made in the Right Sub-tree of A's Left Child, which sequence of rotations must be executed to restore AVL balance?",
+      "options": [
+        "Left-Right (LR) double rotation: Left rotation on A's left child followed by a Right rotation on A",
+        "Right-Left (RL) double rotation: Right rotation on A's right child followed by a Left rotation on A",
+        "Single Right (RR) rotation on A",
+        "Single Left (LL) rotation on A"
+      ],
+      "answer": "Left-Right (LR) double rotation: Left rotation on A's left child followed by a Right rotation on A",
+      "difficulty": "Hard",
+      "source": "GATE CS 2011",
+      "explanation": "According to Section 8.1 of the AVL tree rotation rules:\n- If an insertion occurs in the Right Subtree of the Left Child (LR case), it creates an asymmetrical zig-zag imbalance. \n- To fix this, we perform a Left-Right (LR) double rotation:\n  1. First, perform a Single Left rotation on A's Left Child (converts the zig-zag into a straight LL line of imbalance).\n  2. Second, perform a Single Right rotation on the unbalanced ancestor node 'A'.\n- This restores the balance factor of all nodes back to {-1, 0, 1}.",
+      "examTrick": "Zig-zag imbalances always require double rotations! LR imbalance -> LR rotation (Left first on child, then Right on parent). RL imbalance -> RL rotation (Right first on child, then Left on parent). Straight LL or RR imbalances require only a single rotation!",
+      "importance": "High",
+      "tags": ["AVL Trees", "Rotations", "LR Rotation", "Double Rotations"]
+    },
+    {
+      "id": 8,
+      "question": "Which self-balancing binary search tree is preferred to implement the standard map container in C++ (std::map) due to having a higher tolerance for minor height imbalances (fewer rotations on insertion/deletion) than AVL trees, and what is its path length constraint?",
+      "options": [
+        "Red-Black Tree; The longest path from root to a leaf is at most twice the length of the shortest path.",
+        "AVL Tree; Every path from root to leaf must have identical heights.",
+        "Threaded Binary Tree; All paths are bound to O(1) space.",
+        "Extended Binary Tree; The average path length is strictly log2(N)."
+      ],
+      "answer": "Red-Black Tree; The longest path from root to a leaf is at most twice the length of the shortest path.",
+      "difficulty": "Hard",
+      "source": "PSU Systems Programming / GATE",
+      "explanation": "According to Section 8.2 of the self-balancing tree PDF:\n- Red-Black Trees are 'loosely' self-balancing compared to AVL trees. While AVL trees enforce a strict height difference of <= 1, Red-Black Trees use node coloring rules (Red/Black) to guarantee that no path from the root to a leaf is more than twice as long as any other path.\n- Because its balancing rules are looser, insertions and deletions in a Red-Black Tree require fewer rotations on average than in an AVL Tree. This makes it highly optimal for general-purpose associative containers like C++ std::map and Java TreeMap.",
+      "examTrick": "Red-Black Trees: Loose balancing = faster inserts/deletes (fewer rotations) but slightly slower lookups than AVL. Longest path <= 2 * Shortest path. Standard C++ std::map backend!",
+      "importance": "High",
+      "tags": ["Red-Black Trees", "Self Balancing", "std::map", "Path Constraints"]
+    },
+    {
+      "id": 9,
+      "question": "An Extended Binary Tree (or 2-Tree) is created by replacing every NULL pointer in a binary tree of N internal nodes with dummy external nodes. How many external nodes are present in this Extended Binary Tree?",
+      "options": [
+        "N + 1",
+        "N - 1",
+        "2 * N",
+        "2^(N - 1)"
+      ],
+      "answer": "N + 1",
+      "difficulty": "Medium",
+      "source": "GATE CS 2012",
+      "explanation": "According to Section 8.3 of the non-linear data structures PDF, in any binary tree:\n- Every node (except the root) has exactly 1 parent edge, which means there are total parent links. \n- A binary tree with N nodes has exactly 2 * N total pointer fields (since each node has a left and right pointer field).\n- Out of these 2 * N pointers, exactly N - 1 pointers are active (pointing to child nodes).\n- The remaining pointer fields are NULL. The number of NULL pointers = Total pointers - Active pointers = 2N - (N - 1) = N + 1 pointers.\n- Since each NULL pointer is replaced by exactly 1 dummy external node, there are exactly N + 1 external nodes.",
+      "examTrick": "2-Tree external leaf formula: If a tree has N active internal nodes, it has exactly N + 1 dummy external nodes! If N = 10, external leaves = 11. Super simple and extremely common in exam papers.",
+      "importance": "High",
+      "tags": ["Trees", "Extended Binary Tree", "2-Tree", "Null Pointers"]
+    },
+    {
+      "id": 10,
+      "question": "What is the primary objective of a 'Threaded Binary Tree', and how does it optimize traversals in resource-constrained hardware systems?",
+      "options": [
+        "It reuses NULL leaf pointers to store direct links to Inorder Predecessors and Successors, enabling stack-free and recursion-free inorder traversals in O(1) auxiliary space.",
+        "It links all leaf nodes together to form a Circular Queue.",
+        "It compresses tree nodes into thread-level CPU registers.",
+        "It converts a binary tree into a binary heap by swapping parent keys."
+      ],
+      "answer": "It reuses NULL leaf pointers to store direct links to Inorder Predecessors and Successors, enabling stack-free and recursion-free inorder traversals in O(1) auxiliary space.",
+      "difficulty": "Medium",
+      "source": "PSU Embedded Systems / GATE",
+      "explanation": "According to Section 8.4 of the threaded tree PDF, standard binary tree traversals (like Inorder) require a stack (either system call stack for recursion or user stack for iteration) which takes O(H) auxiliary space.\n- In a Threaded Binary Tree, the NULL left pointers are redirected to point to the node's Inorder Predecessor, and NULL right pointers are redirected to point to the node's Inorder Successor.\n- This allows the traversal algorithm to easily find the next node in constant time without needing a stack or recursion, achieving O(1) auxiliary space complexity.",
+      "examTrick": "Threaded Tree = Stackless Traversal! NULL pointers are converted to 'threads' pointing to predecessors/successors. Space drops from O(H) stack frames to O(1) auxiliary space!",
+      "importance": "High",
+      "tags": ["Trees", "Threaded Binary Tree", "Stackless Traversal", "Inorder Successor"]
+    },
+    {
+      "id": 11,
+      "question": "A Binary Heap is mapped into a contiguous 1D array, 0-indexed. If a parent node is located at array index 'i', what are the mathematical formulas used to locate its Left Child, Right Child, and Parent nodes respectively?",
+      "options": [
+        "Left: 2*i + 1; Right: 2*i + 2; Parent: floor((i - 1) / 2)",
+        "Left: 2*i; Right: 2*i + 1; Parent: floor(i / 2)",
+        "Left: 2*i + 2; Right: 2*i + 3; Parent: floor((i - 2) / 2)",
+        "Left: 2*i - 1; Right: 2*i; Parent: floor(i / 2) + 1"
+      ],
+      "answer": "Left: 2*i + 1; Right: 2*i + 2; Parent: floor((i - 1) / 2)",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 9.1 of the heaps PDF:\n- Since a binary heap is a Complete Binary Tree, it can be compactly represented in a 1D array without storing pointer addresses.\n- For any node at a 0-indexed position 'i':\n  1. Its Left Child is located at index: 2*i + 1.\n  2. Its Right Child is located at index: 2*i + 2.\n  3. Its Parent node is located at index: floor((i - 1) / 2). (For i > 0).",
+      "examTrick": "0-indexed array mapping: Left = 2i + 1, Right = 2i + 2, Parent = (i-1)/2. \n(If the exam specifies 1-indexed: Left = 2i, Right = 2i + 1, Parent = i/2. Watch the index base closely!).",
+      "importance": "High",
+      "tags": ["Heaps", "Binary Heap", "Array Indexing", "Complete Binary Tree"]
+    },
+    {
+      "id": 12,
+      "question": "We perform insertion of an element into a Max Heap of size N. What is the worst-case time complexity of this operation, and what is the underlying heapify bubble-up mechanism?",
+      "options": [
+        "O(log N); The new element is appended at the end of the array and bubbled-up by comparing and swapping with its parent recursively until heap property is restored.",
+        "O(1); The new element is placed at the root and child nodes are shifted down.",
+        "O(N); The array must be fully re-sorted using bubble sort.",
+        "O(N log N); The heap is completely rebuilt from scratch."
+      ],
+      "answer": "O(log N); The new element is appended at the end of the array and bubbled-up by comparing and swapping with its parent recursively until heap property is restored.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2022",
+      "explanation": "According to Section 9.2 of the heaps PDF:\n- To insert into a binary heap, the element is initially placed in the next available leaf slot at the end of the array (to maintain the Complete Binary Tree structural property).\n- We then compare the inserted element with its parent. If the element is larger (for a Max Heap), we swap them. This comparison and swapping bubbles-up recursively along the path to the root.\n- Since the height of a complete binary tree of size N is log2(N), the maximum swaps required is bound by the height, yielding a worst-case time complexity of O(log N).",
+      "examTrick": "Heap insertion: Append at the end (L-to-R leaf) and bubble-up! Maximum swaps = tree height = O(log N). Highly optimal for Priority Queues!",
+      "importance": "High",
+      "tags": ["Heaps", "Max Heap", "Insertion", "Time Complexity"]
+    },
+    {
+      "id": 13,
+      "question": "Which of the following traversals of a Binary Search Tree (BST) is guaranteed to always produce the keys in strictly sorted ascending order?",
+      "options": [
+        "Inorder Traversal",
+        "Preorder Traversal",
+        "Postorder Traversal",
+        "Level Order Traversal"
+      ],
+      "answer": "Inorder Traversal",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "By definition, for any node in a Binary Search Tree (BST), all keys in its left subtree are smaller than the node's key, and all keys in its right subtree are larger.\n- Inorder Traversal visits the tree in the order: Left Subtree -> Root Node -> Right Subtree.\n- This visiting order recursively prints all smaller elements, then the current element, then all larger elements, resulting in a strictly sorted ascending list.",
+      "examTrick": "BST + Sorted Ascending = Inorder Traversal (Left-Root-Right). This is an absolute golden rule of tree traversals tested in every PSU paper!",
+      "importance": "High",
+      "tags": ["BST", "Tree Traversals", "Inorder", "Sorting Property"]
+    },
+    {
+      "id": 14,
+      "question": "Which of the following represents a fundamental structural constraint of a 'Spanning Tree' created from a connected, undirected graph G = (V, E) of V vertices and E edges?",
+      "options": [
+        "It must contain all V vertices of G, contain exactly V - 1 edges, contain no cycles, and remain fully connected.",
+        "It must contain V - 1 vertices and V edges, forming a single closed cycle.",
+        "It must be a complete graph where every vertex has degree V - 1.",
+        "It must have a height of exactly log2(V)."
+      ],
+      "answer": "It must contain all V vertices of G, contain exactly V - 1 edges, contain no cycles, and remain fully connected.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021 / GATE CS",
+      "explanation": "According to Section 10.1 of the graph and spanning trees PDF:\n- A Spanning Tree of a connected, undirected graph G is a subgraph that contains all the vertices (V) of G.\n- It must be a tree, meaning it is minimally connected and acyclic (contains no cycles). Hence, it must contain exactly V - 1 edges.\n- Removing any edge from a spanning tree disconnects the graph; adding any edge to it creates a unique cycle.",
+      "examTrick": "Spanning Tree Core Definition: All V vertices + exactly V - 1 edges + acyclic + connected. Any deviation violates the tree property!",
+      "importance": "High",
+      "tags": ["Graphs", "Spanning Trees", "Acyclic", "Edge Constraints"]
+    },
+    {
+      "id": 15,
+      "question": "A connected undirected graph G has 12 vertices and 25 edges. How many edges must be deleted from G to obtain a spanning tree of G?",
+      "options": [
+        "14 edges",
+        "13 edges",
+        "11 edges",
+        "12 edges"
+      ],
+      "answer": "14 edges",
+      "difficulty": "Medium",
+      "source": "GATE CS 2013",
+      "explanation": "Let V be the number of vertices and E be the number of edges in graph G.\n- Vertices V = 12, Edges E = 25.\n- A Spanning Tree of G must contain all V vertices and exactly V - 1 edges.\n- Target edges in spanning tree = V - 1 = 12 - 1 = 11 edges.\n- Number of edges that must be removed from G = E - (V - 1) = 25 - 11 = 14 edges.",
+      "examTrick": "Edges to delete = E - V + 1. Here, 25 - 12 + 1 = 14. Quick, 5-second calculation for exam papers!",
+      "importance": "High",
+      "tags": ["Graphs", "Spanning Trees", "Edge Deletion", "Graph Math"]
+    },
+    {
+      "id": 16,
+      "question": "Using Cayley's Formula, what is the total number of distinct spanning trees that can be constructed from a labeled complete graph of 5 vertices (K5)?",
+      "options": [
+        "125",
+        "25",
+        "10",
+        "64"
+      ],
+      "answer": "125",
+      "difficulty": "Hard",
+      "source": "GATE CS 2015 / PSU",
+      "explanation": "According to Section 10.1 of the graph and spanning trees PDF:\n- Cayley's Formula states that the number of distinct spanning trees in a labeled complete graph Kn of n vertices is given by:\n  Total Spanning Trees = n^(n - 2).\n- Given n = 5 (graph K5):\n  Total Spanning Trees = 5^(5 - 2) = 5^3 = 125.",
+      "examTrick": "Cayley's Spanning Tree Formula: n^(n - 2). For K3: 3^1 = 3. For K4: 4^2 = 16. For K5: 5^3 = 125. For K6: 6^4 = 1296. Memorize this formula, it is a frequent GATE/PSU favorite!",
+      "importance": "High",
+      "tags": ["Graphs", "Spanning Trees", "Cayley's Formula", "Complete Graphs"]
+    },
+    {
+      "id": 17,
+      "question": "Which graph traversal algorithm uses a Queue (FIFO) to explore nodes level-by-level, and is mathematically guaranteed to find the shortest path (in terms of minimum number of edges) from a starting vertex to any other vertex in an unweighted graph?",
+      "options": [
+        "Breadth-First Search (BFS)",
+        "Depth-First Search (DFS)",
+        "Dijkstra's Algorithm",
+        "Kruskal's Algorithm"
+      ],
+      "answer": "Breadth-First Search (BFS)",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "According to Section 10.2 of the graphs traversal PDF:\n- Breadth-First Search (BFS) explores vertices in a ripple-like level-by-level manner using a Queue data structure.\n- Because it visits all vertices at distance L before moving to distance L+1, the first time a vertex is reached, the path taken is guaranteed to be the shortest path in terms of edge count (for unweighted graphs). BFS runs in O(V + E) time.",
+      "examTrick": "BFS = Level-by-level = Queue (FIFO) = Shortest path on unweighted graphs! DFS = Deep path = Stack (LIFO) = Backtracking.",
+      "importance": "High",
+      "tags": ["Graphs", "BFS", "Queue", "Shortest Path"]
+    },
+    {
+      "id": 18,
+      "question": "A developer executes Depth-First Search (DFS) on a directed graph. During traversal, an edge is encountered that points from a vertex to one of its ancestors in the DFS activation tree. What is this type of edge called, and what structural property of the graph does its presence reveal?",
+      "options": [
+        "Back Edge; Indicates the presence of a cycle in the directed graph.",
+        "Forward Edge; Indicates that the graph is a Directed Acyclic Graph (DAG).",
+        "Cross Edge; Indicates that the graph is fully connected.",
+        "Tree Edge; Indicates that the graph has a spanning tree."
+      ],
+      "answer": "Back Edge; Indicates the presence of a cycle in the directed graph.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2016",
+      "explanation": "According to Section 10.2 of the graphs traversal PDF:\n- During DFS on a directed graph, edges can be classified into four types:\n  1. Tree Edges: Edges in the DFS forest.\n  2. Back Edges: Edges pointing from a node to an ancestor node in the DFS tree.\n  3. Forward Edges: Edges pointing from a node to a non-child descendant node.\n  4. Cross Edges: All other edges (connecting branches or trees).\n- A Back Edge represents a return path to an active ancestor, which mathematically establishes a closed loop. Therefore, the presence of at least one Back Edge is a necessary and sufficient condition for a graph to contain a cycle (used in Cycle Detection and Topological Sort verification).",
+      "examTrick": "DFS Back Edge = Cycle! If you detect a Back Edge during DFS, the graph is NOT acyclic. Essential for topological sorting (only DAGs have topological sorts)!",
+      "importance": "High",
+      "tags": ["Graphs", "DFS", "Back Edge", "Cycle Detection"]
+    },
+    {
+      "id": 19,
+      "question": "A complete undirected graph with N vertices has how many total edges, and what is the degree of each vertex? If a complete graph has 8 vertices, how many edges are present?",
+      "options": [
+        "28 edges; degree is 7",
+        "56 edges; degree is 8",
+        "28 edges; degree is 8",
+        "16 edges; degree is 7"
+      ],
+      "answer": "28 edges; degree is 7",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "By definition, a complete graph Kn is an undirected graph where there is a unique edge connecting every pair of distinct vertices:\n1. Since every vertex connects to all other vertices, the degree of each vertex is exactly N - 1.\n2. The total number of unique pairs of vertices is N choose 2, which is: E = N * (N - 1) / 2.\n3. For N = 8 vertices:\n   - Degree = 8 - 1 = 7.\n   - Edges = 8 * (8 - 1) / 2 = 8 * 7 / 2 = 56 / 2 = 28 edges.",
+      "examTrick": "Complete Graph Kn: Edges = n(n-1)/2. Vertex degree = n-1. For 8 vertices: 8 * 7 / 2 = 28. Standard high-yield formula!",
+      "importance": "High",
+      "tags": ["Graphs", "Complete Graph", "Edge Count", "Vertex Degree"]
+    },
+    {
+      "id": 20,
+      "question": "In the build_heap algorithm (Floyd's Heap Construction), an unordered array of size N is transformed into a Max Heap by executing max-heapify bottom-up on all non-leaf nodes. What is the worst-case time complexity of this build_heap operation, and why is it more optimal than N insertions?",
+      "options": [
+        "O(N) linear time; It is more optimal because the height of the subtrees decreases exponentially as we go down, and the majority of nodes are leaves requiring 0 swaps.",
+        "O(N log N) time; It is identical to N sequential insertions.",
+        "O(log N) logarithmic time; It only examines the root node.",
+        "O(N^2) quadratic time; It performs sequential bubble swaps across all levels."
+      ],
+      "answer": "O(N) linear time; It is more optimal because the height of the subtrees decreases exponentially as we go down, and the majority of nodes are leaves requiring 0 swaps.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2012 / CIL MT",
+      "explanation": "According to Section 9.2 of the heaps PDF:\n- Sequentially inserting N elements one-by-one into an empty heap takes O(N log N) worst-case time.\n- The build_heap algorithm starts from the last non-leaf node (index N/2 - 1) and calls max-heapify downwards towards the root. \n- The time complexity is calculated as the sum of node counts at level h times the height of those nodes: Sum for h = 0 to logN of (2^(logN - h) * h).\n- This mathematical series converges to O(N). It is more optimal because the most populous levels of the tree (leaves and near-leaves) have very small heights and require almost zero swaps, while only the sparse upper levels require deeper swaps.",
+      "examTrick": "Heap construction math: Sequential insertion is O(N log N) but Floyd's bottom-up build_heap is O(N) linear! A standard and vital distinction tested in almost every advanced computer science exam.",
+      "importance": "High",
+      "tags": ["Heaps", "Heap Construction", "build_heap", "Complexity Analysis"]
+    }
+  ]
+}

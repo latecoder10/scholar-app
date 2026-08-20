@@ -1,0 +1,127 @@
+{
+  "subject": "General Awareness",
+  "chapter": "General Science, Technology, and Computer Awareness",
+  "description": "Covers core scientific inventions, Indian space and tech milestones, computer networking, internet security protocols, and basic chemical/physical principles of coal and energy.",
+  "paper": "Paper-I",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following classes of coal has the highest carbon content, the highest calorific value, and the lowest moisture content?",
+      "options": [
+        "Lignite",
+        "Peat",
+        "Bituminous",
+        "Anthracite"
+      ],
+      "answer": "Anthracite",
+      "difficulty": "Easy",
+      "source": "CIL MT General Awareness",
+      "explanation": "Coal is classified into four main ranks based on its degree of coalification (carbon content and heat value):\n1. Peat: Premature stage, carbon content less than 40-50% with very high moisture.\n2. Lignite: Brown coal, carbon content 40-55%, low heat value, high moisture.\n3. Bituminous: Soft coal, carbon content 60-80%, high calorific value, widely used in power generation.\n4. Anthracite: Hard coal, carbon content 85-95%, highest calorific value, burns slowly with a blue flame and minimal smoke.",
+      "examTrick": "Rank Order Mnemonic: Remember 'P-L-B-A' (Peat -> Lignite -> Bituminous -> Anthracite) in ascending order of carbon rank, pressure, and energy density! Anthracite sits at the absolute peak of the carbon hierarchy.",
+      "importance": "High",
+      "tags": ["General Science", "Coal Properties", "Energy Resources"]
+    },
+    {
+      "id": 2,
+      "question": "In computer networking, which of the following application layer protocols is used to dynamically assign IP addresses to devices on a network?",
+      "options": [
+        "DNS (Domain Name System)",
+        "DHCP (Dynamic Host Configuration Protocol)",
+        "SMTP (Simple Mail Transfer Protocol)",
+        "ARP (Address Resolution Protocol)"
+      ],
+      "answer": "DHCP (Dynamic Host Configuration Protocol)",
+      "difficulty": "Easy",
+      "source": "CIL MT Computer Awareness",
+      "explanation": "Let's analyze the functions of these protocols:\n- DHCP (Dynamic Host Configuration Protocol) automatically and dynamically assigns IP addresses, subnet masks, default gateways, and DNS server details to client devices when they connect.\n- DNS resolves human-readable domain names (e.g., google.com) to machine-readable IP addresses.\n- SMTP is used for transmitting electronic mail (emails) across IP networks.\n- ARP operates at the data link layer to map a known IPv4 address to a physical MAC address on a local area network.",
+      "examTrick": "DHCP has 'Configuration' in its name. Whenever a device connects to a network, it needs configuration parameters (IP address, gateway). DHCP is the automatic distributor!",
+      "importance": "High",
+      "tags": ["Computer Awareness", "Networking Protocols"]
+    },
+    {
+      "id": 3,
+      "question": "The 'PARAM Ganga' supercomputer, established under India's National Supercomputing Mission (NSM), is installed at which of the following prestigious institutes?",
+      "options": [
+        "IISc Bangalore",
+        "IIT Bombay",
+        "IIT Roorkee",
+        "IIT Kharagpur"
+      ],
+      "answer": "IIT Roorkee",
+      "difficulty": "Medium",
+      "source": "Current Affairs / Tech Development",
+      "explanation": "Under the National Supercomputing Mission (NSM) jointly steered by DST and MeitY:\n- PARAM Ganga is a petascale supercomputer with a peak computing capacity of 1.66 Petaflops, designed and manufactured by C-DAC, and installed at IIT Roorkee in March 2022.\n- PARAM Pravega is established at IISc Bangalore.\n- PARAM Shakti is established at IIT Kharagpur.\n- PARAM Siddhi-AI is India's largest AI supercomputer housed at C-DAC Pune.",
+      "examTrick": "Associate 'Ganga' (the holy river) with its entry into the Indo-Gangetic plains near Uttarakhand/Roorkee! Hence, PARAM Ganga is housed at IIT Roorkee.",
+      "importance": "High",
+      "tags": ["Scientific Development", "Supercomputers", "Current Affairs"]
+    },
+    {
+      "id": 4,
+      "question": "What is the primary physical phenomenon utilized in the functioning of Optical Fiber Cables (OFC) used in high-speed internet communications?",
+      "options": [
+        "Refraction of Light",
+        "Total Internal Reflection",
+        "Diffraction of Light",
+        "Interference of Light"
+      ],
+      "answer": "Total Internal Reflection",
+      "difficulty": "Easy",
+      "source": "General Science / Physics",
+      "explanation": "Optical fibers guide light signals along their length through the process of Total Internal Reflection (TIR):\n1. The cable consists of a 'core' surrounded by a 'cladding' material with a lower refractive index.\n2. Light is launched into the core at an angle greater than the critical angle.\n3. The light continuously reflects off the boundary between core and cladding without escaping, allowing transmission over long distances with minimal attenuation.",
+      "examTrick": "For Total Internal Reflection to occur, light must travel from a Denser medium (high refractive index core) to a Rarer medium (low refractive index cladding) at an angle greater than the Critical Angle!",
+      "importance": "High",
+      "tags": ["General Science", "Physics", "Communication"]
+    },
+    {
+      "id": 5,
+      "question": "Who is credited with the invention of the World Wide Web (WWW) in 1989, which revolutionized information sharing across the globe?",
+      "options": [
+        "Vint Cerf",
+        "Tim Berners-Lee",
+        "Steve Jobs",
+        "Alan Turing"
+      ],
+      "answer": "Tim Berners-Lee",
+      "difficulty": "Easy",
+      "source": "Inventions and Discoveries",
+      "explanation": "Let's review the historical contributions:\n- Tim Berners-Lee, a British scientist at CERN, invented the World Wide Web (WWW) in 1989 to facilitate automated information-sharing among scientists.\n- Vint Cerf (along with Bob Kahn) is known as the 'Father of the Internet' for designing the TCP/IP protocols.\n- Alan Turing is the father of modern computer science and artificial intelligence.\n- Steve Jobs co-founded Apple Inc. and revolutionized personal computing and mobile phones.",
+      "examTrick": "Tim Berners-Lee 'spun the web' (WWW). Do not confuse the invention of the Internet (TCP/IP - Vint Cerf/Bob Kahn) with the invention of the Web (HTTP/HTML/WWW - Tim Berners-Lee)!",
+      "importance": "High",
+      "tags": ["Inventions", "Computer History"]
+    },
+    {
+      "id": 6,
+      "question": "Which of the following security protocols is universally used to establish an encrypted and secure link between a web server and a browser, denoted by 'https' in the URL?",
+      "options": [
+        "FTP (File Transfer Protocol)",
+        "SSH (Secure Shell)",
+        "SSL/TLS (Secure Sockets Layer / Transport Layer Security)",
+        "WEP (Wired Equivalent Privacy)"
+      ],
+      "answer": "SSL/TLS (Secure Sockets Layer / Transport Layer Security)",
+      "difficulty": "Medium",
+      "source": "Computer Awareness / Cybersecurity",
+      "explanation": "Let's analyze the security protocols:\n- SSL (Secure Sockets Layer) and its modern successor TLS (Transport Layer Security) are cryptographic protocols designed to provide communications security over a computer network. When applied to HTTP, it becomes HTTPS.\n- SSH is used for secure remote command-line login and system administration.\n- WEP is an older, deprecated security algorithm for IEEE 802.11 wireless networks.\n- FTP is used for transfer of files without inherent transport encryption.",
+      "examTrick": "HTTPS = HTTP + SSL/TLS! The padlock icon in your browser URL bar indicates an active TLS session where data in transit is encrypted using public-key cryptography.",
+      "importance": "High",
+      "tags": ["Computer Awareness", "Cybersecurity", "Internet Protocols"]
+    },
+    {
+      "id": 7,
+      "question": "The Nobel Prize in Physics 2023 was awarded to Pierre Agostini, Ferenc Krausz, and Anne L'Huillier for their pioneering work in which scientific domain?",
+      "options": [
+        "Quantum Entanglement and Information Science",
+        "Experimental methods that generate attosecond pulses of light for the study of electron dynamics",
+        "Pioneering contributions to our understanding of complex physical systems and climate modeling",
+        "Discovery of the Higgs Boson particle"
+      ],
+      "answer": "Experimental methods that generate attosecond pulses of light for the study of electron dynamics",
+      "difficulty": "Hard",
+      "source": "Current Affairs / Awards & Honours",
+      "explanation": "Let's verify the Nobel Prize categories:\n- The 2023 Physics Nobel was awarded to Pierre Agostini, Ferenc Krausz, and Anne L'Huillier for experimental methods that generate attosecond (10^-18 seconds) pulses of light. These pulses allow scientists to capture and study the extremely fast movements of electrons inside atoms and molecules.\n- The 2022 Physics Nobel was awarded for Quantum Entanglement (Aspect, Clauser, Zeilinger).\n- The 2021 Physics Nobel was awarded for Climate Modeling and complex systems (Manabe, Hasselmann, Parisi).",
+      "examTrick": "Remember 'Attosecond pulses of light' (time scale of 10^-18 s) for electron dynamics as the 2023 Physics breakthrough. Attoseconds are to a second what a second is to the age of the universe!",
+      "importance": "High",
+      "tags": ["Current Affairs", "Awards and Honours", "Modern Physics"]
+    }
+  ]
+}

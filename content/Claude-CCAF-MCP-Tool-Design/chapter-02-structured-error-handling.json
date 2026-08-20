@@ -1,0 +1,112 @@
+{
+  "subject": "Claude CCAF: Tool Design & MCP Integration",
+  "chapter": "2.2 Structured Error Handling & Resilience",
+  "exam": "Claude CCAF",
+  "paper": "Domain-2",
+  "description": "isError protocol flags, 4-field error schemas (code, message, context, suggested_action), retry idempotency keys, and circuit breakers.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A developer needs to distinguish \"the tool errored\" from \"the tool succeeded but found no results\"; the agent currently says \"I couldn't find that information\" for both. What response distinction should be implemented?",
+      "options": [
+        "Distinguish access failures (isError: true, isRetryable: true for timeouts) from valid empty results (isError: false with an empty result set).",
+        "Always return isError: true and include a severity field to differentiate.",
+        "Return the same response format but include a log_level field (warning vs error).",
+        "Use HTTP status codes (404 for not found, 500 for errors) in the tool response."
+      ],
+      "answer": "Distinguish access failures (isError: true, isRetryable: true for timeouts) from valid empty results (isError: false with an empty result set).",
+      "difficulty": "Medium",
+      "source": "UD3-052 | MCP — tools and error handling · Implement tool use",
+      "explanation": "isError: false with an empty array indicates a successful query that found zero records. isError: true signals an execution or connectivity failure. Conflating them confuses the agent.",
+      "examTrick": "Empty result set = isError: false. Tool/network failure = isError: true.",
+      "importance": "High",
+      "tags": [
+        "isError",
+        "Empty Results vs Errors",
+        "Error Protocols"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "How should a business rule violation (refund amount exceeds policy limit) be communicated back to the agent?",
+      "options": [
+        "Return isError: false with the policy limit details embedded in the success response.",
+        "Throw an exception that terminates the agentic loop.",
+        "Return isError: true with structured metadata including errorCategory='policy_violation', isRetryable: false, and a customer-friendly description.",
+        "Return isError: true with a generic \"Operation failed\" message."
+      ],
+      "answer": "Return isError: true with structured metadata including errorCategory='policy_violation', isRetryable: false, and a customer-friendly description.",
+      "difficulty": "Medium",
+      "source": "UD3-055 | MCP — tools · Writing tools for agents — error messages",
+      "explanation": "Business rule violations must return isError: true with errorCategory='policy_violation' and isRetryable: false so the agent knows not to retry and can explain the policy to the customer.",
+      "examTrick": "Business rule violation = isError: true, isRetryable: false, category: policy_violation.",
+      "importance": "High",
+      "tags": [
+        "Business Rule Violations",
+        "Error Schemas",
+        "Non-Retryable Errors"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "A payment tool's error response is just {\"status\": \"error\"}. Which redesign best follows the four-field structured error pattern?",
+      "options": [
+        "{\"error_code\": \"INSUFFICIENT_FUNDS\", \"message\": \"The account balance is too low to complete this payment.\", \"context\": {\"account_id\": \"acct_123\", \"attempted_amount\": 500}, \"suggested_action\": \"ask_user\"}",
+        "{\"status\": \"error\", \"details\": \"payment failed, see logs for stack trace\"}",
+        "{\"status\": \"error\", \"error_code\": \"ERROR\"}",
+        "{\"status\": \"success\", \"note\": \"payment may not have completed, please verify\"}"
+      ],
+      "answer": "{\"error_code\": \"INSUFFICIENT_FUNDS\", \"message\": \"The account balance is too low to complete this payment.\", \"context\": {\"account_id\": \"acct_123\", \"attempted_amount\": 500}, \"suggested_action\": \"ask_user\"}",
+      "difficulty": "Easy",
+      "source": "GEN2-020 | Writing tools for agents — error messages · Implement tool use",
+      "explanation": "The 4-field error pattern provides: (1) error_code (stable machine code), (2) message (explanatory text), (3) context (exact parameters involved), and (4) suggested_action (retry, ask_user, escalate).",
+      "examTrick": "4-field structured error schema = error_code + message + context + suggested_action.",
+      "importance": "High",
+      "tags": [
+        "Structured Error Pattern",
+        "4-Field Schema"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Which operation is idempotent by nature, and which requires deliberate design to become retry-safe?",
+      "options": [
+        "A GET-style balance lookup is idempotent by nature (repeat calls re-read the same state); a payment-charge tool is NOT (each call is a new side effect) and needs a deliberate mechanism such as a client-generated idempotency key.",
+        "Both are idempotent by nature.",
+        "Neither is idempotent, since any tool call could theoretically be retried.",
+        "The payment-charge tool is idempotent by nature since gateways deduplicate internally by default."
+      ],
+      "answer": "A GET-style balance lookup is idempotent by nature (repeat calls re-read the same state); a payment-charge tool is NOT (each call is a new side effect) and needs a deliberate mechanism such as a client-generated idempotency key.",
+      "difficulty": "Medium",
+      "source": "GEN2-025 | Implement tool use — retries · Writing tools for agents",
+      "explanation": "Reads/lookups are inherently idempotent. Mutating actions (charges, refunds, emails) are non-idempotent and require client-generated idempotency keys for retry safety.",
+      "examTrick": "Reads = Naturally idempotent. Mutating actions = Require client-generated idempotency keys.",
+      "importance": "High",
+      "tags": [
+        "Idempotency",
+        "Retry Safety"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "A circuit breaker is Closed and failures start exceeding the threshold. What happens next, in order?",
+      "options": [
+        "Closed -> threshold exceeded -> Open (calls blocked outright, fallback or error returns immediately) -> after a configured wait -> Half-Open (a single probe call tests recovery) -> probe succeeds -> Closed; probe fails -> Open.",
+        "Closed -> Half-Open (calls blocked) -> Open (probe tests recovery) -> back to Closed regardless of the probe's result.",
+        "Once a circuit breaker opens, it never recovers automatically.",
+        "Circuit breakers only have two states, Closed and Open."
+      ],
+      "answer": "Closed -> threshold exceeded -> Open (calls blocked outright, fallback or error returns immediately) -> after a configured wait -> Half-Open (a single probe call tests recovery) -> probe succeeds -> Closed; probe fails -> Open.",
+      "difficulty": "Medium",
+      "source": "GEN2-029 | Building effective agents — resilience patterns · API errors",
+      "explanation": "Circuit breaker lifecycle: Closed (normal) -> threshold breached -> Open (fail fast without calling downstream) -> sleep wait -> Half-Open (single probe) -> Closed (if probe OK) or Open (if probe fails).",
+      "examTrick": "Circuit Breaker states: Closed (healthy) -> Open (failing/blocked) -> Half-Open (canary probe).",
+      "importance": "High",
+      "tags": [
+        "Circuit Breakers",
+        "Resilience Patterns",
+        "Fault Tolerance"
+      ]
+    }
+  ]
+}

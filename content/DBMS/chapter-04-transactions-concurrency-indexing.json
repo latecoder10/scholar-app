@@ -1,0 +1,143 @@
+{
+  "subject": "DBMS",
+  "chapter": "Transactions, Concurrency, and Indexing",
+  "description": "Examines transaction ACID properties, serializability (conflict and view), concurrency control protocols (2PL, Timestamp ordering), and indexing structures (B/B+ trees).",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following ACID properties ensures that once a transaction commits, its updates survive any subsequent system crashes?",
+      "options": [
+        "Atomicity",
+        "Consistency",
+        "Isolation",
+        "Durability"
+      ],
+      "answer": "Durability",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020 / PSU Exam",
+      "explanation": "Durability guarantees that once a transaction has committed, its changes are written to non-volatile memory (such as a hard disk) and will persist even in the event of a power loss, system crash, or other failures.",
+      "examTrick": "ACID properties cheat sheet:\n- Atomicity: All or nothing.\n- Consistency: Database moves from one valid state to another.\n- Isolation: Transactions execute as if they are alone.\n- Durability: Changes survive system crashes.",
+      "importance": "High",
+      "tags": ["Transactions", "ACID Properties", "Durability"]
+    },
+    {
+      "id": 2,
+      "question": "A schedule S of transactions is conflict-serializable if and only if:",
+      "options": [
+        "Its precedence (serialization) graph contains a cycle",
+        "Its precedence (serialization) graph is acyclic",
+        "It uses two-phase locking (2PL)",
+        "Every transaction in it commits successfully"
+      ],
+      "answer": "Its precedence (serialization) graph is acyclic",
+      "difficulty": "Medium",
+      "source": "GATE CS 2013 / PSU CS",
+      "explanation": "To check if a schedule S is conflict-serializable, we construct a precedence (serialization) graph where vertices are transactions, and there is a directed edge Ti -> Tj if Ti and Tj have conflicting operations (read-write, write-read, or write-write on the same data item) and Ti executes its conflicting operation first. S is conflict-serializable if and only if this graph has no cycles (is acyclic).",
+      "examTrick": "Conflict serializability = Acyclic Precedence Graph! Draw the transactions, identify conflicts (W-R, R-W, W-W on same item), draw arrows, and check for cycles. No cycle means it is conflict-serializable.",
+      "importance": "High",
+      "tags": ["Transactions", "Conflict Serializability", "Precedence Graph"]
+    },
+    {
+      "id": 3,
+      "question": "The Two-Phase Locking (2PL) protocol ensures conflict-serializability but does NOT guarantee freedom from:",
+      "options": [
+        "Non-serializable schedules",
+        "Deadlocks",
+        "Inconsistent database states",
+        "Cascade aborts (unless strict 2PL is used)"
+      ],
+      "answer": "Deadlocks",
+      "difficulty": "Medium",
+      "source": "GATE CS 2016 / ISRO",
+      "explanation": "Two-Phase Locking (2PL) consists of two phases: a growing phase (where locks are acquired but not released) and a shrinking phase (where locks are released but not acquired). While 2PL guarantees that any schedule produced is conflict-serializable, transactions can still wait for each other in a circular chain, leading to deadlocks. It also does not prevent cascade aborts unless Rigorous/Strict 2PL is utilized.",
+      "examTrick": "Basic 2PL prevents conflict-serializability violations, but it CAN lead to deadlocks! Strict 2PL prevents cascading rollbacks/aborts by holding exclusive locks until commit/abort.",
+      "importance": "High",
+      "tags": ["Concurrency Control", "Two-Phase Locking", "Deadlocks"]
+    },
+    {
+      "id": 4,
+      "question": "What is the primary architectural difference between a B-tree and a B+ tree index structure?",
+      "options": [
+        "B-trees do not allow duplicate keys, while B+ trees do.",
+        "In a B-tree, keys and data pointers are stored only in leaf nodes, whereas in a B+ tree they are stored in internal nodes.",
+        "In a B-tree, keys and data/record pointers can be stored in both internal and leaf nodes. In a B+ tree, all actual records/data pointers are stored in leaf nodes, and leaf nodes are linked as a linked list for rapid sequential access.",
+        "B+ trees are binary search trees, whereas B-trees can have any number of children."
+      ],
+      "answer": "In a B-tree, keys and data/record pointers can be stored in both internal and leaf nodes. In a B+ tree, all actual records/data pointers are stored in leaf nodes, and leaf nodes are linked as a linked list for rapid sequential access.",
+      "difficulty": "Medium",
+      "source": "GATE CS 2015 / CIL MT",
+      "explanation": "In a B-tree, data pointers accompany keys at all levels (internal and leaf). In a B+ tree, internal nodes contain only routing search keys and child pointers, while all data pointers are stored strictly in leaf nodes. Crucially, the leaf nodes in a B+ tree are linked sequentially (typically as a doubly linked list), which allows extremely fast range queries and sequential scans, unlike a basic B-tree where in-order traversal is required.",
+      "examTrick": "B+ Tree is preferred for relational database indices because internal nodes don't store data pointers, allowing a much higher branching factor (fan-out), reducing tree height, and leaf nodes are chained for sequential range queries!",
+      "importance": "High",
+      "tags": ["Indexing", "B-Tree vs B+ Tree", "File Structures"]
+    },
+    {
+      "id": 5,
+      "question": "In database crash recovery, what is the 'write-ahead logging' (WAL) protocol?",
+      "options": [
+        "Log records are written to disk after the corresponding database changes have been written to disk.",
+        "A database backup is created before writing logs.",
+        "The log record for a database modification must be written to stable storage (disk) before the actual data page is written to disk.",
+        "Logs are written to stable storage only when the transaction commits."
+      ],
+      "answer": "The log record for a database modification must be written to stable storage (disk) before the actual data page is written to disk.",
+      "difficulty": "Easy",
+      "source": "PSU Database Admin",
+      "explanation": "Write-Ahead Logging (WAL) is a core protocol for crash recovery. It states that any update operation must be logged on stable storage before the modified data is written to disk. This ensures that if a system crash occurs, the recovery manager can use the log to either undo changes of uncommitted transactions or redo changes of committed transactions.",
+      "examTrick": "WAL Rule: Log first, then data! This is the foundation of ACID transaction recovery (using UNDO/REDO protocols).",
+      "importance": "Medium",
+      "tags": ["Database Recovery", "Write-Ahead Logging", "Transactions"]
+    },
+    {
+      "id": 6,
+      "question": "Consider a database with N = 100,000 records stored in a data file. The block size is B = 4096 bytes, and each record size is R = 400 bytes. We create a primary index on a key field of size V = 16 bytes, with block pointers of size P = 8 bytes. Assuming the data file is sorted on the key field, what is the total number of disk block accesses required to search for a record using this primary index with binary search?",
+      "options": [
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "answer": "7",
+      "difficulty": "Hard",
+      "source": "GATE CS / CIL MT Exam",
+      "explanation": "Step-by-step block access calculations:\n1. Blocking Factor of Data File (Bfr): ⌊B/R⌋ = ⌊4096 / 400⌋ = 10 records per block.\n2. Number of Data Blocks (b): ⌈N/Bfr⌉ = ⌈100,000 / 10⌉ = 10,000 blocks.\n3. Index Record Size (Ri): V + P = 16 + 8 = 24 bytes.\n4. Blocking Factor of Index File (Bfri): ⌊B/Ri⌋ = ⌊4096 / 24⌋ = 170 index entries per block.\n5. Number of Index Blocks (bi) for Primary Index: Since it is a primary sparse index, there is exactly 1 index entry per data block. Total index entries = b = 10,000. Thus, bi = ⌈10,000 / 170⌉ = 59 blocks.\n6. Access Cost: Searching the primary index using binary search requires ⌈log2 bi⌉ index block accesses. To fetch the actual record block, we add 1 additional access: ⌈log2 59⌉ + 1 = 6 + 1 = 7 block accesses.",
+      "examTrick": "Binary search cost formula: Cost = ceil(log2(index_blocks)) + 1. The '+1' is crucial because after finding the key in the sparse index, we must execute one more disk read to fetch the actual data page containing the full record!",
+      "importance": "High",
+      "tags": ["Indexing", "Block Calculations", "Database Physical Design"]
+    },
+    {
+      "id": 7,
+      "question": "Consider a B+ tree index structure where the block size is B = 512 bytes. The search key size is V = 12 bytes, and the child block pointer size is Pr = 8 bytes. What is the maximum order p (maximum number of child pointers) of an internal node in this B+ tree?",
+      "options": [
+        "25",
+        "26",
+        "27",
+        "28"
+      ],
+      "answer": "26",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "Let's use the B+ Tree internal node order calculation formula from the PDF:\nAn internal node of order p has p child pointers and (p - 1) keys.\nFormula: p * Pr + (p - 1) * V <= B\np * 8 + (p - 1) * 12 <= 512\n8p + 12p - 12 <= 512\n20p <= 524\np <= 26.2\nSince p must be an integer, we take the floor: p = 26.",
+      "examTrick": "B+ Tree Internal Node Order Quick Formula: p = floor((B + V) / (Pr + V)). Plugging in: p = floor((512 + 12) / (8 + 12)) = floor(524 / 20) = floor(26.2) = 26. This saves massive algebraic time!",
+      "importance": "High",
+      "tags": ["Indexing", "B+ Tree", "Order Calculations"]
+    },
+    {
+      "id": 8,
+      "question": "Under the basic Timestamp Ordering (TO) Protocol for concurrency control, a transaction Ti with timestamp TS(Ti) attempting to perform a Write(Q) operation on data item Q is aborted and rolled back if TS(Ti) < R_TS(Q) or TS(Ti) < W_TS(Q). However, the Thomas Write Rule modifies this protocol to increase concurrency. What does the Thomas Write Rule specify when TS(Ti) < W_TS(Q)?",
+      "options": [
+        "The transaction is aborted and restarted with a newer timestamp.",
+        "The write operation is simply ignored, and the transaction is allowed to proceed without aborting.",
+        "The write operation is buffered and executed later after a lock is released.",
+        "The read timestamp of Q is updated to TS(Ti) and the transaction proceeds."
+      ],
+      "answer": "The write operation is simply ignored, and the transaction is allowed to proceed without aborting.",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "Under the standard Timestamp Ordering protocol, if a transaction tries to write a value that is already outdated (i.e., a newer transaction has already written a value, so TS(Ti) < W_TS(Q)), standard TO aborts the transaction. However, the Thomas Write Rule observes that the write by Ti is obsolete and would have been overwritten anyway by the newer transaction. Thus, instead of aborting Ti, we can simply ignore/discard the write and allow Ti to proceed. This avoids unnecessary rollbacks and increases system throughput.",
+      "examTrick": "Thomas Write Rule = Ignore obsolete writes! It ONLY applies when TS(Ti) < W_TS(Q). If TS(Ti) < R_TS(Q), we must still abort, as a newer transaction has already read Q before our write.",
+      "importance": "High",
+      "tags": ["Concurrency Control", "Timestamp Ordering", "Thomas Write Rule"]
+    }
+  ]
+}

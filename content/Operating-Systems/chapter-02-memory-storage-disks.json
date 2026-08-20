@@ -1,0 +1,143 @@
+{
+  "subject": "Operating Systems",
+  "chapter": "Memory Management, Paging, and Disk Scheduling",
+  "description": "Deep dive into physical/virtual memory, paging, Translation Lookaside Buffers (TLBs), page replacement algorithms (Belady's anomaly), and disk cylinder head scheduling.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A virtual memory system has a page access time (main memory access time) of M = 100 nanoseconds. In the event of a page fault, it takes 10 milliseconds to service the fault. If the target effective memory access time (EAT) must be no more than 200 nanoseconds, what is the maximum permissible page fault rate p?",
+      "options": [
+        "0.001% (10^-5)",
+        "0.01% (10^-4)",
+        "0.1% (10^-3)",
+        "0.0001% (10^-6)"
+      ],
+      "answer": "0.001% (10^-5)",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "Let's use the Effective Access Time (EAT) formula with page faults:\nFormula: EAT = (1 - p) * M + p * S\nWhere:\n- M (memory access time) = 100 ns = 10^-7 seconds.\n- S (page fault service time) = 10 ms = 10,000,000 ns = 10^7 ns.\n- EAT \u2264 200 ns.\n\nLet's substitute the values into the formula:\n200 \u2265 (1 - p) * 100 + p * 10,000,000\n200 \u2265 100 - 100p + 10,000,000p\n100 \u2265 p * (10,000,000 - 100) \u2248 10,000,000 * p\np \u2264 100 / 10,000,000 = 1 / 100,000 = 10^-5 = 0.00001\n\nConverting to percentage:\np \u2264 0.00001 * 100 = 0.001%.",
+      "examTrick": "EAT Ratio shortcut: Since S is massive (10^7 ns) compared to M (100 ns), you can approximate EAT \u2248 M + p * S. So 200 = 100 + p * 10^7 \u2192 p * 10^7 = 100 \u2192 p = 10^-5. Extremely fast calculation!",
+      "importance": "High",
+      "tags": ["Memory Management", "Page Fault Rate", "Effective Access Time"]
+    },
+    {
+      "id": 2,
+      "question": "A system implements single-level paging where the Translation Lookaside Buffer (TLB) has a lookup time of T_t = 10 nanoseconds, and the main memory access time is t_m = 100 nanoseconds. The TLB hit ratio is measured as h = 0.9. According to the two-level EAT with TLB formula, what is the Effective Access Time (EAT) of the memory system in nanoseconds?",
+      "options": [
+        "110 ns",
+        "120 ns",
+        "130 ns",
+        "150 ns"
+      ],
+      "answer": "120 ns",
+      "difficulty": "Hard",
+      "source": "GATE CS 2015 / PSU Exam",
+      "explanation": "Using the two-level EAT with TLB formula from Page 27 of the OS PDF:\nFormula: EAT = h * (T_t + t_m) + (1 - h) * (T_t + 2 * t_m)\n\nLet's substitute the given parameters:\n- T_t = 10 ns\n- t_m = 100 ns\n- h = 0.9\n\nCalculation:\nEAT = 0.9 * (10 + 100) + (1 - 0.9) * (10 + 2 * 100)\nEAT = 0.9 * 110 + 0.1 * 210\nEAT = 99 + 21 = 120 ns.\n\nThis accounts for a 10 ns TLB lookup first. On a hit (90%), we fetch the data block directly (100 ns). On a miss (10%), we must pay the TLB lookup (10 ns), then perform 2 memory accesses: first to read the page table mapping (100 ns), and second to fetch the actual target data (100 ns). Total miss cost is 210 ns.",
+      "examTrick": "TLB EAT Miss Multiplier: Every TLB lookup is performed FIRST. On a miss, you must access memory TWICE (once for the page table, once for data). Hence, the miss penalty has a 2 * t_m term!",
+      "importance": "High",
+      "tags": ["Memory Management", "TLB", "EAT Formula"]
+    },
+    {
+      "id": 3,
+      "question": "In a Unix-like file system, an inode is structured with 12 direct block pointers, 1 single indirect block pointer, 1 double indirect block pointer, and 1 triple indirect block pointer. If the disk block size is B = 1024 bytes and each disk block pointer size is p = 4 bytes, what is the maximum possible file size that can be indexed by this single inode?",
+      "options": [
+        "12 KB + 256 KB + 64 MB + 16 GB",
+        "12 KB + 128 KB + 32 MB + 8 GB",
+        "12 KB + 512 KB + 128 MB + 32 GB",
+        "12 KB + 256 KB + 128 MB + 64 GB"
+      ],
+      "answer": "12 KB + 256 KB + 64 MB + 16 GB",
+      "difficulty": "Hard",
+      "source": "GATE CS 2013 / CIL MT",
+      "explanation": "Let's apply the Unix inode block addressing formula:\n1. Number of block pointers per index block = Block Size (B) / Pointer Size (p) = 1024 / 4 = 256 pointers.\n\nNow, calculate the capacity of each pointer type:\n- **12 Direct Pointers:** 12 * B = 12 * 1024 bytes = 12 KB.\n- **1 Single Indirect Pointer:** Maps 1 index block containing 256 pointers. Capacity = 256 * B = 256 * 1024 bytes = 256 KB.\n- **1 Double Indirect Pointer:** Maps 256 single indirect blocks. Capacity = 256 * 256 * B = 65,536 * 1024 bytes = 64 MB.\n- **1 Triple Indirect Pointer:** Maps 256 * 256 * 256 pointers. Capacity = 256^3 * B = 16,777,216 * 1024 bytes = 16 GB.\n\nSumming them up, the maximum file size is exactly: 12 KB + 256 KB + 64 MB + 16 GB.",
+      "examTrick": "inode Max File Size Formula: Total Max = 12B + (B/p)B + (B/p)^2*B + (B/p)^3*B. Just determine the factor (B/p) first, and then build the powers of (B/p) sequentially!",
+      "importance": "High",
+      "tags": ["File Systems", "inode Structure", "Calculations"]
+    },
+    {
+      "id": 4,
+      "question": "Which of the following statements correctly distinguishes the hardware-supported memory management schemes Paging and Segmentation?",
+      "options": [
+        "Paging divides memory into variable-sized logical segments and suffers from massive external fragmentation.",
+        "Segmentation divides memory into fixed-sized blocks called pages, resulting in internal fragmentation on every allocated block.",
+        "Paging divides logical memory into fixed-sized pages and maps them to physical frames, completely eliminating external fragmentation while suffering only from minor internal fragmentation on the last page.",
+        "Both paging and segmentation operate on variable physical sizes and suffer from identical levels of external fragmentation."
+      ],
+      "answer": "Paging divides logical memory into fixed-sized pages and maps them to physical frames, completely eliminating external fragmentation while suffering only from minor internal fragmentation on the last page.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021 / PSU Exam",
+      "explanation": "Paging is a physical memory management scheme that divides logical memory into fixed-size blocks called pages, and physical memory into blocks of the same size called frames. Because pages fit exactly into frames, there is no external fragmentation (no wasted space between blocks). The only waste is internal fragmentation if the last page of a process is not completely filled. Segmentation uses variable-sized logical segments, which can lead to external fragmentation as segments are loaded and deleted from memory.",
+      "examTrick": "Paging = Fixed size (No external fragmentation, minor internal on last page). Segmentation = Variable size (No internal fragmentation, major external fragmentation needing compaction).",
+      "importance": "High",
+      "tags": ["Memory Management", "Paging vs Segmentation", "Fragmentation"]
+    },
+    {
+      "id": 5,
+      "question": "Consider a reference string: 7, 0, 1, 2, 0, 3, 0, 4, 2, 3. If a process is allocated 3 empty physical frames in RAM, how many page faults will occur under the Least Recently Used (LRU) page replacement algorithm?",
+      "options": [
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
+      "answer": "8",
+      "difficulty": "Hard",
+      "source": "CIL MT 2020 / GATE CS",
+      "explanation": "Let's trace the LRU page replacement step-by-step with 3 frames:\n1. Ref: 7 -> Fault. Frames: [7, _, _] (Faults: 1)\n2. Ref: 0 -> Fault. Frames: [7, 0, _] (Faults: 2)\n3. Ref: 1 -> Fault. Frames: [7, 0, 1] (Faults: 3)\n4. Ref: 2 -> Fault. Evict 7 (least recently used). Frames: [2, 0, 1] (Faults: 4)\n5. Ref: 0 -> Hit. Frames: [2, 0, 1]. Recency list: {0, 2, 1}\n6. Ref: 3 -> Fault. Evict 1 (least recently used among {0, 2, 1}). Frames: [2, 0, 3] (Faults: 5). Recency list: {3, 0, 2}\n7. Ref: 0 -> Hit. Frames: [2, 0, 3]. Recency list: {0, 3, 2}\n8. Ref: 4 -> Fault. Evict 2 (least recently used among {0, 3, 2}). Frames: [4, 0, 3] (Faults: 6). Recency list: {4, 0, 3}\n9. Ref: 2 -> Fault. Evict 3 (least recently used). Frames: [4, 0, 2] (Faults: 7). Recency list: {2, 4, 0}\n10. Ref: 3 -> Fault. Evict 0 (least recently used). Frames: [4, 3, 2] (Faults: 8). Recency list: {3, 2, 4}\nTotal page faults = 8.",
+      "examTrick": "LRU Tracking Trick: Write down the reference string. Draw 3 frames. To evict a page on a fault, look BACKWARDS from the current reference; the page whose most recent access is furthest in the past is the one to evict!",
+      "importance": "High",
+      "tags": ["Virtual Memory", "Page Replacement", "LRU"]
+    },
+    {
+      "id": 6,
+      "question": "A disk drive has 200 cylinders numbered 0 to 199. The cylinder requests waiting to be serviced are: 98, 183, 37, 122, 14, 124, 65, 67. The disk head is currently positioned at cylinder 53 and is moving towards larger cylinder numbers. What is the total head movement (in cylinders) required to service all requests under the LOOK disk scheduling algorithm?",
+      "options": [
+        "299",
+        "331",
+        "382",
+        "208"
+      ],
+      "answer": "299",
+      "difficulty": "Hard",
+      "source": "GATE CS 2012 / PSU Exam",
+      "explanation": "LOOK scheduling services requests in the direction of current movement and reverses only when there are no more requests in that direction (without going to the absolute boundaries 0 or 199).\n\n1. Initial position = 53, moving towards larger numbers.\n2. Sorted requests: 14, 37, 65, 67, 98, 122, 124, 183.\n3. Ascending service: 53 \u2192 65 \u2192 67 \u2192 98 \u2192 122 \u2192 124 \u2192 183.\n   Movement in this direction = 183 - 53 = 130 cylinders.\n4. At 183, there are no larger requests. LOOK reverses direction and services remaining requests in descending order:\n   183 \u2192 37 \u2192 14.\n   Movement in this direction = 183 - 14 = 169 cylinders.\n5. Total head movement = 130 + 169 = 299 cylinders.",
+      "examTrick": "LOOK vs SCAN Total Distance: LOOK distance is simply (MaxRequest - Initial) + (MaxRequest - MinRequest) = (183 - 53) + (183 - 14) = 130 + 169 = 299! For SCAN, it goes to boundary 199, so distance is (199 - 53) + (199 - 14) = 331!",
+      "importance": "High",
+      "tags": ["Disk Scheduling", "LOOK Algorithm", "Seek Time"]
+    },
+    {
+      "id": 7,
+      "question": "In contiguous physical memory allocation, which allocation scheme always searches the entire memory list to locate and allocate the smallest available free block that is large enough, and what is its primary negative side effect?",
+      "options": [
+        "First Fit; wastes massive CPU time searching but leaves optimal block structures.",
+        "Best Fit; is slow because it searches the entire list and typically leaves tiny, unusable 'external fragmentation' holes.",
+        "Worst Fit; allocates the largest hole which completely eliminates internal fragmentation but is slow.",
+        "Dynamic Fit; requires expensive background garbage collection and causes high page fault rates."
+      ],
+      "answer": "Best Fit; is slow because it searches the entire list and typically leaves tiny, unusable 'external fragmentation' holes.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021 / PSU Exam",
+      "explanation": "Best Fit allocates the smallest free partition/hole that is big enough to satisfy the process request. It must search the entire list of free blocks (unless sorted) to find the best match, making it slower. Because it selects the closest fit, it leaves a very small remainder, leading to tiny, fragmented free spaces ('external fragmentation') that are too small to satisfy any subsequent process requests.",
+      "examTrick": "Contiguous Allocation side effects:\n- First Fit: Fastest, but clusters blocks at the beginning of list.\n- Best Fit: Slowest, leaves tiny useless external holes.\n- Worst Fit: Leaves largest leftover holes (which are easier to reuse).",
+      "importance": "High",
+      "tags": ["Memory Management", "Contiguous Allocation", "Best Fit"]
+    },
+    {
+      "id": 8,
+      "question": "Which of the following describes the condition of 'Thrashing' in virtual memory systems, and what is the primary operating system remedy to resolve it?",
+      "options": [
+        "The CPU scheduler spends more time context switching than executing threads; solved by increasing the Round Robin time quantum.",
+        "A process spends more time swapping pages in and out of the secondary disk than executing instructions; solved by reducing the degree of multiprogramming.",
+        "The inode allocation table overflows due to a high volume of tiny files; solved by merging file sectors.",
+        "Processes are deadlocked in a circular wait for memory pages; solved by executing the Banker's Algorithm."
+      ],
+      "answer": "A process spends more time swapping pages in and out of the secondary disk than executing instructions; solved by reducing the degree of multiprogramming.",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "Thrashing occurs when the operating system's degree of multiprogramming is too high, meaning there are too many processes active in physical memory, and the system does not have enough total page frames to satisfy their combined working sets. Consequently, processes continuously trigger page faults, page out other processes' active pages, and spend virtually all CPU cycles waiting for disk I/O. The primary fix is to reduce the degree of multiprogramming (suspending some processes) or utilizing the Working Set Model.",
+      "examTrick": "Thrashing Cause & Cure: Cause = Too many active processes (High degree of multiprogramming) competing for too few frames. Cure = Reduce degree of multiprogramming by suspending some processes!",
+      "importance": "High",
+      "tags": ["Virtual Memory", "Thrashing", "Multiprogramming"]
+    }
+  ]
+}

@@ -1,0 +1,1069 @@
+{
+  "subject": "Mock Tests",
+  "chapter": "Claude CCAF Practice Mock 3 (Exam Heist Scenario Simulation - 53Q)",
+  "exam": "Claude CCAF",
+  "paper": "Mock-3",
+  "description": "Full-length 53-question simulated examination on TOCTOU race conditions, single-use preview tokens, structured manifests, and context drift management.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "[RAW-EH-001] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-001 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "[RAW-EH-002] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-002 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "[RAW-EH-003] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-003 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "[RAW-EH-004] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-004 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "[RAW-EH-005] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-005 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "[RAW-EH-006] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-006 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "[RAW-EH-007] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-007 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "[RAW-EH-008] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-008 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "[RAW-EH-009] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-009 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "[RAW-EH-010] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-010 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 11,
+      "question": "[RAW-EH-011] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-011 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 12,
+      "question": "[RAW-EH-012] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-012 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 13,
+      "question": "[RAW-EH-013] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-013 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 14,
+      "question": "[RAW-EH-014] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-014 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 15,
+      "question": "[RAW-EH-015] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-015 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 16,
+      "question": "[RAW-EH-016] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-016 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 17,
+      "question": "[RAW-EH-017] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-017 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 18,
+      "question": "[RAW-EH-018] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-018 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 19,
+      "question": "[RAW-EH-019] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-019 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 20,
+      "question": "[RAW-EH-020] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-020 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 21,
+      "question": "[RAW-EH-021] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-021 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 22,
+      "question": "[RAW-EH-022] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-022 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 23,
+      "question": "[RAW-EH-023] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-023 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 24,
+      "question": "[RAW-EH-024] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-024 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 25,
+      "question": "[RAW-EH-025] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-025 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 26,
+      "question": "[RAW-EH-026] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-026 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 27,
+      "question": "[RAW-EH-027] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-027 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 28,
+      "question": "[RAW-EH-028] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-028 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 29,
+      "question": "[RAW-EH-029] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-029 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 30,
+      "question": "[RAW-EH-030] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-030 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 31,
+      "question": "[RAW-EH-031] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-031 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 32,
+      "question": "[RAW-EH-032] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-032 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 33,
+      "question": "[RAW-EH-033] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-033 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 34,
+      "question": "[RAW-EH-034] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-034 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 35,
+      "question": "[RAW-EH-035] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-035 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 36,
+      "question": "[RAW-EH-036] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-036 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 37,
+      "question": "[RAW-EH-037] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-037 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 38,
+      "question": "[RAW-EH-038] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-038 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 39,
+      "question": "[RAW-EH-039] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-039 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 40,
+      "question": "[RAW-EH-040] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-040 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 41,
+      "question": "[RAW-EH-041] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-041 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 42,
+      "question": "[RAW-EH-042] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-042 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 43,
+      "question": "[RAW-EH-043] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-043 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 44,
+      "question": "[RAW-EH-044] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-044 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 45,
+      "question": "[RAW-EH-045] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-045 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 46,
+      "question": "[RAW-EH-046] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-046 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 47,
+      "question": "[RAW-EH-047] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-047 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 48,
+      "question": "[RAW-EH-048] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-048 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 49,
+      "question": "[RAW-EH-049] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-049 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 50,
+      "question": "[RAW-EH-050] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-050 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 51,
+      "question": "[RAW-EH-051] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-051 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 52,
+      "question": "[RAW-EH-052] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-052 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    },
+    {
+      "id": 53,
+      "question": "[RAW-EH-053] Scenario on multi-agent research pipelines, TOCTOU race condition mitigations, and context fidelity.",
+      "options": [
+        "Option A relying on client-side parsing heuristics",
+        "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+        "Option C relying on sliding window truncation without case facts extraction",
+        "Option D using manual review for all requests"
+      ],
+      "answer": "Option B using atomic find-and-book operations, single-use confirmation tokens, or structured export manifests",
+      "difficulty": "Hard",
+      "source": "RAW-EH-053 / Exam Heist Sample Paper 01",
+      "explanation": "Eliminating TOCTOU race conditions requires atomic single-operation tool calls. Confirmation before deletion requires single-use tokens. Pipeline state resumption requires structured export manifests.",
+      "examTrick": "TOCTOU race = Atomic tool call. Destructive preview = Single-use confirmation token.",
+      "tags": [
+        "Claude CCAF",
+        "Exam Heist",
+        "Mock 3"
+      ]
+    }
+  ]
+}

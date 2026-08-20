@@ -1,0 +1,49 @@
+{
+  "subject": "Claude CCAF: Prompt Engineering & Structured Output",
+  "chapter": "4.4 Validation & Feedback Retry Loops",
+  "exam": "Claude CCAF",
+  "paper": "Domain-4",
+  "description": "Evaluator-Optimizer patterns, structured failure feedback, bounded retry loops, and golden evaluation datasets.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Claude generates a response, a separate validation step checks it against business rules, failures are fed back for correction, and this repeats until validation passes or a maximum attempt count is reached. What is this pattern called?",
+      "options": [
+        "The convergence pattern",
+        "The feedback pattern",
+        "The validation-retry loop",
+        "The retry pattern"
+      ],
+      "answer": "The validation-retry loop",
+      "difficulty": "Easy",
+      "source": "UD4-033 | Building effective agents — evaluator-optimizer · Structured outputs",
+      "explanation": "The validation-retry loop combines deterministic verification against business rules with structured error feedback fed back to the generator over a bounded attempt budget.",
+      "examTrick": "Generate -> Validate -> Feed error back -> Retry = Validation-Retry Loop.",
+      "importance": "High",
+      "tags": [
+        "Validation-Retry Loop",
+        "Evaluator-Optimizer"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "A validation-retry loop still fails on the same documents after three attempts each. In which situations will further retries not help?",
+      "options": [
+        "The model placed a correct value in the wrong field on the last attempt.",
+        "The required information is simply absent from the source document (or exists only in an external unprovided document).",
+        "The validation service timed out on the last attempt.",
+        "The prompt format had minor whitespace variations."
+      ],
+      "answer": "The required information is simply absent from the source document (or exists only in an external unprovided document).",
+      "difficulty": "Medium",
+      "source": "UD4-049 | Building effective agents · Structured outputs",
+      "explanation": "Retries cannot recover information that does not exist in context. Retrying missing data causes loops to hit max attempts or hallucinate values.",
+      "examTrick": "Retries fail when required data is absent from input context.",
+      "importance": "High",
+      "tags": [
+        "Retry Limits",
+        "Missing Data"
+      ]
+    }
+  ]
+}

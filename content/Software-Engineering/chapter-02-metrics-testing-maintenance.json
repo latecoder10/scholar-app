@@ -1,0 +1,92 @@
+{
+  "subject": "Software Engineering",
+  "chapter": "Metrics, Testing, and SCM",
+  "description": "Explores project estimation (COCOMO, Function Points), testing strategies (Black-box, White-box, cyclomatic complexity), software quality metrics (CMMI levels), and maintenance.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A control flow graph (CFG) of a program module has 14 edges and 10 nodes. What is McCabe's Cyclomatic Complexity, V(G), of this program, assuming it has a single connected component?",
+      "options": [
+        "4",
+        "6",
+        "8",
+        "12"
+      ],
+      "answer": "6",
+      "difficulty": "Easy",
+      "source": "GATE CS 2011 / PSU Exam",
+      "explanation": "McCabe's Cyclomatic Complexity V(G) of a single program module (single connected component, P=1) is calculated using the formula:\nV(G) = E - V + 2\nwhere:\n- E is the number of edges = 14\n- V is the number of nodes = 10\nSubstituting the values: V(G) = 14 - 10 + 2 = 4 + 2 = 6.",
+      "examTrick": "Three formulas for Cyclomatic Complexity V(G):\n1. V(G) = E - V + 2 (edges & nodes)\n2. V(G) = Number of Binary Decisions + 1\n3. V(G) = Number of closed regions + 1\nAll three yield the identical result! Learn them all for exam speed.",
+      "importance": "High",
+      "tags": ["Software Metrics", "Cyclomatic Complexity", "White-Box Testing"]
+    },
+    {
+      "id": 2,
+      "question": "In the Basic COCOMO model, a software project with a small team, stable requirements, and familiar, simple programming environments is classified as:",
+      "options": [
+        "Organic",
+        "Semi-Detached",
+        "Embedded",
+        "Iterative"
+      ],
+      "answer": "Organic",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "Boehm's COCOMO (Constructive Cost Model) categorizes software projects into three development modes:\n1. Organic: Small, simple projects, experienced small teams, stable environments (e.g., payroll systems).\n2. Semi-Detached: Intermediate size/complexity, mixed experience team, medium complexity (e.g., database management systems).\n3. Embedded: Extremely complex, highly rigid constraints, tight coupling with hardware/software requirements (e.g., air-traffic control, military software).",
+      "examTrick": "COCOMO Modes summary:\n- Organic: Small size, stable, easy.\n- Semi-detached: Medium size, mixed team.\n- Embedded: High complexity, tight/strict hardware interface, critical.",
+      "importance": "High",
+      "tags": ["Project Estimation", "COCOMO Model", "Metrics"]
+    },
+    {
+      "id": 3,
+      "question": "Which of the following testing methodologies is classified as a WHITE-BOX testing technique?",
+      "options": [
+        "Equivalence Partitioning",
+        "Boundary Value Analysis",
+        "Decision Coverage Testing",
+        "State Transition Testing"
+      ],
+      "answer": "Decision Coverage Testing",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "- White-Box Testing (structural testing) examines the internal code structure, logic, and paths. Techniques include Statement coverage, Branch/Decision coverage, Path coverage, and Condition coverage.\n- Black-Box Testing (functional testing) focuses purely on input-output behaviors without code inspection. Techniques include Equivalence Partitioning, Boundary Value Analysis, State Transition testing, and Cause-Effect graphing.",
+      "examTrick": "White-Box = looking inside the code (Statement, Branch, Decision, Path, Data-flow). Black-Box = looking at the spec from outside (Boundary Values, Equivalence Classes, Decision Tables).",
+      "importance": "High",
+      "tags": ["Software Testing", "White-Box Testing", "Black-Box Testing"]
+    },
+    {
+      "id": 4,
+      "question": "What is the relationship between statement coverage and branch/decision coverage in white-box testing?",
+      "options": [
+        "100% statement coverage guarantees 100% branch coverage.",
+        "100% branch coverage guarantees 100% statement coverage.",
+        "Statement coverage and branch coverage are completely independent and have no relationship.",
+        "Both statement and branch coverage are mathematically equivalent to cyclomatic complexity."
+      ],
+      "answer": "100% branch coverage guarantees 100% statement coverage.",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "- Branch/Decision coverage requires that every path out of a decision node (e.g., both the True and False outcomes of an 'if' statement) is executed at least once.\n- If all branches are fully covered, then every single statement inside those branches must have been traversed. Thus, 100% branch coverage guarantees 100% statement coverage.\n- The reverse is NOT true: a single test case can cover 100% of statements in a simple 'if' without exercising the implicit 'else' block, resulting in only 50% branch coverage.",
+      "examTrick": "Stronger vs Weaker coverage: Path Coverage > Branch/Decision Coverage > Statement Coverage. Stronger coverage always guarantees 100% of the weaker coverage, but not vice-versa!",
+      "importance": "High",
+      "tags": ["Software Testing", "Test Coverage", "White-Box Testing"]
+    },
+    {
+      "id": 5,
+      "question": "In the Capability Maturity Model Integration (CMMI), at which maturity level is process performance managed quantitatively, using statistical and quantitative techniques?",
+      "options": [
+        "Level 2 (Managed)",
+        "Level 3 (Defined)",
+        "Level 4 (Quantitatively Managed)",
+        "Level 5 (Optimizing)"
+      ],
+      "answer": "Level 4 (Quantitatively Managed)",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021 / PSU Exam",
+      "explanation": "CMMI defines 5 maturity levels:\n1. Initial: Processes are unpredictable, poorly controlled, and reactive.\n2. Managed: Processes are characterized for projects and are often reactive.\n3. Defined: Processes are characterized for the entire organization and are proactive.\n4. Quantitatively Managed: Processes are controlled and measured using statistical and quantitative techniques.\n5. Optimizing: Focus is on continuous process improvement.",
+      "examTrick": "CMMI Levels mnemonic: I M D Q O\n1. Initial (I)\n2. Managed (M)\n3. Defined (D)\n4. Quantitatively Managed (Q)\n5. Optimizing (O). Learn this exact sequence!",
+      "importance": "High",
+      "tags": ["Software Quality", "CMMI", "Software Standards"]
+    }
+  ]
+}

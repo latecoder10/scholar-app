@@ -1,0 +1,6 @@
+{
+  "name": "Exam Scholar Hub",
+  "description": "Multi-Exam Cognitive Preparation & Mock Simulation Suite for CIL MT, Claude Certified Architect (CCAF), and professional technical certifications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

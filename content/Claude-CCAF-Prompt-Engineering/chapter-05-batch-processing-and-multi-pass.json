@@ -1,0 +1,50 @@
+{
+  "subject": "Claude CCAF: Prompt Engineering & Structured Output",
+  "chapter": "4.5 Batch Processing Strategy & Multi-Pass Pipelines",
+  "exam": "Claude CCAF",
+  "paper": "Domain-4",
+  "description": "Message Batches API (50% discount, 24h SLA), custom_id correlation, latency vs cost tradeoffs, and multi-pass chunking.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Documents arrive continuously through business hours; you want the Batch API (50% discount, up-to-24-hour window). The SLA requires results within 30 hours of document arrival at 99.9% reliability. Which batching strategy is most appropriate?",
+      "options": [
+        "Submit batches every 6 hours containing documents from that window.",
+        "Submit a single batch at end of day containing all documents from that day.",
+        "Submit batches every 4 hours containing documents from that window.",
+        "Use the real-time API for all documents instead of batch processing."
+      ],
+      "answer": "Submit batches every 4 hours containing documents from that window.",
+      "difficulty": "Hard",
+      "source": "CS4-001 (§4.5) | Batch processing · Message Batches API",
+      "explanation": "Worst case latency = Max Queue Wait + 24h processing window. 4h wait + 24h processing = 28h worst-case (providing 2h safety margin against the 30h SLA). A 6h wait leaves zero margin (30h exact).",
+      "examTrick": "Batch SLA math: Worst-case latency = Batch interval + 24h processing window.",
+      "importance": "High",
+      "tags": [
+        "Batch API",
+        "SLA Calculations",
+        "Cost Optimization"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Two document types share a schema: standard monthly reports (archived after processing) and urgent exception reports (must trigger alerts within 30 minutes). Minimise API cost while meeting latency. How should the pipeline be architected?",
+      "options": [
+        "Submit all documents to the real-time Messages API for consistent latency.",
+        "Submit all to the Batch API with custom_ids; when results arrive, immediately process urgent documents and trigger delayed alerts.",
+        "Queue all documents and submit hourly batches, flagging urgent documents for expedited handling when results return.",
+        "Route standard reports to the Batch API for 50% cost savings, and route urgent exception reports to the real-time Messages API."
+      ],
+      "answer": "Route standard reports to the Batch API for 50% cost savings, and route urgent exception reports to the real-time Messages API.",
+      "difficulty": "Medium",
+      "source": "CS4-002 (§4.5) | Batch processing · Messages API",
+      "explanation": "Split routing by latency SLA: standard reports capture the 50% Batch API discount over 24h, while urgent sub-30-minute alerts use the real-time Messages API.",
+      "examTrick": "Hybrid batch routing: Real-time API for low-latency alerts (<1h); Batch API for bulk tolerant work (24h).",
+      "importance": "High",
+      "tags": [
+        "Hybrid Batch Routing",
+        "Cost vs Latency"
+      ]
+    }
+  ]
+}

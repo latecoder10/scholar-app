@@ -1,0 +1,93 @@
+{
+  "subject": "Claude CCAF: Prompt Engineering & Structured Output",
+  "chapter": "4.3 Structured Output, JSON Schemas & Strict Mode",
+  "exam": "Claude CCAF",
+  "paper": "Domain-4",
+  "description": "JSON Schema compilation, output_config, strict mode, enums with 'other' escape hatches, and nullable fields.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Output must strictly conform to a complex nested JSON schema with required and optional fields. Which approach guarantees schema-compliant output?",
+      "options": [
+        "System prompt with explicit instructions to follow the schema exactly.",
+        "Detailed schema description in the prompt with examples of valid JSON.",
+        "Validation loop checking output against the schema, retrying until valid.",
+        "Use tool_use function calling with a schema parameter enforcing valid structure."
+      ],
+      "answer": "Use tool_use function calling with a schema parameter enforcing valid structure.",
+      "difficulty": "Easy",
+      "source": "UD4-002 | Structured outputs and strict tool use · Tool use",
+      "explanation": "tool_use with JSON schema (or output_config.format with strict: true) enforces schema constraints at token generation time, guaranteeing valid structural output.",
+      "examTrick": "Guaranteed JSON schema output = tool_use schema or output_config.format (strict: true).",
+      "importance": "High",
+      "tags": [
+        "Structured Output",
+        "tool_use",
+        "strict: true"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "payment_status enum is ['paid', 'pending', 'overdue'], but documents sometimes use \"processing\" or \"on_hold\" and extraction fails. How do you handle enumeration edge cases?",
+      "options": [
+        "Expand the enum to include all possible payment status values comprehensively.",
+        "Add an \"other\" enum value capturing statuses not in the predefined set.",
+        "Remove the enum constraint, using a free-text string field.",
+        "A validation loop retrying extraction until the status matches the enum."
+      ],
+      "answer": "Add an \"other\" enum value capturing statuses not in the predefined set.",
+      "difficulty": "Medium",
+      "source": "UD4-008 | Structured outputs",
+      "explanation": "Open-ended real-world domains need an 'other' escape hatch in the enum (often paired with an other_detail string field) to prevent validation failures on unlisted values.",
+      "examTrick": "Open-ended enum domains = Add 'other' value + details string to avoid validation failures.",
+      "importance": "High",
+      "tags": [
+        "Enums",
+        "Escape Hatches",
+        "Schema Design"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "A required date field causes fabricated dates when the invoice date is unclear. How do you prevent data fabrication?",
+      "options": [
+        "Use an optional or nullable date field in the schema, with an \"unclear\" enum for ambiguous cases.",
+        "Add validation checking extracted dates against invoice content before acceptance.",
+        "Stronger instructions emphasizing \"never fabricate information, only extract what exists\".",
+        "Few-shot examples showing correct handling of missing dates."
+      ],
+      "answer": "Use an optional or nullable date field in the schema, with an \"unclear\" enum for ambiguous cases.",
+      "difficulty": "Hard",
+      "source": "UD4-009 | Structured outputs · Tool use — input schemas",
+      "explanation": "Forcing required fields on data that may be missing creates structural pressure to fabricate. Making the field nullable or optional eliminates the fabrication incentive.",
+      "examTrick": "Prevent fabrication on missing data = Make field nullable/optional in schema.",
+      "importance": "High",
+      "tags": [
+        "Fabrication Prevention",
+        "Nullable Fields",
+        "Schema Engineering"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "A response must always be {\"status\": \"success\"|\"error\", \"data\": object, \"metadata\": object}, guaranteed on every response with no exceptions. Which approach provides the absolute strongest guarantee?",
+      "options": [
+        "output_config with json_schema type, strict: true, and the specified schema.",
+        "Few-shot examples showing 5 different correct JSON responses.",
+        "System prompt with an explicit JSON template and instructions to follow it exactly.",
+        "Tool definition with the schema and tool_choice forced to that tool."
+      ],
+      "answer": "output_config with json_schema type, strict: true, and the specified schema.",
+      "difficulty": "Hard",
+      "source": "UD4-043 | Structured outputs · Messages API",
+      "explanation": "output_config.format with strict: true constrains the assistant's primary text response directly into the specified JSON grammar, providing the absolute strongest guarantee.",
+      "examTrick": "Absolute strongest response format guarantee = output_config with strict: true JSON schema.",
+      "importance": "High",
+      "tags": [
+        "output_config",
+        "strict: true",
+        "Response Schemas"
+      ]
+    }
+  ]
+}

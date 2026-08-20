@@ -1,0 +1,317 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.2 Coordinator & Subagent Orchestration",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "Hub-and-spoke topologies, coordinator visibility, structured error propagation, fan-in synchronization, and failure isolation across subagents.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A workflow requires multiple independent research tasks before generating a final report; each queries different sources with no dependencies. Which orchestration strategy minimizes latency?",
+      "options": [
+        "Execute research tasks sequentially to simplify coordination.",
+        "Execute all research tasks in parallel and synthesize results after all complete.",
+        "Execute only one research task and infer the remaining information.",
+        "Ask the user to perform the research manually."
+      ],
+      "answer": "Execute all research tasks in parallel and synthesize results after all complete.",
+      "difficulty": "Easy",
+      "source": "UD1-010 | Multi-agent research system — parallelism",
+      "explanation": "With independent tasks and no inter-task dependencies, parallel fan-out reduces total latency from the sum of task durations to the maximum single task duration.",
+      "examTrick": "Independent subtasks = Parallel fan-out with coordinator fan-in synthesis.",
+      "importance": "High",
+      "tags": [
+        "Parallel Orchestration",
+        "Fan-out Fan-in"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Coordinator plus 3 specialized subagents. An error in subagent B propagates, causing cascade failure; the coordinator can't isolate it. How do you prevent error cascade in multi-agent systems?",
+      "options": [
+        "Subagent errors should cause complete workflow restart for consistency.",
+        "Coordinator should ignore subagent errors, completing the workflow with partial results.",
+        "All subagents should retry operations indefinitely until success.",
+        "Structured error propagation with failure isolation enabling coordinator-level recovery."
+      ],
+      "answer": "Structured error propagation with failure isolation enabling coordinator-level recovery.",
+      "difficulty": "Hard",
+      "source": "UD1-013 | Multi-agent research system — error handling",
+      "explanation": "Isolation confines subagent B's failure so branches A and C remain healthy. Structured error propagation returns typed errors (step, failure type, partial data) allowing the coordinator to execute selective recovery.",
+      "examTrick": "Prevent error cascade = Failure isolation + Structured typed error propagation to coordinator.",
+      "importance": "High",
+      "tags": [
+        "Error Cascades",
+        "Failure Isolation",
+        "Multi-Agent"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "Hub-and-spoke with coordinator plus 4 subagents. Subagents occasionally communicate directly; the coordinator loses visibility and information flow becomes unpredictable. What violates the hub-and-spoke principle?",
+      "options": [
+        "Coordinator bottleneck requires peer-to-peer subagent communication for performance.",
+        "Direct subagent communication bypasses coordinator, violating hub-and-spoke architecture pattern.",
+        "Using 4 subagents exceeds the recommended maximum of 3 subagents per coordinator.",
+        "Subagents should share a common context pool enabling direct communication efficiency."
+      ],
+      "answer": "Direct subagent communication bypasses coordinator, violating hub-and-spoke architecture pattern.",
+      "difficulty": "Medium",
+      "source": "UD1-025 | Multi-agent research system — orchestrator/worker topology",
+      "explanation": "Hub-and-spoke requires that every message crosses the hub. Direct peer-to-peer communication bypasses the coordinator, destroying centralized observability, uniform error handling, and curated context passing.",
+      "examTrick": "Hub-and-spoke invariant: All inter-subagent communication MUST route through the central coordinator.",
+      "importance": "High",
+      "tags": [
+        "Hub-and-Spoke",
+        "Multi-Agent Topology"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "A subagent fails and returns an empty result; the coordinator continues synthesis assuming success, and the silent failure produces incorrect output. How should subagent failures be propagated?",
+      "options": [
+        "Subagent should retry operation indefinitely until success before returning.",
+        "Coordinator should assume success when subagent returns any result.",
+        "Empty results indicate unavailable data; coordinator handles gracefully continuing.",
+        "Structured error propagation to coordinator with failure details enabling recovery decisions."
+      ],
+      "answer": "Structured error propagation to coordinator with failure details enabling recovery decisions.",
+      "difficulty": "Medium",
+      "source": "UD1-028 | Multi-agent research system — error handling",
+      "explanation": "Empty results are ambiguous (data not found vs tool failure). Subagents must return structured error payloads ({status: 'error', code, step, partial_data}) so the coordinator can distinguish failures from legitimate empty data.",
+      "examTrick": "Never return empty results on tool failure; propagate structured errors with isError: true.",
+      "importance": "High",
+      "tags": [
+        "Silent Failures",
+        "Error Propagation"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "A web-search subagent is assigned a task requiring document analysis and lacks the tools. How should it handle the task-capability mismatch?",
+      "options": [
+        "Subagent requests additional document analysis tools from the coordinator at runtime.",
+        "Subagent attempts the task using available web search tools, doing best effort.",
+        "Coordinator should never assign tasks beyond subagent's advertised capabilities.",
+        "Subagent returns structured error indicating missing_required_tool with capability description."
+      ],
+      "answer": "Subagent returns structured error indicating missing_required_tool with capability description.",
+      "difficulty": "Medium",
+      "source": "UD1-033 | Claude Code subagents — tool restrictions",
+      "explanation": "Fail fast with a machine-readable typed error (missing_required_tool) and capability details so the coordinator can immediately re-route to the document analysis specialist.",
+      "examTrick": "Tool capability mismatch -> Fail fast with typed missing_required_tool error.",
+      "importance": "High",
+      "tags": [
+        "Capability Mismatch",
+        "Tool Scoping"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "Synthesis over 6 subagents' results produces contradictory claims, reducing report quality. How do you improve synthesis quality when handling contradictions?",
+      "options": [
+        "Sequential subagent invocation allowing synthesis to guide subsequent research.",
+        "Structured subagent outputs with explicit claim-evidence pairs enabling contradiction detection.",
+        "Multiple synthesis passes with a voting mechanism for claim validation.",
+        "Increase synthesis agent thinking time for more careful contradiction analysis."
+      ],
+      "answer": "Structured subagent outputs with explicit claim-evidence pairs enabling contradiction detection.",
+      "difficulty": "Hard",
+      "source": "UD1-042 | Multi-agent research system — output structure and citations",
+      "explanation": "Contradiction detection fails in free prose because claims must be aligned to common propositions. Requiring structured outputs ({claim, evidence, source, confidence}) allows mechanical comparison and preserved provenance.",
+      "examTrick": "Contradiction resolution in synthesis = Structured claim-evidence-source pairs.",
+      "importance": "High",
+      "tags": [
+        "Synthesis",
+        "Contradiction Resolution",
+        "Provenance"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "An orchestrator must route tasks between an expensive/thorough model and a cheap/fast model in a customer-complaint system. Which routing strategy is recommended?",
+      "options": [
+        "Randomly distribute requests between models to balance load.",
+        "Always use the larger model for customer-facing interactions to ensure quality.",
+        "Use the small model for classification and routing, the large model for generating the final customer response, and the small model for logging and follow-up actions.",
+        "Use the cheaper model for everything and only escalate when it returns low confidence."
+      ],
+      "answer": "Use the small model for classification and routing, the large model for generating the final customer response, and the small model for logging and follow-up actions.",
+      "difficulty": "Medium",
+      "source": "UD1-068 | Building effective agents — routing workflow · Choosing a model",
+      "explanation": "Match model capability to the difficulty of each step. Low-ambiguity classification/routing uses fast cheap models; high-stakes customer-facing synthesis uses the capable model; mechanical logging uses the cheap model.",
+      "examTrick": "Step-difficulty routing: Small model (classify/log) + Large model (generate response).",
+      "importance": "High",
+      "tags": [
+        "Model Routing",
+        "Cost Optimization"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "The web-search subagent returns 3 of 5 source categories (news archives and social feeds timed out); document analysis fully succeeds. Synthesis must produce a summary from mixed-quality inputs. Most effective error-propagation strategy?",
+      "options": [
+        "Continue synthesis using only successful sources and produce output without mentioning what was unavailable.",
+        "The synthesis subagent asks the coordinator to retry timed-out sources with a longer timeout before starting.",
+        "The synthesis subagent returns an error to the coordinator, triggering a full retry or task failure.",
+        "Structure the synthesis output with coverage annotations indicating which conclusions are well-supported and where gaps exist due to unavailable sources."
+      ],
+      "answer": "Structure the synthesis output with coverage annotations indicating which conclusions are well-supported and where gaps exist due to unavailable sources.",
+      "difficulty": "Hard",
+      "source": "UD1-070 | Multi-agent research system — handling partial results",
+      "explanation": "Graceful degradation with disclosure: Partial results (60% sources + 100% docs) support real conclusions if coverage annotations clearly mark supported vs missing source categories.",
+      "examTrick": "Partial subagent failures = Graceful degradation with explicit coverage gap annotations.",
+      "importance": "High",
+      "tags": [
+        "Partial Results",
+        "Coverage Annotations",
+        "Graceful Degradation"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "\"Analyze the uploaded quarterly report\" routes to the web-search agent 45% of the time. The web-search agent's tool is analyze_content — \"analyzes content and extracts key information\"; the document agent's is analyze_document — \"analyzes documents and extracts key information.\" How should you fix the misrouting?",
+      "options": [
+        "Rename the web-search tool to extract_web_results and update its description to \"processes and returns information retrieved from web search and URLs.\"",
+        "Add few-shot examples to the coordinator prompt showing correct routing.",
+        "Expand the document analysis tool description with usage examples, leaving the web-search tool unchanged.",
+        "Add a pre-routing classifier that detects whether the user refers to uploaded files or web content."
+      ],
+      "answer": "Rename the web-search tool to extract_web_results and update its description to \"processes and returns information retrieved from web search and URLs.\"",
+      "difficulty": "Medium",
+      "source": "UD1-079 | Writing tools for agents — naming and descriptions",
+      "explanation": "The root cause is near-identical names and descriptions (analyze_content vs analyze_document). Fixing the tool interface with distinct verbs and domain-specific descriptions eliminates semantic overlap at the source.",
+      "examTrick": "Fix tool selection ambiguity at the interface: Unique names + distinct domain descriptions.",
+      "importance": "High",
+      "tags": [
+        "Tool Selection",
+        "Interface Design",
+        "Routing Ambiguity"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "A report on \"impact of remote work on urban real estate\" discusses only office vacancy, missing residential migration and housing prices. Every subagent succeeded. The coordinator decomposed into \"office vacancy trends,\" \"commercial lease rates,\" \"downtown foot traffic.\" Root cause and fix?",
+      "options": [
+        "The coordinator's task decomposition was too narrow; improve decomposition to cover all major sub-domains before delegating.",
+        "The synthesis subagent failed to flag coverage gaps; add gap-detection instructions to synthesis.",
+        "The web search subagent's queries were too narrow; broaden its search query templates.",
+        "The subagents lack shared context about the overall goal; pass the full original query to every subagent."
+      ],
+      "answer": "The coordinator's task decomposition was too narrow; improve decomposition to cover all major sub-domains before delegating.",
+      "difficulty": "Hard",
+      "source": "QD1-03 | Multi-agent research system — task decomposition",
+      "explanation": "All subtopics assigned were commercial real estate. Subagents executed their briefs flawlessly, but residential and housing sub-domains were never assigned. Coverage failures originate in the coordinator's decomposition.",
+      "examTrick": "Missing broad topic areas despite subagent success = Coordinator task decomposition was too narrow.",
+      "importance": "High",
+      "tags": [
+        "Task Decomposition",
+        "Coverage Gaps",
+        "Orchestrator"
+      ]
+    },
+    {
+      "id": 11,
+      "question": "Research -> writing -> editing, each stage strictly dependent on the completed output of the previous one, with no loop-back or extra coordination. Which topology, and why?",
+      "options": [
+        "Hub-and-Spoke",
+        "Hub-and-Spoke, but with the coordinator running all three agents in parallel",
+        "Pipeline",
+        "Peer-to-peer"
+      ],
+      "answer": "Pipeline",
+      "difficulty": "Easy",
+      "source": "QD1-13 | Building effective agents — prompt chaining",
+      "explanation": "Strict sequential dependency with a single flow direction and no coordination decisions beyond handoff is a Pipeline (prompt chaining). A hub adds unnecessary overhead.",
+      "examTrick": "Strict sequential dependency chain with no feedback loops = Pipeline Topology.",
+      "importance": "High",
+      "tags": [
+        "Pipeline Topology",
+        "Prompt Chaining"
+      ]
+    },
+    {
+      "id": 12,
+      "question": "You need centralized error handling, auditability, and the ability to intervene between every subagent call in a compliance-sensitive workflow. Which topology, and why?",
+      "options": [
+        "Hub-and-spoke",
+        "Peer-to-peer",
+        "Pipeline",
+        "Hub-and-spoke, but letting subagents communicate directly once invoked"
+      ],
+      "answer": "Hub-and-spoke",
+      "difficulty": "Easy",
+      "source": "QD1-24 | Multi-agent research system — orchestrator design",
+      "explanation": "Hub-and-spoke routes all calls through the central coordinator, providing centralized error policy, unified audit logging, and programmatic intervention points between subagent calls.",
+      "examTrick": "Centralized error handling + Auditability + Intervention points = Hub-and-Spoke Topology.",
+      "importance": "High",
+      "tags": [
+        "Hub-and-Spoke",
+        "Compliance",
+        "Observability"
+      ]
+    },
+    {
+      "id": 13,
+      "question": "A Multi-Agent Research orchestrator stores session state in a single shared database all subagents read and write; the team observes inconsistencies. Which design MOST directly addresses this?",
+      "options": [
+        "Have the subagents lock the database during every single write.",
+        "Concentrate state ownership at the orchestrator.",
+        "Accept the inconsistencies as inherent to multi-agent systems.",
+        "Replicate the entire database separately for every subagent."
+      ],
+      "answer": "Concentrate state ownership at the orchestrator.",
+      "difficulty": "Hard",
+      "source": "BU1-001 (§1.2) | Multi-agent research system — state and coordination",
+      "explanation": "Inconsistencies stem from shared mutable state with concurrent writers. Concentrating state ownership at the orchestrator establishes a single writer and single source of truth.",
+      "examTrick": "Multi-agent state inconsistency fix = Single writer / orchestrator-owned state.",
+      "importance": "High",
+      "tags": [
+        "State Management",
+        "Concurrency",
+        "Orchestrator"
+      ]
+    },
+    {
+      "id": 14,
+      "question": "An orchestrator prompt says \"Combine subagent findings into a final report.\" Reports omit some findings without explanation. Which change BEST ensures every finding appears?",
+      "options": [
+        "Lower temperature to reduce omission variance.",
+        "Increase max_tokens so all findings have room to fit.",
+        "Require: enumerate every finding ID in an appendix, mark each as included/excluded with a one-sentence rationale.",
+        "Concatenate all subagent outputs verbatim so nothing can be dropped."
+      ],
+      "answer": "Require: enumerate every finding ID in an appendix, mark each as included/excluded with a one-sentence rationale.",
+      "difficulty": "Medium",
+      "source": "BU1-002 (§1.2) | Structured outputs · Multi-agent research system",
+      "explanation": "Enforcing an explicit output contract (disposition per finding ID) makes omission structurally detectable and turns dropped items into deliberate, reviewable decisions.",
+      "examTrick": "Prevent synthesis omissions = Output contract requiring finding ID enumeration & disposition rationale.",
+      "importance": "High",
+      "tags": [
+        "Synthesis Contracts",
+        "Structured Outputs"
+      ]
+    },
+    {
+      "id": 15,
+      "question": "An orchestrator dispatches three parallel subagents with a voting (majority-wins) fan-in. Which insight MOST directly applies?",
+      "options": [
+        "Voting fan-in increases reliability through redundancy but pays 3× the cost of single execution.",
+        "Voting across branches is essentially always cheaper overall than a single execution.",
+        "Voting is inappropriate for any agentic task.",
+        "Voting requires sequential execution."
+      ],
+      "answer": "Voting fan-in increases reliability through redundancy but pays 3× the cost of single execution.",
+      "difficulty": "Easy",
+      "source": "BU1-005 (§1.2) | Building effective agents — parallelization (voting)",
+      "explanation": "Voting fan-in is a classic reliability-for-cost trade-off: 3 independent parallel attempts make single anomalous errors non-decisive at 3x token spend.",
+      "examTrick": "Voting fan-in = High reliability for error-sensitive judgements at 3x token cost multiplier.",
+      "importance": "High",
+      "tags": [
+        "Voting Pattern",
+        "Cost Economics",
+        "Redundancy"
+      ]
+    }
+  ]
+}

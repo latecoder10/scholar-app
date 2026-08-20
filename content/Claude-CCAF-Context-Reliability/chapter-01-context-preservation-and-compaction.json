@@ -1,0 +1,468 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.1 Context Dynamics, Compaction & Prompt Caching",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "Sliding windows, compaction, persistent structured fact blocks, lost-in-the-middle mitigations, and prompt caching breakpoints.",
+  "questions": [
+    {
+      "question": "An agent loop appends tool results to history; after 20 iterations the context window approaches its limit. How do you manage conversation history in long-running loops?",
+      "options": [
+        "Increase context window size to accommodate all iterations without truncation.",
+        "Clear conversation history periodically, restarting the agent with fresh context.",
+        "Implement a sliding window maintaining context relevance, summarizing older content.",
+        "Truncate the oldest tool results, keeping only recent results."
+      ],
+      "answer": "Implement a sliding window maintaining context relevance, summarizing older content.",
+      "difficulty": "Medium",
+      "source": "Context windows and compaction · Effective context engineering for AI agents ---",
+      "explanation": "A sliding window **with summarisation** bounds growth while preserving the causal chain: recent turns stay verbatim (where detail matters most), older material is condensed into what still bears on the remaining work, and nothing is silently dropped. This is the pattern behind both server-side compaction and `/compact`.\n\nWhy distractors fail:\n- **A** — Buys headroom without changing the growth rate; any unbounded loop fills any window.\n- **B** — Clearing discards the task definition and everything learned, so the agent restarts from nothing.\n- **D** — Truncating the oldest results removes the earliest turns, which typically hold the goal and constraints — the highest-value tokens present.",
+      "examTrick": "Exam Rule:  — A sliding window with summarisation bounds growth while preserving the causal chain: recent turns stay verbatim (where detail matters most),",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 1
+    },
+    {
+      "question": "Long-document extraction shows the \"lost in the middle\" effect — middle content is missed despite being within the context window. How do you address attention dilution?",
+      "options": [
+        "Use extended thinking, giving the model more time for complete analysis.",
+        "Explicit instructions directing attention to middle sections.",
+        "Increase context window size, reducing the \"middle\" proportion of the document.",
+        "Split the document into focused chunks, processing each independently with overlap."
+      ],
+      "answer": "Split the document into focused chunks, processing each independently with overlap.",
+      "difficulty": "Medium",
+      "source": "Long context prompting tips · Context windows ---",
+      "explanation": "Chunking **eliminates the middle**: in a small enough chunk, every position is effectively a high-attention position. The overlap matters too — it ensures information spanning a boundary appears intact in at least one chunk, so nothing is lost at the seams.\n\nWhy distractors fail:\n- **C** — The stem already says the content is *within* the window; a larger window leaves the same proportion in the middle, just of a bigger document.\n- **A** — Thinking time does not change where attention falls across a long input.\n- **B** — \"Pay attention to the middle\" is an instruction against an architectural effect; it cannot reliably override it.",
+      "examTrick": "Exam Rule:  — Chunking eliminates the middle: in a small enough chunk, every position is effectively a high-attention position. The overlap matters too — ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 2
+    },
+    {
+      "question": "A 200-page document pipeline frequently misses middle sections. Address attention dilution?",
+      "options": [
+        "Extended thinking time allowing complete document analysis.",
+        "Explicit instructions directing attention to middle sections.",
+        "Increase context window to maximum, reducing the \"middle\" proportion.",
+        "Split the document into overlapping chunks, processing each independently."
+      ],
+      "answer": "Split the document into overlapping chunks, processing each independently.",
+      "difficulty": "Medium",
+      "source": "Long context prompting tips ---",
+      "explanation": "Same remedy as UD5-004, and at 200 pages the case is stronger still: the \"middle\" is enormous, so only chunking gives every section a position where it will actually be attended to.\n\nWhy distractors fail:\n- **C** — Capacity was never the constraint.\n- **A** and **B** — Neither redistributes attention across a long input.",
+      "examTrick": "Exam Rule:  — Same remedy as UD5-004, and at 200 pages the case is stronger still: the \"middle\" is enormous, so only chunking gives every section a positi",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 3
+    },
+    {
+      "question": "A 47-turn support conversation approaches the context limit; earlier turns contain critical account details needed for the current issue. How do you preserve critical information?",
+      "options": [
+        "Truncate oldest messages, keeping only the most recent.",
+        "Increase context window to maximum, accommodating the complete history.",
+        "Sliding window approach with structured summarization preserving critical details.",
+        "Restart the conversation with fresh context when approaching the limit."
+      ],
+      "answer": "Sliding window approach with structured summarization preserving critical details.",
+      "difficulty": "Medium",
+      "source": "Effective context engineering for AI agents · Context windows ---",
+      "explanation": "The requirement is explicitly to **preserve the critical details**, and structured summarisation is what distinguishes this from ordinary compaction: account numbers, balances, and decisions are lifted into a durable structured form, while the conversational padding around them is condensed.\n\nWhy distractors fail:\n- **A** — The oldest messages are precisely where the critical account details live.\n- **D** — Restarting discards them entirely, and the customer must repeat everything.\n- **B** — Delays the limit without preserving anything, and the conversation will reach it again.",
+      "examTrick": "Exam Rule:  — The requirement is explicitly to preserve the critical details, and structured summarisation is what distinguishes this from ordinary compac",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 4
+    },
+    {
+      "question": "After 45 iterations the conversation is large and latency has increased. How do you manage conversation growth in long-running loops?",
+      "options": [
+        "Increase context window to maximum size.",
+        "A fixed iteration maximum preventing excessive conversation length.",
+        "Clear conversation history every 15 iterations.",
+        "Sliding window approach maintaining relevant context with summarization of older content."
+      ],
+      "answer": "Sliding window approach maintaining relevant context with summarization of older content.",
+      "difficulty": "Medium",
+      "source": "Context windows and compaction ---",
+      "explanation": "It addresses both stated symptoms: bounded context keeps **size** in check, and fewer input tokens per request directly reduces the **latency** the stem reports. Relevance-based retention means the reduction costs little in capability.\n\nWhy distractors fail:\n- **A** — A larger window makes each request slower, worsening the latency complaint.\n- **B** — Caps the work rather than managing the context; a legitimate 60-iteration task is truncated.\n- **C** — Periodic clearing loses accumulated findings every 15 iterations, so the agent repeatedly re-derives what it knew.",
+      "examTrick": "Exam Rule:  — It addresses both stated symptoms: bounded context keeps size in check, and fewer input tokens per request directly reduces the latency the ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 5
+    },
+    {
+      "question": "A 180-page extraction pipeline frequently misses middle sections. Which architectural approach addresses attention dilution?",
+      "options": [
+        "Extended thinking for thorough processing.",
+        "Explicit instructions to pay close attention to middle sections.",
+        "Increase the context window to maximum.",
+        "Split the document into overlapping chunks, processing each independently before aggregating results."
+      ],
+      "answer": "Split the document into overlapping chunks, processing each independently before aggregating results.",
+      "difficulty": "Medium",
+      "source": "Long context prompting tips ---",
+      "explanation": "Chunk with overlap, then aggregate — the standard architecture for long-document extraction, and the only option that changes where content sits relative to attention.\n\nWhy distractors fail:\n- **A**, **B**, **C** — None redistributes attention; C in particular treats a capacity symptom that is not the cause.",
+      "examTrick": "Exam Rule:  — Chunk with overlap, then aggregate — the standard architecture for long-document extraction, and the only option that changes where content ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 6
+    },
+    {
+      "question": "Web-search output (85K tokens **including page content**) plus document-analysis output (70K **including chains of thought**) totals 155K, but the synthesis agent performs best under 50K. Most effective solution?",
+      "options": [
+        "Have the synthesis agent process findings in sequential batches, maintaining state between calls.",
+        "Modify upstream agents to return structured data (key facts, quotes, relevance scores) instead of verbose content and reasoning.",
+        "Store findings in a vector database and give synthesis search tools to query during its work.",
+        "Add an intermediate summarization agent that condenses findings before synthesis."
+      ],
+      "answer": "Modify upstream agents to return structured data (key facts, quotes, relevance scores) instead of verbose content and reasoning.",
+      "difficulty": "Medium",
+      "source": "Effective context engineering for AI agents · Multi-agent research system ---",
+      "explanation": "The stem tells you what the bulk *is*: raw page content and reasoning traces — material the synthesis agent does not need. **Fixing the contract at the source** eliminates the tokens rather than compressing them later, and structured output (facts, quotes, scores) is more useful to synthesis than prose ever was. It also costs nothing extra: no additional agent, no additional call.\n\nWhy distractors fail:\n- **D** — The closest alternative, and it works — but it adds a whole agent and a pass over 155K tokens to discard material that should never have been produced.\n- **A** — Batching means synthesis never sees all findings together, which is exactly what synthesis requires.\n- **C** — Retrieval is lossy and non-deterministic for a task that needs *all* findings; a missed query silently drops a source.",
+      "examTrick": "Exam Rule:  — The stem tells you what the bulk *is*: raw page content and reasoning traces — material the synthesis agent does not need. Fixing the contra",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 7
+    },
+    {
+      "question": "An MCP database tool returns 500 rows as 200K tokens. Following MCP design best practices, what should the tool return?",
+      "options": [
+        "The full 200K token result so Claude has complete information.",
+        "Only the first row as a sample with total row count.",
+        "A compressed binary representation.",
+        "A summary with row count, column names, first 10 rows as examples, and a pagination token for fetching more rows on demand."
+      ],
+      "answer": "A summary with row count, column names, first 10 rows as examples, and a pagination token for fetching more rows on demand.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents — token efficiency · MCP — tools ---",
+      "explanation": "It gives the model everything needed to **decide what to do next** — how many rows matched, what the shape of the data is, what the values look like — at a tiny fraction of the tokens, plus a pagination token so the full data remains reachable on demand. Nothing is lost; it is deferred.\n\nWhy distractors fail:\n- **A** — 200K tokens for one tool call would consume most of the window and crowd out the task.\n- **B** — One row and a count is too little: no column names, no sense of the data's variety, and no way to fetch more.\n- **C** — Compression does not reduce token count once decoded, and the model cannot read a binary blob.",
+      "examTrick": "Exam Rule:  — It gives the model everything needed to decide what to do next — how many rows matched, what the shape of the data is, what the values look ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 8
+    },
+    {
+      "question": "80,000 documents each needing one classification call; results are needed for a report generated **every Friday**. Most cost-effective approach?",
+      "options": [
+        "Real-time API calls with prompt caching.",
+        "Message Batches API submitted Thursday with results available within 24 hours for Friday's report.",
+        "Real-time API calls processed sequentially throughout the week.",
+        "Multiple small batch jobs submitted daily throughout the week."
+      ],
+      "answer": "Message Batches API submitted Thursday with results available within 24 hours for Friday's report.",
+      "difficulty": "Medium",
+      "source": "Batch processing ---",
+      "explanation": "The deadline is **weekly**, so a 24-hour processing window is comfortably within tolerance — which makes this the textbook Batch API case and captures the ~50% discount on all 80,000 calls. Submitting Thursday for Friday leaves the full window available.\n\nWhy distractors fail:\n- **A** — Caching helps with repeated prefixes but does not approach the batch discount, and real-time pricing applies to every call.\n- **C** — Full price, plus a week of sequential processing.\n- **D** — Also uses the Batch API, so it captures the discount, but daily submission adds orchestration and tracking for no benefit when nothing is needed before Friday.",
+      "examTrick": "Exam Rule:  — The deadline is weekly, so a 24-hour processing window is comfortably within tolerance — which makes this the textbook Batch API case and ca",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 9
+    },
+    {
+      "question": "60% of cost is input tokens (mostly repeated context), 15% output, 25% thinking. Which optimization provides the biggest reduction?",
+      "options": [
+        "Reduce output length with `max_tokens` to save on the 15%.",
+        "Switch to a smaller model with lower per-token costs.",
+        "Reduce thinking budget to save on the 25%.",
+        "Implement prompt caching to save on the 60%."
+      ],
+      "answer": "Implement prompt caching to save on the 60%.",
+      "difficulty": "Medium",
+      "source": "Prompt caching ---",
+      "explanation": "Two facts point the same way: input is the **largest** cost category, and the content is **repeated** — which is precisely the condition under which caching pays, since cache reads are billed at a large discount. Attacking the biggest line item with the mechanism designed for its exact shape gives the largest saving with no capability loss.\n\nWhy distractors fail:\n- **A** — Optimises the smallest category, and truncating output degrades results.\n- **C** — Cuts reasoning quality on a quarter of spend when the larger, cost-free saving is available.\n- **B** — Reduces every rate but lowers capability across the board; a capability decision should not be driven by a cost problem that caching solves.",
+      "examTrick": "Exam Rule:  — Two facts point the same way: input is the largest cost category, and the content is repeated — which is precisely the condition under which",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 10
+    },
+    {
+      "question": "A 48-turn session covering a refund inquiry, subscription question, and payment update is approaching context limits. Optimal **compression strategy**?",
+      "options": [
+        "Switch to a model with a larger context window.",
+        "Summarise the entire session into a single paragraph and continue.",
+        "Summarise earlier, **resolved** issues into a narrative description while preserving full verbatim history only for the **active, unresolved** issue.",
+        "Delete the oldest 20 turns from context."
+      ],
+      "answer": "Summarise earlier, **resolved** issues into a narrative description while preserving full verbatim history only for the **active, unresolved** issue.",
+      "difficulty": "Medium",
+      "source": "Effective context engineering for AI agents · Context windows ---",
+      "explanation": "It compresses **by resolution status**, which is the right axis: resolved issues need only their outcome recorded, while the active issue needs full detail because that is where the next turn's reasoning happens. Maximum compression where information has served its purpose, zero compression where it is still in use.\n\nWhy distractors fail:\n- **B** — A single paragraph for three issues loses the active issue's detail, which is the part that must be preserved.\n- **D** — Deletes by position rather than relevance; the oldest 20 turns may contain the active issue's origin.\n- **A** — Not a compression strategy, and it postpones rather than solves.",
+      "examTrick": "Exam Rule:  — It compresses by resolution status, which is the right axis: resolved issues need only their outcome recorded, while the active issue needs ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 11
+    },
+    {
+      "question": "A \"turn\" in the Agent SDK makes multiple Claude API calls with tool use. Which metric tracks how many iterations the agent performed?",
+      "options": [
+        "The number of `tool_use` blocks generated across all responses.",
+        "Total output tokens divided by average tokens per turn.",
+        "Number of API calls multiplied by input tokens.",
+        "The `usage.iterations` field, counting agent turns."
+      ],
+      "answer": "The `usage.iterations` field, counting agent turns.",
+      "difficulty": "Medium",
+      "source": "Claude Agent SDK · Messages API — usage ---",
+      "explanation": "A reported field is authoritative; a derived estimate is not. Reading the count directly avoids every assumption the other options require.\n\nWhy distractors fail:\n- **A** — Counts *tool calls*, not iterations: one iteration may emit several parallel `tool_use` blocks, and a final iteration emits none.\n- **B** — Division by an \"average\" produces an estimate that is wrong whenever turn lengths vary, which they always do.\n- **C** — Multiplying calls by input tokens yields a quantity with no meaningful units and no relation to iteration count.",
+      "examTrick": "Exam Rule:  — A reported field is authoritative; a derived estimate is not. Reading the count directly avoids every assumption the other options require.",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 12
+    },
+    {
+      "question": "A long-running agent has a stable system prompt and first few turns, with frequently-changing recent messages. Where should explicit cache breakpoints go?",
+      "options": [
+        "On every message to cache as much as possible.",
+        "On the most recent messages to cache the newest content.",
+        "On the last stable content block before the frequently changing messages, with up to 4 explicit breakpoints on stable blocks.",
+        "Only on the system prompt, since tool definitions shouldn't be cached."
+      ],
+      "answer": "On the last stable content block before the frequently changing messages, with up to 4 explicit breakpoints on stable blocks.",
+      "difficulty": "Medium",
+      "source": "Prompt caching ---",
+      "explanation": "Caching is **prefix-based**, so a breakpoint is only useful where everything before it is byte-identical across requests. Placing it at the boundary between the stable region and the volatile region maximises the cached prefix; the 4-breakpoint limit is the documented maximum.\n\nWhy distractors fail:\n- **B** — Caches content that changes next request, so it is never read back.\n- **A** — Exceeds the breakpoint limit, and breakpoints inside the volatile region are wasted.\n- **D** — Tool definitions render *first* in the prefix and are usually the most stable, largest block — excluding them forfeits the biggest saving.",
+      "examTrick": "Exam Rule:  — Caching is prefix-based, so a breakpoint is only useful where everything before it is byte-identical across requests. Placing it at the boun",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 13
+    },
+    {
+      "question": "The synthesis agent receives 12 research summaries; findings from summaries **4–8** are systematically omitted. Likely cause and fix?",
+      "options": [
+        "The synthesis agent needs more detailed instructions about which summaries to include.",
+        "The \"lost in the middle\" effect. Place key findings at the beginning of aggregated inputs and use explicit section headers throughout.",
+        "The context window is too small; increase `max_tokens`.",
+        "Summaries 4–8 contain contradictory information the model excludes."
+      ],
+      "answer": "The \"lost in the middle\" effect. Place key findings at the beginning of aggregated inputs and use explicit section headers throughout.",
+      "difficulty": "Medium",
+      "source": "Long context prompting tips · Multi-agent research system ---",
+      "explanation": "The pattern is diagnostic: the omissions are **positional** (a contiguous middle block), not content-based. The fix is structural — a key-findings digest at the top puts the important material in a high-salience position, and section headers give the model navigational anchors into the body.\n\nWhy distractors fail:\n- **C** — `max_tokens` limits *output*, not input capacity, and nothing suggests truncation.\n- **D** — Would produce scattered omissions correlated with content, not a clean 4–8 block.\n- **A** — Instructions cannot redirect attention across a long input (UD5-004).",
+      "examTrick": "Exam Rule:  — The pattern is diagnostic: the omissions are positional (a contiguous middle block), not content-based. The fix is structural — a key-findin",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 14
+    },
+    {
+      "question": "Combining prompt caching with compaction: after compaction creates a summary block, subsequent requests show **no cache hits** even though the system prompt is unchanged. Explanation?",
+      "options": [
+        "Cache TTL expired during compaction processing.",
+        "The compaction block itself needs a `cache_control` breakpoint to establish a new cache entry subsequent requests can match against.",
+        "Compaction is incompatible with prompt caching.",
+        "The compaction block is too large for the minimum cacheable threshold."
+      ],
+      "answer": "The compaction block itself needs a `cache_control` breakpoint to establish a new cache entry subsequent requests can match against.",
+      "difficulty": "Medium",
+      "source": "Prompt caching · Context windows and compaction ---",
+      "explanation": "Compaction **rewrites the message history**, so the prefix that follows the system prompt is entirely new — and because caching matches on a contiguous prefix, the old cache entry no longer applies from that point on. The fix is to mark a new breakpoint after the compaction block so a fresh cache entry is established for the new prefix.\n\nWhy distractors fail:\n- **C** — They compose fine; the interaction just has to be handled.\n- **D** — Inverts the threshold: it is a *minimum* size, and being large helps rather than hinders.\n- **A** — TTL expiry would be time-dependent and intermittent, not consistently correlated with compaction.",
+      "examTrick": "Exam Rule:  — Compaction rewrites the message history, so the prefix that follows the system prompt is entirely new — and because caching matches on a con",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 15
+    },
+    {
+      "question": "With server-side compaction, an architect wants to inject additional context (e.g. updated tool results) **after** compaction but **before** the conversation continues. Which configuration enables this?",
+      "options": [
+        "Set `instructions` in the compaction config to include the additional context in the summary.",
+        "Append additional context as a system message after receiving the compaction block.",
+        "Use a PreCompact hook to inject context before compaction occurs.",
+        "Configure `pause_after_compaction: true`, which returns `stop_reason: 'compaction'`, allowing context injection before continuing."
+      ],
+      "answer": "Configure `pause_after_compaction: true`, which returns `stop_reason: 'compaction'`, allowing context injection before continuing.",
+      "difficulty": "Medium",
+      "source": "Context windows and compaction · Messages API ---",
+      "explanation": "It creates the **control point** the requirement needs: compaction completes, the request returns with a distinguishable stop reason, and your code injects whatever it wants before issuing the next request. Timing is exactly \"after compaction, before continuation\".\n\nWhy distractors fail:\n- **C** — PreCompact runs *before* compaction, so injected content would itself be summarised away — the wrong side of the boundary.\n- **A** — Compaction instructions shape how existing history is summarised; they cannot introduce new tool results.\n- **B** — Appending after the fact without pausing means the model has already continued; the injection misses the turn it was meant to inform.",
+      "examTrick": "Exam Rule:  — It creates the control point the requirement needs: compaction completes, the request returns with a distinguishable stop reason, and your c",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 16
+    },
+    {
+      "question": "Adding images alongside thinking mode fills the context window more quickly. What explains the interaction?",
+      "options": [
+        "Each image consumes fixed tokens regardless of thinking mode, limiting remaining capacity.",
+        "Images are not compatible with extended thinking and should be processed separately.",
+        "All tokens including thinking tokens count toward the context window limit, so images plus thinking traces consume context faster than either alone.",
+        "Images disable thinking mode automatically."
+      ],
+      "answer": "All tokens including thinking tokens count toward the context window limit, so images plus thinking traces consume context faster than either alone.",
+      "difficulty": "Medium",
+      "source": "Context windows · Extended thinking ---",
+      "explanation": "The window is a **single shared budget**: image tokens, input text, output, and thinking tokens all draw on it. The two additions are therefore cumulative, which is why the combination fills the window faster than either alone — exactly the \"interaction\" the question asks about.\n\nWhy distractors fail:\n- **A** — True as far as it goes (images do have a token cost) but it says nothing about thinking, so it does not explain the interaction.\n- **B** — False: images and extended thinking work together.\n- **D** — Invented behaviour; images do not disable thinking.",
+      "examTrick": "Exam Rule:  — The window is a single shared budget: image tokens, input text, output, and thinking tokens all draw on it. The two additions are therefore ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 17
+    },
+    {
+      "question": "An agentic loop encounters `stop_reason: 'max_tokens'` after requesting a complex analysis. What does it indicate and what should be done?",
+      "options": [
+        "Claude's response was truncated due to the token limit.",
+        "The context window is full.",
+        "Claude wants to call a tool but the response was cut off.",
+        "Claude has finished its analysis."
+      ],
+      "answer": "Claude's response was truncated due to the token limit.",
+      "difficulty": "Medium",
+      "source": "Handling stop reasons · Messages API ---",
+      "explanation": "`max_tokens` means generation stopped at the **output limit**, so the response is incomplete. The remedy is to raise `max_tokens` (using streaming for large values), or to break the analysis into smaller requests — and critically, **not** to treat the partial output as a finished answer.\n\nWhy distractors fail:\n- **B** — A full context window produces a different error at request time, not this stop reason.\n- **D** — `end_turn` signals completion; `max_tokens` is the opposite.\n- **C** — Speculates about intent the stop reason does not convey; a truncated turn may or may not have been heading toward a tool call.",
+      "examTrick": "Exam Rule:  — `max_tokens` means generation stopped at the output limit, so the response is incomplete. The remedy is to raise `max_tokens` (using streami",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 18
+    },
+    {
+      "question": "8K system prompt, 5 tool definitions at 2K each, user messages averaging 500 tokens, responses up to 4K, on a 200K model. Approximately how many turns before hitting the limit?",
+      "options": [
+        "About 180 turns · **B.** About 20 turns · **C.** About 40 turns · **D.** Unlimited, because old messages are truncated automatically"
+      ],
+      "answer": "About 180 turns · **B.** About 20 turns · **C.** About 40 turns · **D.** Unlimited, because old messages are truncated automatically",
+      "difficulty": "Medium",
+      "source": "Context windows · Token counting ---",
+      "explanation": "The arithmetic:\n| Component | Tokens |\n|---|---|\n| System prompt | 8,000 |\n| 5 tools × 2,000 | 10,000 |\n| **Fixed overhead** | **18,000** |\n| Remaining budget | 200,000 − 18,000 = **182,000** |\n| Per turn (500 user + 4,000 response) | **4,500** |\n| Turns | 182,000 ÷ 4,500 ≈ **40** |\nThe key insight is that the fixed overhead is paid **once**, while each turn's tokens **accumulate** in history and are re-sent on every subsequent request.\n\nWhy distractors fail:\n- **A** — ~180 would follow from counting only the 500-token user messages, ignoring the 4K responses that dominate.\n- **B** — ~20 would follow from charging the 18K overhead per turn rather than once.\n- **D** — Nothing truncates automatically; exceeding the window is an error unless you implement compaction.",
+      "examTrick": "Exam Rule:  — The arithmetic: | Component | Tokens | |---|---| | System prompt | 8,000 | | 5 tools × 2,000 | 10,000 | | Fixed overhead | 18,000 | | Remain",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 19
+    },
+    {
+      "question": "After compaction, specific numerical values from early in the conversation (balances, dates, transaction IDs) are lost in the summary. What design pattern prevents this?",
+      "options": [
+        "Increase the compaction trigger threshold to delay summarization.",
+        "Disable compaction and rely on larger context windows.",
+        "Custom compaction instructions specifically requesting preservation of numerical values.",
+        "Extract critical transactional facts into a **persistent structured block** that survives compaction."
+      ],
+      "answer": "Extract critical transactional facts into a **persistent structured block** that survives compaction.",
+      "difficulty": "Medium",
+      "source": "Effective context engineering for AI agents · Context windows and compaction ---",
+      "explanation": "Summarisation is inherently lossy on specifics, so the durable fix is to move those facts **out of the summarisable region entirely**. A persistent structured block is carried forward verbatim through every compaction cycle, so a transaction ID recorded at turn 3 is still exact at turn 300.\n\nWhy distractors fail:\n- **C** — The plausible runner-up, and worth doing — but instructions to a summariser are probabilistic, so values will still be lost sometimes. \"Prevents\" requires the structural guarantee.\n- **A** — Delays the loss to a later compaction rather than preventing it.\n- **B** — Removes the mechanism that keeps long sessions viable, and hits the same wall later.",
+      "examTrick": "Exam Rule:  — Summarisation is inherently lossy on specifics, so the durable fix is to move those facts out of the summarisable region entirely. A persist",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 20
+    },
+    {
+      "question": "Documenting a 500,000-line codebase by summarising each module and discarding its source. After 20 modules, docs for module 21 reference class names from module 3 that were **renamed in module 12**. What caused this?",
+      "options": [
+        "Progressive summarisation lost the rename detail: when module 12's summary replaced its source, the rename was condensed to \"various refactoring changes\", so the agent retained module 3's original class names from its earlier summary.",
+        "The context window overflowed, causing hallucinated class names.",
+        "Claude Code cached module 3's source and served the stale version instead of the updated file.",
+        "The model confused similar class names because too many modules were processed in one session."
+      ],
+      "answer": "Progressive summarisation lost the rename detail: when module 12's summary replaced its source, the rename was condensed to \"various refactoring changes\", so the agent retained module 3's original class names from its earlier summary.",
+      "difficulty": "Medium",
+      "source": "Effective context engineering for AI agents · Context windows ---",
+      "explanation": "It traces the exact failure path. Module 3's summary — recorded before the rename — carried the old names. Module 12's summary was *supposed* to record the rename, but summarisation compressed away the specific old→new mapping. The agent is now working from two summaries, one stale and one that omitted the correction, and has no source to fall back on because it was discarded. This is UD5-032's lesson applied to a real workflow: **cross-cutting facts like renames must be persisted structurally**, not left to per-module summaries.\n\nWhy distractors fail:\n- **B** — Overflow would raise an error, and the names are not hallucinated — they were real, at module 3.\n- **C** — No such stale-source caching, and the summaries, not the files, are what the agent is reading.\n- **D** — Not confusion between similar names; the agent is confidently using a name that was correct earlier.",
+      "examTrick": "Exam Rule:  — It traces the exact failure path. Module 3's summary — recorded before the rename — carried the old names. Module 12's summary was *supposed",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 21
+    },
+    {
+      "question": "What happens when a project knowledge base approaches context limits?",
+      "options": [
+        "Claude stops accepting new file uploads.",
+        "Older files are automatically deleted to make room.",
+        "You must create a new project to continue.",
+        "Claude searches your project knowledge and retrieves only what's relevant, expanding capacity by up to 10×."
+      ],
+      "answer": "Claude searches your project knowledge and retrieves only what's relevant, expanding capacity by up to 10×.",
+      "difficulty": "Medium",
+      "source": "Anthropic — Claude projects",
+      "explanation": "Beyond a threshold the project switches from loading everything into context to **retrieving what is relevant per request**. Because only the pertinent material is loaded each time, the effective capacity of the knowledge base grows substantially without any of it being discarded.\n\nWhy distractors fail:\n- **A** and **C** — Both describe hard limits; the system degrades gracefully instead.\n- **B** — Nothing is deleted; retrieval changes what is *loaded*, not what is *stored*.",
+      "examTrick": "Exam Rule:  — Beyond a threshold the project switches from loading everything into context to retrieving what is relevant per request. Because only the pe",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-5",
+        "5.1"
+      ],
+      "id": 22
+    }
+  ]
+}

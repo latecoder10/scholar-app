@@ -1,0 +1,92 @@
+{
+  "subject": "Algorithms",
+  "chapter": "Asymptotic Complexity and Sorting Algorithms",
+  "description": "Examines Big-O asymptotic notation, worst-case time/space analysis, searching, stable vs unstable sorting algorithms, and heap/merge/quick sorting details.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the worst-case time complexity of the Merge Sort algorithm for sorting an array of size n?",
+      "options": [
+        "O(n)",
+        "O(n^2 log n)",
+        "O(n log n)",
+        "O(n^2)"
+      ],
+      "answer": "O(n log n)",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "Merge Sort is a divide-and-conquer sorting algorithm. It recursively splits the array into two halves, sorts them, and then merges them back together. The recurrence relation is T(n) = 2T(n/2) + O(n). By Master's Theorem, this evaluates to O(n log n) in the best, average, and worst cases.",
+      "examTrick": "Merge Sort is highly predictable! Its time complexity is ALWAYS O(n log n) in all cases (Best, Average, and Worst). This sets it apart from Quick Sort (which degrades to O(n^2) in the worst case).",
+      "importance": "High",
+      "tags": ["Sorting", "Merge Sort", "Time Complexity", "CIL PYQ"]
+    },
+    {
+      "id": 2,
+      "question": "What is meant by a 'stable' sorting algorithm?",
+      "options": [
+        "A sorting algorithm is stable if it preserves the order of all keys",
+        "A sorting algorithm is stable if it preserves the order of non-duplicate keys",
+        "A sorting algorithm is stable if it preserves the relative order of duplicate keys",
+        "A sorting algorithm is stable if it doesn't preserve the order of duplicate keys"
+      ],
+      "answer": "A sorting algorithm is stable if it preserves the relative order of duplicate keys",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "In computer science, a sorting algorithm is defined as 'stable' if it preserves the relative order of records with equal keys (i.e., duplicate keys). If two items with equal keys appear in a certain order in the input, they will appear in the exact same order in the sorted output.",
+      "examTrick": "Stable Sorting = relative order of equal elements is preserved! Standard stable algorithms: Merge Sort, Insertion Sort, Bubble Sort. Unstable algorithms: Quick Sort, Heap Sort, Selection Sort.",
+      "importance": "High",
+      "tags": ["Sorting", "Stability", "CIL PYQ"]
+    },
+    {
+      "id": 3,
+      "question": "Consider a Binary Search Tree (BST) containing n elements. What is the average time complexity and worst-case time complexity required to search for a given element in this tree?",
+      "options": [
+        "Average O(log n), Worst O(n)",
+        "Average O(n log n), Worst O(n^2)",
+        "Average O(log n), Worst O(log n)",
+        "Average O(n), Worst O(n)"
+      ],
+      "answer": "Average O(log n), Worst O(n)",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020",
+      "explanation": "1. In a balanced BST, search time is proportional to height, which is log n. So average search time is O(log n).\n2. In the worst case, a BST can be skewed (resembling a singly linked list), where height is n. In this case, searching takes O(n) time.",
+      "examTrick": "For skewed binary trees (worst case), BST operations degrade to O(n) (linear search). This is why self-balancing trees like AVL or Red-Black trees are preferred to guarantee O(log n) worst-case bounds.",
+      "importance": "High",
+      "tags": ["Searching", "BST", "Time Complexity", "CIL PYQ"]
+    },
+    {
+      "id": 4,
+      "question": "Which of the following statements regarding sorting stability is correct?",
+      "options": [
+        "Insertion Sort and Merge Sort are stable. Heap Sort is inherently unstable.",
+        "Selection Sort is stable. Quick Sort is stable.",
+        "Heap Sort and Quick Sort are stable. Insertion Sort is unstable.",
+        "All comparison-based sorting algorithms are stable."
+      ],
+      "answer": "Insertion Sort and Merge Sort are stable. Heap Sort is inherently unstable.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020",
+      "explanation": "Let's review stability:\n- Stable algorithms: Insertion Sort, Merge Sort, Bubble Sort, Radix Sort.\n- Unstable algorithms: Heap Sort, Quick Sort, Selection Sort.\nThus, Insertion and Merge Sort are stable, while Heap Sort is inherently unstable.",
+      "examTrick": "This is a direct CIL MT 2020 question! Memorize stable vs unstable sorting list: Stable = (Bubble, Insertion, Merge). Unstable = (Selection, Quick, Heap).",
+      "importance": "High",
+      "tags": ["Sorting", "Stability", "Heap Sort", "CIL PYQ"]
+    },
+    {
+      "id": 5,
+      "question": "Using Master's Theorem, solve the following recurrence relation: T(n) = 4T(n/2) + n^2.",
+      "options": [
+        "Θ(n^3)",
+        "Θ(n^2 log n)",
+        "Θ(n^2)",
+        "Θ(log n)"
+      ],
+      "answer": "Θ(n^2 log n)",
+      "difficulty": "Hard",
+      "source": "CIL MT 2020 / GATE CS",
+      "explanation": "We can solve this using Master's Theorem:\n- The recurrence relation is of the form: T(n) = aT(n/b) + f(n)\n- Here, a = 4, b = 2, f(n) = n^2.\n- We calculate log_b(a) = log_2(4) = 2.\n- Since f(n) = Θ(n^(log_b(a))) = Θ(n^2), we fall into Case 2 of Master's Theorem.\n- Under Case 2, the solution is T(n) = Θ(n^(log_b(a)) * log n) = Θ(n^2 log n).",
+      "examTrick": "Master's Theorem Case 2: When f(n) matches n^(log_b a), you simply multiply f(n) by 'log n'! Here, n^2 * log n = Θ(n^2 log n).",
+      "importance": "High",
+      "tags": ["Asymptotic Complexity", "Recurrence Relations", "Master's Theorem", "CIL PYQ"]
+    }
+  ]
+}

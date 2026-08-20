@@ -1,0 +1,93 @@
+{
+  "subject": "English",
+  "chapter": "Reading Comprehension and Text Structuring",
+  "description": "Develops critical reading comprehension, sentence completion, para jumbles, and logical sentence ordering skills under standard exam conditions.",
+  "paper": "Paper-I",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Read the following passage carefully and answer the question that follows:\n\n'The energy transition is not a binary switch but a multi-decade journey of technological, infrastructural, and economic adaptation. For developing nations like India, coal remains the bedrock of baseload electricity generation, shielding the grid from the intermittency of solar and wind inputs. While renewable capacity has witnessed exponential growth, industrial operations like steel manufacturing and cement production cannot be electrified with current battery technologies. This reality has catalyzed investments in clean-coal technologies (CCT) such as supercritical boilers and coal gasification, allowing nations to lower their carbon intensity while securing their industrial lifelines. Thus, premature abandonment of fossil fuels without robust backup structures risks grid instability and economic deceleration.'\n\nAccording to the passage, why can't coal be completely and immediately replaced by renewable energy sources in developing nations like India?",
+      "options": [
+        "Developing nations lack the financial capital to build any wind or solar farms.",
+        "Coal provides reliable baseload power, and heavy industries like steel and cement cannot be electrified with current battery storage technology.",
+        "Coal has a lower carbon intensity than wind and solar power systems.",
+        "International climate treaties forbid developing nations from adopting green energy technologies."
+      ],
+      "answer": "Coal provides reliable baseload power, and heavy industries like steel and cement cannot be electrified with current battery storage technology.",
+      "difficulty": "Medium",
+      "source": "Reading Comprehension",
+      "explanation": "Let's read the passage details carefully:\n1. The passage explicitly states that 'coal remains the bedrock of baseload electricity generation, shielding the grid from the intermittency of solar and wind inputs.'\n2. It further adds: 'industrial operations like steel manufacturing and cement production cannot be electrified with current battery technologies.'\n3. This directly maps to the correct option, which correctly synthesizes both factors: baseload reliability and the electrification limits of heavy industries.",
+      "examTrick": "Direct Extraction: In reading comprehension, discard options with extreme words (e.g., 'lack all capital', 'forbid all green energy') and look for choices that capture the main logical clauses of the text without adding external assumptions.",
+      "importance": "High",
+      "tags": ["Comprehension", "Contextual Reading"]
+    },
+    {
+      "id": 2,
+      "question": "Based on the passage provided in Question 1, what is the role and objective of clean-coal technologies (CCT)?",
+      "options": [
+        "To immediately eliminate all coal-fired power stations globally.",
+        "To allow countries to completely bypass the transition to renewable energy sources.",
+        "To lower carbon intensity and emissions of coal usage while securing energy security for industrial operations.",
+        "To manufacture advanced high-capacity lithium-ion batteries for heavy industries."
+      ],
+      "answer": "To lower carbon intensity and emissions of coal usage while securing energy security for industrial operations.",
+      "difficulty": "Medium",
+      "source": "Reading Comprehension",
+      "explanation": "Let's analyze the text's reference to CCT:\n- The text states: 'CCT such as supercritical boilers and coal gasification, allowing nations to lower their carbon intensity while securing their industrial lifelines.'\n- This exactly matches the statement in the correct option, which emphasizes lowering carbon intensity while protecting energy and industrial security.",
+      "examTrick": "Text Matching: The passage uses the phrase 'lower their carbon intensity while securing their industrial lifelines'. The correct option paraphrases 'industrial lifelines' as 'energy security for industrial operations'.",
+      "importance": "High",
+      "tags": ["Comprehension", "Vocabulary in Context"]
+    },
+    {
+      "id": 3,
+      "question": "Rearrange the following sentences in a logical sequence to form a coherent paragraph:\n\nP. Consequently, grid operators must deploy fast-ramping backup sources to stabilize the voltage fluctuations.\nQ. Unlike traditional thermal plants, solar panels and wind turbines produce electricity only when weather conditions are favorable.\nR. The integration of high-penetration renewable energy presents a massive challenge for electrical grids.\nS. This inherent intermittency can cause sudden dips in power supply on cloudy or windless days.\n\nChoose the correct sequence from the options below:",
+      "options": [
+        "RQSP",
+        "RSPQ",
+        "QSRP",
+        "PQSR"
+      ],
+      "answer": "RQSP",
+      "difficulty": "Hard",
+      "source": "Para Jumbles",
+      "explanation": "Let's find the logical links to solve this para-jumble:\n1. Find the opening statement: Sentence 'R' introduces the main overarching topic ('The integration of high-penetration renewable energy presents a massive challenge...'). This is an excellent starting point.\n2. Connect cause and explanation: Sentence 'Q' elaborates on why it is a challenge by explaining the nature of solar and wind compared to traditional plants ('produce electricity only when weather conditions are favorable'). So, 'Q' follows 'R'.\n3. Trace the pronouns/determiners: Sentence 'S' starts with 'This inherent intermittency...', which directly refers to the weather-dependent production described in 'Q'. Hence, 'S' must immediately follow 'Q'.\n4. Identify the concluding consequence: Sentence 'P' begins with 'Consequently...' and describes how operators solve the problem of the dips mentioned in 'S'. Thus, 'P' follows 'S'.\n5. The complete logical flow is R -> Q -> S -> P.",
+      "examTrick": "The Pronoun Linker Shortcut: Identify 'This inherent intermittency' in S. It must immediately follow a sentence describing intermittency. Q describes 'electricity only when weather conditions are favorable'. Hence, Q and S form an unbreakable pair (Q-S). Only one option has RQSP!",
+      "importance": "High",
+      "tags": ["Para Jumbles", "Text Structuring"]
+    },
+    {
+      "id": 4,
+      "question": "In the following question, some parts of the sentence have been jumbled up. Rearrange these parts (P, Q, R, S) to form a grammatically correct and meaningful sentence:\n\nHe decided to undergo a rigorous training program (P) / in order to enhance his operational efficiency (Q) / before taking charge of the deep shaft underground mine (R) / as the newly appointed manager (S).",
+      "options": [
+        "PQRS",
+        "PSRQ",
+        "RPSQ",
+        "QPRS"
+      ],
+      "answer": "PQRS",
+      "difficulty": "Medium",
+      "source": "Jumbled Sentences",
+      "explanation": "Let's analyze the parts of the sentence:\n- 'He decided to undergo a rigorous training program' (P) is the independent subject-verb clause.\n- 'in order to enhance his operational efficiency' (Q) is the purpose clause modifying the training.\n- 'before taking charge of the deep shaft underground mine' (R) is the temporal clause indicating when he took charge.\n- 'as the newly appointed manager' (S) is the prepositional phrase describing his role when taking charge.\n- Putting them in sequence, 'He decided to undergo a rigorous training program (P) in order to enhance his operational efficiency (Q) before taking charge of the deep shaft underground mine (R) as the newly appointed manager (S)' forms a perfectly smooth, grammatically correct sentence.",
+      "examTrick": "Subject-Verb-Purpose-Temporal: The standard English structure for action sentences often flows from Subject-Action (P) -> Purpose (Q) -> Temporal Constraint (R) -> Role/Status (S). Thus, the sequence is PQRS.",
+      "importance": "High",
+      "tags": ["Jumbled Sentences", "Sentence Structure"]
+    },
+    {
+      "id": 5,
+      "question": "Choose the correct words to complete the sentence, ensuring grammatical correctness and appropriate meaning:\n\n'The labor union leaders were __________ by the management's uncompromising stance, and their subsequent refusal to negotiate __________ the ongoing strike.'",
+      "options": [
+        "exasperated, prolonged",
+        "appeased, resolved",
+        "pacified, ignited",
+        "elated, terminated"
+      ],
+      "answer": "exasperated, prolonged",
+      "difficulty": "Hard",
+      "source": "Sentence Completion",
+      "explanation": "Let's analyze the context clues of the sentence:\n1. The phrase 'uncompromising stance' implies something negative that would make union leaders angry, frustrated, or annoyed.\n2. Therefore, the first blank should be a word like 'exasperated' (frustrated/irritated). Words like 'appeased' or 'pacified' (calmed down) and 'elated' (very happy) are contextually contradictory to 'uncompromising stance'.\n3. The second blank describes the effect of their 'subsequent refusal to negotiate' on the 'ongoing strike'. Refusing to negotiate would naturally stretch out or extend the strike.\n4. Therefore, 'prolonged' (extended) fits perfectly in the second blank.\n5. Combining both, 'exasperated' and 'prolonged' maintain perfect coherence.",
+      "examTrick": "Context Valence Matching: An 'uncompromising stance' has negative valence (-). A 'refusal to negotiate' also has negative valence (-). Therefore, both blanks must contain words with negative connotations (Exasperated, Prolonged)!",
+      "importance": "High",
+      "tags": ["Sentence Completion", "Vocabulary", "Context Clues"]
+    }
+  ]
+}

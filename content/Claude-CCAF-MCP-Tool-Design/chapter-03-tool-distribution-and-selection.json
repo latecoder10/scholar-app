@@ -1,0 +1,90 @@
+{
+  "subject": "Claude CCAF: Tool Design & MCP Integration",
+  "chapter": "2.3 Tool Distribution, Selection & tool_choice",
+  "exam": "Claude CCAF",
+  "paper": "Domain-2",
+  "description": "tool_choice modes (auto, any, tool, none), role-scoped tool catalogs, tool search with defer_loading, and selection drift.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "An agent has 16 tools across multiple MCP servers; selection reliability is degrading and not all tools are relevant to its role. How do you optimize tool distribution?",
+      "options": [
+        "Routing classifier dynamically filtering tools based on request type.",
+        "Training period for the agent to learn optimal selection patterns.",
+        "Consolidate MCP servers to a single server, reducing management complexity.",
+        "Role-specific MCP configuration exposing only the relevant 4–5 tools per agent."
+      ],
+      "answer": "Role-specific MCP configuration exposing only the relevant 4–5 tools per agent.",
+      "difficulty": "Easy",
+      "source": "UD2-016 | Claude Code MCP · Writing tools for agents",
+      "explanation": "Role-specific configuration restricts each agent's catalog to 4–5 relevant tools, removing distractor candidates and reducing tool definition token overhead.",
+      "examTrick": "Catalog degradation with too many tools = Scope 4–5 role-specific tools per agent.",
+      "importance": "High",
+      "tags": [
+        "Tool Scoping",
+        "Role-Specific Catalogs"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Match tool_choice settings: (1) an open-ended assistant that answers directly for simple questions but uses tools for complex ones; (2) a database dispatcher that must always act (lookup/create/update) but the action depends on the request; (3) a pipeline step that must always run one specific extraction tool; (4) a turn where tools are attached but this turn should be text-only.",
+      "options": [
+        "(1) auto, (2) any, (3) tool, (4) none",
+        "(1) any, (2) auto, (3) none, (4) tool",
+        "All four should use auto.",
+        "(1) tool, (2) none, (3) auto, (4) any"
+      ],
+      "answer": "(1) auto, (2) any, (3) tool, (4) none",
+      "difficulty": "Medium",
+      "source": "GEN2-034 | Tool use — tool_choice",
+      "explanation": "tool_choice modes: 'auto' (model decides text or tool), 'any' (forces at least one tool call), 'tool' (forces specific named tool), 'none' (forces text response while keeping tools cached).",
+      "examTrick": "tool_choice: auto (optional), any (some tool required), tool (specific tool required), none (text only).",
+      "importance": "High",
+      "tags": [
+        "tool_choice",
+        "API Configuration"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "200 tools aggregated across MCP servers; a tool search tool is added and defer_loading: true set on most. What happens to those definitions, and what must remain true for search to work?",
+      "options": [
+        "The 200 deferred definitions are entirely omitted from the request; only the search tool's definition is sent.",
+        "Deferred tool definitions are still included in the request (so search can find and expand them) but kept out of the active context until the model searches for and matches one; at least one tool must remain non-deferred (and the search tool itself must never be deferred).",
+        "Setting defer_loading: true immediately loads all 200 definitions in a compressed format.",
+        "defer_loading only works if every tool, including the search tool, is deferred."
+      ],
+      "answer": "Deferred tool definitions are still included in the request (so search can find and expand them) but kept out of the active context until the model searches for and matches one; at least one tool must remain non-deferred (and the search tool itself must never be deferred).",
+      "difficulty": "Hard",
+      "source": "GEN2-044 | Tool search and defer_loading · Writing tools for agents",
+      "explanation": "defer_loading: true defers tool schema expansion until searched. The tool search tool itself must NEVER be deferred, and at least one non-deferred tool must exist.",
+      "examTrick": "Tool search: defer_loading: true on catalog; tool search tool itself must NEVER be deferred.",
+      "importance": "High",
+      "tags": [
+        "Tool Search",
+        "defer_loading",
+        "Large Catalogs"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "extract_metadata must run before lookup_citations (which needs the DOI it produces), but on \"extract the metadata and tell me how cited it is\" Claude sometimes calls lookup_citations first and it fails. Most effective way to ensure extraction happens first?",
+      "options": [
+        "Set tool_choice: \"any\" plus system prompt instructions prioritizing extract_metadata.",
+        "Set tool_choice: \"auto\" and reorder the tools array so extract_metadata appears first, since Claude prioritizes earlier-listed tools.",
+        "Set tool_choice: {\"type\": \"tool\", \"name\": \"extract_metadata\"} and process the enrichment requests in subsequent turns after receiving the extracted metadata.",
+        "Set tool_choice: {\"type\": \"tool\", \"name\": \"extract_metadata\"} for every API call in the pipeline."
+      ],
+      "answer": "Set tool_choice: {\"type\": \"tool\", \"name\": \"extract_metadata\"} and process the enrichment requests in subsequent turns after receiving the extracted metadata.",
+      "difficulty": "Medium",
+      "source": "CS2-001 (§2.3) | Tool use — tool_choice",
+      "explanation": "Force the named tool on the FIRST turn only. Once the DOI is extracted and returned in context, revert to auto on subsequent turns so enrichment tools can be called.",
+      "examTrick": "Enforce first step: Force tool_choice: {'type': 'tool', name: '...'} on Turn 1 -> auto on Turn 2.",
+      "importance": "High",
+      "tags": [
+        "tool_choice",
+        "Workflow Dependency Gating"
+      ]
+    }
+  ]
+}

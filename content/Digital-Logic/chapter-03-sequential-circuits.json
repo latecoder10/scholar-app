@@ -1,0 +1,262 @@
+{
+  "subject": "Digital Logic",
+  "chapter": "Sequential Circuits, Flip-Flops, and Counters",
+  "description": "Explores sequential logic, latches vs flip-flops, characteristics of SR, JK, D, and T flip-flops, the Race-Around Condition, shift register types, asynchronous/synchronous counters, Ring and Johnson counters, and sequential timing analysis.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following defines the primary difference between combinational and sequential logic circuits, and what core elements are present in sequential circuits?",
+      "options": [
+        "Sequential circuits contain memory elements and a clock signal, meaning their outputs depend on both the present inputs and the past outputs (present state).",
+        "Sequential circuits use only logic gates without any feedback, meaning their outputs depend only on the present inputs.",
+        "Sequential circuits have zero propagation delay, whereas combinational circuits have a linear propagation delay.",
+        "Sequential circuits are used exclusively for floating-point calculations, while combinational are used for integer math."
+      ],
+      "answer": "Sequential circuits contain memory elements and a clock signal, meaning their outputs depend on both the present inputs and the past outputs (present state).",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "According to Section 4 of the PDF, sequential circuits differ from combinational circuits due to the presence of memory elements (such as latches and flip-flops) and a master clock signal. Their outputs at any instant depend not only on the current inputs applied but also on the history of previous states, which are stored in the memory elements as the 'present state'.",
+      "examTrick": "Memory + Clock = Sequential! If the next state is a function of: Next = f(Inputs, Present_State), the circuit is sequential.",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Definitions", "Memory Elements"]
+    },
+    {
+      "id": 2,
+      "question": "What is the key distinction between a 'Latch' and a 'Flip-Flop' in terms of triggering mechanisms, and what problem do flip-flops resolve?",
+      "options": [
+        "A latch is asynchronous and level-triggered; a flip-flop is synchronous and edge-triggered. Flip-flops solve the transparency problem inherent in simple latches.",
+        "A latch is edge-triggered; a flip-flop is level-triggered. Flip-flops solve the race-around condition of ripple counters.",
+        "A latch requires an external decoder; a flip-flop utilizes an internal Master-Slave priority encoder.",
+        "There is no difference; both are level-triggered and change state as long as enable is high."
+      ],
+      "answer": "A latch is asynchronous and level-triggered; a flip-flop is synchronous and edge-triggered. Flip-flops solve the transparency problem inherent in simple latches.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 4.1 of the PDF:\n1. Latch: An asynchronous, level-triggered memory element. It changes state continuously as long as its enable signal remains active. This 'transparency' means any noise on the input lines during the active level immediately corrupts the stored state.\n2. Flip-flop: A synchronous, edge-triggered memory element. It changes state only at the precise moment of a clock pulse transition (rising or falling edge). This eliminates the transparency problem because the input is sampled only during a fraction of a nanosecond at the clock transition edge.",
+      "examTrick": "Triggering Mnemonic:\n- Latch = Level-triggered (transparent, open door while clock is high).\n- Flip-Flop = Edge-triggered (samples only at the transition instant, closed door except at the boundary).",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Latches", "Flip-Flops", "Triggering Mechanisms"]
+    },
+    {
+      "id": 3,
+      "question": "An SR (Set-Reset) Flip-Flop is modeled by the characteristic equation Q(t+1) = S + R'·Q(t). Under which input condition does the SR flip-flop enter an invalid/forbidden state, and why is this state forbidden?",
+      "options": [
+        "S = 1 and R = 1 simultaneously; it is forbidden because both outputs Q and Q' are forced to 0, violating the complementarity principle.",
+        "S = 0 and R = 0 simultaneously; it is forbidden because it causes the clock frequency to drop to zero.",
+        "S = 1 and R = 0 simultaneously; it is forbidden because it causes an automatic system reset.",
+        "S = 0 and R = 1 simultaneously; it is forbidden because it triggers a race-around condition."
+      ],
+      "answer": "S = 1 and R = 1 simultaneously; it is forbidden because both outputs Q and Q' are forced to 0, violating the complementarity principle.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2022",
+      "explanation": "According to Section 4.2 of the PDF:\n1. The characteristic equation of an SR flip-flop is Q(t+1) = S + R'·Q(t), subject to the constraint S·R = 0.\n2. When S = 1 and R = 1 are applied simultaneously, the internal cross-coupled gates pull both Q and Q' to a LOW level (0) at the same time. Since Q' is defined as the complement of Q, having Q = Q' = 0 is a logical contradiction.\n3. Furthermore, when the inputs transition back to 00, the final state is unpredictable and depends on gate propagation speed, causing metastability. Thus, S = R = 1 is invalid/forbidden.",
+      "examTrick": "SR Invalid Trap: S=1, R=1 is forbidden because both outputs Q and Q' become 0 (violating complementarity), and releasing it causes a race/metastability!",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "SR Flip-Flop", "Invalid State", "Complementarity"]
+    },
+    {
+      "id": 4,
+      "question": "Which universal flip-flop resolves the invalid/forbidden state of the SR flip-flop, what is its characteristic equation, and what action occurs when both inputs are asserted simultaneously?",
+      "options": [
+        "The JK flip-flop; Characteristic Equation: Q(t+1) = J·Q'(t) + K'·Q(t); It toggles its output state when J = 1 and K = 1.",
+        "The D flip-flop; Characteristic Equation: Q(t+1) = D; It holds the previous state when D = 1.",
+        "The T flip-flop; Characteristic Equation: Q(t+1) = T ⊕ Q(t); It resets the output to 0 when T = 1.",
+        "The Master-Slave SR flip-flop; Characteristic Equation: Q(t+1) = S·R; It bypasses the clock entirely."
+      ],
+      "answer": "The JK flip-flop; Characteristic Equation: Q(t+1) = J·Q'(t) + K'·Q(t); It toggles its output state when J = 1 and K = 1.",
+      "difficulty": "Medium",
+      "source": "GATE CS 2011 / CIL MT",
+      "explanation": "According to Section 4.2 of the PDF, the JK flip-flop is a universal flip-flop that successfully resolves the invalid state of the SR flip-flop:\n1. When J = 1 and K = 1, instead of entering an invalid state, the JK flip-flop toggles its output (Q_next = Q').\n2. This behavior is mathematically defined by its characteristic equation:\n   Q(t+1) = J·Q'(t) + K'·Q(t).\n- If J=1, K=1: Q(t+1) = 1·Q'(t) + 0·Q(t) = Q'(t) (Toggle).\n- If J=0, K=0: Q(t+1) = 0·Q'(t) + 1·Q(t) = Q(t) (Hold).\n- If J=1, K=0: Q(t+1) = 1·Q'(t) + 1·Q(t) = Q'(t) + Q(t) = 1 (Set).\n- If J=0, K=1: Q(t+1) = 0·Q'(t) + 0·Q(t) = 0 (Reset).",
+      "examTrick": "JK Characteristic Equation: J-Q-prime plus K-prime-Q! J is paired with Q'(t) and K' is paired with Q(t). Memorize this, as it is tested extensively in gate conversions!",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "JK Flip-Flop", "Characteristic Equation", "Toggling"]
+    },
+    {
+      "id": 5,
+      "question": "A D (Data/Delay) Flip-Flop has the characteristic equation Q(t+1) = D. What is its main structural significance, and in which systems is it most extensively utilized?",
+      "options": [
+        "It eliminates the invalid state completely; used extensively in Shift Registers and Buffer Memory.",
+        "It toggles the output state on every clock pulse; used extensively in digital counters.",
+        "It uses level-triggering to speed up addition; used extensively in carry lookahead adders.",
+        "It acts as a priority encoder; used in interrupt controllers."
+      ],
+      "answer": "It eliminates the invalid state completely; used extensively in Shift Registers and Buffer Memory.",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 4.2 of the PDF, a D flip-flop transfers its input D directly to the output Q on the active clock edge, resulting in the characteristic equation Q(t+1) = D. Since it has only one input, there is no possible combination that can trigger an invalid state. This absolute predictability makes it the industry standard for constructing shift registers, CPU registers, cache memories, and buffer memory units.",
+      "examTrick": "D is for Delay/Data. Output simply copies input on the clock edge. Perfect for shift registers where data must be shifted step-by-step without logic complications!",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "D Flip-Flop", "Shift Registers", "Registers"]
+    },
+    {
+      "id": 6,
+      "question": "A T (Toggle) Flip-Flop has the characteristic equation Q(t+1) = T ⊕ Q(t). What is its output behavior when input T is connected to 1, and what is its primary practical application?",
+      "options": [
+        "It toggles its state on every clock pulse; used extensively in building digital Counters.",
+        "It holds its state indefinitely; used extensively in buffer memories.",
+        "It enters an invalid state; used in error detection.",
+        "It acts as a shift register; used to load data in parallel."
+      ],
+      "answer": "It toggles its state on every clock pulse; used extensively in building digital Counters.",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "According to Section 4.2 of the PDF, a T (Toggle) flip-flop is defined by the characteristic equation Q(t+1) = T ⊕ Q(t). \n- If T = 1, then Q(t+1) = 1 ⊕ Q(t) = Q'(t). This means the output toggles its state on every active clock edge, dividing the input clock frequency by 2.\n- Application: This frequency division and toggling capability make T flip-flops the core component in asynchronous and synchronous digital counters.",
+      "examTrick": "T = Toggle. T=1 toggles on every clock edge, meaning frequency is halved (f_out = f_in / 2). Perfect for counters!",
+      "importance": "Medium",
+      "tags": ["Sequential Circuits", "T Flip-Flop", "Toggling", "Counters"]
+    },
+    {
+      "id": 7,
+      "question": "In a level-triggered JK flip-flop, what physical conditions trigger the 'Race-Around Condition', and which of the following represents a correct hardware solution to completely eliminate it?",
+      "options": [
+        "It occurs when J = K = 1 and the clock pulse width is greater than the propagation delay of the flip-flop; resolved by using a Master-Slave JK Flip-Flop configuration or by strictly ensuring edge-triggering.",
+        "It occurs when J = K = 0 and the clock frequency is extremely fast; resolved by using an external Priority Encoder.",
+        "It occurs when the setup time is larger than the hold time; resolved by adding a series of buffer gates.",
+        "It occurs when separate data and instruction caches clash; resolved by using Harvard Architecture."
+      ],
+      "answer": "It occurs when J = K = 1 and the clock pulse width is greater than the propagation delay of the flip-flop; resolved by using a Master-Slave JK Flip-Flop configuration or by strictly ensuring edge-triggering.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2014 / CIL MT",
+      "explanation": "According to Section 4.3 of the PDF, the Race-Around Condition is a classic timing hazard in level-triggered JK flip-flops:\n1. Cause: When J = K = 1 and the clock pulse is active (HIGH). Since the feedback loops are active while the clock is HIGH, if the clock pulse width (tp) is larger than the flip-flop's propagation delay (td), the output Q will toggle repeatedly between 0 and 1 during that single clock pulse. The final value of Q is random and unpredictable.\n2. Solutions:\n   - Edge-Triggering: By making the flip-flop trigger only at the transition edge, the active window is reduced to a fraction of a nanosecond, which is much smaller than td, preventing multiple toggles.\n   - Master-Slave configuration: The Master stores the input while the clock is HIGH, and the Slave updates the output only when the clock falls to LOW, disabling active feedback loops.",
+      "examTrick": "Race-Around Condition Criteria: Level-triggered + J = K = 1 + tp > td. Solution = Master-Slave JK or Edge-Triggering. Extremely common PSU exam question!",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Race Around Condition", "JK Flip-Flop", "Master-Slave"]
+    },
+    {
+      "id": 8,
+      "question": "An n-bit shift register can be configured for Serial-In Serial-Out (SISO) or Parallel-In Parallel-Out (PIPO) operations. For a 4-bit shift register, what is the exact number of clock cycles required to load a 4-bit number, and subsequently read it out under SISO versus PIPO operations?",
+      "options": [
+        "SISO: 4 clock cycles to load, 3 additional cycles to read; PIPO: 1 clock cycle to load, 0 additional cycles to read.",
+        "SISO: 4 clock cycles to load, 4 additional cycles to read; PIPO: 4 clock cycles to load, 4 additional cycles to read.",
+        "SISO: 1 clock cycle to load, 1 additional cycle to read; PIPO: 4 clock cycles to load, 1 additional cycle to read.",
+        "SISO: 3 clock cycles to load, 4 additional cycles to read; PIPO: 1 clock cycle to load, 4 additional cycles to read."
+      ],
+      "answer": "SISO: 4 clock cycles to load, 3 additional cycles to read; PIPO: 1 clock cycle to load, 0 additional cycles to read.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2012",
+      "explanation": "Let's perform the timing analysis for a 4-bit shift register:\n1. Serial-In Serial-Out (SISO):\n   - To load a 4-bit number serially, we need n = 4 clock cycles (1 cycle per bit).\n   - Once loaded, the LSB is already present on the output. To read the remaining 3 bits, we need to shift them out, which requires (n - 1) = 3 additional clock cycles.\n   - Total cycles to load and completely extract the data serially is n + (n - 1) = 2n - 1 = 7 cycles.\n2. Parallel-In Parallel-Out (PIPO):\n   - All 4 bits are applied in parallel and loaded in exactly 1 clock cycle.\n   - Once loaded, all 4 outputs are immediately available on the pins, so 0 additional cycles are needed to read.",
+      "examTrick": "Shift Register Clock Cheat Sheet (for n-bits):\n- SISO: n cycles to load, n-1 cycles to read (Total = 2n-1).\n- SIPO: n cycles to load, 0 cycles to read (outputs available immediately after load).\n- PISO: 1 cycle to load, n-1 cycles to read (Total = n).\n- PIPO: 1 cycle to load, 0 cycles to read.",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Shift Registers", "SISO", "PIPO", "Clock Cycles"]
+    },
+    {
+      "id": 9,
+      "question": "What is the structural and speed difference between a Ripple (Asynchronous) Counter and a Synchronous Counter?",
+      "options": [
+        "In a Ripple Counter, only the first flip-flop is clocked by the master clock, and subsequent stages are clocked by the outputs of preceding stages, making it slow due to cumulative delays. In a Synchronous Counter, all flip-flops are clocked simultaneously by the same clock, making it much faster.",
+        "In a Ripple Counter, all flip-flops are clocked simultaneously. In a Synchronous Counter, stages are clocked sequentially.",
+        "Ripple Counters have zero propagation delay, while Synchronous Counters suffer from cumulative delays.",
+        "Ripple Counters are used for program relocation, while Synchronous Counters are used for cache tag comparison."
+      ],
+      "answer": "In a Ripple Counter, only the first flip-flop is clocked by the master clock, and subsequent stages are clocked by the outputs of preceding stages, making it slow due to cumulative delays. In a Synchronous Counter, all flip-flops are clocked simultaneously by the same clock, making it much faster.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 4.4 of the PDF:\n- Ripple (Asynchronous) Counter: The external clock pulse is connected ONLY to the clock input of the first flip-flop (LSB). The clock input of every subsequent flip-flop is driven by the output (Q or Q') of the previous stage. Because the clock signal 'ripples' sequentially through the stages, the counter is slow due to cumulative propagation delay.\n- Synchronous Counter: The external clock pulse is connected directly to the clock inputs of ALL flip-flops simultaneously. Since all stages transition at the exact same instant, there is no cumulative delay, making it much faster and more reliable.",
+      "examTrick": "Clock connection tells the story! All clocks tied to the same line = Synchronous (Fast, No glitch). Clocks daisy-chained from Q-outputs = Asynchronous/Ripple (Slower, Cumulative delay).",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Counters", "Ripple Counter", "Synchronous Counter"]
+    },
+    {
+      "id": 10,
+      "question": "An n-bit binary ripple counter is constructed using flip-flops, each having a propagation delay of t_pd. What is the formula for the total propagation delay of the counter, and what is the maximum cumulative delay for a 16-bit binary ripple counter constructed using flip-flops with a 20 ns propagation delay?",
+      "options": [
+        "Total Delay = n × t_pd; Maximum Cumulative Delay = 320 ns",
+        "Total Delay = t_pd / n; Maximum Cumulative Delay = 1.25 ns",
+        "Total Delay = (n + 1) × t_pd; Maximum Cumulative Delay = 340 ns",
+        "Total Delay = n^2 × t_pd; Maximum Cumulative Delay = 5120 ns"
+      ],
+      "answer": "Total Delay = n × t_pd; Maximum Cumulative Delay = 320 ns",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020 / GATE",
+      "explanation": "According to the 'Timing Analysis' section of the PDF (page 12):\n1. In an n-bit asynchronous ripple counter, because the clock must propagate through all stages sequentially, the worst-case propagation delay is the sum of the individual delays of all flip-flops:\n   Total Delay = n × t_pd.\n2. Substituting the values for a 16-bit counter (n = 16) and t_pd = 20 ns:\n   Total Delay = 16 × 20 ns = 320 ns.",
+      "examTrick": "Ripple Counter Delay Formula: T = n * t_pd. For a 16-bit counter, 16 * 20 = 320 ns. Remember, this total delay determines the maximum operating frequency of the counter: f_max < 1 / T!",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Counters", "Ripple Counter", "Timing Analysis", "CIL PYQ"]
+    },
+    {
+      "id": 11,
+      "question": "In a 4-bit Synchronous Binary Counter, the flip-flop propagation delay is t_pd = 15 ns, and the external combinational logic (AND gates) has a delay of t_gate = 5 ns. If the setup time of the flip-flops is t_setup = 4 ns, what is the absolute maximum clock frequency (f_max) at which this synchronous counter can safely operate?",
+      "options": [
+        "41.67 MHz",
+        "52.63 MHz",
+        "66.67 MHz",
+        "100.00 MHz"
+      ],
+      "answer": "41.67 MHz",
+      "difficulty": "Hard",
+      "source": "GATE CS 2015",
+      "explanation": "Let's perform the synchronous counter timing analysis:\n1. In a synchronous counter, all flip-flops are clocked simultaneously. Therefore, the propagation delays do NOT accumulate like in a ripple counter.\n2. However, the clock period (T_clk) must be large enough to allow the Q outputs to transition, propagate through the steering combinational logic gates, and satisfy the setup time of the next stage before the next clock edge arrives.\n3. The worst-case path constraint is:\n   T_clk >= t_pd + t_gate + t_setup\n4. Substituting values:\n   T_clk >= 15 ns + 5 ns + 4 ns = 24 ns.\n5. The maximum operating clock frequency is:\n   f_max = 1 / T_clk = 1 / 24 ns = 41.67 MHz.",
+      "examTrick": "Synchronous Timing constraint: T_clk >= FF_delay + Gate_delay + Setup_time. Do NOT multiply by n! The synchronous clock lands everywhere at once, so only the worst single-stage delay plus setup time limits the clock speed.",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Counters", "Synchronous Counter", "Frequency Limit", "Setup Time"]
+    },
+    {
+      "id": 12,
+      "question": "Compare the number of distinct binary states and the counting sequences of an n-bit Ring Counter versus an n-bit Johnson Counter initialized with a single '1' and all '0's respectively.",
+      "options": [
+        "Ring Counter: n states, initialized with single '1' (e.g. 1000 -> 0100 -> 0010 -> 0001); Johnson Counter: 2n states, initialized with all '0's (e.g. 0000 -> 1000 -> 1100 -> 1110 -> 1111 -> 0111 -> 0011 -> 0001).",
+        "Ring Counter: 2^n states, initialized with 1010; Johnson Counter: n states, initialized with all '1's.",
+        "Ring Counter: n states; Johnson Counter: 2^n states. Both require a priority decoder to cycle.",
+        "Both counters provide identical 2n states, but the Ring Counter is level-triggered."
+      ],
+      "answer": "Ring Counter: n states, initialized with single '1' (e.g. 1000 -> 0100 -> 0010 -> 0001); Johnson Counter: 2n states, initialized with all '0's (e.g. 0000 -> 1000 -> 1100 -> 1110 -> 1111 -> 0111 -> 0011 -> 0001).",
+      "difficulty": "Hard",
+      "source": "GATE CS 2013 / CIL MT",
+      "explanation": "According to Section 4.4 of the PDF:\n1. Ring Counter: A shift register connected in a circular loop (feedback is Q_out connected to D_in). If initialized with a single '1' (e.g., 1000), it circulates this '1' through the stages. For n flip-flops, it provides exactly n distinct states (MOD-n).\n2. Johnson Counter (Twisted Ring Counter): The inverted output Q_out' is fed back to the D_in of the first flip-flop. Initialized with all '0's (e.g., 0000), it shifts in 1s from the left until full, and then shifts in 0s until empty. For n flip-flops, it provides exactly 2n distinct states (MOD-2n).",
+      "examTrick": "MOD Sizing Trick:\n- n-bit Ring Counter = MOD-n (n states)\n- n-bit Johnson Counter = MOD-2n (2n states)\nFor a 4-bit counter: Ring has 4 states, Johnson has 8 states. Johnson is twice as efficient in state usage!",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Counters", "Ring Counter", "Johnson Counter"]
+    },
+    {
+      "id": 13,
+      "question": "A bi-directional Up/Down Counter is a sequential circuit that can count either up or down depending on a control input M. Which of the following describes its steering logic?",
+      "options": [
+        "When M = 1, it counts up by clocking stage i with Q of stage i-1; when M = 0, it counts down by clocking stage i with Q' of stage i-1.",
+        "When M = 1, it clocks stages simultaneously; when M = 0, it operates as a ripple counter.",
+        "When M = 1, it acts as a Ring Counter; when M = 0, it acts as a Johnson Counter.",
+        "It uses a priority encoder to count up, and a 2:1 multiplexer to count down."
+      ],
+      "answer": "When M = 1, it counts up by clocking stage i with Q of stage i-1; when M = 0, it counts down by clocking stage i with Q' of stage i-1.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 4.4 of the PDF, an Up/Down counter can count in both directions but not simultaneously. \n- The direction of the count is controlled by steering logic (represented by a control signal M).\n- For an up-counter, the clock of the next stage is triggered by the previous stage's uncomplemented output Q (for negative-edge trigger).\n- For a down-counter, the clock of the next stage is triggered by the previous stage's complemented output Q'.\n- An OR gate combinational steering circuit combines these terms to route either Q or Q' depending on M.",
+      "examTrick": "Up/Down Steering Rule (Negative-Edge Ripple):\n- Clock next stage with Q -> Up Count.\n- Clock next stage with Q' -> Down Count.\nSimple multiplexing of the clock input!",
+      "importance": "Medium",
+      "tags": ["Sequential Circuits", "Counters", "Up/Down Counter", "Steering Logic"]
+    },
+    {
+      "id": 14,
+      "question": "To convert a JK flip-flop into a D flip-flop, what external logic must be added to the J and K inputs?",
+      "options": [
+        "Connect J directly to D, and connect K to D through an inverter (NOT gate).",
+        "Connect J and K together directly to D.",
+        "Connect J to D, and connect K to ground (0).",
+        "Connect J to D, and connect K to Q."
+      ],
+      "answer": "Connect J directly to D, and connect K to D through an inverter (NOT gate).",
+      "difficulty": "Medium",
+      "source": "GATE CS 2011",
+      "explanation": "To convert JK to D:\n1. We want Q(t+1) = D.\n2. The characteristic equation of JK is Q(t+1) = JQ' + K'Q.\n3. If we set J = D and K = D' (connecting D through an inverter to K):\n   Q(t+1) = D·Q' + (D')'·Q = D·Q' + D·Q = D·(Q' + Q) = D·1 = D.\nThis matches the characteristic behavior of a D flip-flop perfectly.",
+      "examTrick": "Flip-Flop Conversion: To make D, you must feed J and K opposite values. J = D, K = D'. To make T, you must feed J and K identical values. J = K = T.",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Flip-Flop Conversion", "JK to D"]
+    },
+    {
+      "id": 15,
+      "question": "A MOD-10 decade counter counts from 0000 to 1001 (0 to 9 in decimal) and then resets back to 0000. How many flip-flops are required to construct this counter, and which combination of outputs must be decoded to trigger the early clear/reset signal?",
+      "options": [
+        "Requires 4 flip-flops; output lines Q3 and Q1 must be connected to an active-low NAND gate to trigger the asynchronous CLEAR inputs of all flip-flops.",
+        "Requires 10 flip-flops; output line Q9 must be connected directly to ground.",
+        "Requires 3 flip-flops; output lines Q2 and Q0 must be connected to an AND gate.",
+        "Requires 4 flip-flops; output lines Q2 and Q0 must be connected to a NOR gate."
+      ],
+      "answer": "Requires 4 flip-flops; output lines Q3 and Q1 must be connected to an active-low NAND gate to trigger the asynchronous CLEAR inputs of all flip-flops.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2014",
+      "explanation": "Let's design the MOD-10 asynchronous reset counter:\n1. To represent 10 states (0 to 9), we need N flip-flops such that 2^N >= 10. Since 2^3 = 8 and 2^4 = 16, we require exactly 4 flip-flops.\n2. The binary representation of states: 0 (0000) to 9 (1001).\n3. When the counter increments from 9 (1001) to 10 (1010), we want it to instantly clear back to 0000. This is done by detecting state 10 (binary Q3 Q2 Q1 Q0 = 1010).\n4. When Q3 = 1 and Q1 = 1, we feed these two outputs into a NAND gate. The output of the NAND gate will go LOW (0) at the state 1010. This LOW signal is wired to the asynchronous active-low CLEAR (CLR') inputs of all 4 flip-flops, resetting the counter instantly to 0000.",
+      "examTrick": "Early Reset Sizing: To reset at state S, write S in binary (e.g. 10 = 1010). Identify the positions with '1' (here, Q3 and Q1). Wire these outputs to a NAND gate and connect its output to CLR'! The counter will cycle from 0 to S-1, functioning as a MOD-S counter.",
+      "importance": "High",
+      "tags": ["Sequential Circuits", "Counters", "MOD-10 Counter", "Asynchronous Reset", "NAND Gate"]
+    }
+  ]
+}

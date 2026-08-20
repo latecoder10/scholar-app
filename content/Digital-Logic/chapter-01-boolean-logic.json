@@ -1,0 +1,262 @@
+{
+  "subject": "Digital Logic",
+  "chapter": "Boolean Algebra, Logic Gates, and Minimization",
+  "description": "Reviews core postulates, axioms, laws (Absorption, De Morgan's, Consensus, Transposition), the Duality Principle, universal gates, gate equivalencies, bubble pushing, XOR applications, standard SOP/POS forms, K-Maps (Gray code ordering, grouping, wrapping), implicants (PI, EPI), don't cares, and the Quine-McCluskey tabular method.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following correct combinations matches the Boolean algebraic postulate/axiom to its corresponding valid equation?",
+      "options": [
+        "Identity Axiom: A + 0 = A and A · 1 = A; Complementarity: A + A' = 1 and A · A' = 0; Involution: (A')' = A",
+        "Idempotent Axiom: A + 1 = A and A · 0 = A; Identity Axiom: A + A = A; Involution: A + A' = 1",
+        "Complementarity Axiom: A + 0 = A; Identity Axiom: A · A' = 0; Idempotent Axiom: (A')' = A",
+        "Involution Axiom: A + A' = 1; Complementarity: A + A = A; Idempotent: A · 1 = A"
+      ],
+      "answer": "Identity Axiom: A + 0 = A and A · 1 = A; Complementarity: A + A' = 1 and A · A' = 0; Involution: (A')' = A",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 1.1 of the PDF, the core postulates and axioms of Boolean Algebra are defined as:\n1. Identity Axiom: A + 0 = A and A · 1 = A (the variable remains unchanged).\n2. Idempotent Axiom: A + A = A and A · A = A (applying multiple times has the same effect).\n3. Complementarity Axiom: A + A' = 1 and A · A' = 0 (pairing a variable with its inverse).\n4. Involution Axiom: (A')' = A (double negation cancels out).",
+      "examTrick": "Involution = 'Double Negation Undo'. Complementarity = 'Variable paired with inverse sums to universe (1) and intersects to empty (0)'. Identity = 'No change'. Remember these exact names for PSU exams!",
+      "importance": "High",
+      "tags": ["Boolean Algebra", "Axioms", "Postulates"]
+    },
+    {
+      "id": 2,
+      "question": "According to the Consensus Theorem, the Boolean expression A·B + A'·C + B·C simplifies to which of the following expressions, and what is its primary practical application in digital design?",
+      "options": [
+        "A·B + A'·C; used to identify and eliminate static hazards in asynchronous logic design.",
+        "A'·C + B·C; used to implement high-speed carry lookahead adders.",
+        "A·B + B·C; used to convert POS expressions into SOP expressions quickly.",
+        "A·C + B'·C; used to minimize the number of universal gates in a multiplexer."
+      ],
+      "answer": "A·B + A'·C; used to identify and eliminate static hazards in asynchronous logic design.",
+      "difficulty": "Medium",
+      "source": "GATE CS 2015",
+      "explanation": "According to Section 1.2 of the PDF:\n1. The Consensus Theorem states: A·B + A'·C + B·C = A·B + A'·C.\nHere, B·C is the 'consensus term' because if B = 1 and C = 1, the expression is always 1 regardless of A's value. Thus, it is redundant and can be eliminated.\n2. Application: In asynchronous logic, when variable A transitions (e.g. from 1 to 0), there can be a temporary delay (glitch/hazard) before the new path stabilizes. Retaining the consensus term B·C prevents transient glitches (static hazards) by holding the output stable during the transition.",
+      "examTrick": "Consensus Formula Trap: Look for three terms where one variable is asserted in one term (A), complemented in another (A'), and its two partners are multiplied as the third term (B·C). The third term (consensus) is ALWAYS redundant! A·B + A'·C + B·C = A·B + A'·C.",
+      "importance": "High",
+      "tags": ["Boolean Algebra", "Consensus Theorem", "Static Hazards", "Asynchronous Logic"]
+    },
+    {
+      "id": 3,
+      "question": "Using the Transposition Law, convert the Sum-of-Products (SOP) expression A·B + A'·C into its equivalent Product-of-Sums (POS) form.",
+      "options": [
+        "(A + C)(A' + B)",
+        "(A + B)(A' + C)",
+        "(A' + C)(A + B')",
+        "(A' + B')(A + C')"
+      ],
+      "answer": "(A + C)(A' + B)",
+      "difficulty": "Hard",
+      "source": "GATE CS 2012",
+      "explanation": "According to Section 1.2 of the PDF, the Transposition Law is expressed as:\n  A·B + A'·C = (A + C)(A' + B)\nLet's prove this algebraically:\nDistribute the terms on the right-hand side:\n  (A + C)(A' + B) = A·A' + A·B + A'·C + C·B\n  Since A·A' = 0, this simplifies to:\n  A·B + A'·C + B·C\n  By applying the Consensus Theorem, B·C is redundant, which reduces to:\n  A·B + A'·C.\nThis is a highly efficient way to switch between SOP and POS formats.",
+      "examTrick": "Transposition Shortcut: Take the uncomplemented variable (A) and cross-pair it with the other term's partner (C) -> (A + C). Then take the complemented variable (A') and pair it with the first term's partner (B) -> (A' + B). Combine to get: (A + C)(A' + B)!",
+      "importance": "High",
+      "tags": ["Boolean Algebra", "Transposition Law", "SOP to POS", "Simplification"]
+    },
+    {
+      "id": 4,
+      "question": "Which of the following represents the correct dual of the valid Boolean expression: A + A'·B = A + B?",
+      "options": [
+        "A · (A' + B) = A · B",
+        "A' · (A + B') = A' · B'",
+        "A · (A + B') = A' · B",
+        "A' + A · B' = A' + B'"
+      ],
+      "answer": "A · (A' + B) = A · B",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020",
+      "explanation": "According to the Duality Principle in Section 1.2 of the PDF:\n1. To find the dual of an expression, change every OR (+) to an AND (·), and every AND (·) to an OR (+).\n2. If there are any 0s and 1s, swap them (0 to 1, and 1 to 0).\n3. CRITICAL RULE: Variables are NOT complemented during duality!\nLet's apply this to the expression: A + A'·B = A + B\n- LHS: A + A'·B becomes A · (A' + B)\n- RHS: A + B becomes A · B\nThus, the dual expression is: A · (A' + B) = A · B.",
+      "examTrick": "Duality vs De Morgan Trap: In Duality, you swap operators (+ <-> ·) and constants (0 <-> 1), but you DO NOT invert the variables. (A' remains A'). In De Morgan's / Complementation, you must invert everything! Dual of A' is A', but Complement of A' is A.",
+      "importance": "High",
+      "tags": ["Boolean Algebra", "Duality Principle", "Operators"]
+    },
+    {
+      "id": 5,
+      "question": "A VLSI designer wants to implement a 2-input XOR gate (A ⊕ B) using only 2-input universal gates. What is the minimum number of 2-input NAND gates and 2-input NOR gates required respectively?",
+      "options": [
+        "4 NAND gates, 5 NOR gates",
+        "4 NAND gates, 4 NOR gates",
+        "5 NAND gates, 4 NOR gates",
+        "3 NAND gates, 4 NOR gates"
+      ],
+      "answer": "4 NAND gates, 5 NOR gates",
+      "difficulty": "Hard",
+      "source": "GATE CS 2014 / CIL MT",
+      "explanation": "Let's find the minimum gate counts for implementing XOR (A ⊕ B) using universal gates:\n1. Using NAND gates:\n   Let G1 = NAND(A, B) = (AB)'\n   Let G2 = NAND(A, G1) = (A(AB)')' = A' + AB = A' + B\n   Let G3 = NAND(B, G1) = (B(AB)')' = B' + AB = B' + A\n   Let G4 = NAND(G2, G3) = ((A'+B)(B'+A))' = (A'B' + AB)' = A ⊕ B\n   This requires exactly 4 NAND gates.\n2. Using NOR gates:\n   Implementing XOR using NOR gates requires 5 NOR gates. (Alternatively, XNOR requires 4 NOR gates and 5 NAND gates).",
+      "examTrick": "Universal Gate Count Cheat Sheet for basic operations:\n- NOT: 1 NAND, 1 NOR\n- AND: 2 NAND, 3 NOR\n- OR:  3 NAND, 2 NOR\n- XOR: 4 NAND, 5 NOR\n- XNOR: 5 NAND, 4 NOR\nMemorize the 1-2-3-4-5 / 1-3-2-5-4 pattern to save valuable minutes in exam halls!",
+      "importance": "High",
+      "tags": ["Logic Gates", "Universal Gates", "NAND", "NOR", "XOR"]
+    },
+    {
+      "id": 6,
+      "question": "Under the principle of 'Bubble Pushing' derived from De Morgan's Laws, which of the following is a correct logic gate equivalency?",
+      "options": [
+        "A NAND gate is equivalent to an OR gate with inverted inputs (Bubbled OR); a NOR gate is equivalent to an AND gate with inverted inputs (Bubbled AND).",
+        "A NAND gate is equivalent to an AND gate with inverted inputs; a NOR gate is equivalent to an OR gate with inverted inputs.",
+        "A NAND gate is equivalent to a bubbled XOR gate; a NOR gate is equivalent to a bubbled XNOR gate.",
+        "An OR gate is equivalent to a bubbled NOR gate; an AND gate is equivalent to a bubbled NAND gate."
+      ],
+      "answer": "A NAND gate is equivalent to an OR gate with inverted inputs (Bubbled OR); a NOR gate is equivalent to an AND gate with inverted inputs (Bubbled AND).",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "According to the 'Gate Equivalency and Bubble Pushing' section of the PDF (page 4):\n- De Morgan's Law states: (A · B)' = A' + B'. In hardware, (A · B)' is a NAND gate, while A' + B' is an OR gate whose inputs are inverted (Bubbled OR). Thus, NAND = Bubbled OR.\n- De Morgan's second law states: (A + B)' = A' · B'. In hardware, (A + B)' is a NOR gate, while A' · B' is an AND gate whose inputs are inverted (Bubbled AND). Thus, NOR = Bubbled AND.",
+      "examTrick": "Bubble Pushing Mnemonic: Push a bubble through a gate, the gate changes shape (AND turns to OR, OR turns to AND) and bubbles appear on the opposite terminal! NAND (AND with output bubble) pushed left becomes an OR with two input bubbles (Bubbled OR).",
+      "importance": "High",
+      "tags": ["Logic Gates", "De Morgan's Laws", "Bubble Pushing", "Gate Equivalency"]
+    },
+    {
+      "id": 7,
+      "question": "A digital parity generator system utilizes cascading XOR gates to check for 1-bit errors in transmission. What mathematical property of the XOR gate allows it to count odd parity, and what is the output of a 3-input XOR gate for inputs A, B, and C?",
+      "options": [
+        "The output of an XOR gate is true if and only if an odd number of inputs are true; Output Y = A ⊕ B ⊕ C.",
+        "The output of an XOR gate is true if and only if an even number of inputs are true; Output Y = A'B'C' + ABC.",
+        "The output is true if any input is true; Output Y = A + B + C.",
+        "The output is true only when all inputs are different; Output Y = A'B + BC' + CA'."
+      ],
+      "answer": "The output of an XOR gate is true if and only if an odd number of inputs are true; Output Y = A ⊕ B ⊕ C.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2022",
+      "explanation": "According to the XOR gate properties in Section 1.3 of the PDF (page 4), the XOR (Exclusive OR) gate yields a TRUE (1) output if and only if an odd number of its inputs are TRUE. This unique property makes it highly suitable for parity generation and error detection circuits. For a 3-input XOR gate, the output expression is Y = A ⊕ B ⊕ C, which evaluates to 1 when either one input is 1, or all three inputs are 1.",
+      "examTrick": "XOR = Odd Detector! For any number of inputs, XOR is always 1 if the count of 1-inputs is odd. This is why it is the core building block for parity checkers and adders.",
+      "importance": "Medium",
+      "tags": ["Logic Gates", "XOR Gate", "Parity", "Error Detection"]
+    },
+    {
+      "id": 8,
+      "question": "Simplify the Boolean expression F = A + A'·B + A·B' using the Absorption Law and standard Boolean postulates.",
+      "options": [
+        "A + B",
+        "A · B",
+        "A' + B'",
+        "A' · B"
+      ],
+      "answer": "A + B",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "According to Section 1.2 of the PDF, let's simplify F step-by-step:\n1. Apply distributive law to the first two terms: A + A'·B = (A + A')(A + B).\n2. Since A + A' = 1, this reduces to: 1 · (A + B) = A + B.\n3. Substitute this back: F = A + B + A·B'.\n4. Group terms containing A: F = A(1 + B') + B.\n5. Since 1 + B' = 1, this simplifies to F = A + B.",
+      "examTrick": "Absorption Law is extremely powerful! Remember the core formula: X + X'Y = X + Y. Here, treating A as X, we immediately get A + B, which then absorbs AB' since B + AB' = B + A.",
+      "importance": "High",
+      "tags": ["Boolean Algebra", "Absorption Law", "Expression Minimization"]
+    },
+    {
+      "id": 9,
+      "question": "Which of the following describes the difference between the 'canonical Sum-of-Products (SOP)' form and standard SOP forms of a Boolean function?",
+      "options": [
+        "In canonical SOP form, every single product term (minterm) must contain all the variables of the function; in standard SOP, terms can have fewer variables.",
+        "Canonical SOP form uses maxterms which yield a '0' output, while standard SOP uses minterms.",
+        "Canonical SOP form is implemented using only NOR gates, whereas standard SOP is implemented with NAND.",
+        "There is no difference; both require every variable to be present in every term."
+      ],
+      "answer": "In canonical SOP form, every single product term (minterm) must contain all the variables of the function; in standard SOP, terms can have fewer variables.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 2.1 of the PDF:\n- Canonical SOP: A Boolean function is represented as an ORing of minterms, where every product term MUST contain every variable of the function (either in complemented or uncomplemented form). A minterm yields a '1' output for that combination.\n- Standard SOP: A simple sum of product terms (e.g., F = A + BC) where terms do not necessarily contain all variables.",
+      "examTrick": "Canonical = Max representation! If a function has variables {A, B, C}, every term in a canonical SOP expression MUST be a 3-variable minterm (like AB'C, ABC, etc.). Non-canonical SOP terms can be shorter (like A, or BC).",
+      "importance": "High",
+      "tags": ["Minimization", "SOP", "Canonical Form", "Minterms"]
+    },
+    {
+      "id": 10,
+      "question": "A Karnaugh Map (K-Map) is a visual, grid-based tool for logic minimization. Why are K-map cells ordered in Gray Code rather than standard binary code, and how does this affect cell adjacency?",
+      "options": [
+        "Cells are ordered using Gray Code so that adjacent cells differ by exactly one Boolean variable, allowing adjacent 1s to be visually grouped and variables cancelled.",
+        "Cells are ordered in Gray Code to increase the number of cells in each set, enabling larger groupings.",
+        "Gray Code is used because it is a weighted code that speeds up address evaluation in hardware adders.",
+        "Gray Code prevents conflict misses by routing the cell addresses through parallel hardware comparators."
+      ],
+      "answer": "Cells are ordered using Gray Code so that adjacent cells differ by exactly one Boolean variable, allowing adjacent 1s to be visually grouped and variables cancelled.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2022",
+      "explanation": "According to Section 2.2 of the PDF, K-Map cells are ordered using Gray Code (e.g., 00, 01, 11, 10). Unlike standard binary where 01 transitions to 10 (two bits changing), Gray Code ensures that successive codes differ by exactly one bit. This spatial adjacency represents physical logical adjacency, allowing designers to group adjacent 1s (or 0s) and algebraically cancel out the variable that changes state (since X + X' = 1).",
+      "examTrick": "K-Map Gray Code rule: 00 -> 01 -> 11 -> 10. Only 1 bit flips at a time! This is what makes grouping mathematically valid, as adjacent cells represent terms that can be simplified by factoring.",
+      "importance": "High",
+      "tags": ["Minimization", "K-Maps", "Gray Code", "Adjacency"]
+    },
+    {
+      "id": 11,
+      "question": "According to K-map grouping rules, how many variables are eliminated when grouping cells in groups of 8 (octet), 4 (quad), and 2 (pair) respectively, in a 4-variable K-map?",
+      "options": [
+        "Octet eliminates 3 variables; Quad eliminates 2 variables; Pair eliminates 1 variable.",
+        "Octet eliminates 4 variables; Quad eliminates 3 variables; Pair eliminates 2 variables.",
+        "Octet eliminates 2 variables; Quad eliminates 4 variables; Pair eliminates 1 variable.",
+        "Octet eliminates 3 variables; Quad eliminates 1 variable; Pair eliminates 2 variables."
+      ],
+      "answer": "Octet eliminates 3 variables; Quad eliminates 2 variables; Pair eliminates 1 variable.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020",
+      "explanation": "According to Section 2.2 'Grouping Rules' of the PDF (page 6):\n1. In a K-map, groups must contain a number of cells that is a power of 2.\n2. A group of 2^G cells eliminates exactly G variables.\n- An octet (8 cells = 2^3) eliminates 3 variables.\n- A quad (4 cells = 2^2) eliminates 2 variables.\n- A pair (2 cells = 2^1) eliminates 1 variable.\nThis is why we always aim to form the largest possible groups to achieve maximum logic minimization.",
+      "examTrick": "K-Map Grouping Elimination Formula: Number of variables eliminated = log2(Group Size). For 8 cells: log2(8) = 3 variables gone. For 4 cells: log2(4) = 2 variables gone.",
+      "importance": "High",
+      "tags": ["Minimization", "K-Maps", "Grouping Rules", "Variables"]
+    },
+    {
+      "id": 12,
+      "question": "A Boolean function is minimized using a 4-variable K-map. Minterms are located at cell indices 5, 7, 13, and 15. Assuming no other 1s exist in the map, what is the minimized logical expression obtained by grouping these cells, and which variables are eliminated?",
+      "options": [
+        "Expression = B·D; variables A and C are eliminated.",
+        "Expression = A·C; variables B and D are eliminated.",
+        "Expression = B'·D'; variables A and C are eliminated.",
+        "Expression = A'·C'; variables B and D are eliminated."
+      ],
+      "answer": "Expression = B·D; variables A and C are eliminated.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2016",
+      "explanation": "Let's map the minterms to binary and evaluate their K-map coordinates (AB \\ CD):\n- m5 = 0101 (Row 01, Col 01)\n- m7 = 0111 (Row 01, Col 11)\n- m13 = 1101 (Row 11, Col 01)\n- m15 = 1111 (Row 11, Col 11)\n1. These 4 cells form a perfect 2x2 square (quad) in the center of the K-map.\n2. Row coordinates are 01 (A'B) and 11 (AB). Variable A changes from 0 to 1, so A is eliminated, leaving B.\n3. Column coordinates are 01 (C'D) and 11 (CD). Variable C changes from 0 to 1, so C is eliminated, leaving D.\n4. Multiplying the remaining terms yields: B·D.\nThis matches Figure 2.1 in the PDF.",
+      "examTrick": "Quad Grouping Trace: Minterms are {0101, 0111, 1101, 1111}. \nCompare bits column by column:\n- 1st bit (A): {0, 0, 1, 1} -> changes -> eliminated\n- 2nd bit (B): {1, 1, 1, 1} -> stays 1 -> B\n- 3rd bit (C): {0, 1, 0, 1} -> changes -> eliminated\n- 4th bit (D): {1, 1, 1, 1} -> stays 1 -> D\nResult: B·D. No K-map drawing required for this exam trick!",
+      "importance": "High",
+      "tags": ["Minimization", "K-Maps", "Quad Grouping", "Minterm Trace"]
+    },
+    {
+      "id": 13,
+      "question": "In K-Map minimization, what is the exact definitions of a Prime Implicant (PI) versus an Essential Prime Implicant (EPI), and what are the rules regarding their inclusion in the final minimized logical expression?",
+      "options": [
+        "A PI is any group of 1s that cannot be combined to form a larger group; an EPI is a PI that covers at least one '1' not covered by any other PI. All EPIs MUST be included in the final expression.",
+        "A PI must be included in the final expression; an EPI can be treated as a don't care and ignored.",
+        "An EPI is a group of 1s of size 2; a PI is a group of 1s of size 4. Only PIs are included in the final expression.",
+        "A PI is a group of don't cares; an EPI is a group containing only 1s. Both are optional."
+      ],
+      "answer": "A PI is any group of 1s that cannot be combined to form a larger group; an EPI is a PI that covers at least one '1' not covered by any other PI. All EPIs MUST be included in the final expression.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2015",
+      "explanation": "According to Section 2.3 of the PDF:\n1. Implicant: Any single 1 or group of 1s in a K-map.\n2. Prime Implicant (PI): A group of 1s obtained by combining adjacent cells, which cannot be merged with any other cells to form a larger group (i.e. it is a maximal group).\n3. Essential Prime Implicant (EPI): A prime implicant that contains at least one '1' cell that is not covered by any other prime implicant.\n4. Inclusion Rule: Since every '1' in the K-map must be covered, and some 1s are only covered by a single unique PI (the EPIs), all EPIs MUST be included in the final minimized expression to guarantee completeness. Additional non-essential PIs may be chosen to cover any remaining 1s.",
+      "examTrick": "EPI Identifier: Look for any '1' in the K-map that has only ONE possible group covering it. That group is an EPI, and its algebraic term MUST appear in the final answer. Guaranteed way to check multiple-choice options!",
+      "importance": "High",
+      "tags": ["Minimization", "Implicants", "PI", "EPI", "GATE Question"]
+    },
+    {
+      "id": 14,
+      "question": "How should 'Don't Care' conditions (often denoted by X or d) be treated during K-map minimization to achieve the most simplified Boolean expression?",
+      "options": [
+        "A Don't Care (X) can be treated as a 1 if it helps form a larger group to eliminate more variables, or treated as a 0 and ignored if it does not help.",
+        "A Don't Care must always be treated as a 1 and included in all groups.",
+        "A Don't Care must always be treated as a 0 and completely ignored.",
+        "Don't Cares are only valid in product-of-sums (POS) formats and are forbidden in SOP."
+      ],
+      "answer": "A Don't Care (X) can be treated as a 1 if it helps form a larger group to eliminate more variables, or treated as a 0 and ignored if it does not help.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 2.3 of the PDF, 'Don't Care' conditions represent input combinations that will never occur in the physical circuit. \n- Therefore, the designer has the flexibility to assign them a value of either 1 or 0.\n- During K-map minimization, we treat a don't care cell as a 1 if it allows us to expand an existing group (e.g., turning a pair into a quad, or a quad into an octet), which eliminates more variables and simplifies the term.\n- If a don't care does not help expand any group, we treat it as 0 and do not cover it, avoiding unnecessary terms.",
+      "examTrick": "Don't Care Flexibility: Use 'X' only if it helps you make a LARGER group. Do not create new groups consisting only of 'X' cells, because you have no obligation to cover don't cares!",
+      "importance": "High",
+      "tags": ["Minimization", "Don't Cares", "K-Maps", "Simplification"]
+    },
+    {
+      "id": 15,
+      "question": "Why becomes the Quine-McCluskey method preferred over K-Maps for logic minimization in industrial software synthesizers, and how does it systematically find the minimal cover?",
+      "options": [
+        "K-Maps are difficult to visualize for 6 or more variables; Quine-McCluskey is a tabular, algorithmic approach that systematically identifies all prime implicants and uses a Prime Implicant Chart to find the minimal cover.",
+        "Quine-McCluskey is implemented using physical analog circuits, which are faster than digital K-maps.",
+        "Quine-McCluskey completely eliminates the need for prime implicants, generating POS forms directly.",
+        "Quine-McCluskey uses Gray Code cell ordering to bypass parallel comparators."
+      ],
+      "answer": "K-Maps are difficult to visualize for 6 or more variables; Quine-McCluskey is a tabular, algorithmic approach that systematically identifies all prime implicants and uses a Prime Implicant Chart to find the minimal cover.",
+      "difficulty": "Medium",
+      "source": "GATE CS 2013",
+      "explanation": "According to Section 2.4 of the PDF:\n1. K-Maps are excellent for visual human minimization but are limited to 4 or 5 variables before becoming highly complex and impossible to visualize.\n2. The Quine-McCluskey (Tabular) method is a systematic, step-by-step algorithmic procedure. It can handle any number of variables and is easily programmed into computer software (such as CAD tools and logic synthesizers).\n3. It operates by grouping minterms by the number of 1s, recursively merging adjacent terms to find all Prime Implicants, and then constructing a Prime Implicant Chart to select the minimum set of prime implicants (the minimal cover) to cover all 1s.",
+      "examTrick": "Quine-McCluskey (QM) Mnemonic: Tabular + Algorithmic + Software-ready. Always choose QM when asked for the best minimization method for high-variable (>= 6) logic functions!",
+      "importance": "High",
+      "tags": ["Minimization", "Quine-McCluskey", "Tabular Method", "Software Synthesizers"]
+    }
+  ]
+}

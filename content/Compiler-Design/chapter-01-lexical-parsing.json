@@ -1,0 +1,262 @@
+{
+  "subject": "Compiler Design",
+  "chapter": "Lexical Analysis and Parsing",
+  "description": "Reviews the lexical phase, tokenization, regular definitions, grammars, LL(1) parsing table construction, first/follow sets, and bottom-up LR/LALR parsers.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "How many tokens are present in the following C statement?\nprintf(\"Value of x = %d\", &x);",
+      "options": [
+        "5",
+        "7",
+        "8",
+        "9"
+      ],
+      "answer": "8",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020 / GATE CS",
+      "explanation": "Let's tokenize the statement: printf(\"Value of x = %d\", &x);\n1. `printf` (Identifier) - Token 1\n2. `(` (Separator/Punctuation) - Token 2\n3. `\"Value of x = %d\"` (String Literal) - Token 3\n4. `,` (Separator) - Token 4\n5. `&` (Operator) - Token 5\n6. `x` (Identifier) - Token 6\n7. `)` (Separator) - Token 7\n8. `;` (Separator) - Token 8\nThus, there are exactly 8 tokens in the statement.",
+      "examTrick": "String literals are counted as a SINGLE token! So \"Value of x = %d\" is one token, regardless of spaces or characters inside. Operators and separators are separate individual tokens.",
+      "importance": "High",
+      "tags": ["Lexical Analysis", "Tokenization", "CIL PYQ"]
+    },
+    {
+      "id": 2,
+      "question": "An LL(1) parser is a:",
+      "options": [
+        "Top-down parser with one symbol lookahead",
+        "Bottom-up parser with one symbol lookahead",
+        "Bottom-up parser with multiple symbol lookahead",
+        "Top-down parser with multiple symbol lookahead"
+      ],
+      "answer": "Top-down parser with one symbol lookahead",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "LL(1) parsing stands for:\n- First L: Left-to-right scanning of the input.\n- Second L: Leftmost derivation.\n- 1: One symbol of lookahead.\nLL(1) belongs to the category of deterministic Top-down parsers.",
+      "examTrick": "LL = Leftmost (Top-Down). LR = Rightmost derivation in reverse (Bottom-Up). Bottom-up parsers are generally more powerful than top-down parsers.",
+      "importance": "High",
+      "tags": ["Parsing", "LL(1) Parser", "Top-Down Parsing", "CIL PYQ"]
+    },
+    {
+      "id": 3,
+      "question": "Which of the following describes the power/capability order of bottom-up LR parsers?",
+      "options": [
+        "LR(0) < SLR(1) < LALR(1) < CLR(1)",
+        "LR(0) < LALR(1) < SLR(1) < CLR(1)",
+        "SLR(1) < LR(0) < LALR(1) < CLR(1)",
+        "CLR(1) < LALR(1) < SLR(1) < LR(0)"
+      ],
+      "answer": "LR(0) < SLR(1) < LALR(1) < CLR(1)",
+      "difficulty": "Medium",
+      "source": "GATE CS 2014 / PSU Exam",
+      "explanation": "The order of parsing power for bottom-up parsers is:\n- LR(0): Smallest state set and no lookahead, least powerful.\n- SLR(1): Uses FOLLOW set for lookahead. More powerful than LR(0).\n- LALR(1): Merges common core states of CLR(1). More powerful than SLR(1) but has equal state count to LR(0).\n- CLR(1) (Canonical LR): Most powerful LR parser with separate lookahead tracking for each state, largest state table size.\nThus, LR(0) < SLR(1) < LALR(1) < CLR(1).",
+      "examTrick": "State counts comparison: LR(0) = SLR(1) = LALR(1) << CLR(1). CLR(1) has significantly more states, which is why LALR(1) is preferred in practical tools like Yacc/Bison!",
+      "importance": "High",
+      "tags": ["Parsing", "LR Parsers", "Parsing Power", "LALR"]
+    },
+    {
+      "id": 4,
+      "question": "Consider the grammar rules:\nS → Aa | b\nA → b | ε\nWhat is Follow(A) for this grammar?",
+      "options": [
+        "{a}",
+        "{a, b}",
+        "{a, $}",
+        "{b, $}"
+      ],
+      "answer": "{a}",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU",
+      "explanation": "To compute Follow(A):\n1. Locate A on the right-hand side of production rules: S → Aa\n2. The symbol immediately following A is the terminal 'a'.\n3. Therefore, Follow(A) contains 'a'.\n4. Since S is the start symbol, Follow(S) = {$}, but A is only followed by 'a'.\nThus, Follow(A) = {a}.",
+      "examTrick": "Follow(X) is the set of terminals that can appear immediately to the right of X in some sentential form. If X is followed by a terminal, that terminal is in Follow(X). Simple and fast!",
+      "importance": "High",
+      "tags": ["Parsing", "First and Follow", "LL(1) Parsing Table"]
+    },
+    {
+      "id": 5,
+      "question": "In compilation, what is the role of the Symbol Table?",
+      "options": [
+        "To perform syntax validation and print syntax errors",
+        "To record details about variable names, types, scope, and memory offsets across all compilation phases",
+        "To generate machine-independent assembly code",
+        "To optimize the register allocation in the code generation phase"
+      ],
+      "answer": "To record details about variable names, types, scope, and memory offsets across all compilation phases",
+      "difficulty": "Easy",
+      "source": "PSU Compiler Theory",
+      "explanation": "The symbol table is a vital data structure created and maintained by compilers to store information about the occurrence of various entities such as variable names, function names, objects, classes, and interfaces. It tracks types, scope levels, and memory locations, enabling semantic validation and address generation.",
+      "examTrick": "The symbol table is accessed by EVERY phase of the compiler, from lexical analysis all the way to code generation!",
+      "importance": "Medium",
+      "tags": ["Symbol Table", "Compiler Phases"]
+    },
+    {
+      "id": 6,
+      "question": "In a two-buffer input scheme for a lexical analyzer (where each buffer is of size N), the primary advantage of placing a sentinel character (EOF) at the end of each buffer is to:",
+      "options": [
+        "Allow the scanner to support unlimited backtracking",
+        "Eliminate the need for double-boundary tests on every character scanned",
+        "Decrease the size of the buffer needed on disk",
+        "Facilitate direct parallel parsing of the token stream"
+      ],
+      "answer": "Eliminate the need for double-boundary tests on every character scanned",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU",
+      "explanation": "Without a sentinel, the forward pointer advancement requires two checks for every single character: (1) check if it has hit the end of the current buffer, and (2) check what character was scanned. By adding an EOF sentinel at the end of each buffer, we only do a single check to see if the character is EOF. If it is, we then determine if we reached the actual end of file or just the end of a buffer segment.",
+      "examTrick": "Sentinel = Boundary-check eliminator. It reduces 2 tests per character down to 1 test!",
+      "importance": "High",
+      "tags": ["Lexical Analysis", "Input Buffering", "Sentinels"]
+    },
+    {
+      "id": 7,
+      "question": "If a lexical analyzer encounters an erroneous input sequence '3apple' where a valid identifier is expected, which of the following recovery strategies would delete the starting digit '3' to resolve the error?",
+      "options": [
+        "Transposition",
+        "Deletion",
+        "Replacement",
+        "Panic Mode"
+      ],
+      "answer": "Deletion",
+      "difficulty": "Easy",
+      "source": "PSU Exam",
+      "explanation": "Under the 'Deletion' recovery strategy, the lexical analyzer deletes the current unrecognized or invalid character (the digit '3') and continues scanning. This reveals 'apple', which is a perfectly valid identifier.",
+      "examTrick": "Deletion removes the offender. Transposition swaps two characters. Replacement swaps the wrong character for a correct one. Panic Mode skips until a delimiter (like ';') is found.",
+      "importance": "Medium",
+      "tags": ["Lexical Analysis", "Error Recovery"]
+    },
+    {
+      "id": 8,
+      "question": "Consider the following grammar with direct left recursion:\nS → S a | b | c\nWhich of the following represents the equivalent grammar with left recursion eliminated?",
+      "options": [
+        "S → (b | c) S',  S' → a S' | ε",
+        "S → a S' | ε,  S' → b | c",
+        "S → S' (b | c),  S' → S' a | ε",
+        "S → a S | b S | c"
+      ],
+      "answer": "S → (b | c) S',  S' → a S' | ε",
+      "difficulty": "Medium",
+      "source": "GATE CS / CIL MT",
+      "explanation": "For any production rule of the form A → Aα | β, the equivalent non-left-recursive representation is:\nA → βA'\nA' → αA' | ε\nApplying this to S → S a | b | c:\n- Here, A = S, α = a, and β = (b | c).\n- Therefore, S → (b | c) S' and S' → a S' | ε.",
+      "examTrick": "Look at the options: S MUST start with a non-recursive part (β = b or c) and then invoke a tail-recursive helper (S') which handles the repetition (α = a) followed by an option to terminate (ε). Only option 1 fits!",
+      "importance": "High",
+      "tags": ["Parsing", "Left Recursion Elimination", "LL(1) Parsing Table"]
+    },
+    {
+      "id": 9,
+      "question": "Consider the grammar rules:\nS → i E t S | i E t S e S | a\nThis grammar has a common prefix which prevents an LL(1) parser from choosing a production. The left-factored equivalent grammar is:",
+      "options": [
+        "S → i E t S S' | a,  S' → e S | ε",
+        "S → i E t S S' | a,  S' → e | ε",
+        "S → S' a | i E t S,  S' → e S | ε",
+        "S → i E t S | a,  S' → e | ε"
+      ],
+      "answer": "S → i E t S S' | a,  S' → e S | ε",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU",
+      "explanation": "To left-factor a grammar of the form A → αβ | αγ | δ, we extract the common prefix α:\nA → αA' | δ\nA' → β | γ\nApplying this to S → i E t S | i E t S e S | a:\n- Here, α = i E t S, β = ε, γ = e S, and δ = a.\n- Therefore: S → i E t S S' | a and S' → e S | ε.",
+      "examTrick": "Common prefix 'i E t S' is extracted, and the leftover options (ε or 'e S') are placed in a new non-terminal S'. This resolves the ambiguity for the parser!",
+      "importance": "High",
+      "tags": ["Parsing", "Left Factoring"]
+    },
+    {
+      "id": 10,
+      "question": "Consider the grammar:\nS → A B C\nA → a | ε\nB → b | ε\nC → c\nWhat are the FIRST(S) and FOLLOW(B) sets respectively?",
+      "options": [
+        "FIRST(S) = {a, b, c}, FOLLOW(B) = {c}",
+        "FIRST(S) = {a, b, c}, FOLLOW(B) = {b, c}",
+        "FIRST(S) = {a, b}, FOLLOW(B) = {c, $}",
+        "FIRST(S) = {a, b, c}, FOLLOW(B) = {a, b, c}"
+      ],
+      "answer": "FIRST(S) = {a, b, c}, FOLLOW(B) = {c}",
+      "difficulty": "Hard",
+      "source": "GATE CS 2012 / CIL MT",
+      "explanation": "Let's calculate step-by-step:\n1. FIRST(S) = FIRST(A B C):\n   - Since A → a | ε, FIRST(A) = {a, ε}. Thus, a is in FIRST(S).\n   - Since A can derive ε, we also look at FIRST(B) = {b, ε}. Thus, b is in FIRST(S).\n   - Since both A and B can derive ε, we look at FIRST(C) = {c}. Thus, c is in FIRST(S).\n   - Thus, FIRST(S) = {a, b, c}.\n2. FOLLOW(B):\n   - Locate B in the RHS of productions: S → A B C.\n   - B is immediately followed by C. Therefore, FOLLOW(B) contains FIRST(C) - {ε}.\n   - FIRST(C) = {c}.\n   - Thus, FOLLOW(B) = {c}.",
+      "examTrick": "For FOLLOW(X), look only at where X appears on the RHS of any production. B is only in S → A B C. It is followed by C, so FOLLOW(B) must be FIRST(C) = {c}. No other rules apply!",
+      "importance": "High",
+      "tags": ["Parsing", "First and Follow"]
+    },
+    {
+      "id": 11,
+      "question": "A grammar is given by:\nS → a S | a\nWhy is this grammar NOT LL(1)?",
+      "options": [
+        "It is left-recursive",
+        "FIRST(a S) ∩ FIRST(a) = {a} ≠ ∅",
+        "It is ambiguous",
+        "It contains an ε-production which clashes with the start symbol"
+      ],
+      "answer": "FIRST(a S) ∩ FIRST(a) = {a} ≠ ∅",
+      "difficulty": "Medium",
+      "source": "GATE CS 2018",
+      "explanation": "For any grammar production of the form A → α | β, the grammar is LL(1) if and only if FIRST(α) ∩ FIRST(β) = ∅ (assuming neither derives ε). Here, α = a S and β = a. Therefore, FIRST(α) = {a} and FIRST(β) = {a}. Their intersection is {a}, which is not empty. This creates a table entry collision in M[S, a].",
+      "examTrick": "If you have two options for the same non-terminal starting with the exact same character (or overlapping FIRST sets), the parser cannot choose! FIRST sets must be completely disjoint.",
+      "importance": "High",
+      "tags": ["Parsing", "LL(1) Parser", "Conflict Conditions"]
+    },
+    {
+      "id": 12,
+      "question": "If a grammar has N states in its LR(0) collection of items, what is the exact relationship between the state counts of its LR(0), SLR(1), LALR(1), and CLR(1) parsing tables?",
+      "options": [
+        "LR(0) = SLR(1) = LALR(1) ≤ CLR(1)",
+        "LR(0) < SLR(1) < LALR(1) < CLR(1)",
+        "LR(0) = SLR(1) < LALR(1) = CLR(1)",
+        "LR(0) = SLR(1) = CLR(1) < LALR(1)"
+      ],
+      "answer": "LR(0) = SLR(1) = LALR(1) ≤ CLR(1)",
+      "difficulty": "Hard",
+      "source": "CIL MT 2021 / GATE CS",
+      "explanation": "Let's review state counts:\n1. SLR(1) uses the exact same states as LR(0) (built from the same LR(0) DFA). Only the table reduce-actions are filled differently. So StateCount(SLR) = StateCount(LR(0)) = N.\n2. CLR(1) splits states based on lookaheads, so StateCount(CLR) ≥ N.\n3. LALR(1) is built by merging all states in the CLR(1) DFA that have the same core items (differing only in lookahead). This merging collapses the state count back to exactly the number of LR(0) states. Thus, StateCount(LALR) = N.\nTherefore, LR(0) = SLR(1) = LALR(1) ≤ CLR(1).",
+      "examTrick": "LALR(1) is 'LR(0)-sized CLR(1)'. Its state count is EXACTLY the same as LR(0) and SLR(1). This is a highly repeated GATE/PSU question!",
+      "importance": "High",
+      "tags": ["Parsing", "LR Parsers", "LALR"]
+    },
+    {
+      "id": 13,
+      "question": "A bottom-up parser's action table contains a 'Shift-Reduce' conflict in state I on lookahead 'a'. This means:",
+      "options": [
+        "The parser has a choice between shifting 'a' onto the stack and reducing the stack using some production rule on lookahead 'a'",
+        "The parser has a choice between reducing using two different production rules",
+        "The stack has reached its maximum size limit and must be popped",
+        "The compiler cannot decide whether to record an identifier or a keyword"
+      ],
+      "answer": "The parser has a choice between shifting 'a' onto the stack and reducing the stack using some production rule on lookahead 'a'",
+      "difficulty": "Easy",
+      "source": "CIL MT 2022",
+      "explanation": "A Shift-Reduce (SR) conflict arises when the parser, upon seeing the lookahead symbol 'a', can either: (1) shift 'a' onto the stack (moving to a new state), or (2) reduce the current stack elements to a non-terminal. Both actions are valid in that state, making the parser non-deterministic.",
+      "examTrick": "Shift-Reduce conflict = (Shift vs Reduce). Reduce-Reduce conflict = (Reduce vs Reduce). If a grammar is ambiguous, these conflicts are guaranteed to appear!",
+      "importance": "High",
+      "tags": ["Parsing", "LR Parsers", "Conflicts"]
+    },
+    {
+      "id": 14,
+      "question": "In an LR(0) automaton, which of the following items is classified as a 'Kernel Item'?",
+      "options": [
+        "A → • X Y Z",
+        "S' → • S (where S' is the augmented start symbol)",
+        "B → • ε",
+        "C → X • Y"
+      ],
+      "answer": "C → X • Y",
+      "difficulty": "Medium",
+      "source": "GATE CS 2015",
+      "explanation": "In LR parsing, items are divided into:\n- Kernel Items: Includes S' → • S and all items whose dots are NOT at the left end (e.g., C → X • Y).\n- Non-kernel Items: All items whose dots are at the left end (except S' → • S), such as A → • X Y Z.\nSince C → X • Y has the dot after 'X' (not at the left end), it is a kernel item.",
+      "examTrick": "Kernel items represent 'progress made' (dot has moved past at least one symbol), or the very initial start item. Any item with a dot at the extreme left (dot before everything) is non-kernel!",
+      "importance": "Medium",
+      "tags": ["Parsing", "LR Parsers", "Kernel Items"]
+    },
+    {
+      "id": 15,
+      "question": "Which of the following describes the grammatical restrictions of Operator Precedence Grammars and their corresponding bottom-up parsers?",
+      "options": [
+        "They allow arbitrary ε-productions but forbid recursive rules",
+        "No production can have an empty RHS (ε) and no two non-terminals can be adjacent on the RHS of any production",
+        "All productions must be left-recursive and have at least two terminals",
+        "They only support regular grammars with no variables on the RHS"
+      ],
+      "answer": "No production can have an empty RHS (ε) and no two non-terminals can be adjacent on the RHS of any production",
+      "difficulty": "Medium",
+      "source": "PSU Exam",
+      "explanation": "An Operator Grammar has two strict rules:\n1. No ε-productions (no non-terminal can derive the empty string).\n2. No two adjacent non-terminals are allowed on the RHS of any production (e.g., rules like A → B C are forbidden; they must be separated by at least one terminal/operator like A → B + C).",
+      "examTrick": "Operator Precedence = No empty moves (no ε) and no side-by-side variables (no adjacents like BC). Think of them as 'formulas' where variables must be separated by operators!",
+      "importance": "Medium",
+      "tags": ["Parsing", "Operator Precedence"]
+    }
+  ]
+}

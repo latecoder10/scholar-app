@@ -1,0 +1,92 @@
+{
+  "subject": "Engineering Mathematics",
+  "chapter": "Discrete Mathematics and Linear Algebra",
+  "description": "Covers propositional logic, sets, relations, functions, partial orders, lattices, graph theory (connectivity, matching, coloring), and linear algebra (determinants, eigenvalues, eigenvectors, system of linear equations).",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following propositions is a tautology?",
+      "options": [
+        "(p ∨ q) → (p ∧ q)",
+        "(p → q) ↔ (¬p ∨ q)",
+        "(p ∧ q) → (¬p)",
+        "(p → q) ∧ (q → p)"
+      ],
+      "answer": "(p → q) ↔ (¬p ∨ q)",
+      "difficulty": "Easy",
+      "source": "CIL MT / GATE CS",
+      "explanation": "A proposition is a tautology if it is true under all truth value assignments. By the definition of logical implication, p → q is logically equivalent to ¬p ∨ q. Since they have the exact same truth table, the biconditional (↔) of the two equivalent expressions is always true.",
+      "examTrick": "Always remember the basic logical equivalence: p → q ≡ ¬p ∨ q. Any biconditional statement between logically equivalent formulas is a tautology (True ↔ True or False ↔ False both yield True).",
+      "importance": "High",
+      "tags": ["Discrete Mathematics", "Propositional Logic", "Tautology"]
+    },
+    {
+      "id": 2,
+      "question": "Let R be a relation on the set of all integers such that a R b if and only if (a - b) is divisible by 5. Which of the following properties are satisfied by R?",
+      "options": [
+        "Reflexive and symmetric, but not transitive",
+        "Reflexive, symmetric, and transitive (Equivalence relation)",
+        "Reflexive and transitive, but not symmetric",
+        "Symmetric and transitive, but not reflexive"
+      ],
+      "answer": "Reflexive, symmetric, and transitive (Equivalence relation)",
+      "difficulty": "Easy",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "1. Reflexive: For any integer a, a - a = 0, which is divisible by 5. Hence, a R a.\n2. Symmetric: If a R b, then a - b is divisible by 5 (a - b = 5k). This means b - a = -5k = 5(-k), which is also divisible by 5. Hence, b R a.\n3. Transitive: If a R b and b R c, then a - b = 5k and b - c = 5m. Adding these, we get (a - b) + (b - c) = a - c = 5(k + m). Thus, a - c is divisible by 5. Hence, a R c.\nTherefore, R is an equivalence relation.",
+      "examTrick": "Congruence modulo n (here, n = 5) is always an equivalence relation over the set of integers. This is a standard math theorem!",
+      "importance": "High",
+      "tags": ["Discrete Mathematics", "Relations", "Equivalence Relation"]
+    },
+    {
+      "id": 3,
+      "question": "What is the chromatic number of a complete bipartite graph K_3,3?",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "6"
+      ],
+      "answer": "2",
+      "difficulty": "Medium",
+      "source": "CIL MT / ISRO CS",
+      "explanation": "A bipartite graph (by definition) can have its vertices partitioned into two disjoint sets such that no two vertices within the same set are connected by an edge. Therefore, we can color all vertices in the first set with color A, and all vertices in the second set with color B. No adjacent vertices will have the same color. Thus, the chromatic number (minimum colors needed) is exactly 2.",
+      "examTrick": "Every bipartite graph with at least one edge has a chromatic number of exactly 2! Bipartite graph = 2-colorable.",
+      "importance": "Medium",
+      "tags": ["Graph Theory", "Coloring", "Bipartite Graph"]
+    },
+    {
+      "id": 4,
+      "question": "Given a matrix A = [[1, 2], [0, 3]]. What are the eigenvalues of A?",
+      "options": [
+        "1 and 2",
+        "1 and 3",
+        "2 and 3",
+        "0 and 3"
+      ],
+      "answer": "1 and 3",
+      "difficulty": "Easy",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "The matrix A is an upper triangular matrix because all entries below the main diagonal are zero. For any upper triangular (or lower triangular, or diagonal) matrix, the eigenvalues are simply the diagonal elements themselves. Thus, the eigenvalues are 1 and 3.",
+      "examTrick": "For triangular and diagonal matrices, you don't need to compute det(A - λI) = 0! The eigenvalues are simply the diagonal entries. This saves precious exam time.",
+      "importance": "High",
+      "tags": ["Linear Algebra", "Eigenvalues", "Triangular Matrix"]
+    },
+    {
+      "id": 5,
+      "question": "A system of linear equations Ax = b is consistent if and only if:",
+      "options": [
+        "Rank(A) = Rank([A|b])",
+        "Rank(A) < Rank([A|b])",
+        "Rank(A) > Rank([A|b])",
+        "Rank(A) is equal to the number of variables"
+      ],
+      "answer": "Rank(A) = Rank([A|b])",
+      "difficulty": "Medium",
+      "source": "PSU Mathematics Section",
+      "explanation": "According to the Rouché-Capelli theorem, a system of linear equations Ax = b is consistent (has at least one solution) if and only if the rank of the coefficient matrix A is equal to the rank of the augmented matrix [A|b]. If they are equal and equal to the number of variables, there is a unique solution. If equal and less than the number of variables, there are infinitely many solutions.",
+      "examTrick": "Consistent if Rank(A) = Rank([A|b]). Inconsistent if Rank(A) != Rank([A|b]) (which means Rank(A) < Rank([A|b])).",
+      "importance": "High",
+      "tags": ["Linear Algebra", "System of Equations", "Consistency"]
+    }
+  ]
+}

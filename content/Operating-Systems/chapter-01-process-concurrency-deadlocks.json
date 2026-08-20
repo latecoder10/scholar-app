@@ -1,0 +1,143 @@
+{
+  "subject": "Operating Systems",
+  "chapter": "Processes, CPU Scheduling, and Deadlocks",
+  "description": "Reviews process states, threads, CPU scheduling algorithms, synchronization (semaphores, critical section), and deadlock criteria/avoidance.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Consider the following C program segment utilizing the fork() system call:\n\n```c\n#include <stdio.h>\n#include <unistd.h>\n\nint main() {\n    fork();\n    if (fork() == 0) {\n        fork();\n    }\n    return 0;\n}\n```\n\nIncluding the initial parent process, what is the total number of processes created during the execution of this program?",
+      "options": [
+        "4",
+        "6",
+        "8",
+        "12"
+      ],
+      "answer": "6",
+      "difficulty": "Hard",
+      "source": "GATE CS / CIL MT Exam",
+      "explanation": "Let's track the process tree step-by-step:\n1. We begin with 1 initial parent process, let's call it P0.\n2. First `fork();` executes. This splits P0 into two processes: the parent P0 and a new child P1. Both processes now proceed to the next statement.\n3. Next is the `if (fork() == 0)` statement:\n   - P0 calls `fork()`, creating a new child P2. In the parent P0, `fork()` returns P2's PID (non-zero), so P0 skips the `if` body. In the child P2, `fork()` returns 0, so P2 enters the `if` body.\n   - P1 calls `fork()`, creating a new child P3. In the parent P1, `fork()` returns P3's PID (non-zero), so P1 skips the `if` body. In the child P3, `fork()` returns 0, so P3 enters the `if` body.\n4. Inside the `if` body: Only processes that received a return value of 0 from the second fork (which are P2 and P3) execute the third `fork();` inside the brackets:\n   - P2 calls `fork()`, creating a new child P4.\n   - P3 calls `fork()`, creating a new child P5.\n5. Counting all processes in the system: {P0, P1, P2, P3, P4, P5} = 6 total active processes.",
+      "examTrick": "Fork Trace Tree: For nested fork conditionals, trace each active process level by level. If fork() == 0 is the check, only the children of that specific fork enter the conditional branch to execute further forks!",
+      "importance": "High",
+      "tags": ["Processes", "Fork Call", "Process Creation"]
+    },
+    {
+      "id": 2,
+      "question": "An operating system uses the Shortest Job First (SJF) scheduling algorithm with exponential averaging to predict the next CPU burst. The initial predicted burst time is \u03c4_1 = 12 milliseconds. The actual burst times for the first two CPU bursts are measured as t_1 = 8 ms and t_2 = 14 ms. If the smoothing factor is \u03b1 = 0.4, what is the predicted burst time \u03c4_3 (in milliseconds) for the third CPU burst?",
+      "options": [
+        "10.40 ms",
+        "11.20 ms",
+        "11.84 ms",
+        "12.00 ms"
+      ],
+      "answer": "11.84 ms",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "Let's calculate the predicted bursts using the exponential averaging recurrence relation:\nFormula: \u03c4_{n+1} = \u03b1 * t_n + (1 - \u03b1) * \u03c4_n\n\n1. Calculate \u03c4_2 for the second burst:\n   \u03c4_2 = \u03b1 * t_1 + (1 - \u03b1) * \u03c4_1\n   \u03c4_2 = 0.4 * 8 + (1 - 0.4) * 12\n   \u03c4_2 = 3.2 + 0.6 * 12 = 3.2 + 7.2 = 10.4 ms.\n\n2. Calculate \u03c4_3 for the third burst:\n   \u03c4_3 = \u03b1 * t_2 + (1 - \u03b1) * \u03c4_2\n   \u03c4_3 = 0.4 * 14 + (1 - 0.4) * 10.4\n   \u03c4_3 = 5.6 + 0.6 * 10.4 = 5.6 + 6.24 = 11.84 ms.",
+      "examTrick": "Burst Prediction Shortcut: Always verify that \u03c4_{n+1} lies strictly between the actual burst t_n and previous prediction \u03c4_n. Here, \u03c4_3 must be between 14 and 10.4, immediately eliminating options outside this range!",
+      "importance": "High",
+      "tags": ["CPU Scheduling", "SJF Prediction", "Exponential Averaging"]
+    },
+    {
+      "id": 3,
+      "question": "A counting semaphore S is initialized to 5. The system subsequently executes 18 P (wait) operations and 10 V (signal) operations. What is the current value of S, and how many processes are blocked on S respectively?",
+      "options": [
+        "Value = -3, Blocked = 3",
+        "Value = 3, Blocked = 0",
+        "Value = -8, Blocked = 8",
+        "Value = -3, Blocked = 0"
+      ],
+      "answer": "Value = -3, Blocked = 3",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021 / PSU Exam",
+      "explanation": "Let's perform the semaphore arithmetic:\n1. A semaphore S represents a resource counter. S starts with 5 (S = 5).\n2. P(S) (wait) operation decrements S: S = S - 1.\n3. V(S) (signal) operation increments S: S = S + 1.\n4. After 18 P operations: S = 5 - 18 = -13.\n5. After 10 V operations: S = -13 + 10 = -3.\n\nInterpretation of negative semaphore values:\nUnder standard Dijkstra semaphore definitions, if S is negative, its absolute value |S| indicates the exact number of processes currently blocked in the semaphore's waiting queue. Since S = -3, there are exactly |-3| = 3 processes blocked.",
+      "examTrick": "Blocked Process Formula: If S < 0, then Blocked Processes = |S|. If S \u2265 0, Blocked Processes = 0. No exception, works instantly on all PSU numericals!",
+      "importance": "High",
+      "tags": ["Concurrency", "Semaphores", "Process Synchronization"]
+    },
+    {
+      "id": 4,
+      "question": "A system has five processes {P0, P1, P2, P3, P4} and three resource types {A, B, C}. Resource type A has 10 instances, B has 5 instances, and C has 7 instances. Suppose the allocation and maximum need of the processes are as follows at time T0:\n\n**Allocation:**\n- P0: [0, 1, 0], P1: [2, 0, 0], P2: [3, 0, 2], P3: [2, 1, 1], P4: [0, 0, 2]\n\n**Maximum (Max) Demand:**\n- P0: [7, 5, 3], P1: [3, 2, 2], P2: [9, 0, 2], P3: [2, 2, 2], P4: [4, 3, 3]\n\n**Currently Available resources:** [3, 3, 2]\n\nWhich of the following represents a valid, safe execution sequence under the Banker's Algorithm?",
+      "options": [
+        "<P0, P1, P3, P2, P4>",
+        "<P2, P1, P3, P4, P0>",
+        "<P1, P3, P4, P0, P2>",
+        "<P1, P0, P3, P4, P2>"
+      ],
+      "answer": "<P1, P3, P4, P0, P2>",
+      "difficulty": "Hard",
+      "source": "GATE CS 2018 / ISRO",
+      "explanation": "Let's first compute the remaining Need matrix (Need = Max - Allocation):\n- P0: [7, 5, 3] - [0, 1, 0] = [7, 4, 3]\n- P1: [3, 2, 2] - [2, 0, 0] = [1, 2, 2]\n- P2: [9, 0, 2] - [3, 0, 2] = [6, 0, 0]\n- P3: [2, 2, 2] - [2, 1, 1] = [0, 1, 1]\n- P4: [4, 3, 3] - [0, 0, 2] = [4, 3, 1]\n\nNow, test each process against the initial Available = [3, 3, 2]:\n- Only P1 (need [1, 2, 2] \u2264 [3, 3, 2]) and P3 (need [0, 1, 1] \u2264 [3, 3, 2]) can execute first. P0, P2, and P4 cannot run first. This immediately eliminates options 1 and 2.\n- Let's execute P1 first: P1 runs, completes, and releases its allocated resources. New Available = [3, 3, 2] + Allocation(P1) [2, 0, 0] = [5, 3, 2].\n- Next, check who can execute with [5, 3, 2]:\n  - P3's need is [0, 1, 1] \u2264 [5, 3, 2]. P3 executes, completes, and releases its allocated resources. New Available = [5, 3, 2] + Allocation(P3) [2, 1, 1] = [7, 4, 3].\n  - Now check P4: need is [4, 3, 1] \u2264 [7, 4, 3]. P4 executes and releases. New Available = [7, 4, 3] + [0, 0, 2] = [7, 4, 5].\n  - Check P0: need is [7, 4, 3] \u2264 [7, 4, 5]. P0 executes and releases. New Available = [7, 4, 5] + [0, 1, 0] = [7, 5, 5].\n  - Finally, P2 runs: need is [6, 0, 0] \u2264 [7, 5, 5]. All completed! Thus, <P1, P3, P4, P0, P2> is a valid safe sequence.",
+      "examTrick": "Banker's First Step rule: Immediately calculate the Need matrix and compare it against Available. Any sequence starting with a process whose Need exceeds Available is instantly invalid!",
+      "importance": "High",
+      "tags": ["Deadlocks", "Banker's Algorithm", "Safe Sequence"]
+    },
+    {
+      "id": 5,
+      "question": "Which of the following statements is correct regarding User-Level Threads (ULT) versus Kernel-Level Threads (KLT) as described in modern multithreading architectures?",
+      "options": [
+        "If a user-level thread performs a blocking system call or I/O operation, the entire parent process is blocked.",
+        "Kernel-level threads do not require any kernel mode transitions during a context switch, making them faster than user-level threads.",
+        "The OS kernel can directly schedule different user-level threads of the same process onto multiple CPU cores for true hardware parallelism.",
+        "The Many-to-One multithreading model maps each user-level thread to a dedicated kernel thread, facilitating optimal multicore utilization."
+      ],
+      "answer": "If a user-level thread performs a blocking system call or I/O operation, the entire parent process is blocked.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020 / GATE CS",
+      "explanation": "Because user-level threads are managed entirely in user space by a thread library and are invisible to the operating system kernel, the kernel only schedules the single parent process. If one user-level thread makes a blocking system call (like I/O), the kernel halts the entire process. Kernel-level threads, on the other hand, are scheduled individually by the kernel, allowing other threads of the same process to run even if one is blocked, and permitting true multicore execution.",
+      "examTrick": "ULT vs KLT Blocking: Remember, ULTs are invisible to the OS. Thus, 1 ULT blocks = All block! KLTs are managed by the OS, so 1 KLT blocks = Only that thread blocks.",
+      "importance": "High",
+      "tags": ["Threads", "ULT vs KLT", "Multithreading Models"]
+    },
+    {
+      "id": 6,
+      "question": "Consider three processes P1, P2, and P3 with arrival times and burst times as follows:\n\n- P1: Arrival = 0 ms, Burst = 9 ms\n- P2: Arrival = 1 ms, Burst = 4 ms\n- P3: Arrival = 2 ms, Burst = 2 ms\n\nUsing the preemptive Shortest Remaining Time First (SRTF) scheduling algorithm, what is the average turnaround time (in milliseconds) of these processes?",
+      "options": [
+        "6.33 ms",
+        "7.67 ms",
+        "8.00 ms",
+        "9.00 ms"
+      ],
+      "answer": "7.67 ms",
+      "difficulty": "Hard",
+      "source": "GATE CS 2011 / PSU Exam",
+      "explanation": "Let's construct the preemptive Gantt chart timeline step-by-step:\n- At t=0: Only P1 is active. P1 begins executing (Remaining: P1 = 9).\n- At t=1: P2 arrives with burst 4. P1's remaining burst is 8. Since 4 < 8, P2 preempts P1 and starts executing (Remaining: P2 = 4, P1 = 8).\n- At t=2: P3 arrives with burst 2. P2's remaining burst is 3. Since 2 < 3, P3 preempts P2 and starts executing (Remaining: P3 = 2, P2 = 3, P1 = 8).\n- At t=4: P3 completes execution. In the ready queue, we have P2 (3) and P1 (8). P2 has the shorter remaining time, so P2 resumes (Remaining: P2 = 3).\n- At t=7: P2 completes execution. P1 is the only remaining process, so P1 resumes (Remaining: P1 = 8).\n- At t=15: P1 completes execution.\n\nNow, let's calculate the Turnaround Time (Turnaround = Completion Time - Arrival Time) for each process:\n- P1: Completion = 15, Arrival = 0. Turnaround = 15 - 0 = 15 ms.\n- P2: Completion = 7, Arrival = 1. Turnaround = 7 - 1 = 6 ms.\n- P3: Completion = 4, Arrival = 2. Turnaround = 4 - 2 = 2 ms.\n\nAverage Turnaround Time = (15 + 6 + 2) / 3 = 23 / 3 = 7.67 ms.",
+      "examTrick": "SRTF Gantt Rule: At every single arrival event (t=1, t=2), pause and compare the remaining burst times of all active processes in the ready queue. The absolute lowest remaining time ALWAYS preempts and gets the CPU!",
+      "importance": "High",
+      "tags": ["CPU Scheduling", "SRTF", "Turnaround Time Calculations"]
+    },
+    {
+      "id": 7,
+      "question": "Imposing a strict total ordering on all resource types and requiring processes to request resources in an increasing order of their numbering is a structural deadlock prevention technique designed specifically to eliminate which Coffman condition?",
+      "options": [
+        "Mutual Exclusion",
+        "Hold and Wait",
+        "No Preemption",
+        "Circular Wait"
+      ],
+      "answer": "Circular Wait",
+      "difficulty": "Easy",
+      "source": "CIL MT 2022 / ISRO",
+      "explanation": "According to Coffman's conditions, a deadlock requires a circular chain of waiting processes. By assigning a global integer index (e.g., F(R_i)) to each resource type and enforcing that a process holding resource R_i can only request resource R_j if F(R_j) > F(R_i), we mathematically guarantee that no circular wait cycle can ever form in the Resource Allocation Graph (RAG). Thus, the Circular Wait condition is eliminated.",
+      "examTrick": "Resource numbering = Breaks Circular Wait! If resources must be requested in strictly ascending order, you can never get a cyclic loop of dependency (e.g., P1 holds R1 wants R2, P2 holds R2 wants R1 is forbidden!).",
+      "importance": "High",
+      "tags": ["Deadlocks", "Deadlock Prevention", "Circular Wait"]
+    },
+    {
+      "id": 8,
+      "question": "In Inter-Process Communication (IPC), how do Shared Memory and Message Passing mechanisms compare regarding performance and kernel involvement?",
+      "options": [
+        "Shared memory is safer because the kernel mediates and validates every single read and write operation.",
+        "Shared memory is the fastest IPC mechanism because it does not require any kernel involvement once the memory region is mapped to the processes' address spaces.",
+        "Message passing is faster than shared memory because data is copied directly between user-level registers without memory bus traffic.",
+        "Pipes are full-duplex sockets that allow concurrent, bidirectional data transfer without any synchronization overhead."
+      ],
+      "answer": "Shared memory is the fastest IPC mechanism because it does not require any memory system calls or kernel involvement once the memory region is mapped to the processes' address spaces.",
+      "difficulty": "Medium",
+      "source": "PSU Computer Systems",
+      "explanation": "Shared memory is the fastest IPC because once the kernel maps the shared memory segment into the address spaces of the participating processes (via shmget/mmap), the processes read and write to it directly as standard local memory. There are no system calls or context switches needed for data transfer. However, because the kernel does not mediate, the processes must implement their own user-space synchronization (like semaphores) to prevent race conditions. Message passing requires copying data to/from kernel buffers, which is slower.",
+      "examTrick": "IPC Speed Rule: Shared Memory = Fastest (No kernel mediation, direct RAM access). Message Passing = Safer (Kernel mediates, but slower due to copy operations). Pipes = Unidirectional (Half-duplex) by default.",
+      "importance": "High",
+      "tags": ["IPC", "Shared Memory", "Message Passing", "Pipes"]
+    }
+  ]
+}

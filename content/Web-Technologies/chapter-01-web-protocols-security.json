@@ -1,0 +1,92 @@
+{
+  "subject": "Web Technologies",
+  "chapter": "Web Protocols, Services, and Cloud Models",
+  "description": "Reviews web data formats (XML, JSON, AJAX), Web Services (REST, SOAP), HTTP details (status codes, cookies, sessions), cloud service models (IaaS, PaaS, SaaS), and basic web security.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the primary operational difference between cookies and sessions in modern web development?",
+      "options": [
+        "Cookies are stored server-side, whereas sessions are stored client-side.",
+        "Cookies are stored client-side (in the browser), whereas sessions are stored server-side.",
+        "Cookies can store binary files, while sessions can only store text.",
+        "Cookies do not expire, whereas sessions always expire within 10 minutes."
+      ],
+      "answer": "Cookies are stored client-side (in the browser), whereas sessions are stored server-side.",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021 / PSU Exam",
+      "explanation": "Cookies are key-value text pairs saved directly on the user's local machine by the web browser. Sessions are stored securely on the web server. A unique session ID (often stored in a temporary cookie) is passed between client and server to associate the browser with its server-side session data.",
+      "examTrick": "Cookie = Client (browser, text-only, less secure). Session = Server (backend memory/database, more secure, stores complex objects).",
+      "importance": "High",
+      "tags": ["HTTP Protocol", "Cookies", "Web Sessions"]
+    },
+    {
+      "id": 2,
+      "question": "Which of the following is a key architectural constraint of REST (Representational State Transfer) web services that distinguishes it from SOAP?",
+      "options": [
+        "REST requires stateful client-server connections.",
+        "REST enforces strict XML-only messaging standards.",
+        "REST relies on standard HTTP methods (GET, POST, PUT, DELETE) and is designed to be completely stateless.",
+        "REST requires an explicit WSDL file to define available methods."
+      ],
+      "answer": "REST relies on standard HTTP methods (GET, POST, PUT, DELETE) and is designed to be completely stateless.",
+      "difficulty": "Easy",
+      "source": "CIL MT 2022",
+      "explanation": "- REST is a lightweight, stateless architectural style that leverages existing HTTP capabilities. It utilizes HTTP methods as verbs (GET for retrieval, POST for creation, PUT/PATCH for modification, DELETE for removal).\n- SOAP is a protocol-based, XML-only, more heavyweight standard that relies on strict contracts (WSDL) and can maintain state.",
+      "examTrick": "REST is: Stateless, Cacheable, Client-Server, Uniform Interface, Layered System, Code on Demand (optional). SOAP = XML only, WSDL required. REST = JSON, XML, or Text, uses pure HTTP.",
+      "importance": "High",
+      "tags": ["Web Services", "REST", "SOAP", "Protocols"]
+    },
+    {
+      "id": 3,
+      "question": "According to NIST, a cloud computing model where a customer can deploy consumer-created or acquired applications onto the cloud infrastructure using programming languages, libraries, services, and tools supported by the provider is classified as:",
+      "options": [
+        "Infrastructure as a Service (IaaS)",
+        "Platform as a Service (PaaS)",
+        "Software as a Service (SaaS)",
+        "Database as a Service (DBaaS)"
+      ],
+      "answer": "Platform as a Service (PaaS)",
+      "difficulty": "Medium",
+      "source": "PSU Cloud Computing Section",
+      "explanation": "- IaaS (Infrastructure as a Service): Provides raw virtualized hardware (servers, storage, networks, VMs). The user manages OS, runtimes, database, and apps.\n- PaaS (Platform as a Service): Provides a pre-configured platform including OS, middleware, and runtime environment. The user only manages and deploys their own application code.\n- SaaS (Software as a Service): Provides complete, fully managed applications directly to end-users (e.g., Gmail, Google Docs).",
+      "examTrick": "Cloud Models Shortcut:\n- IaaS: Raw VMs, network, disks (e.g. AWS EC2, GCP Compute Engine).\n- PaaS: Managed environment where you just upload code (e.g. Heroku, GCP App Engine).\n- SaaS: Fully functional user app (e.g. Office 365, Salesforce).",
+      "importance": "High",
+      "tags": ["Cloud Computing", "IaaS", "PaaS", "SaaS"]
+    },
+    {
+      "id": 4,
+      "question": "Which of the following web application security vulnerabilities occurs when an attacker forces an authenticated user's browser to execute an unwanted, unauthorized command on a web application where the user is currently logged in?",
+      "options": [
+        "Cross-Site Scripting (XSS)",
+        "SQL Injection (SQLi)",
+        "Cross-Site Request Forgery (CSRF)",
+        "Directory Traversal"
+      ],
+      "answer": "Cross-Site Request Forgery (CSRF)",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020 / Web Security",
+      "explanation": "- CSRF (Cross-Site Request Forgery) tricks a user's browser into executing commands (like transfer funds, change email) on a site where the user is authenticated, abusing the site's trust in the browser's credentials (like cookies).\n- XSS (Cross-Site Scripting) occurs when an attacker injects malicious scripts directly into a trusted website, which then run inside a victim's browser.",
+      "examTrick": "CSRF = abusing the site's trust in the user's browser (usually uses cookies automatically sent by the browser). Prevention: Anti-CSRF tokens. XSS = executing raw JavaScript on client browser.",
+      "importance": "High",
+      "tags": ["Web Security", "CSRF", "XSS", "Cybersecurity"]
+    },
+    {
+      "id": 5,
+      "question": "In an XML document, what is the role of a DTD (Document Type Definition)?",
+      "options": [
+        "To compile the XML code into an executable format",
+        "To style the XML elements and define color/layout in the browser",
+        "To define the legal structure, elements, attributes, and nesting rules of the XML document",
+        "To encrypt the XML document for secure transmission"
+      ],
+      "answer": "To define the legal structure, elements, attributes, and nesting rules of the XML document",
+      "difficulty": "Easy",
+      "source": "PSU Exams CS Section",
+      "explanation": "A Document Type Definition (DTD) defines the legal building blocks of an XML document. It specifies the document structure with a list of validated elements, nested children, attributes, and data types, ensuring the XML document is structured correctly (valid XML).",
+      "examTrick": "XML Terminology:\n- Well-formed XML: Follows basic syntax rules (matching tags, case-sensitive, single root).\n- Valid XML: Well-formed AND conforms to a specific schema (defined by DTD or XML Schema).",
+      "importance": "Medium",
+      "tags": ["XML", "DTD", "Web Data"]
+    }
+  ]
+}

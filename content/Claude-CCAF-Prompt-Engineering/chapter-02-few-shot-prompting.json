@@ -1,0 +1,72 @@
+{
+  "subject": "Claude CCAF: Prompt Engineering & Structured Output",
+  "chapter": "4.2 Few-Shot Prompting & Exemplar Engineering",
+  "exam": "Claude CCAF",
+  "paper": "Domain-4",
+  "description": "Exemplar curation, multi-label classifications, handling compound skills, and prompt caching economics.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "\"Extract key information from document\" produces inconsistent extraction; different documents yield different field selection, and detailed instructions don't improve consistency. Which technique provides consistent extraction?",
+      "options": [
+        "More detailed explicit criteria defining exactly which fields constitute \"key information\".",
+        "Few-shot examples showing concrete input documents and expected extracted output.",
+        "Multiple extraction passes voting on field selection.",
+        "A validation loop rejecting inconsistent extractions until consistency is achieved."
+      ],
+      "answer": "Few-shot examples showing concrete input documents and expected extracted output.",
+      "difficulty": "Easy",
+      "source": "UD4-001 | Multishot prompting",
+      "explanation": "Few-shot input-output examples ground abstract terms like 'key information' in concrete demonstrations, establishing consistent field selection.",
+      "examTrick": "Subjective/ambiguous task consistency = Few-shot input-output examples.",
+      "importance": "High",
+      "tags": [
+        "Few-Shot Prompting",
+        "Exemplars",
+        "Consistent Extraction"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Commit messages in a strict team format — zero-shot with a precise spec, or few-shot with several examples? The task is common and well-defined, and it runs on every commit in a token-billed CI pipeline. BEST choice and why?",
+      "options": [
+        "Few-shot, because it always outperforms zero-shot for structured output formatting.",
+        "Zero-shot with a precise format specification, since well-defined common tasks can match few-shot performance while avoiding per-commit token bloat.",
+        "One-shot as a middle ground.",
+        "Few-shot but cache the example block to amortize the token cost."
+      ],
+      "answer": "Zero-shot with a precise format specification, since well-defined common tasks can match few-shot performance while avoiding per-commit token bloat.",
+      "difficulty": "Medium",
+      "source": "BU4-001 (§4.2) | Multishot prompting · Prompt caching",
+      "explanation": "For well-defined, common standardized tasks (conventional commits), a precise zero-shot specification matches few-shot accuracy without incurring recurring token overhead per commit.",
+      "examTrick": "Common well-defined tasks in high-frequency CI = Zero-shot with precise specification.",
+      "importance": "High",
+      "tags": [
+        "Zero-Shot vs Few-Shot",
+        "Token Economics",
+        "CI Cost"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "A skills: string[] field shows three issues: compound phrases like \"Python and SQL\" sometimes kept as one entry; implied-but-unstated skills appearing; array lengths ranging 5–10 vs 40+ on similar documents. The prompt says \"Extract all skills mentioned.\" Most effective improvement?",
+      "options": [
+        "Add few-shot examples demonstrating compound phrase handling, explicit mention criteria, and appropriate entry granularity.",
+        "Add constraints: \"Extract 10–20 skills maximum, one skill per entry, only explicitly named skills.\"",
+        "Post-extraction normalization mapping skills to a canonical taxonomy and deduplicating.",
+        "Enrich the schema to {skill, confidence, source_quote}[] to capture extraction metadata."
+      ],
+      "answer": "Add few-shot examples demonstrating compound phrase handling, explicit mention criteria, and appropriate entry granularity.",
+      "difficulty": "Hard",
+      "source": "CS4-002 (§4.2) | Multishot prompting · Structured outputs",
+      "explanation": "Granularity, compound phrase splitting, and explicit mention standards are best demonstrated through curated few-shot exemplars rather than arbitrary numeric caps.",
+      "examTrick": "List granularity / compound phrase splitting = Curated few-shot exemplars showing correct splitting.",
+      "importance": "High",
+      "tags": [
+        "Array Extraction",
+        "Granularity",
+        "Few-Shot"
+      ]
+    }
+  ]
+}

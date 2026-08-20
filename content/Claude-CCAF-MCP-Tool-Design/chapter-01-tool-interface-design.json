@@ -1,0 +1,555 @@
+{
+  "subject": "Claude CCAF: Tool Design & MCP Integration",
+  "chapter": "2.1 Tool Interface & JSON Schema Design",
+  "exam": "Claude CCAF",
+  "paper": "Domain-2",
+  "description": "3-part descriptions, JSON schema types, strict: true grammar compilation, enums, additionalProperties: false, and disable_parallel_tool_use.",
+  "questions": [
+    {
+      "question": "An MCP tool description says \"Retrieves customer information.\" The agent misroutes requests because the description lacks specificity; the tool accepts customer_id, email, or phone number. How should the description be improved?",
+      "options": [
+        "Keep the description concise, as brevity improves agent processing speed.",
+        "Tool descriptions should remain minimal, delegating selection to agent reasoning.",
+        "Expand the description with specific use cases, accepted parameters, return format, and when to use.",
+        "Add a schema definition describing all possible parameters and return fields."
+      ],
+      "answer": "Expand the description with specific use cases, accepted parameters, return format, and when to use.",
+      "difficulty": "Medium",
+      "source": "Tool use — tool definitions and descriptions · Writing tools for agents ---",
+      "explanation": "Tool selection is made *from the description*, so specificity there is what fixes routing. Naming the accepted identifier types, the return shape, and the situations the tool is for gives the model everything it needs to decide before calling — and to recognise when a different tool fits better.\n\nWhy distractors fail:\n- **A** — Trades selection accuracy for a \"processing speed\" benefit that a few hundred tokens of description do not actually confer.\n- **B** — Delegating to reasoning over an under-specified description is exactly what produced the misrouting.\n- **D** — A schema constrains *how to call* the tool once chosen; it does not explain *when* to choose it. Necessary but not sufficient, and the stem's failure is selection.",
+      "examTrick": "Exam Rule:  — Tool selection is made *from the description*, so specificity there is what fixes routing. Naming the accepted identifier types, the return ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 1
+    },
+    {
+      "question": "A tool description says \"Processes orders.\" It actually updates order status, cancels orders, and initiates refunds; the agent misuses it for status checks. Improve the description?",
+      "options": [
+        "Schema definition alone is sufficient without natural language description.",
+        "Tool descriptions should be minimal, allowing agent reasoning to determine usage.",
+        "Keep descriptions concise for faster agent processing.",
+        "Detailed description with specific capabilities, use cases, and when NOT to use."
+      ],
+      "answer": "Detailed description with specific capabilities, use cases, and when NOT to use.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents · Tool use overview ---",
+      "explanation": "\"Processes orders\" understates a tool that performs three distinct **mutating** actions, and the observed failure is the model reaching for it on a read-only status check. The exclusion clause is what fixes that: stating explicitly that this tool mutates order state and is *not* for status lookups steers the model to the read tool instead.\n\nWhy distractors fail:\n- **A** — A schema lists parameters; it does not communicate that this tool cancels orders and issues refunds.\n- **B** and **C** — Both prescribe minimalism, which is the cause of the misuse.",
+      "examTrick": "Exam Rule:  — \"Processes orders\" understates a tool that performs three distinct mutating actions, and the observed failure is the model reaching for it o",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 2
+    },
+    {
+      "question": "An MCP server exposes several tools with overlapping capabilities; agents frequently choose the wrong one even though all are technically correct. Best improvement?",
+      "options": [
+        "Shorten all tool descriptions so agents reason independently.",
+        "Remove overlapping tools entirely regardless of business requirements.",
+        "Expand tool descriptions with capabilities, limitations, expected inputs, outputs, and appropriate use cases.",
+        "Rely on parameter schemas alone because descriptions are unnecessary."
+      ],
+      "answer": "Expand tool descriptions with capabilities, limitations, expected inputs, outputs, and appropriate use cases.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents ---",
+      "explanation": "When several tools are all *technically* applicable, selection depends on the finer distinctions — limits, expected inputs, output shapes, and intended situations. Making those explicit converts an ambiguous set into a decidable one without removing capability.\n\nWhy distractors fail:\n- **A** — Less information makes an already-ambiguous choice harder.\n- **B** — Overrides business requirements to simplify routing; capability loss is not a description fix.\n- **D** — Schemas describe call mechanics, not selection criteria.",
+      "examTrick": "Exam Rule:  — When several tools are all *technically* applicable, selection depends on the finer distinctions — limits, expected inputs, output shapes, a",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 3
+    },
+    {
+      "question": "The agent calls `get_customer` for order questions instead of `lookup_order`. Both have minimal descriptions (\"Get customer info\", \"Get order details\") and accept similar identifier formats. Most effective **first** step?",
+      "options": [
+        "Consolidate into a single unified `customer_and_order` tool.",
+        "Expand tool descriptions with specific use cases, parameters, and when to use each.",
+        "Add few-shot examples showing correct tool usage for order and customer queries.",
+        "Implement a routing classifier analyzing requests to enable an appropriate tool subset."
+      ],
+      "answer": "Expand tool descriptions with specific use cases, parameters, and when to use each.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents · Tool use overview ---",
+      "explanation": "Note **\"first step\"**: fix the cheapest, most direct cause before adding machinery. Two three-word descriptions over tools with overlapping identifier formats leave the model almost nothing to discriminate on. Expanding them is a change to the tool definitions themselves, costs nothing at runtime, and typically resolves the misrouting outright.\n\nWhy distractors fail:\n- **A** — Merging two distinct domains produces one tool with a mode parameter, relocating the ambiguity into an argument.\n- **C** — A reasonable *second* step, but it compensates for weak descriptions with prompt tokens on every request rather than fixing the source.\n- **D** — A whole additional component (latency, cost, its own errors) to route around a documentation gap.",
+      "examTrick": "Exam Rule:  — Note \"first step\": fix the cheapest, most direct cause before adding machinery. Two three-word descriptions over tools with overlapping iden",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 4
+    },
+    {
+      "question": "Multiple MCP tools return data in different encodings (UTF-8, Latin-1, ASCII) and the agent struggles with the inconsistency. Where should encoding normalization occur?",
+      "options": [
+        "Agent system prompt instructions handling multiple encoding types.",
+        "Fix encoding at the MCP tool source, returning consistent UTF-8.",
+        "The agent should flexibly handle all common encodings without normalization.",
+        "PostToolUse hook normalizing all tool outputs to UTF-8."
+      ],
+      "answer": "Fix encoding at the MCP tool source, returning consistent UTF-8.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents · MCP specification ---",
+      "explanation": "Encoding is part of the **tool's output contract**. Fixing it at the source means every consumer — this agent, other agents, future integrations — receives correct data, with no translation layer to maintain. Nothing in the stem says the tools are outside your control, so the root-cause fix is available.\n\nWhy distractors fail:\n- **D** — The strongest runner-up, and the right answer *when the tools are third-party and unmodifiable* (see **UD2-036**, where the stem says exactly that, and **UD1-032** in §1.5). Here it is a workaround that leaves the defect in place and adds a component to maintain. The discriminator across this pool is **ownership**: own the tool → fix the contract; don't own it → normalise in a hook.\n- **A** and **C** — Both push byte-level decoding into the model, which is neither its job nor something it can do reliably.",
+      "examTrick": "Exam Rule:  — Encoding is part of the tool's output contract. Fixing it at the source means every consumer — this agent, other agents, future integrations",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 5
+    },
+    {
+      "question": "Two tools overlap in functionality and the agent frequently selects the wrong one. Consolidation was considered but the tools serve different systems. How do you improve selection without consolidation?",
+      "options": [
+        "Expand tool descriptions with specific use cases and when to use each vs. the other.",
+        "Add a routing layer selecting the appropriate tool based on request analysis.",
+        "Few-shot examples showing correct tool selection in ambiguous cases.",
+        "Implement `tool_choice` forcing correct tool selection for each request type."
+      ],
+      "answer": "Expand tool descriptions with specific use cases and when to use each vs. the other.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents · Tool use — `tool_choice` ---",
+      "explanation": "With consolidation ruled out, the remaining lever is **mutual disambiguation**: each description states not only what its tool does but how it differs from the other (\"use this for System A records; for System B use `…`\"). Cross-referencing is what turns two overlapping descriptions into a decidable pair.\n\nWhy distractors fail:\n- **B** — Adds a component to compensate for descriptions you could simply improve.\n- **C** — Helps, but costs prompt tokens on every request and generalises poorly to phrasings not exemplified. A supplement, not the fix.\n- **D** — `tool_choice` forces a tool for a *whole request*; to apply it \"per request type\" you would first need a classifier deciding which — i.e. you have not removed the routing problem, you have moved it outside the model and lost the model's judgement.",
+      "examTrick": "Exam Rule:  — With consolidation ruled out, the remaining lever is mutual disambiguation: each description states not only what its tool does but how it d",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 6
+    },
+    {
+      "question": "An MCP tool's operation takes 45 seconds; the agent times out and never receives the (successful) result. How should long-running MCP operations be handled?",
+      "options": [
+        "Implement an async pattern: the tool returns immediately with a `job_id`, plus a separate status-check tool.",
+        "Split the long operation into smaller incremental steps with partial results.",
+        "Increase agent timeout values to accommodate long-running operations.",
+        "Long-running operations should be handled outside agentic workflows entirely."
+      ],
+      "answer": "Implement an async pattern: the tool returns immediately with a `job_id`, plus a separate status-check tool.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents — long-running operations · MCP specification ---",
+      "explanation": "The async job pattern decouples *starting* the work from *waiting* for it. The initiating call returns in milliseconds with a handle, and the agent polls a status tool — so no single call risks a timeout, work is never orphaned after a timeout, and the agent can do other things while it runs.\n\nWhy distractors fail:\n- **B** — Only viable if the operation is genuinely decomposable, which the stem does not establish; and it multiplies round trips.\n- **C** — Raises the ceiling without changing the shape: a 90-second operation breaks it again, and the agent blocks throughout.\n- **D** — Removes the capability rather than designing for it.",
+      "examTrick": "Exam Rule:  — The async job pattern decouples *starting* the work from *waiting* for it. The initiating call returns in milliseconds with a handle, and th",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 7
+    },
+    {
+      "question": "An MCP `database_query` tool executes SQL constructed by the agent from natural language. SQL injection risk exists. How should the tool protect against it?",
+      "options": [
+        "Include SQL injection prevention instructions in the tool description.",
+        "The agent should validate SQL queries before execution.",
+        "The tool implementation uses parameterized queries preventing injection.",
+        "SQL injection is handled by the database layer, not the MCP tool."
+      ],
+      "answer": "The tool implementation uses parameterized queries preventing injection.",
+      "difficulty": "Medium",
+      "source": "MCP security best practices · Writing tools for agents ---",
+      "explanation": "Parameterised queries defeat injection **structurally**: values are bound as data and can never be reinterpreted as SQL, regardless of what the model produced. This is server-side enforcement in the component that owns the database connection — the only place a guarantee can be made.\n\nWhy distractors fail:\n- **A** — A description is model-facing guidance; an injection payload does not care what it says.\n- **B** — Makes the model its own security control. Model-side validation of adversarial input is exactly what must not be relied on.\n- **D** — The database executes what it is given; it cannot distinguish an injected fragment from an intended one. Security belongs at the boundary that constructs the query.",
+      "examTrick": "Exam Rule:  — Parameterised queries defeat injection structurally: values are bound as data and can never be reinterpreted as SQL, regardless of what the ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 8
+    },
+    {
+      "question": "An async-operations tool returns a `job_id` for a long-running process and the agent needs to check completion. Tool design for async operations?",
+      "options": [
+        "Streaming tool providing incremental progress updates.",
+        "Tool implements a callback notifying the agent when complete.",
+        "Initial tool returns `job_id` immediately; a separate `check_status` tool polls for completion.",
+        "Single tool blocking until the operation completes, returning the final result."
+      ],
+      "answer": "Initial tool returns `job_id` immediately; a separate `check_status` tool polls for completion.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents · MCP specification ---",
+      "explanation": "Two tools, cleanly separated: one starts work and returns a handle, one queries state by that handle. It fits the request/response tool protocol exactly, needs no persistent connection, and survives session interruption because the `job_id` remains valid.\n\nWhy distractors fail:\n- **A** — Tool results are returned as a completed block; there is no incremental progress channel back into an in-flight tool result.\n- **B** — There is no callback mechanism into an agent loop; the model only receives what a `tool_result` carries.\n- **D** — Blocking is the design that caused the timeout in UD2-010.",
+      "examTrick": "Exam Rule:  — Two tools, cleanly separated: one starts work and returns a handle, one queries state by that handle. It fits the request/response tool prot",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 9
+    },
+    {
+      "question": "*(restatement of UD2-013)* A `database_query` tool accepts SQL constructed by the agent. Protection against injection?",
+      "options": [
+        "Tool description with SQL injection prevention instructions.",
+        "Tool implementation uses parameterized queries preventing injection.",
+        "Database layer handles injection, not the tool.",
+        "Agent validates SQL before execution."
+      ],
+      "answer": "Tool implementation uses parameterized queries preventing injection.",
+      "difficulty": "Medium",
+      "source": "MCP specification — security · Writing tools for agents ---",
+      "explanation": "Same principle as UD2-013: bind values as parameters server-side so injected text can never be parsed as SQL.\n\nWhy distractors fail:\n- **A** — Guidance, not enforcement.\n- **C** — The database cannot tell intended SQL from injected SQL.\n- **D** — Model-side validation of adversarial input is not a security control.",
+      "examTrick": "Exam Rule:  — Same principle as UD2-013: bind values as parameters server-side so injected text can never be parsed as SQL.",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 10
+    },
+    {
+      "question": "An MCP tool returns different timestamp formats from different backends (Unix, ISO 8601, human-readable) and the agent misinterprets dates. Correct fix?",
+      "options": [
+        "Create separate tool wrappers for each backend that enforce their own format.",
+        "Use few-shot examples showing correct interpretation of each format.",
+        "Implement a PostToolUse hook to normalise all timestamps to ISO 8601 before the agent processes the result.",
+        "Add prompt instructions telling the agent how to parse each format."
+      ],
+      "answer": "Implement a PostToolUse hook to normalise all timestamps to ISO 8601 before the agent processes the result.",
+      "difficulty": "Medium",
+      "source": "Claude Code hooks — PostToolUse · Writing tools for agents ---",
+      "explanation": "One deterministic normalisation point covering every backend, applied before the model ever sees a timestamp. Format conversion is exact computation and belongs in code; the model then reasons over a single canonical representation.\n\nWhy distractors fail:\n- **A** — Per-backend wrappers \"enforcing their own format\" preserve the heterogeneity that is the problem, and multiply the tool surface.\n- **B** and **D** — Both leave parsing to the model, which is the failing step.",
+      "examTrick": "Exam Rule:  — One deterministic normalisation point covering every backend, applied before the model ever sees a timestamp. Format conversion is exact com",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 11
+    },
+    {
+      "question": "The agent misinterprets outputs: Unix timestamps from `get_customer`, ISO 8601 from `lookup_order`, numeric status codes (1=pending, 2=shipped). **Some tools are third-party MCP servers you cannot modify.** Most maintainable normalization approach?",
+      "options": [
+        "A `normalize_data` tool the agent calls after every data retrieval.",
+        "Modify tools you control to return human-readable formats and create wrappers for third-party tools.",
+        "Use a PostToolUse hook to intercept tool outputs and apply formatting transformations before the agent processes them.",
+        "Add detailed format documentation to the system prompt."
+      ],
+      "answer": "Use a PostToolUse hook to intercept tool outputs and apply formatting transformations before the agent processes them.",
+      "difficulty": "Medium",
+      "source": "Claude Code hooks — PostToolUse · Writing tools for agents ---",
+      "explanation": "The unmodifiable third-party servers are the deciding constraint: a hook is the **one place** that can normalise *every* tool's output regardless of who owns it. One component, one set of rules, applied automatically — the maintainability criterion the question names.\n\nWhy distractors fail:\n- **B** — Two mechanisms (direct edits plus wrappers) and a wrapper per third-party tool, all drifting independently. This is the answer when you own everything (UD2-008); here it is the higher-maintenance option.\n- **A** — Relies on the model remembering to call a normaliser after every retrieval, doubling round trips and failing silently when it forgets.\n- **D** — Documents the inconsistency instead of removing it, and still leaves conversion to the model.",
+      "examTrick": "Exam Rule:  — The unmodifiable third-party servers are the deciding constraint: a hook is the one place that can normalise *every* tool's output regardles",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 12
+    },
+    {
+      "question": "Two tools: `analyze_content` (\"Analyses content\") and `extract_web_results` (\"Extracts data from web pages\"). After a system prompt update added **\"Always analyse content before responding\"**, the agent began routing web-extraction tasks to `analyze_content`, though descriptions were unchanged. Most likely cause and fix?",
+      "options": [
+        "The system prompt's \"analyse content\" phrasing keyword-matches the `analyze_content` tool; rephrase it to remove the overlap.",
+        "Add few-shot examples to the system prompt showing when to use each tool.",
+        "Rename `analyze_content` to something less generic, such as `summarize_document`.",
+        "The descriptions have degraded over time and need rewriting with clearer boundaries."
+      ],
+      "answer": "The system prompt's \"analyse content\" phrasing keyword-matches the `analyze_content` tool; rephrase it to remove the overlap.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — system prompts · Writing tools for agents ---",
+      "explanation": "The stem hands you the causal evidence: behaviour changed **when and only when** the system prompt changed, with tool definitions untouched. The new instruction contains the tool's own name as a phrase, so it reads as a standing directive to invoke that tool. Rephrasing the instruction (\"review the retrieved information before responding\") removes the collision at its source.\n\nWhy distractors fail:\n- **B** — Adds prompt material to counteract prompt material, leaving the conflicting instruction in place.\n- **C** — A genuinely good hygiene change and the right long-term move for a name that generic — but it does not address *this* regression, whose cause is the instruction wording. Renaming would also break nothing else that changed.\n- **D** — Contradicted by the stem: the descriptions did not change, and the behaviour did.",
+      "examTrick": "Exam Rule:  — The stem hands you the causal evidence: behaviour changed when and only when the system prompt changed, with tool definitions untouched. The",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 13
+    },
+    {
+      "question": "A tool `analyze_content` (\"Analyses content from various sources\") is used indiscriminately for web scraping, document parsing, and code analysis, producing poor results for each. Most effective fix?",
+      "options": [
+        "Add few-shot examples showing which content types the tool handles well.",
+        "Improve the description to list all supported content types and formats.",
+        "Split `analyze_content` into purpose-specific tools: `extract_web_results`, `parse_document`, `analyze_code`, each with a narrow remit.",
+        "A routing layer inspecting content type and dispatching to the appropriate internal function within `analyze_content`."
+      ],
+      "answer": "Split `analyze_content` into purpose-specific tools: `extract_web_results`, `parse_document`, `analyze_code`, each with a narrow remit.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents — one tool, one job ---",
+      "explanation": "The tool is **genuinely three tools** wearing one name. Splitting gives each its own precise description, its own schema (a URL is not a file path is not a repo reference), and its own output contract — so selection becomes obvious and each implementation can be optimised for its domain. This is the mirror image of UD2-009: there, two tools needed disambiguation; here, one tool needs decomposition.\n\nWhy distractors fail:\n- **A** and **B** — Both document an overloaded tool more thoroughly. The model still calls one tool that does three jobs adequately and none of them well; \"poor results for each use case\" is an *implementation* symptom, not only a selection one.\n- **D** — Internal dispatch hides the three behaviours behind one interface, so the model still cannot see which capability it is getting or shape its input for it.",
+      "examTrick": "Exam Rule:  — The tool is genuinely three tools wearing one name. Splitting gives each its own precise description, its own schema (a URL is not a file pa",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 14
+    },
+    {
+      "question": "Using the Python MCP SDK to create a file-reading tool. Easiest way to define it?",
+      "options": [
+        "Use the `@mcp.tool()` decorator on a Python function.",
+        "Create a separate configuration file.",
+        "Write JSON schemas manually.",
+        "Send HTTP requests to register the tool."
+      ],
+      "answer": "Use the `@mcp.tool()` decorator on a Python function.",
+      "difficulty": "Medium",
+      "source": "MCP — build a server · MCP Python SDK ---",
+      "explanation": "The decorator is the SDK's ergonomic path: it registers the function as a tool and derives the input schema from the signature's type hints, with the docstring serving as the description. One decorator, no separate schema to keep in sync.\n\nWhy distractors fail:\n- **B** — Tools are defined in code, not in an external config file.\n- **C** — Hand-writing JSON Schema is exactly the work the decorator eliminates, and it drifts from the implementation.\n- **D** — Registration is in-process at server start-up, not over HTTP.",
+      "examTrick": "Exam Rule:  — The decorator is the SDK's ergonomic path: it registers the function as a tool and derives the input schema from the signature's type hints,",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 15
+    },
+    {
+      "question": "Tools each accept a `confidence_threshold` float (0–1), but semantics drift between teams (0.7 means \"high\" to some, \"medium\" to others). BEST architectural fix?",
+      "options": [
+        "Add a description note to each tool documenting how that tool interprets the float.",
+        "Replace the float with a shared enum (low/medium/high) defined in a common schema module, imported by every tool so semantics are unified at the type level.",
+        "Standardize on float and publish a guideline that 0.5 means medium.",
+        "Have the orchestrator post-process tool calls to normalize the threshold before invoking."
+      ],
+      "answer": "Replace the float with a shared enum (low/medium/high) defined in a common schema module, imported by every tool so semantics are unified at the type level.",
+      "difficulty": "Medium",
+      "source": "Structured outputs and schema design · Writing tools for agents ---",
+      "explanation": "The root problem is that a bare float carries **no shared meaning** — every team must invent a mapping. A shared enum makes the semantics part of the type: `high` means the same thing everywhere by construction, there is no scale to misinterpret, and a single imported definition prevents drift as tools are added.\n\nWhy distractors fail:\n- **A** — Documents N different interpretations instead of unifying them; the model must now track per-tool conventions.\n- **C** — A guideline is a convention with no enforcement; the same drift recurs with the next team.\n- **D** — Central normalisation cannot recover intent: the orchestrator sees `0.7` with no way to know which team's scale produced it. It also patches the symptom downstream of the ambiguity.",
+      "examTrick": "Exam Rule:  — The root problem is that a bare float carries no shared meaning — every team must invent a mapping. A shared enum makes the semantics part o",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 16
+    },
+    {
+      "question": "A `refund_payment` call appears to fail with a network timeout, Claude retries, and the user is double-refunded. Which tool design change PREVENTS this?",
+      "options": [
+        "Server-side rate limiting rejecting duplicate calls within five seconds.",
+        "Increase the timeout from 30 seconds to 5 minutes.",
+        "Make the tool synchronous so Claude waits and cannot retry prematurely.",
+        "Require an `idempotency_key` parameter, with the server deduplicating retries by that key."
+      ],
+      "answer": "Require an `idempotency_key` parameter, with the server deduplicating retries by that key.",
+      "difficulty": "Medium",
+      "source": "Implement tool use — error handling and retries · Writing tools for agents ---",
+      "explanation": "A timeout is *ambiguous* — the refund may have succeeded with only the response lost. An idempotency key resolves it authoritatively: a retry carrying the same key returns the original outcome instead of performing a second refund. Correct under every interleaving, including retries minutes apart or from a different process.\n\nWhy distractors fail:\n- **A** — A time window is a heuristic: it blocks legitimate distinct refunds inside 5 seconds and permits duplicates outside it.\n- **B** — Reduces timeout frequency; the duplicate still occurs whenever one happens.\n- **C** — The call already is synchronous; the retry happens *after* the timeout, which blocking does not prevent.",
+      "examTrick": "Exam Rule:  — A timeout is *ambiguous* — the refund may have succeeded with only the response lost. An idempotency key resolves it authoritatively: a retr",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 17
+    },
+    {
+      "question": "An MCP server lists 12 tools with comprehensive `inputSchema` and `description`, yet clients report some are confusing to choose between. Which addition MOST directly helps the **host application surface clearer choices to its users**?",
+      "options": [
+        "Add an `annotations` block (`readOnlyHint`, `destructiveHint`, `idempotentHint`) so the host can render visual cues about each tool's nature.",
+        "Add a `priority` integer so the host can sort tools in display order.",
+        "Include the full source code of the tool implementation in the description.",
+        "Provide a screenshot of the tool's output in each tool's metadata."
+      ],
+      "answer": "Add an `annotations` block (`readOnlyHint`, `destructiveHint`, `idempotentHint`) so the host can render visual cues about each tool's nature.",
+      "difficulty": "Medium",
+      "source": "MCP — tool annotations · MCP tools concept ---",
+      "explanation": "Note the audience: **the host's users**, not the model. MCP annotations are machine-readable behavioural hints designed for exactly this — a host can badge a tool as read-only, warn on a destructive one, or indicate that retrying is safe. That is UX metadata no amount of prose description provides.\n\nWhy distractors fail:\n- **B** — Ordering does not tell a user what a tool *does* or how risky it is.\n- **C** — Source code in a description bloats the model's context and is unreadable as end-user UI.\n- **D** — Not part of the MCP tool definition, and screenshots do not generalise across inputs.",
+      "examTrick": "Exam Rule:  — Note the audience: the host's users, not the model. MCP annotations are machine-readable behavioural hints designed for exactly this — a hos",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 18
+    },
+    {
+      "question": "A tool-use schema has 8 fields; the model occasionally populates fewer. Which interpretation is MOST consistent with required-field semantics?",
+      "options": [
+        "Mark all eight as required to fix the omissions.",
+        "Tool use ignores the `required` array, so marking fields required has no effect.",
+        "Lower temperature to fill the missing fields.",
+        "If the model omits fields, those fields aren't in the `required` array; review the required list and add the fields that must always be populated."
+      ],
+      "answer": "If the model omits fields, those fields aren't in the `required` array; review the required list and add the fields that must always be populated.",
+      "difficulty": "Medium",
+      "source": "Tool use — input schemas · Structured outputs ---",
+      "explanation": "It reasons from the mechanism: omission is *permitted* for optional fields, so an omitted field is evidence that it was not declared required. The remedy is a deliberate review of which fields genuinely must always be present, then adding those — a schema change grounded in intent.\n\nWhy distractors fail:\n- **A** — Superficially similar but wrong in method: marking *all eight* required forces the model to fabricate values for fields that legitimately have no value (see GEN2-004). D adds the ones that must be populated; A adds all of them.\n- **B** — False: `required` is honoured, and under `strict: true` it is grammar-enforced.\n- **C** — Temperature does not change which fields the schema permits to be absent.",
+      "examTrick": "Exam Rule:  — It reasons from the mechanism: omission is *permitted* for optional fields, so an omitted field is evidence that it was not declared require",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 19
+    },
+    {
+      "question": "Built-in web search plus a custom MCP academic-database search, both well-described. A system prompt asks the model to prefer the academic database for scholarly queries. Why might this still fail to enforce routing?",
+      "options": [
+        "System-prompt rules are always ignored by Claude.",
+        "System-prompt routing rules are instructions the model usually follows but can be overridden by adversarial inputs or context drift.",
+        "System-prompt rules only work for custom tools, not for distinguishing built-in from MCP-exposed tools.",
+        "Such routing rules are forbidden by Anthropic's terms of service."
+      ],
+      "answer": "System-prompt routing rules are instructions the model usually follows but can be overridden by adversarial inputs or context drift.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — system prompts · Building effective agents — guardrails ---",
+      "explanation": "A system prompt is **strong guidance, not enforcement** — the same principle as Domain 1's hooks-vs-prompts theme. Compliance is high but not guaranteed, and it degrades under adversarial content in retrieved documents or under context drift in a long session. If routing must be guaranteed, it belongs in code (a gate, or simply not exposing the competing tool).\n\nWhy distractors fail:\n- **A** — Overstated: system prompts are followed most of the time.\n- **C** — Fabricates a distinction; the model selects from one tool list regardless of a tool's origin.\n- **D** — Invented policy claim.",
+      "examTrick": "Exam Rule:  — A system prompt is strong guidance, not enforcement — the same principle as Domain 1's hooks-vs-prompts theme. Compliance is high but not gu",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 20
+    },
+    {
+      "question": "An MCP server exposes a `run_shell` tool flagged as too permissive. MOST important hardening before production?",
+      "options": [
+        "Add a description noting the agent should only use safe commands.",
+        "Replace the open shell with an allowlist of permitted commands and validated argument shapes, enforced server-side before any execution.",
+        "Log every shell command for post-hoc review.",
+        "Require user confirmation before each shell invocation in the client UI."
+      ],
+      "answer": "Replace the open shell with an allowlist of permitted commands and validated argument shapes, enforced server-side before any execution.",
+      "difficulty": "Medium",
+      "source": "MCP specification — security · Claude Code security ---",
+      "explanation": "A server-side allowlist with validated argument shapes reduces the tool's **capability** to what is actually needed. Anything outside the allowlist is unexecutable regardless of prompt injection, model error, or a compromised client — enforcement at the boundary that performs the execution.\n\nWhy distractors fail:\n- **A** — Model-facing guidance on a tool that grants arbitrary code execution.\n- **C** — Detection after execution; the damage precedes the log entry.\n- **D** — Valuable defence in depth, and the strongest runner-up — but it is *client-side*, so it can be bypassed by a different client or an auto-approve mode, and approval fatigue erodes it. Server-side capability reduction is the control that holds.",
+      "examTrick": "Exam Rule:  — A server-side allowlist with validated argument shapes reduces the tool's capability to what is actually needed. Anything outside the allowl",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 21
+    },
+    {
+      "question": "An orchestrator has 12 tools. Which observable signal BEST indicates it is approaching the partitioning threshold?",
+      "options": [
+        "The raw number of tools exceeds ten.",
+        "Total tokens spent on tool definitions exceeds five thousand.",
+        "The orchestrator starts making wrong tool selections, redundant calls (same tool twice for the same intent), or routing drift across similar queries.",
+        "Average end-to-end response time increases."
+      ],
+      "answer": "The orchestrator starts making wrong tool selections, redundant calls (same tool twice for the same intent), or routing drift across similar queries.",
+      "difficulty": "Medium",
+      "source": "Writing tools for agents · Multi-agent research system ---",
+      "explanation": "These are **direct measurements of the failure itself** — degraded routing quality. They also appear regardless of *why* the catalogue became hard to route (overlap, generic names, semantic proximity), which counts and token totals cannot capture: 30 crisply distinct tools may route perfectly while 8 overlapping ones do not.\n\nWhy distractors fail:\n- **A** and **B** — Proxies with arbitrary thresholds. Neither measures whether routing is actually degrading, and both fire on well-designed large catalogues while missing small confusing ones.\n- **D** — Latency has many causes (slow tools, retries, longer tasks) and is a lagging, non-specific indicator.",
+      "examTrick": "Exam Rule:  — These are direct measurements of the failure itself — degraded routing quality. They also appear regardless of *why* the catalogue became ha",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 22
+    },
+    {
+      "question": "A `priority` enum [low, medium, high] gains a fourth level, `urgent`. Which migration is MOST aligned with schema-evolution discipline?",
+      "options": [
+        "Add `urgent` to the enum, regenerate the schema, update few-shot examples to demonstrate when urgent applies, and run the test dataset to confirm prior cases still classify correctly.",
+        "Add the value silently and deploy, since one additive enum value is low-risk.",
+        "Keep three levels and use `high` as a proxy for urgent.",
+        "Lower temperature for accurate urgent classification."
+      ],
+      "answer": "Add `urgent` to the enum, regenerate the schema, update few-shot examples to demonstrate when urgent applies, and run the test dataset to confirm prior cases still classify correctly.",
+      "difficulty": "Medium",
+      "source": "Structured outputs · Multishot prompting ---",
+      "explanation": "A complete change: schema updated, **examples updated** so the model learns the new boundary (without them, `urgent` exists but is under-used or over-used), and **regression tested** so you can prove that tickets previously classified `high` have not silently migrated. That last step is the discipline — adding an enum value shifts the decision boundary of every neighbouring value.\n\nWhy distractors fail:\n- **B** — Its premise is exactly wrong: introducing `urgent` changes what counts as `high`, so existing classifications *can* shift.\n- **C** — Refuses the requirement; the business asked to distinguish the two levels.\n- **D** — Temperature is unrelated to classification boundaries.",
+      "examTrick": "Exam Rule:  — A complete change: schema updated, examples updated so the model learns the new boundary (without them, `urgent` exists but is under-used or",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 23
+    },
+    {
+      "question": "A `run_command` tool takes shell-like arguments; the team wants to constrain what Claude can pass without rewriting the tool per project. BEST schema design balancing flexibility and safety?",
+      "options": [
+        "Take a base64-encoded command string, decode and execute.",
+        "Take a single freeform `command_string` parameter.",
+        "Take an array of arguments and join them with spaces.",
+        "Use a discriminated-union schema with a `command_type` enum and per-type argument shapes (type=test → test_runner enum + test_path; type=build → build_target enum), validated server-side against an allowlist for each type."
+      ],
+      "answer": "Use a discriminated-union schema with a `command_type` enum and per-type argument shapes (type=test → test_runner enum + test_path; type=build → build_target enum), validated server-side against an allowlist for each type.",
+      "difficulty": "Medium",
+      "source": "Structured outputs and strict tool use · MCP specification — security ---",
+      "explanation": "The discriminated union makes the **space of expressible commands** exactly the space of intended operations. The model chooses an operation type and fills typed fields for it; there is no free-text channel through which an arbitrary command could be constructed. Flexibility comes from adding variants, not from loosening the type — so new projects extend the enum rather than rewriting the tool.\n\nWhy distractors fail:\n- **A** — Base64 is an encoding, not a control: it conceals the payload from inspection while granting the same arbitrary execution.\n- **B** — Maximum flexibility, zero safety; the tool is arbitrary code execution with the model as the only gate.\n- **C** — Joining arbitrary array elements with spaces reconstructs an arbitrary command line; array shape provides no constraint on content.",
+      "examTrick": "Exam Rule:  — The discriminated union makes the space of expressible commands exactly the space of intended operations. The model chooses an operation typ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 24
+    },
+    {
+      "question": "An MCP tool needs to return formatted Markdown plus a code block plus an image. BEST return mechanism?",
+      "options": [
+        "Concatenate everything into one large text string with inline references to the image.",
+        "Return multiple content items in the tool result's content array.",
+        "Make three separate tool calls, one per content type.",
+        "Rich content is not supported in MCP tool responses; flatten to plain text and drop the image."
+      ],
+      "answer": "Return multiple content items in the tool result's content array.",
+      "difficulty": "Medium",
+      "source": "MCP — tools and content types · MCP specification ---",
+      "explanation": "An MCP tool result carries a `content` **array**, and each item is typed (text, image, and other content types). One call returns all three parts with their types preserved, so the host renders each appropriately and the model receives the image as an image rather than as a description of one.\n\nWhy distractors fail:\n- **A** — Flattening to text loses the image entirely; an inline reference is not the content.\n- **C** — Three round trips for one logical result, and the pieces arrive decoupled from each other.\n- **D** — Factually wrong: multi-item, multi-type content is part of the protocol.",
+      "examTrick": "Exam Rule:  — An MCP tool result carries a `content` array, and each item is typed (text, image, and other content types). One call returns all three part",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 25
+    },
+    {
+      "question": "An `embedding_model` parameter is free-text; Claude passes valid names ~80% of the time and occasionally outdated or non-existent ones. The team maintains a supported-models list. Which schema change BEST eliminates invalid calls?",
+      "options": [
+        "Accept any string and have the server reject invalid names with a clear error.",
+        "Add a description note listing all supported models.",
+        "Type the parameter as an enum of current supported model names, regenerated from the supported-models list whenever it changes.",
+        "Pin to one default model and remove the choice entirely."
+      ],
+      "answer": "Type the parameter as an enum of current supported model names, regenerated from the supported-models list whenever it changes.",
+      "difficulty": "Medium",
+      "source": "Structured outputs and strict tool use · Tool use — input schemas",
+      "explanation": "An enum makes an invalid value **unrepresentable** — under strict tool use the schema constrains generation, so the model cannot emit a name outside the set. Regenerating from the maintained list keeps the schema and the truth in sync automatically, so the enum never goes stale.\n\nWhy distractors fail:\n- **A** — Detects invalid calls after the fact and pays a wasted round trip plus a retry each time; \"eliminates\" is not achieved.\n- **B** — A description is guidance; 80% compliance is the current state, reached with the model already able to read the tool definition.\n- **D** — Eliminates invalid values by eliminating the feature.",
+      "examTrick": "Exam Rule:  — An enum makes an invalid value unrepresentable — under strict tool use the schema constrains generation, so the model cannot emit a name out",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-2",
+        "2.1"
+      ],
+      "id": 26
+    }
+  ]
+}

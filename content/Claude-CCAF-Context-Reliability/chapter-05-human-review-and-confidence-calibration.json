@@ -1,0 +1,71 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.5 Human Review & Confidence Calibration",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "Confidence score calibration on labeled datasets, out-of-distribution format detection, and stratified review sampling.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Confidence thresholds calibrated over three months; >90% auto-approves. A new client submits contracts in an unusual two-column format the system has never seen, and the system reports 92% confidence. Appropriate safeguard?",
+      "options": [
+        "Maintain stratified random sampling of high-confidence extractions across document types to catch the new format's error rate.",
+        "Trust the calibrated threshold, since 92% exceeds 90%.",
+        "Raise the threshold from 90% to 98% for all document types.",
+        "Add a document format classifier that flags unknown formats for mandatory human review before any auto-approval."
+      ],
+      "answer": "Add a document format classifier that flags unknown formats for mandatory human review before any auto-approval.",
+      "difficulty": "Hard",
+      "source": "UD5-037 | Building effective agents — evaluation",
+      "explanation": "Confidence calibration is only valid within the distribution on which it was trained. Out-of-distribution formats must be flagged by a format classifier for mandatory human review.",
+      "examTrick": "Novel / unseen format = Flag for mandatory human review (confidence calibration is invalid out-of-distribution).",
+      "importance": "High",
+      "tags": [
+        "Out-of-Distribution",
+        "Confidence Calibration",
+        "Format Classifier"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "An agent emits confidence scores 0–1; confidence 0.9 and 0.5 produce wrong code at similar rates. MOST important step before relying on these scores?",
+      "options": [
+        "Calibrate the confidence scores against a labeled validation set so 0.9 maps to actual 90% accuracy.",
+        "Trust the raw scores as-is.",
+        "Drop confidence scoring and gate auto-merge purely on whether the code compiles.",
+        "Train the model further on edge cases until confidence becomes reliable."
+      ],
+      "answer": "Calibrate the confidence scores against a labeled validation set so 0.9 maps to actual 90% accuracy.",
+      "difficulty": "Medium",
+      "source": "BU5-001 (§5.5) | Building effective agents — evaluation",
+      "explanation": "Raw self-reported confidence is uncalibrated. Calibration against labeled golden datasets maps raw model scores to actual empirical accuracy probabilities.",
+      "examTrick": "Raw confidence scores MUST be calibrated against labeled validation datasets before gating automation.",
+      "importance": "High",
+      "tags": [
+        "Confidence Calibration",
+        "Validation Sets",
+        "Quality Gating"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "Three months at 100% human review; extractions with confidence >90% show 97% accuracy overall. Before automating high-confidence extractions, what validation step is most critical?",
+      "options": [
+        "Analyze accuracy by document type and field to verify high-confidence extractions perform consistently across all segments, not just in aggregate.",
+        "Compare accuracy at 85%, 90%, and 95% thresholds to find the optimal cutoff.",
+        "Run a two-week pilot routing 25% of high-confidence extractions to downstream systems and monitor error reports.",
+        "Verify that 97% accuracy meets requirements for all downstream systems."
+      ],
+      "answer": "Analyze accuracy by document type and field to verify high-confidence extractions perform consistently across all segments, not just in aggregate.",
+      "difficulty": "Hard",
+      "source": "CS5-002 (§5.5) | Building effective agents — evaluation",
+      "explanation": "Aggregate accuracy masks segment-level failures (e.g. 99% on standard invoices but 70% on tables). Validate by segment and field before removing human review.",
+      "examTrick": "Before automating high-confidence approvals: Segment accuracy by document type and field (Simpson's paradox).",
+      "importance": "High",
+      "tags": [
+        "Segmented Evaluation",
+        "Automated Approvals"
+      ]
+    }
+  ]
+}

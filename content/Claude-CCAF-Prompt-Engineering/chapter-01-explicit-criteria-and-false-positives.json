@@ -1,0 +1,555 @@
+{
+  "subject": "Claude CCAF: Prompt Engineering & Structured Output",
+  "chapter": "4.1 Explicit Criteria & False-Positive Reduction",
+  "exam": "Claude CCAF",
+  "paper": "Domain-4",
+  "description": "Transactional data preservation, XML tag sectioning, and borderline few-shot curation.",
+  "questions": [
+    {
+      "question": "A prompt extracts invoice data (amount $1,247.83, date 2024-03-15, vendor Acme Corp) but the agent summarizes as \"approximately $1,200 mid-March from vendor\". What principle prevents lossy summarization?",
+      "options": [
+        "Validation checking extracted data matches source document exactly.",
+        "Schema constraints enforcing specific formats for amounts and dates.",
+        "Never summarize transactional facts: preserve exact amounts, dates, IDs, names.",
+        "More explicit instructions emphasizing precise extraction without summarization."
+      ],
+      "answer": "Never summarize transactional facts: preserve exact amounts, dates, IDs, names.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · Structured outputs ---",
+      "explanation": "The question asks for the **principle**, and this is it: extraction is a *copying* operation, not a *describing* one. Transactional facts have no acceptable paraphrase — \"approximately $1,200\" is not a lossy version of $1,247.83, it is a different and unusable value, and the same holds for dates and identifiers.\n\nWhy distractors fail:\n- **A** — Validation is a *detective control* that catches violations of the principle; it presupposes the principle rather than stating it.\n- **B** — Schema constraints enforce the *shape* of a value (a decimal, an ISO date) but cannot detect that a correctly-shaped number is the wrong one.\n- **D** — Emphasis on an instruction that is already being disobeyed; it names no principle.",
+      "examTrick": "Exam Rule:  — The question asks for the principle, and this is it: extraction is a *copying* operation, not a *describing* one. Transactional facts have n",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 1
+    },
+    {
+      "question": "Automated code review in CI/CD has a high false-positive rate; **detailed criteria in the prompt doesn't reduce them**. Which technique reduces false positives?",
+      "options": [
+        "More explicit criteria defining exactly what constitutes a legitimate issue.",
+        "Multiple review passes with a voting mechanism.",
+        "Increase confidence threshold, requiring high-confidence findings only.",
+        "Few-shot examples showing borderline cases with reasoning about accept vs reject."
+      ],
+      "answer": "Few-shot examples showing borderline cases with reasoning about accept vs reject.",
+      "difficulty": "Medium",
+      "source": "Multishot prompting · Prompt engineering overview ---",
+      "explanation": "The stem's key clause is that **detailed criteria have already failed**. False positives cluster at the *boundary* between \"real issue\" and \"acceptable code\", and that boundary resists description — but it is demonstrable. Borderline examples *with the reasoning attached* teach the discrimination directly: this looks like a problem and is not, and here is why.\n\nWhy distractors fail:\n- **A** — Explicitly ruled out by the stem; more of what is not working.\n- **B** — Voting over N passes that share the same faulty boundary reproduces the same false positives at N× cost.\n- **C** — Raising the threshold suppresses low-confidence findings indiscriminately, discarding true positives along with false ones. It trades recall for precision rather than improving the judgement.",
+      "examTrick": "Exam Rule:  — The stem's key clause is that detailed criteria have already failed. False positives cluster at the *boundary* between \"real issue\" and \"acc",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 2
+    },
+    {
+      "question": "Invoice extraction should preserve amount $3,127.45, date 2024-01-22, vendor DataCorp LLC, order #PO-2024-1847, but the agent extracts \"about $3,100 January 2024 from vendor\". What principle prevents lossy extraction?",
+      "options": [
+        "Schema constraints enforcing precise formats for all critical fields.",
+        "Never summarize transactional facts: preserve exact amounts, dates, IDs, names.",
+        "Validation ensuring extracted data exactly matches source content.",
+        "Explicit prompt instructions emphasising precise extraction over summarisation."
+      ],
+      "answer": "Never summarize transactional facts: preserve exact amounts, dates, IDs, names.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct ---",
+      "explanation": "Same principle as UD4-003, and the dropped **order number** makes the point sharply: `#PO-2024-1847` has no approximate form at all. Identifiers, amounts, dates, and names are copied, never characterised.\n\nWhy distractors fail:\n- **A** — Formats cannot detect a wrong value in the right shape.\n- **C** — Detection after the fact, and it presupposes the principle.\n- **D** — Emphasis, not principle.",
+      "examTrick": "Exam Rule:  — Same principle as UD4-003, and the dropped order number makes the point sharply: `#PO-2024-1847` has no approximate form at all. Identifiers",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 3
+    },
+    {
+      "question": "Automated code review has a 40% false-positive rate; **detailed review criteria in the prompt doesn't reduce it**. Which technique reduces the rate?",
+      "options": [
+        "Few-shot examples showing borderline cases with reasoning about accept versus reject.",
+        "Increase confidence threshold, requiring only high-confidence findings.",
+        "More explicit review criteria defining exactly what constitutes legitimate issues.",
+        "Multiple review instances with a voting mechanism for consensus."
+      ],
+      "answer": "Few-shot examples showing borderline cases with reasoning about accept versus reject.",
+      "difficulty": "Medium",
+      "source": "Multishot prompting ---",
+      "explanation": "Identical to UD4-006: criteria have been tried and failed, so the remedy is demonstrating the boundary rather than describing it. At a 40% false-positive rate the boundary is badly miscalibrated, and worked borderline cases with reasoning are what recalibrate it.\n\nWhy distractors fail:\n- **C** — Ruled out by the stem.\n- **B** — Suppresses findings by confidence rather than correcting the judgement, losing true positives too.\n- **D** — Consensus among instances sharing the same miscalibration is agreement, not accuracy.",
+      "examTrick": "Exam Rule:  — Identical to UD4-006: criteria have been tried and failed, so the remedy is demonstrating the boundary rather than describing it. At a 40% f",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 4
+    },
+    {
+      "question": "During a long debugging session the agent starts giving vague, generic responses (\"this follows typical patterns\") instead of referencing specific classes and methods it examined earlier. What is happening and what should be done?",
+      "options": [
+        "The model's temperature is increasing over time.",
+        "The model is rate-limited.",
+        "The agent needs more explicit instructions.",
+        "Context degradation from an extended session."
+      ],
+      "answer": "Context degradation from an extended session.",
+      "difficulty": "Medium",
+      "source": "Effective context engineering for AI agents · Long context prompting tips ---",
+      "explanation": "The symptom is diagnostic: responses become **generic precisely where they were previously specific**, which is what happens as earlier detail is crowded out or diluted in a long, accumulating context. The remedy is context management — compact with a summary that preserves the key findings, or start a fresh session seeded with them (Domain 1, §1.7).\n\nWhy distractors fail:\n- **A** — Temperature is a fixed request parameter; it does not drift during a session.\n- **B** — Rate limiting produces 429 errors, not degraded content.\n- **C** — Instructions cannot recover specifics no longer effectively available in context; adding them consumes more of the resource that is already scarce.",
+      "examTrick": "Exam Rule:  — The symptom is diagnostic: responses become generic precisely where they were previously specific, which is what happens as earlier detail i",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 5
+    },
+    {
+      "question": "Inconsistent severity ratings, growing developer distrust (\"half are wrong\"), and high-false-positive categories eroding trust in accurate ones. Which approach best restores developer trust while improving the system?",
+      "options": [
+        "Keep all categories enabled and add few-shot examples to improve accuracy over the next few weeks.",
+        "Temporarily disable high-false-positive categories (style, naming, documentation) and keep only high-precision categories while improving prompts.",
+        "Keep all categories enabled but display confidence scores so developers decide what to investigate.",
+        "Apply a uniform strictness reduction across all categories."
+      ],
+      "answer": "Temporarily disable high-false-positive categories (style, naming, documentation) and keep only high-precision categories while improving prompts.",
+      "difficulty": "Medium",
+      "source": "Building effective agents — evaluation · Prompt engineering overview ---",
+      "explanation": "Trust is the binding constraint, and it is **contaminated across categories** — developers dismissing findings unread means even accurate security findings go unactioned. Disabling the noisy categories immediately raises observed precision, so the remaining findings are worth reading; \"temporarily … while improving prompts\" preserves the path back. It fixes trust now and quality in parallel.\n\nWhy distractors fail:\n- **A** — Correct long-term work, wrong sequencing: trust keeps eroding for the weeks it takes, and by then developers have stopped reading.\n- **C** — Confidence scores shift the filtering burden onto the developers who have already opted out of reading; a low-confidence finding is still noise in the queue.\n- **D** — Uniform reduction lowers sensitivity on the 8% -false-positive security category too, suppressing exactly the findings that are trustworthy.",
+      "examTrick": "Exam Rule:  — Trust is the binding constraint, and it is contaminated across categories — developers dismissing findings unread means even accurate securi",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 6
+    },
+    {
+      "question": "Measured false-positive rates by category: security/correctness 8%, performance 18%, style/naming 52%, documentation 48%. Developers dismiss findings unread. Which approach best restores trust?",
+      "options": [
+        "Apply a uniform strictness reduction across all categories.",
+        "Keep all categories enabled and add few-shot examples over the next few weeks.",
+        "Keep all enabled but display confidence scores.",
+        "Temporarily disable high-false-positive categories (style, naming, documentation) and keep only high-precision categories while improving prompts."
+      ],
+      "answer": "Temporarily disable high-false-positive categories (style, naming, documentation) and keep only high-precision categories while improving prompts.",
+      "difficulty": "Medium",
+      "source": "Building effective agents — evaluation ---",
+      "explanation": "Same as UD4-029 with the numbers supplied, and they make the case arithmetic: style and documentation are near coin-flips, while security sits at 92% precision. Removing the two noisy categories transforms the observed hit rate without touching the findings that matter — and the highest-value findings become visible again.\n\nWhy distractors fail:\n- **A** — Would degrade the 8% category to protect the 52% one.\n- **B** — Right work, too slow; trust is eroding now.\n- **C** — Delegates triage to developers who have already disengaged.",
+      "examTrick": "Exam Rule:  — Same as UD4-029 with the numbers supplied, and they make the case arithmetic: style and documentation are near coin-flips, while security si",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 7
+    },
+    {
+      "question": "Which three elements make up an effective prompt?",
+      "options": [
+        "Introduction, body, and conclusion.",
+        "Setting the stage, defining the task, and specifying rules.",
+        "Question, answer, and follow-up.",
+        "Subject, verb, and object."
+      ],
+      "answer": "Setting the stage, defining the task, and specifying rules.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering overview · Be clear and direct ---",
+      "explanation": "The three elements map to the three things a model needs: **context** (role, audience, background — setting the stage), **the task** (what specifically to produce), and **constraints** (format, tone, length, prohibitions). Omitting any one is where most prompt failures in this section originate.\n\nWhy distractors fail:\n- **A** — Essay structure, describing a document's shape rather than a prompt's components.\n- **C** — Conversation structure; the answer is what you are asking *for*, not part of the prompt.\n- **D** — Sentence grammar, unrelated.",
+      "examTrick": "Exam Rule:  — The three elements map to the three things a model needs: context (role, audience, background — setting the stage), the task (what specifica",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 8
+    },
+    {
+      "question": "If Claude's response is too generic, what should you try?",
+      "options": [
+        "Switch to a different AI model.",
+        "Ask Claude to search the web for better answers.",
+        "Add more details about your audience, role, or constraints.",
+        "Start a new conversation and ask the same question."
+      ],
+      "answer": "Add more details about your audience, role, or constraints.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · System prompts ---",
+      "explanation": "Generic output is the expected response to a generic prompt: absent an audience, a role, or constraints, the model produces something broadly acceptable to everyone. Supplying those specifics narrows the target, and specificity in the prompt is what produces specificity in the answer.\n\nWhy distractors fail:\n- **A** — A more capable model still cannot know an audience you have not named.\n- **B** — Web results address *missing information*, not missing specificity.\n- **D** — The same question in a new conversation yields the same generic answer.",
+      "examTrick": "Exam Rule:  — Generic output is the expected response to a generic prompt: absent an audience, a role, or constraints, the model produces something broadl",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 9
+    },
+    {
+      "question": "A good Cowork prompt typically names which three things?",
+      "options": [
+        "The deliverable you want, the inputs to use, and any nuance like audience or format.",
+        "Your name, your team, and your deadline.",
+        "The model, the temperature, and the token limit.",
+        "A greeting, the question, and a thank-you."
+      ],
+      "answer": "The deliverable you want, the inputs to use, and any nuance like audience or format.",
+      "difficulty": "Medium",
+      "source": "Anthropic — Claude Cowork · Prompt engineering overview ---",
+      "explanation": "In a file-based workflow the three things Claude cannot infer are **what to produce** (the deliverable), **what to work from** (which files), and **how it should come out** (audience, format, length). Naming all three is what turns \"summarise these\" into an actionable task.\n\nWhy distractors fail:\n- **B** — Metadata about you, not about the work.\n- **C** — API parameters, not exposed or relevant in this surface.\n- **D** — Politeness, which changes nothing about the output.",
+      "examTrick": "Exam Rule:  — In a file-based workflow the three things Claude cannot infer are what to produce (the deliverable), what to work from (which files), and ho",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 10
+    },
+    {
+      "question": "\"Generate idiomatic SQL queries\" yields inconsistent style — keyword casing and column quoting vary. Which change MOST directly stabilizes style?",
+      "options": [
+        "Name the style guide explicitly.",
+        "Raise temperature so style varies less from query to query.",
+        "Provide one example query and instruct the model to match its keyword casing and quoting.",
+        "Use prefilling to start each response with `SELECT ` so the style is anchored early."
+      ],
+      "answer": "Name the style guide explicitly.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · System prompts ---",
+      "explanation": "\"Idiomatic\" is undefined — several mutually incompatible SQL conventions are all idiomatic, so the model picks one each time. Naming the specific guide (or spelling out its rules: uppercase keywords, double-quoted identifiers) replaces an underspecified word with a **complete, unambiguous standard** that covers cases no single example would.\n\nWhy distractors fail:\n- **C** — The reasonable runner-up, and it would help — but one example demonstrates only the constructs it happens to contain, leaving JOINs, CTEs, and window functions unspecified. A named guide covers all of them.\n- **B** — Backwards: higher temperature *increases* variance. (And sampling variance is not the cause; underspecification is.)\n- **D** — Prefilling anchors one token and says nothing about identifier quoting or the rest of the query — and assistant prefill is rejected on current models.",
+      "examTrick": "Exam Rule:  — \"Idiomatic\" is undefined — several mutually incompatible SQL conventions are all idiomatic, so the model picks one each time. Naming the spe",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 11
+    },
+    {
+      "question": "\"Fetch the most relevant 5 sources\" yields sources that sometimes overlap heavily. Which change BEST improves source diversity?",
+      "options": [
+        "Increase the source count to 10 so diversity emerges naturally.",
+        "Require sources to cover distinct viewpoints.",
+        "Raise temperature so source selection is more varied.",
+        "Sort sources alphabetically and take the first five for reproducibility."
+      ],
+      "answer": "Require sources to cover distinct viewpoints.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · Multi-agent research system ---",
+      "explanation": "The prompt optimises for **relevance alone**, and the five most relevant sources are frequently near-duplicates of each other — the overlap is the criterion working as specified. Adding diversity as an explicit selection criterion changes what \"best five\" means, so the model optimises for coverage as well as relevance.\n\nWhy distractors fail:\n- **A** — Ten sources selected by the same criterion gives ten overlapping sources; volume does not create coverage.\n- **C** — Randomness is not diversity: it produces varied *runs*, not varied *viewpoints within a run*, and degrades relevance.\n- **D** — Alphabetical order is unrelated to either relevance or diversity; reproducibly bad.",
+      "examTrick": "Exam Rule:  — The prompt optimises for relevance alone, and the five most relevant sources are frequently near-duplicates of each other — the overlap is t",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 12
+    },
+    {
+      "question": "The agent should reply in Spanish when the user writes in Spanish, but sometimes replies in English or code-switches. Which change MOST directly enforces language matching?",
+      "options": [
+        "Add \"always be linguistically appropriate\" so the model self-corrects.",
+        "Run a language-detection step in a separate API call first.",
+        "Lower temperature to 0 so the language choice becomes deterministic.",
+        "Rule: detect the dominant language of the user's most recent message and respond entirely in that language unless the user explicitly requests another."
+      ],
+      "answer": "Rule: detect the dominant language of the user's most recent message and respond entirely in that language unless the user explicitly requests another.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct ---",
+      "explanation": "It converts a vague intent into a **complete decision procedure**: which signal to read (the most recent message), how to resolve mixed input (the *dominant* language — which is what fixes code-switching), what to output (entirely that language), and the one exception. Nothing is left to interpretation.\n\nWhy distractors fail:\n- **A** — \"Linguistically appropriate\" is vaguer than the original instruction.\n- **B** — An extra API call, extra latency, and its own error rate, to determine something the model can determine inline.\n- **C** — Temperature 0 makes the *same wrong choice* consistently; determinism is not correctness.",
+      "examTrick": "Exam Rule:  — It converts a vague intent into a complete decision procedure: which signal to read (the most recent message), how to resolve mixed input (t",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 13
+    },
+    {
+      "question": "\"Extract dates in ISO format\" yields `2026-06-15`, `2026/06/15`, and `June 15 2026`. Which change BEST stabilizes the format?",
+      "options": [
+        "Use JSON mode so the date is emitted as a clean string value.",
+        "Provide three examples of ISO dates and trust the model to generalize.",
+        "Lower temperature so the date-format choice stabilizes.",
+        "Specify \"YYYY-MM-DD with hyphens, zero-padded; reject any other format\" and provide one canonical example."
+      ],
+      "answer": "Specify \"YYYY-MM-DD with hyphens, zero-padded; reject any other format\" and provide one canonical example.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · Structured outputs ---",
+      "explanation": "It removes every degree of freedom the failures exploited: the **separator** (hyphens, which kills the `/` variant), **zero-padding**, the exact field order, and an explicit rejection of alternatives — plus one example to anchor it. Rule *and* demonstration, which is stronger than either alone.\n\nWhy distractors fail:\n- **B** — Three examples without a stated rule leave the model to infer which properties are essential; and the item's own phrasing (\"trust the model to generalize\") is the weakness.\n- **A** — JSON mode guarantees the value is a valid *string*; `\"June 15 2026\"` is a perfectly valid JSON string.\n- **C** — Determinism without a specification just fixes which wrong format recurs.",
+      "examTrick": "Exam Rule:  — It removes every degree of freedom the failures exploited: the separator (hyphens, which kills the `/` variant), zero-padding, the exact fie",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 14
+    },
+    {
+      "question": "A system prompt has 8 imperative instructions, with new rules appended at the bottom over time. Which change BEST improves long-term maintainability?",
+      "options": [
+        "Convert the imperatives to declaratives so they read more naturally.",
+        "Number the rules so each can be referenced by a stable index.",
+        "Group related rules under XML-tagged sections.",
+        "Lower temperature so the rules are applied more consistently."
+      ],
+      "answer": "Group related rules under XML-tagged sections.",
+      "difficulty": "Medium",
+      "source": "Use XML tags · System prompts ---",
+      "explanation": "The maintainability problem is **structural**: an append-only flat list means related rules drift apart, duplicates go unnoticed, and there is no obvious place to add the next one. XML-tagged sections give each rule a home (`<style>`, `<testing>`, `<security>`), which both guides future edits and improves the model's ability to attend to the relevant group — XML structuring is a documented Claude prompting technique, not merely cosmetic.\n\nWhy distractors fail:\n- **B** — Stable indices help *reference* rules but do nothing to organise them; and inserting a rule renumbers everything after it.\n- **A** — Imperatives are the clearer form for instructions; declaratives read as description rather than requirement.\n- **D** — Temperature is unrelated to maintainability, and this is the recurring non-answer of this domain.",
+      "examTrick": "Exam Rule:  — The maintainability problem is structural: an append-only flat list means related rules drift apart, duplicates go unnoticed, and there is n",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 15
+    },
+    {
+      "question": "\"Refactor for readability while keeping behavior the same\" — some refactors silently change function signatures. Which change MOST directly prevents signature changes?",
+      "options": [
+        "Lower temperature to 0 so refactors become more conservative.",
+        "Explicitly forbid signature changes.",
+        "Run the refactor through a linter after Claude finishes.",
+        "Use prefilling to start with `def ` and the original function name."
+      ],
+      "answer": "Explicitly forbid signature changes.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct ---",
+      "explanation": "\"Behavior the same\" is genuinely ambiguous — a model can read it as *observable behaviour for a given call*, under which renaming a parameter seems harmless. Naming the prohibition explicitly closes that reading, and it is the most direct fix because it addresses the exact misinterpretation causing the failures. (BU4-013 restates this item with the full wording spelled out.)\n\nWhy distractors fail:\n- **C** — A linter checks style; it has no notion of the *original* signature to compare against, so it cannot detect the change.\n- **A** — Temperature does not make a model \"conservative\"; it narrows sampling around the same interpretation.\n- **D** — Prefill is rejected on current models, and anchoring the first line would not prevent a changed parameter list further along it.",
+      "examTrick": "Exam Rule:  — \"Behavior the same\" is genuinely ambiguous — a model can read it as *observable behaviour for a given call*, under which renaming a paramete",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 16
+    },
+    {
+      "question": "\"Write a good README\" — some include installation but skip usage, others include badges but no quickstart. Which change MOST efficiently fixes the gaps?",
+      "options": [
+        "Require a fixed section order.",
+        "Show Claude five high-quality READMEs from popular projects.",
+        "Lower temperature so the README structure stabilizes.",
+        "Add \"be thorough and complete\" so no section is skipped."
+      ],
+      "answer": "Require a fixed section order.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · Use XML tags ---",
+      "explanation": "The failure is **missing sections**, and a required section list makes omission impossible to overlook — the model has an explicit checklist rather than a judgement about what a good README contains. Note \"MOST **efficiently**\": this is a few lines of prompt, not five documents.\n\nWhy distractors fail:\n- **B** — Would work, but costs thousands of tokens on every call and still leaves the required set implicit; the model must infer which sections were essential versus incidental.\n- **D** — \"Thorough\" is exactly the vagueness that produced inconsistent coverage.\n- **C** — Determinism does not add a missing section.",
+      "examTrick": "Exam Rule:  — The failure is missing sections, and a required section list makes omission impossible to overlook — the model has an explicit checklist rat",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 17
+    },
+    {
+      "question": "\"Verify the customer's identity before sharing account details\" — the model sometimes shares partial details without verification. Which change BEST hardens the rule?",
+      "options": [
+        "Lower temperature so the model is less likely to share details prematurely.",
+        "Add \"verify thoroughly and completely\" to the existing prompt.",
+        "Specify the verification steps.",
+        "Wrap account details in an `<account>` XML tag in the response."
+      ],
+      "answer": "Specify the verification steps.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · Claude Code hooks ---",
+      "explanation": "\"Verify identity\" names an outcome without a procedure, so the model has to decide what counts as verified — and \"partial details\" suggests it is treating partial confirmation as sufficient. Enumerating the steps (\"confirm account number **and** registered email; both must match before any detail is disclosed\") makes the precondition checkable rather than judged.\n> **Worth knowing beyond this item:** for a genuine guarantee on a security-sensitive action, the prompt layer is the wrong layer entirely — a programmatic prerequisite gate is (Domain 1, §1.4, UD1-008). Among the options offered here, C is the strongest, but a real system should gate `share_account_details` on a completed verification call.\n\nWhy distractors fail:\n- **B** — Adverbs on an unspecified procedure.\n- **A** — Temperature does not encode a policy.\n- **D** — Tags the output after the disclosure decision was already made.",
+      "examTrick": "Exam Rule:  — \"Verify identity\" names an outcome without a procedure, so the model has to decide what counts as verified — and \"partial details\" suggests ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 18
+    },
+    {
+      "question": "Merge recommendations vary between \"merge\" and \"consider merging\"; reviewers want a binary decision. Which change BEST enforces a binary verdict?",
+      "options": [
+        "Add \"be decisive and commit to a single verdict\".",
+        "Lower temperature to 0 so the recommendation is more confident.",
+        "Require the response to end with exactly one of: `VERDICT: MERGE` or `VERDICT: HOLD`.",
+        "Use prefilling to start the response with \"I recommend\"."
+      ],
+      "answer": "Require the response to end with exactly one of: `VERDICT: MERGE` or `VERDICT: HOLD`.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · Structured outputs ---",
+      "explanation": "It replaces a request for decisiveness with a **format constraint that has no hedging form**: there is no way to emit `VERDICT: MAYBE`. The fixed token also makes the verdict machine-parseable, which is what a CI gate needs — the response can still explain its reasoning above the line.\n\nWhy distractors fail:\n- **A** — \"Be decisive\" is an adverb on the same open-ended output; \"consider merging\" can be delivered decisively.\n- **B** — Determinism produces a *consistent* hedge, not a binary one.\n- **D** — Anchors an opening phrase that leads naturally into hedged prose, and prefill is rejected on current models.",
+      "examTrick": "Exam Rule:  — It replaces a request for decisiveness with a format constraint that has no hedging form: there is no way to emit `VERDICT: MAYBE`. The fixe",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 19
+    },
+    {
+      "question": "11 explicit field-handling criteria but no rule for missing fields; outputs use `null`, `\"\"`, and `\"unknown\"` inconsistently. Which change MOST directly stabilizes missing-field handling?",
+      "options": [
+        "Lower temperature so the choice becomes deterministic.",
+        "Drop missing fields from the output entirely.",
+        "Add the 12th criterion: \"Missing fields must use `null`; never empty string, never sentinel strings.\"",
+        "Use JSON mode so the output is always syntactically valid."
+      ],
+      "answer": "Add the 12th criterion: \"Missing fields must use `null`; never empty string, never sentinel strings.\"",
+      "difficulty": "Medium",
+      "source": "Structured outputs · Prompt engineering — be clear and direct ---",
+      "explanation": "The inconsistency exists because **the case was never specified** — with 11 criteria covering present fields and none covering absent ones, the model improvises. Adding the twelfth criterion, with the alternatives explicitly forbidden, closes the gap. It also picks the semantically right marker: `null` means absent, whereas `\"\"` and `\"unknown\"` are values that downstream code may treat as data.\n\nWhy distractors fail:\n- **A** — Determinism would fix one arbitrary marker, possibly `\"unknown\"`.\n- **B** — Omitting keys makes \"absent from the document\" indistinguishable from \"field not in this schema version\", and breaks consumers expecting a fixed shape.\n- **D** — All three current outputs are already valid JSON; syntax was never the problem.",
+      "examTrick": "Exam Rule:  — The inconsistency exists because the case was never specified — with 11 criteria covering present fields and none covering absent ones, the ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 20
+    },
+    {
+      "question": "\"Apologize when the customer is upset\" — some responses apologize for routine inquiries, others miss apologies after genuine complaints. Which change BEST calibrates the behavior?",
+      "options": [
+        "Lower temperature to make the apology choice deterministic.",
+        "Always apologize first to be safe.",
+        "Use few-shot with two upset and two non-upset tickets so the model learns the boundary.",
+        "Specify trigger conditions for apology."
+      ],
+      "answer": "Specify trigger conditions for apology.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · Multishot prompting ---",
+      "explanation": "\"Upset\" is undefined, so the model is applying its own threshold — which is why it errs in both directions. Naming the triggers (explicit dissatisfaction, a service failure on our side, a repeat contact about an unresolved issue) gives a checkable condition instead of a mood judgement.\n> **Discriminator against UD4-006 / UD4-015**, where few-shot beat explicit criteria: in those items the stem states that **detailed criteria were already tried and failed**, so the remaining move was demonstration. Here the current prompt is a single vague clause — explicit criteria have not been tried yet, and are the cheaper, more direct first step. Option **C** is the correct *escalation* if D proves insufficient.\n\nWhy distractors fail:\n- **B** — Apologising on routine inquiries is one of the two failure modes; making it universal entrenches it and reads as insincere.\n- **A** — Determinism fixes the threshold in place rather than correcting it.",
+      "examTrick": "Exam Rule:  — \"Upset\" is undefined, so the model is applying its own threshold — which is why it errs in both directions. Naming the triggers (explicit di",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 21
+    },
+    {
+      "question": "Two pipelines share a model with near-identical system prompts differing only in schema names (invoices vs. purchase orders). A developer suggests consolidating into one prompt with a runtime flag. MOST accurate assessment?",
+      "options": [
+        "Routing logic must always live in the system prompt for consolidation to work.",
+        "Consolidation is always better because it reduces maintenance overhead.",
+        "Two separate user messages on one consolidated prompt achieve the same isolation as two prompts.",
+        "Consolidation increases prompt complexity and risks cross-document interference; keep specialized system prompts unless the deduplication win is large."
+      ],
+      "answer": "Consolidation increases prompt complexity and risks cross-document interference; keep specialized system prompts unless the deduplication win is large.",
+      "difficulty": "Medium",
+      "source": "System prompts · Prompt engineering overview ---",
+      "explanation": "A consolidated prompt must describe **both** schemas, so every invoice extraction is performed with purchase-order fields in context — an invitation to field bleed, particularly where names are similar. It names the real trade-off and the right default: the duplication here is small (schema names), while the interference risk is on output correctness.\n\nWhy distractors fail:\n- **B** — \"Always better\" ignores the interference cost; maintenance savings on two near-identical prompts are minor.\n- **C** — Sharing a system prompt means sharing the context; separate user messages do not isolate what the system prompt describes.\n- **A** — Fabricates a rule; routing can live in application code, and it is not what makes consolidation succeed or fail.",
+      "examTrick": "Exam Rule:  — A consolidated prompt must describe both schemas, so every invoice extraction is performed with purchase-order fields in context — an invita",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 22
+    },
+    {
+      "question": "*(restatement of BU4-006 with the fix spelled out)* Refactors silently change function signatures. Which change MOST directly prevents this?",
+      "options": [
+        "Lower temperature to 0 so refactors become more conservative.",
+        "Run the refactor through a linter after Claude finishes.",
+        "Explicitly forbid signature changes — \"Function name, parameter names, parameter order, and return type must remain identical.\"",
+        "Use prefilling to start with `def` and the original function name."
+      ],
+      "answer": "Explicitly forbid signature changes — \"Function name, parameter names, parameter order, and return type must remain identical.\"",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct ---",
+      "explanation": "The spelled-out version shows why it works: it enumerates **all four** components of a signature, so no part of it is left to interpretation. \"Keep behavior the same\" permitted a reading under which parameter renaming was harmless; this does not.\n\nWhy distractors fail:\n- **B** — A linter has no reference to the original signature.\n- **A** — Temperature is not a conservatism control.\n- **D** — Prefill is rejected on current models and would constrain only the first tokens.",
+      "examTrick": "Exam Rule:  — The spelled-out version shows why it works: it enumerates all four components of a signature, so no part of it is left to interpretation. \"K",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 23
+    },
+    {
+      "question": "Generated SQL migrations occasionally drop columns that should remain. Which prompt refinement BEST protects against unintended destructive schema changes?",
+      "options": [
+        "Explicitly state that existing tables and columns must not be dropped unless the prompt explicitly requests deletion.",
+        "Lower temperature to make schema generation more deterministic.",
+        "Ask Claude to generate shorter SQL scripts so accidental drops are less likely.",
+        "Place the migration inside a Markdown code block so Claude treats it more carefully."
+      ],
+      "answer": "Explicitly state that existing tables and columns must not be dropped unless the prompt explicitly requests deletion.",
+      "difficulty": "Medium",
+      "source": "Prompt engineering — be clear and direct · Claude Code hooks ---",
+      "explanation": "It states a **default-deny rule for the destructive operation** and names the single condition that lifts it. A model refactoring a schema may reasonably infer that a superseded column should go; this removes that inference and makes deletion something that must be asked for.\n\nWhy distractors fail:\n- **B** — Deterministic destructive migrations are still destructive.\n- **C** — Length is unrelated to whether a `DROP COLUMN` is included.\n- **D** — Formatting does not change the model's care; code blocks affect presentation.\n> As with BU4-008, for production migrations the durable protection is a **review gate or a hook** that blocks destructive DDL — prompt rules reduce frequency but do not guarantee.",
+      "examTrick": "Exam Rule:  — It states a default-deny rule for the destructive operation and names the single condition that lifts it. A model refactoring a schema may r",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 24
+    },
+    {
+      "question": "A field the schema expects is simply not present in the source document. The extractor should:",
+      "options": [
+        "Fill the field with a plausible value inferred from the rest of the document.",
+        "Return `null` for that field and mark it as not found, leaving the rest of the extraction intact.",
+        "Fail the entire extraction because one field is missing.",
+        "Repeat the previous record value for that field."
+      ],
+      "answer": "Return `null` for that field and mark it as not found, leaving the rest of the extraction intact.",
+      "difficulty": "Medium",
+      "source": "Structured outputs · Prompt engineering — be clear and direct ---",
+      "explanation": "Absence is **information**, and it should be reported faithfully: `null` plus a not-found marker distinguishes \"the document does not contain this\" from \"we did not look\" or \"the value is empty\". Keeping the rest of the extraction preserves everything that *was* found, so one missing field does not discard a document's worth of correct data.\n\nWhy distractors fail:\n- **A** — Fabrication, and the most dangerous option: an inferred value is indistinguishable downstream from an extracted one.\n- **D** — Cross-record contamination; strictly worse than A because it looks authoritative and correlates across records.\n- **C** — Discards valid data over one absent field; missing fields are routine, not exceptional.",
+      "examTrick": "Exam Rule:  — Absence is information, and it should be reported faithfully: `null` plus a not-found marker distinguishes \"the document does not contain th",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 25
+    },
+    {
+      "question": "An invoice extractor reads dates like `03/04/2025` that could be March 4 or April 3. The design that avoids silent errors is to:",
+      "options": [
+        "Assume the United States month-first format everywhere.",
+        "Require an ISO date in the output schema, and when the input is ambiguous, flag the field for review instead of guessing.",
+        "Store the date as the raw string and sort it out later.",
+        "Drop any date that is ambiguous."
+      ],
+      "answer": "Require an ISO date in the output schema, and when the input is ambiguous, flag the field for review instead of guessing.",
+      "difficulty": "Medium",
+      "source": "Structured outputs · Building effective agents — escalation",
+      "explanation": "Two mechanisms addressing the two halves. The **ISO schema requirement** makes the output unambiguous, so nothing downstream has to re-interpret it. **Flagging genuine ambiguity** rather than guessing is what makes the errors non-silent: a 50/50 guess is right half the time and wrong invisibly the other half, whereas a flagged field gets a human decision.\n\nWhy distractors fail:\n- **A** — Silently wrong on every non-US invoice, which is precisely the \"silent error\" the question asks to avoid.\n- **C** — Defers the same ambiguity to a consumer with *less* context than the extractor had.\n- **D** — Discards data that is usually resolvable from other document evidence, and loses the invoice's date entirely.",
+      "examTrick": "Exam Rule:  — Two mechanisms addressing the two halves. The ISO schema requirement makes the output unambiguous, so nothing downstream has to re-interpret",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-4",
+        "4.1"
+      ],
+      "id": 26
+    }
+  ]
+}

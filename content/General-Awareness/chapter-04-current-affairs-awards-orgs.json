@@ -1,0 +1,127 @@
+{
+  "subject": "General Awareness",
+  "chapter": "Current Affairs, Awards, Sports, and National-International Organizations",
+  "description": "Reviews flagship government schemes, international organizations (G20, BRICS, UN bodies), sports milestones, major Indian national parks, super thermal power plants, and books & authors.",
+  "paper": "Paper-I",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following thermal power plants is currently the largest operational coal-fired super thermal power station in India, with an installed capacity of 4,760 MW, owned and operated by NTPC?",
+      "options": [
+        "Mundra Ultra Mega Power Project",
+        "Vindhyachal Super Thermal Power Station",
+        "Sasan Ultra Mega Power Project",
+        "Tiroda Thermal Power Station"
+      ],
+      "answer": "Vindhyachal Super Thermal Power Station",
+      "difficulty": "Medium",
+      "source": "Ports & Power Plants",
+      "explanation": "Let's review the largest coal power plants in India:\n1. Vindhyachal Super Thermal Power Station (located in Singrauli, Madhya Pradesh) is the largest operational coal-fired power station in India. It is a super thermal power project operated by NTPC with an active capacity of 4,760 MW.\n2. Mundra Thermal Power Station (Gujarat) is operated by Adani Power with a capacity of 4,620 MW.\n3. Sasan Ultra Mega Power Project (Madhya Pradesh) has a capacity of 3,960 MW.",
+      "examTrick": "Vindhyachal is located in the energy capital of India—Singrauli, where dense coal seams fuel huge power facilities. Think 'Vindhyachal' = NTPC's 4,760 MW Giant!",
+      "importance": "High",
+      "tags": ["Power Plants", "Energy Infrastructure", "NTPC"]
+    },
+    {
+      "id": 2,
+      "question": "The 'Kuno National Park', which recently made global headlines for the historic transcontinental reintroduction of African Cheetahs to India, is located in which state?",
+      "options": [
+        "Rajasthan",
+        "Madhya Pradesh",
+        "Gujarat",
+        "Maharashtra"
+      ],
+      "answer": "Madhya Pradesh",
+      "difficulty": "Easy",
+      "source": "Current Affairs / National Parks",
+      "explanation": "Let's review Kuno National Park's profile:\n- Kuno National Park is situated in the Sheopur and Morena districts of Madhya Pradesh.\n- In September 2022, under Project Cheetah (the world's first intercontinental large wild carnivore translocation project), eight wild cheetahs from Namibia were released into Kuno National Park's quarantine enclosures by the Prime Minister of India.",
+      "examTrick": "Madhya Pradesh holds the title of 'Tiger State' and 'Cheetah State' of India, housing the largest forest cover and iconic reserves like Kanha, Pench, Bandhavgarh, and Kuno!",
+      "importance": "High",
+      "tags": ["National Parks", "Wildlife Conservation", "Current Affairs"]
+    },
+    {
+      "id": 3,
+      "question": "The G20 (Group of Twenty) officially admitted which of the following multilateral organizations as its permanent 21st member during the New Delhi Summit in September 2023 under India's Presidency?",
+      "options": [
+        "Association of Southeast Asian Nations (ASEAN)",
+        "African Union (AU)",
+        "South Asian Association for Regional Cooperation (SAARC)",
+        "European Free Trade Association (EFTA)"
+      ],
+      "answer": "African Union (AU)",
+      "difficulty": "Easy",
+      "source": "International Organisations / Current Affairs",
+      "explanation": "During the 18th G20 Summit held in New Delhi, India in September 2023, the G20 members reached a historic consensus to induct the African Union (AU) as a permanent member of the group, elevating it on par with the European Union (EU). The African Union represents 55 member states on the African continent.",
+      "examTrick": "India's G20 theme was 'Vasudhaiva Kutumbakam' (One Earth, One Family, One Future). Amplifying the voice of the Global South, India spearheaded the permanent induction of the African Union (AU)!",
+      "importance": "High",
+      "tags": ["International Organizations", "G20 Summit", "Current Affairs"]
+    },
+    {
+      "id": 4,
+      "question": "The 'PM-KUSUM' scheme, launched by the Ministry of New and Renewable Energy (MNRE), primarily aims to achieve which of the following objectives?",
+      "options": [
+        "Financial security for small and marginal traders",
+        "Solarization of agricultural water pumps and installation of grid-connected solar plants",
+        "Providing LPG connections to rural households below poverty line",
+        "Digital literacy training for rural self-help groups"
+      ],
+      "answer": "Solarization of agricultural water pumps and installation of grid-connected solar plants",
+      "difficulty": "Medium",
+      "source": "Flagship Government Programs",
+      "explanation": "Let's decode the acronym PM-KUSUM:\n- PM-KUSUM stands for Pradhan Mantri Kisan Urja Suraksha evam Utthaan Mahabhiyan.\n- It was approved in 2019 to provide energy security and financial security to farmers by installing off-grid solar pumps, solarizing existing grid-connected pumps, and setting up small solar power plants (up to 2 MW) on barren agricultural lands, thereby promoting green energy in agriculture.",
+      "examTrick": "Break down KUSUM: Kisan (Farmer) + Urja (Energy) + Suraksha (Security). This directly connects the scheme to solar irrigation and rural agricultural power independence!",
+      "importance": "High",
+      "tags": ["Government Schemes", "Solar Energy", "Agriculture"]
+    },
+    {
+      "id": 5,
+      "question": "Who was awarded India's highest literary honor, the 57th Jnanpith Award, in 2022 for outstanding contribution to Konkani literature?",
+      "options": [
+        "Damodar Mauzo",
+        "Nilmani Phookan",
+        "Amitav Ghosh",
+        "Akkitham Achuthan Namboothiri"
+      ],
+      "answer": "Damodar Mauzo",
+      "difficulty": "Hard",
+      "source": "Awards and Honours",
+      "explanation": "Let's review the Jnanpith Award winners:\n- Damodar Mauzo, a legendary Konkani novelist, short story writer, and essayist from Goa, was awarded the 57th Jnanpith Award in May 2022. He is famous for his novel 'Karmelin' which won the Sahitya Akademi Award in 1983.\n- Nilmani Phookan (Assamese poet) received the 56th Jnanpith Award.\n- Amitav Ghosh was the first English writer to win Jnanpith (54th Jnanpith).",
+      "examTrick": "Connect 'Damodar Mauzo' with 'Konkani' and 'Goa'! Damodar Mauzo is only the second Konkani writer to receive the country's highest literary award (after Ravindra Kelekar).",
+      "importance": "High",
+      "tags": ["Awards and Honours", "Literature", "Current Affairs"]
+    },
+    {
+      "id": 6,
+      "question": "Which nation hosted the 2024 ICC Men's T20 World Cup jointly with the West Indies, marking the first time an ICC major tournament was held in this country?",
+      "options": [
+        "Canada",
+        "United States of America",
+        "England",
+        "South Africa"
+      ],
+      "answer": "United States of America",
+      "difficulty": "Easy",
+      "source": "Sports Current Affairs",
+      "explanation": "The 2024 ICC Men's T20 World Cup (held in June 2024) was jointly hosted by the West Indies and the United States of America (USA). This historic event marked the first time that a major international cricket tournament matches were played in the US, with matches held in New York, Florida, and Texas.",
+      "examTrick": "USA + West Indies: This tournament marked the official entry of elite ICC cricket into the North American sports market, featuring the newly constructed modular Nassau County International Cricket Stadium in New York.",
+      "importance": "High",
+      "tags": ["Sports", "Cricket", "Current Affairs"]
+    },
+    {
+      "id": 7,
+      "question": "The classic national historical masterwork 'Anandamath', which contains the lyrics of India's national song 'Vande Mataram', was written by which iconic author?",
+      "options": [
+        "Rabindranath Tagore",
+        "Bankim Chandra Chattopadhyay",
+        "Sarojini Naidu",
+        "Subhash Chandra Bose"
+      ],
+      "answer": "Bankim Chandra Chattopadhyay",
+      "difficulty": "Easy",
+      "source": "Books and Authors",
+      "explanation": "Let's review national symbols and literature:\n- 'Anandamath' is a Bengali novel written by Bankim Chandra Chattopadhyay and published in 1882.\n- It is set in the background of the Sannyasi Rebellion of the late 18th century and is highly revered as one of the most important novels in the history of Bengali and Indian literature.\n- The patriotic song 'Vande Mataram', sung inside the novel, was adopted as the National Song of India in 1950.",
+      "examTrick": "Vande Mataram was penned by Bankim Chandra Chattopadhyay, whereas Jana Gana Mana (the National Anthem) was composed by Rabindranath Tagore. Keep this distinction crystal clear!",
+      "importance": "High",
+      "tags": ["Books and Authors", "National Symbols", "History"]
+    }
+  ]
+}

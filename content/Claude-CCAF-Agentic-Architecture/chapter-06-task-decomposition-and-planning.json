@@ -1,0 +1,212 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.6 Task Decomposition Strategies & Planning",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "DAG dependency graphs, adaptive decomposition vs prompt chaining, over-decomposition hazards, and goal drift re-validation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Decomposition creates a fixed 4 subtopics for all topics: simple topics are over-decomposed, complex ones under-decomposed. How do you improve the approach?",
+      "options": [
+        "Increase to a fixed 8 subtopics.",
+        "Dynamic decomposition assessing topic complexity to determine the appropriate subtopic count.",
+        "Reduce to a single comprehensive subtopic.",
+        "Predefined topic taxonomy with mappings to fixed subtopic structures."
+      ],
+      "answer": "Dynamic decomposition assessing topic complexity to determine the appropriate subtopic count.",
+      "difficulty": "Medium",
+      "source": "UD1-043 | Multi-agent research system · Building effective agents",
+      "explanation": "Fixed subtopic counts are inherently flawed. Sizing must be dynamic and complexity-proportional: assess breadth first, then spawn the right number of subtasks.",
+      "examTrick": "Dynamic adaptive decomposition sizes subtasks to query complexity; avoid fixed subtopic counts.",
+      "importance": "High",
+      "tags": [
+        "Dynamic Decomposition",
+        "Complexity Assessment"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "A team writes tests first, then uses Claude to implement code passing those tests, iterating by sharing test failures. Which workflow pattern is this?",
+      "options": [
+        "The test-driven iteration pattern: write tests first, then iterate by sharing failures.",
+        "Plan mode followed by direct execution.",
+        "Prompt chaining with separate steps for testing and implementation.",
+        "The interview pattern: have Claude ask questions before implementing."
+      ],
+      "answer": "The test-driven iteration pattern: write tests first, then iterate by sharing failures.",
+      "difficulty": "Easy",
+      "source": "UD1-058 | Claude Code best practices — test-driven development",
+      "explanation": "Test-driven iteration uses tests as executable specifications, feeding failing assertions back into the loop as an objective correction signal.",
+      "examTrick": "Write tests first -> share failure output in loop = Test-Driven Iteration Pattern.",
+      "importance": "High",
+      "tags": [
+        "Test-Driven Development",
+        "Iterative Patterns"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "Adding comprehensive test coverage to a legacy codebase with unclear module boundaries and undocumented dependencies. Most appropriate decomposition strategy?",
+      "options": [
+        "Adaptive decomposition: first map the codebase structure, identify high-impact areas, then create a prioritized plan that adapts as dependencies are discovered.",
+        "Fixed sequential prompt chaining: tests for each file in alphabetical order, one per turn.",
+        "Decompose by test type: all unit tests, then integration, then end-to-end.",
+        "Give Claude the entire codebase and a single instruction to \"add comprehensive tests.\""
+      ],
+      "answer": "Adaptive decomposition: first map the codebase structure, identify high-impact areas, then create a prioritized plan that adapts as dependencies are discovered.",
+      "difficulty": "Medium",
+      "source": "QD1-06 | Claude Code best practices — explore, plan, code",
+      "explanation": "You cannot plan what you have not mapped. With unknown boundaries, discovery is the mandatory first phase, followed by a prioritized adaptive plan that adjusts as dependencies surface.",
+      "examTrick": "High architectural uncertainty / legacy code = Adaptive decomposition (Explore -> Plan -> Code).",
+      "importance": "High",
+      "tags": [
+        "Adaptive Decomposition",
+        "Explore-Plan-Code"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Auth extraction and billing extraction are independent; \"wire up service mesh config\" depends on both. One engineer, limited time. Most reliable decomposition structure?",
+      "options": [
+        "Fan-out the two independent extractions in parallel, then fan-in to a single sequential subtask that only starts once both extractions are verified complete.",
+        "Run all three subtasks in parallel to save the most time.",
+        "Run all three strictly sequentially in the order mentioned.",
+        "Decompose into a single subtask doing the entire migration."
+      ],
+      "answer": "Fan-out the two independent extractions in parallel, then fan-in to a single sequential subtask that only starts once both extractions are verified complete.",
+      "difficulty": "Medium",
+      "source": "QD1-10 | Building effective agents — parallelization and orchestrator-workers",
+      "explanation": "Express the DAG accurately: parallel fan-out for independent nodes, with an explicit synchronization barrier ensuring dependent nodes execute only after upstream completion is verified.",
+      "examTrick": "DAG schedule: Parallel fan-out for independent tasks -> Verification barrier -> Sequential fan-in.",
+      "importance": "High",
+      "tags": [
+        "DAG Scheduling",
+        "Fan-out Fan-in",
+        "Dependencies"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "\"Clean up the auth module\" — it contains dead code, inconsistent naming, and a non-constant-time token comparison. Time-boxed to one turn. What FIRST?",
+      "options": [
+        "Ask the user to clarify exactly what \"clean up\" means before doing anything.",
+        "Fix everything found, including the security issue.",
+        "Only fix the security issue since it's highest severity, leaving the rest for a separate task.",
+        "Proceed with the unambiguous, low-risk cleanup (dead code, naming) immediately, but pause and explicitly flag the security issue for confirmation before touching it, since fixing it changes security-relevant behavior."
+      ],
+      "answer": "Proceed with the unambiguous, low-risk cleanup (dead code, naming) immediately, but pause and explicitly flag the security issue for confirmation before touching it, since fixing it changes security-relevant behavior.",
+      "difficulty": "Hard",
+      "source": "QD1-14 | Building effective agents — human-in-the-loop · Claude Code best practices",
+      "explanation": "Split work by risk profile: execute unambiguous, reversible cleanup immediately while explicitly pausing and gating the security-relevant behaviour change for user confirmation.",
+      "examTrick": "Ambiguous task with security implications: Execute safe cleanup + Flag security changes for confirmation.",
+      "importance": "High",
+      "tags": [
+        "Risk Scoping",
+        "Human-in-the-Loop",
+        "Security"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "Translate 200 nearly-identical product templates into 5 languages each, with a fixed, well-understood structure. Best decomposition?",
+      "options": [
+        "Fixed prompt chaining: a predictable sequence applied uniformly across all templates.",
+        "Adaptive decomposition: explore the templates first, then build a plan that adapts.",
+        "A coordinator that decides template by template whether translation is needed.",
+        "Spawn one subagent per language with full isolated context."
+      ],
+      "answer": "Fixed prompt chaining: a predictable sequence applied uniformly across all templates.",
+      "difficulty": "Easy",
+      "source": "QD1-48 | Building effective agents — prompt chaining",
+      "explanation": "Zero structural uncertainty and uniform work fits fixed prompt chaining. It is cheap, predictable, easily parallelized, and avoids adaptive overhead.",
+      "examTrick": "Uniform, repetitive, known structure = Fixed Prompt Chaining.",
+      "importance": "High",
+      "tags": [
+        "Prompt Chaining",
+        "Architecture Selection"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "Three replans into an open-ended investigation, the current plan no longer clearly serves the original goal. What should happen?",
+      "options": [
+        "Escalate to a human on every replan, regardless of how minor.",
+        "Explicitly re-check the current plan against the original goal before continuing to replan, rather than letting each incremental replan drift the objective without ever validating against the original ask.",
+        "Continue replanning since adaptive decomposition is designed to evolve freely.",
+        "Revert to the very first plan, since the original plan was presumably correct."
+      ],
+      "answer": "Explicitly re-check the current plan against the original goal before continuing to replan, rather than letting each incremental replan drift the objective without ever validating against the original ask.",
+      "difficulty": "Hard",
+      "source": "QD1-49 | Building effective agents — planning · Multi-agent research system",
+      "explanation": "Goal drift occurs when incremental replanning evaluates only against the previous drifted plan. Periodically re-validating the plan against the original objective reference prevents drift.",
+      "examTrick": "Prevent goal drift = Re-validate replanned actions against original root goal & constraints.",
+      "importance": "High",
+      "tags": [
+        "Goal Drift",
+        "Replanning",
+        "Planning Validation"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "\"Rename this variable across the codebase\" split into 6 subagents (one per file type), each with coordinator hand-off overhead, for one mechanical low-risk operation. Best assessment?",
+      "options": [
+        "Correctly decomposed, since parallelizing by file type is always more efficient.",
+        "Six subagents is appropriate as long as the token budget allows.",
+        "The decomposition is fine, but it should use peer-to-peer topology.",
+        "This is over-decomposition."
+      ],
+      "answer": "This is over-decomposition.",
+      "difficulty": "Easy",
+      "source": "QD1-51 | Building effective agents — start simple",
+      "explanation": "Decomposition is only justified by parallelism gains, context isolation, or specialization. Spawning 6 subagents for a mechanical variable rename introduces coordination overhead that exceeds the work.",
+      "examTrick": "Over-decomposition: Adding subagent overhead to mechanical single-pass tasks adds latency and divergence.",
+      "importance": "High",
+      "tags": [
+        "Over-Decomposition",
+        "Start Simple"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "Designing a general-purpose orchestration layer handling both sequential and parallel execution uniformly. MOST consistent design strategy?",
+      "options": [
+        "Force everything strictly sequential to keep the orchestrator simple.",
+        "Express subtasks with explicit dependencies in a DAG; the orchestrator runs independent nodes in parallel and dependent nodes sequentially.",
+        "Force everything parallel to maximize speed.",
+        "Let each subagent decide its own execution pattern."
+      ],
+      "answer": "Express subtasks with explicit dependencies in a DAG; the orchestrator runs independent nodes in parallel and dependent nodes sequentially.",
+      "difficulty": "Medium",
+      "source": "BU1-003 (§1.6) | Building effective agents — orchestrator-workers",
+      "explanation": "A DAG (Directed Acyclic Graph) is the universal representation: nodes with no incoming edges execute concurrently in parallel; dependent nodes execute sequentially upon predecessor completion.",
+      "examTrick": "Universal orchestration = DAG dependency graph with automatic parallel/sequential scheduling.",
+      "importance": "High",
+      "tags": [
+        "DAG Architecture",
+        "Orchestration Engines"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "An extraction agent must store audited records. A source API returns a permanent schema-change error; the agent replans to a looser scraping path, succeeds, but the records now skip mandatory audit validation. MOST accurate diagnosis of the replanning defect?",
+      "options": [
+        "The agent should never replan after a tool error; it should halt and escalate every failure.",
+        "The replan satisfied the immediate obstacle but was not validated against the original goal constraint requiring audited records.",
+        "The agent misclassified the error; a permanent schema-change error should have been retried with exponential backoff.",
+        "The agent used in-context memory for the audit records when it should have used semantic memory."
+      ],
+      "answer": "The replan satisfied the immediate obstacle but was not validated against the original goal constraint requiring audited records.",
+      "difficulty": "Hard",
+      "source": "BU1-008 (§1.6) | Building effective agents — planning and guardrails",
+      "explanation": "The replan solved the local obstacle ('get the data') while silently discarding a non-negotiable constraint ('records must be audited'). Replans must be validated against all original constraints.",
+      "examTrick": "Replanning failure: Overcoming local obstacle while dropping global security/audit constraints.",
+      "importance": "High",
+      "tags": [
+        "Constraint Preservation",
+        "Replanning Hazards"
+      ]
+    }
+  ]
+}

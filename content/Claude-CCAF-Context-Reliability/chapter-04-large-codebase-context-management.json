@@ -1,0 +1,50 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.4 Large Codebase Context Management & Chunking",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "Explore subagents, selective payload projection, multi-file investigation partitioning, and scratchpads.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Adding error-handling wrappers across 120 files in three phases: (1) discover call sites, (2) collaboratively design the approach, (3) implement consistently. Phase 1's output fills the context window before discovery finishes. Most effective approach?",
+      "options": [
+        "Define the pattern in CLAUDE.md, then process files in batches across multiple sessions relying on the shared memory file for consistency.",
+        "Use an Explore subagent for Phase 1 to isolate verbose discovery output and return a summary, then continue Phases 2–3 in the main conversation.",
+        "Switch to headless mode with --continue, passing explicit context summaries between batch calls.",
+        "Do all phases in the main conversation, periodically using /compact."
+      ],
+      "answer": "Use an Explore subagent for Phase 1 to isolate verbose discovery output and return a summary, then continue Phases 2–3 in the main conversation.",
+      "difficulty": "Hard",
+      "source": "UD5-017 | Claude Code subagents · Effective context engineering",
+      "explanation": "Phase 1 discovery is verbose and exploratory. Delegating it to an Explore subagent confines raw search outputs to a disposable context, returning a clean summary for collaborative design.",
+      "examTrick": "Large discovery phase = Explore subagent -> returns summary -> design/edit in main session.",
+      "importance": "High",
+      "tags": [
+        "Explore Subagent",
+        "Phase Partitioning",
+        "Context Hygiene"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Repeated lookup_order calls return 40+ fields each; tool outputs now dominate the conversation, and the customer mentions two more orders. Most effective approach before making additional lookups?",
+      "options": [
+        "Extract only return-relevant fields (items, purchase date, return window, status) from each existing order response, removing verbose details.",
+        "Have the model generate a natural language summary of each order, replacing structured responses with prose.",
+        "Move all tool responses to a vector database with semantic indexing, retrieving relevant portions as the conversation continues.",
+        "Proceed with additional lookups without modifying the existing context."
+      ],
+      "answer": "Extract only return-relevant fields (items, purchase date, return window, status) from each existing order response, removing verbose details.",
+      "difficulty": "Medium",
+      "source": "CS5-001 (§5.4) | Effective context engineering · Writing tools for agents",
+      "explanation": "Payload projection: prune 40+ fields down to the 4 return-relevant fields (items, date, window, status), reclaiming context while retaining structured precision.",
+      "examTrick": "Context bloat from repeated tool results = Project payloads to task-relevant fields only.",
+      "importance": "High",
+      "tags": [
+        "Payload Projection",
+        "Tool Output Trimming"
+      ]
+    }
+  ]
+}

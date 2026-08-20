@@ -1,0 +1,347 @@
+{
+  "subject": "Programming and Data Structures",
+  "chapter": "Linear Data Structures",
+  "description": "Comprehensive review of contiguous arrays (1D/2D address mapping), Stacks (LIFO applications), Queues (FIFO circular mechanics), and Linked Lists (Singly, Doubly, Circular, and Skip Lists).",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following correctly classifies the given data structures as either Linear or Non-Linear?",
+      "options": [
+        "Linear: Arrays, Stacks, Linked Lists; Non-Linear: Trees, Graphs",
+        "Linear: Arrays, Trees, Queues; Non-Linear: Stacks, Graphs",
+        "Linear: Stacks, Graphs, Heaps; Non-Linear: Arrays, Linked Lists",
+        "Linear: Linked Lists, Queues, Graphs; Non-Linear: Stacks, Trees"
+      ],
+      "answer": "Linear: Arrays, Stacks, Linked Lists; Non-Linear: Trees, Graphs",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "A data structure is Linear if its elements are arranged in a sequential order where each element (except the first and last) has a unique predecessor and successor. Examples include Arrays, Stacks, Queues, and Linked Lists. It is Non-Linear if elements form hierarchical or network-like relationships, such as Trees and Graphs, where an element can connect to multiple other elements.",
+      "examTrick": "Linear = straight-line sequence (Array, List, Stack, Queue). Non-Linear = hierarchical/cycles (Tree, Graph). Easy classification points in PSU exams!",
+      "importance": "Medium",
+      "tags": ["Data Structures", "Classifications", "Linear DS"]
+    },
+    {
+      "id": 2,
+      "question": "A 1-Dimensional array is declared with lower bound index -1024 and upper bound index 1024. If each element requires 4 bytes of storage, how many elements are present in the array, and what is its total memory footprint?",
+      "options": [
+        "2049 elements; 8196 bytes",
+        "2048 elements; 8192 bytes",
+        "2049 elements; 4096 bytes",
+        "1025 elements; 4100 bytes"
+      ],
+      "answer": "2049 elements; 8196 bytes",
+      "difficulty": "Medium",
+      "source": "GATE CS 2011",
+      "explanation": "According to Section 3.1 of the linear data structures PDF, for a 1D array with lower bound L and upper bound U:\n1. Total elements N = U - L + 1.\n   Here, L = -1024, U = 1024.\n   N = 1024 - (-1024) + 1 = 1024 + 1024 + 1 = 2049 elements.\n2. Total memory footprint = N * element_size.\n   Memory = 2049 * 4 bytes = 8196 bytes.",
+      "examTrick": "The classic off-by-one trap! Always remember the '+ 1' in 'U - L + 1'. If indices are -10 to +10, elements = 10 - (-10) + 1 = 21, not 20!",
+      "importance": "High",
+      "tags": ["Arrays", "1D Array Bounds", "Memory Allocation"]
+    },
+    {
+      "id": 3,
+      "question": "A 2D array A[10][20] is stored in Row-Major order in memory, starting at base address 1000. If each element occupies 4 bytes, what is the memory address of element A[5][15]?",
+      "options": [
+        "1460",
+        "1440",
+        "1380",
+        "1540"
+      ],
+      "answer": "1460",
+      "difficulty": "Hard",
+      "source": "GATE CS 2013 / CIL MT",
+      "explanation": "For a 2D array A[Rows][Cols] starting at base address Base, with element size S, stored in Row-Major Order, the address of A[i][j] is calculated as:\nAddress(A[i][j]) = Base + S * (Cols * i + j)\n\nGiven parameters:\n- Base = 1000\n- Rows = 10 (not needed for Row-Major calculations)\n- Cols = 20\n- S = 4 bytes\n- Target indices: i = 5, j = 15\n\nCalculation:\nAddress(A[5][15]) = 1000 + 4 * (20 * 5 + 15)\n= 1000 + 4 * (100 + 15)\n= 1000 + 4 * (115)\n= 1000 + 460\n= 1460.",
+      "examTrick": "Row-Major memory formula: Base + Size * (Cols * i + j). You skip complete rows (i) of length 'Cols' and then traverse the current row's columns (j). Think of it as flattening rows sequentially!",
+      "importance": "High",
+      "tags": ["Arrays", "2D Arrays", "Row-Major Order", "Address Mapping"]
+    },
+    {
+      "id": 4,
+      "question": "A 2D array A[10][20] is stored in Column-Major order in memory, starting at base address 1000. If each element occupies 4 bytes, what is the memory address of element A[5][15]?",
+      "options": [
+        "1620",
+        "1460",
+        "1600",
+        "1540"
+      ],
+      "answer": "1620",
+      "difficulty": "Hard",
+      "source": "GATE CS 2015",
+      "explanation": "For a 2D array A[Rows][Cols] starting at base address Base, with element size S, stored in Column-Major Order, the address of A[i][j] is calculated as:\nAddress(A[i][j]) = Base + S * (Rows * j + i)\n\nGiven parameters:\n- Base = 1000\n- Rows = 10\n- Cols = 20 (not needed for Column-Major calculations)\n- S = 4 bytes\n- Target indices: i = 5, j = 15\n\nCalculation:\nAddress(A[5][15]) = 1000 + 4 * (10 * 15 + 5)\n= 1000 + 4 * (150 + 5)\n= 1000 + 4 * (155)\n= 1000 + 620\n= 1620.",
+      "examTrick": "Column-Major memory formula: Base + Size * (Rows * j + i). You skip complete columns (j) of length 'Rows' and then traverse the current column's rows (i). Rows are the key multiplier here!",
+      "importance": "High",
+      "tags": ["Arrays", "2D Arrays", "Column-Major Order", "Address Mapping"]
+    },
+    {
+      "id": 5,
+      "question": "Consider an empty stack implemented using an array of size 100. We perform the following sequence of operations:\nPush(A), Push(B), Pop(), Push(C), Push(D), Pop(), Push(E), Pop(), Pop()\nWhich elements remain in the stack, and which element is at the Top of the stack?",
+      "options": [
+        "Remaining: {A}; Top is A",
+        "Remaining: {A, B, C}; Top is C",
+        "Remaining: {A, C}; Top is C",
+        "The stack is empty"
+      ],
+      "answer": "Remaining: {A}; Top is A",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "Let's trace the stack states chronologically:\n- Initial: [] (Empty)\n- Push(A) -> [A]\n- Push(B) -> [A, B]\n- Pop() -> pops B, state: [A]\n- Push(C) -> [A, C]\n- Push(D) -> [A, C, D]\n- Pop() -> pops D, state: [A, C]\n- Push(E) -> [A, C, E]\n- Pop() -> pops E, state: [A, C]\n- Pop() -> pops C, state: [A]\n\nThe remaining element is A, and since it is the only element, it is at the Top of the stack.",
+      "examTrick": "LIFO behavior. Match each POP to the most recently pushed element. The pops remove B, D, E, C in that order, leaving only A behind!",
+      "importance": "Medium",
+      "tags": ["Stacks", "LIFO", "Trace Operations"]
+    },
+    {
+      "id": 6,
+      "question": "In an array implementation of a stack of capacity MAX_SIZE, with 'top' initialized to -1, what are the exact boundary check conditions for 'Stack Overflow' during PUSH and 'Stack Underflow' during POP respectively?",
+      "options": [
+        "Overflow: top == MAX_SIZE - 1; Underflow: top == -1",
+        "Overflow: top == MAX_SIZE; Underflow: top == 0",
+        "Overflow: top == -1; Underflow: top == MAX_SIZE - 1",
+        "Overflow: top == MAX_SIZE + 1; Underflow: top == -1"
+      ],
+      "answer": "Overflow: top == MAX_SIZE - 1; Underflow: top == -1",
+      "difficulty": "Easy",
+      "source": "PSU Exams",
+      "explanation": "According to Section 4.1 of the stack/queue PDF:\n- The array indices range from 0 to MAX_SIZE - 1.\n- A 'top' of -1 indicates the stack is completely empty. Hence, attempting a POP when 'top == -1' triggers 'Stack Underflow'.\n- If 'top' has reached 'MAX_SIZE - 1', the array is fully saturated. Attempting a PUSH in this state triggers 'Stack Overflow'.",
+      "examTrick": "Array indices are 0-indexed. Saturated condition is always MAX_SIZE - 1. Empty condition is -1. Write these down as free marks!",
+      "importance": "High",
+      "tags": ["Stacks", "Boundary Conditions", "Overflow", "Underflow"]
+    },
+    {
+      "id": 7,
+      "question": "What is the correct Postfix representation of the following Infix expression, assuming standard operator precedence and left-to-right associativity?\n\nA + B * C - D / E",
+      "options": [
+        "A B C * + D E / -",
+        "A B C + * D E / -",
+        "A B + C * D E / -",
+        "A B C * + D / E -"
+      ],
+      "answer": "A B C * + D E / -",
+      "difficulty": "Hard",
+      "source": "GATE CS 2012 / CIL MT",
+      "explanation": "Let's perform the Infix-to-Postfix conversion systematically using the precedence rules:\nExpression: A + B * C - D / E\n1. Evaluate sub-expressions with higher precedence operators (* and /):\n   - B * C becomes (B C *)\n   - D / E becomes (D E /)\n   Expression becomes: A + (B C *) - (D E /)\n2. Apply left-to-right associativity for equal precedence operators (+ and -):\n   - Evaluate addition first: A + (B C *) becomes (A B C * +)\n   Expression becomes: (A B C * +) - (D E /)\n3. Evaluate subtraction: (A B C * +) - (D E /) becomes (A B C * + D E / -)\nThus, the correct postfix format is A B C * + D E / -.",
+      "examTrick": "Parenthesize the expression fully according to precedence first: ((A + (B * C)) - (D / E)). Now, move each operator to its corresponding closing parenthesis: ((A (B C)*)+ (D E)/)-. Remove parentheses: A B C * + D E / -. Perfect and error-proof!",
+      "importance": "High",
+      "tags": ["Stacks", "Infix to Postfix", "Operator Precedence"]
+    },
+    {
+      "id": 8,
+      "question": "A postfix expression '5 3 + 8 2 / *' is evaluated using a stack. What is the final value popped from the stack upon complete evaluation?",
+      "options": [
+        "32",
+        "16",
+        "8",
+        "64"
+      ],
+      "answer": "32",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020",
+      "explanation": "Postfix evaluation algorithm using a stack:\n- Push numbers; when encountering an operator, pop the top two numbers, apply the operator, and push the result back.\n1. Push 5, Push 3 -> Stack: [5, 3]\n2. Operator '+': Pop 3, Pop 5. Calculate 5 + 3 = 8. Push 8 -> Stack: [8]\n3. Push 8, Push 2 -> Stack: [8, 8, 2]\n4. Operator '/': Pop 2, Pop 8. Calculate 8 / 2 = 4. Push 4 -> Stack: [8, 4]\n5. Operator '*': Pop 4, Pop 8. Calculate 8 * 4 = 32. Push 32 -> Stack: [32]\n6. End of expression: Pop 32.",
+      "examTrick": "Read L-to-R. Numbers go in. Operators pull out the last two numbers. (5+3) = 8. Then (8/2) = 4. Finally, 8 * 4 = 32. Quick manual check takes 5 seconds!",
+      "importance": "High",
+      "tags": ["Stacks", "Postfix Evaluation", "Trace Algorithm"]
+    },
+    {
+      "id": 9,
+      "question": "Two stacks are implemented in a single 1D array of size N (indices 0 to N-1) growing from opposite ends. Stack 1 starts at index -1 and grows upwards, while Stack 2 starts at index N and grows downwards. What is the exact mathematical condition indicating that both stacks have run out of space (Double Stack Overflow)?",
+      "options": [
+        "top1 + 1 == top2",
+        "top1 == top2",
+        "top1 + top2 == N",
+        "top1 == N / 2"
+      ],
+      "answer": "top1 + 1 == top2",
+      "difficulty": "Medium",
+      "source": "GATE CS 2017",
+      "explanation": "According to Section 4.1 of the stack/queue PDF:\n- Stack 1 occupies elements from index 0 upwards. Its current top is 'top1'.\n- Stack 2 occupies elements from index N-1 downwards. Its current top is 'top2'.\n- The two stacks grow towards each other. They will collide and overflow the array when there is no free element left between them. This boundary is hit when the next slot of Stack 1 is occupied by Stack 2, which is mathematically represented as 'top1 + 1 == top2'.",
+      "examTrick": "Shared Array Collision: The space between them is zero when they are adjacent: top1 + 1 == top2 (or top2 - top1 == 1). A classic interview and GATE question!",
+      "importance": "High",
+      "tags": ["Stacks", "Double Stack", "Memory Sharing", "Overflow Condition"]
+    },
+    {
+      "id": 10,
+      "question": "A Circular Queue of maximum capacity MAX_SIZE is implemented in an array. If FRONT and REAR represent the indices of the front and rear elements respectively, which of the following represents the correct condition for a 'Queue Full' state, and why is a circular queue preferred over a linear array queue?",
+      "options": [
+        "(REAR + 1) % MAX_SIZE == FRONT; Circular queues solve the 'False Overflow' problem by reusing empty slots created by deletions.",
+        "REAR == MAX_SIZE - 1; Circular queues use less memory by utilizing bits.",
+        "(FRONT + 1) % MAX_SIZE == REAR; Circular queues allow bidirectional deletion.",
+        "REAR == FRONT; Circular queues execute enqueue operations in O(log N) time."
+      ],
+      "answer": "(REAR + 1) % MAX_SIZE == FRONT; Circular queues solve the 'False Overflow' problem by reusing empty slots created by deletions.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2014 / CIL MT",
+      "explanation": "According to Section 5.1 of the stack/queue PDF:\n- In a simple linear queue, if elements are deleted, FRONT shifts right, leaving unused memory blocks at the beginning. Once REAR reaches MAX_SIZE - 1, the queue throws a 'False Overflow' error even if there is free memory at the front.\n- A Circular Queue treats the array as a ring. When REAR reaches MAX_SIZE - 1, the next increment wraps back to 0: REAR = (REAR + 1) % MAX_SIZE. \n- The queue is declared 'Full' when the slot immediately following REAR is occupied by FRONT, which is: (REAR + 1) % MAX_SIZE == FRONT.",
+      "examTrick": "Circular Queue Core Formulas:\n- Increment: (index + 1) % MAX_SIZE\n- Full Condition: (REAR + 1) % MAX_SIZE == FRONT. Keeps one slot empty to distinguish from Queue Empty (FRONT == REAR)!",
+      "importance": "High",
+      "tags": ["Queues", "Circular Queue", "False Overflow", "Boundary Checks"]
+    },
+    {
+      "id": 11,
+      "question": "A Double-Ended Queue (Deque) supports insertions and deletions at both ends. Which classification of Deque permits insertions at both ends but restricts deletions to only one end?",
+      "options": [
+        "Input-Restricted Deque",
+        "Output-Restricted Deque",
+        "Circular Deque",
+        "Priority Deque"
+      ],
+      "answer": "Output-Restricted Deque",
+      "difficulty": "Easy",
+      "source": "PSU Data Structures",
+      "explanation": "According to Section 5.2 of the stack/queue PDF, deques are classified into two restricted types:\n1. Input-Restricted Deque: Permits insertions at only one end (rear) but allows deletions at both ends (front and rear).\n2. Output-Restricted Deque: Permits deletions at only one end (front) but allows insertions at both ends (front and rear).",
+      "examTrick": "Trick to remember: 'X-Restricted' means 'X operation is restricted to 1 end, while the other operation can use both ends.' So, Output-Restricted = Deletion (output) restricted to 1 end, Insertion at both ends!",
+      "importance": "High",
+      "tags": ["Queues", "Deque", "Restricted Queues"]
+    },
+    {
+      "id": 12,
+      "question": "In a Singly Linked List (SLL), we maintain references to 'head' and 'tail'. Which of the following operations has a time complexity of O(1) in the worst case, and which operation is strictly O(N)?",
+      "options": [
+        "Insertion at tail is O(1); Deletion at tail is O(N)",
+        "Insertion at tail is O(N); Deletion at tail is O(1)",
+        "Insertion at head is O(N); Deletion at head is O(1)",
+        "Insertion at tail is O(1); Deletion at tail is O(1)"
+      ],
+      "answer": "Insertion at tail is O(1); Deletion at tail is O(N)",
+      "difficulty": "Medium",
+      "source": "GATE CS 2015",
+      "explanation": "According to Section 6.1 of the linked lists PDF:\n1. Insertion at tail: With a tail pointer, we can instantly link a new node: tail->next = newNode; tail = newNode; which takes O(1) constant time.\n2. Deletion at tail: To delete the tail node, we must update the tail reference to point to the *second-to-last* node. In a singly linked list, there are no backward pointers. Thus, we are forced to traverse the entire list from the 'head' to find the predecessor of the tail node, which takes O(N) linear time.",
+      "examTrick": "SLL asymmetrical trap: Even with a 'tail' pointer, deleting at tail is O(N) because you can't go backwards to find the second-to-last node! (To make it O(1), you must use a Doubly Linked List!).",
+      "importance": "High",
+      "tags": ["Linked Lists", "Singly Linked List", "Time Complexity", "Asymmetrical Traps"]
+    },
+    {
+      "id": 13,
+      "question": "Which variant of Linked List is preferred by Operating System schedulers to implement CPU Round-Robin Scheduling where tasks are allocated time slices sequentially in a continuous cycle, and why?",
+      "options": [
+        "Circular Linked List; It allows continuous loop traversal without encountering a NULL pointer, enabling seamless context-switching.",
+        "Singly Linked List; It has the lowest memory overhead.",
+        "Skip List; It allows O(log N) express-lane context-switching.",
+        "Header Linked List; It stores scheduler metadata directly in the head node."
+      ],
+      "answer": "Circular Linked List; It allows continuous loop traversal without encountering a NULL pointer, enabling seamless context-switching.",
+      "difficulty": "Medium",
+      "source": "PSU Operating Systems / DS",
+      "explanation": "According to Section 6.3 of the linked lists PDF, in a Circular Linked List, the last node's next pointer points back to the head node, forming a closed ring. Operating systems leverage this structure for Round-Robin schedulers because they can cycle through active processes indefinitely without needing complex boundary resets or encountering null termination pointers.",
+      "examTrick": "Round-Robin = continuous cycle = Circular Linked List! The tail's next pointer points back to the head. Perfect for scheduling algorithms.",
+      "importance": "High",
+      "tags": ["Linked Lists", "Circular Linked List", "Round-Robin", "OS Scheduling"]
+    },
+    {
+      "id": 14,
+      "question": "In a Doubly Linked List (DLL), we wish to delete a node pointed to by 'temp' (which is neither the head nor the tail node) in O(1) time. What are the correct pointer assignments required to securely isolate and delete this node?",
+      "options": [
+        "temp->prev->next = temp->next; temp->next->prev = temp->prev; free(temp);",
+        "temp->next = temp->prev; temp->prev = temp->next; free(temp);",
+        "temp->prev->next = temp; temp->next->prev = temp; free(temp);",
+        "free(temp); temp->prev->next = temp->next; temp->next->prev = temp->prev;"
+      ],
+      "answer": "temp->prev->next = temp->next; temp->next->prev = temp->prev; free(temp);",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "To delete a node 'temp' in a Doubly Linked List, we must link its predecessor node directly to its successor node, and vice versa:\n1. temp->prev->next = temp->next; (Update the predecessor's next pointer to skip temp).\n2. temp->next->prev = temp->prev; (Update the successor's prev pointer to skip temp).\n3. free(temp); (Deallocate memory securely to prevent dynamic memory leaks).\nAll these updates take O(1) time because DLL provides direct access to both backward and forward nodes.",
+      "examTrick": "Bypass the target node! Left node points to Right node: 'temp->prev->next = temp->next'. Right node points to Left node: 'temp->next->prev = temp->prev'. Then safe-free the target!",
+      "importance": "High",
+      "tags": ["Linked Lists", "Doubly Linked List", "Deletion Algorithm", "O(1) updates"]
+    },
+    {
+      "id": 15,
+      "question": "What is a 'Skip List', what is its average search time complexity, and what mathematical structure does it emulate to bypass linear searches in linked lists?",
+      "options": [
+        "A multi-layered linked list with 'express lane' pointers; average search complexity is O(log N); emulates Binary Search.",
+        "A linked list that skips odd-indexed nodes; average search complexity is O(N); emulates Linear Scan.",
+        "A dynamic array that skips empty blocks; average search complexity is O(N log N); emulates Interpolation Search.",
+        "A binary tree mapped into a list; average search complexity is O(1); emulates Hashing."
+      ],
+      "answer": "A multi-layered linked list with 'express lane' pointers; average search complexity is O(log N); emulates Binary Search.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2016",
+      "explanation": "According to Section 6.6 of the linked lists PDF:\n- A Skip List is an advanced probabilistic, multi-layered linked list. It contains a base-level sorted list and multiple higher-level 'express lanes' that skip over large blocks of elements.\n- This allows the search algorithm to hop forward quickly, emulating Binary Search over a linked list. The average search, insertion, and deletion time complexity is O(log N) rather than O(N).",
+      "examTrick": "Skip List = Express Lanes + Binary Search emulation! Search/Insert/Delete average time is O(log N). Highly tested advanced concept!",
+      "importance": "High",
+      "tags": ["Linked Lists", "Skip Lists", "Binary Search", "Time Complexity"]
+    },
+    {
+      "id": 16,
+      "question": "What is the primary architectural purpose of a 'Header Linked List' containing a dummy header node at the beginning, and how does it optimize linked list operations?",
+      "options": [
+        "It stores metadata (such as total node count) and guarantees that the list is never physically empty, eliminating edge-case checks for NULL pointers in insertion and deletion algorithms.",
+        "It speeds up searches by indexing nodes using a hash function.",
+        "It compresses list data to reduce memory usage.",
+        "It converts singly linked lists into circular ones automatically."
+      ],
+      "answer": "It stores metadata (such as total node count) and guarantees that the list is never physically empty, eliminating edge-case checks for NULL pointers in insertion and deletion algorithms.",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "According to Section 6.5 of the linked lists PDF:\n- In standard lists, inserting or deleting at the head requires special branch conditions because the 'head' pointer itself must be modified.\n- A Header Linked List has a permanent, dummy 'header node' at the very beginning. Even when the list has 'zero' data nodes, the header node remains. This means the list is never physically empty, which completely eliminates edge-case checks for NULL pointers and simplifies node-linking code.",
+      "examTrick": "Dummy header = No more NULL check head pointer traps! Excellent for software reliability and writing clean pointer updates.",
+      "importance": "Medium",
+      "tags": ["Linked Lists", "Header Linked List", "Edge Cases", "Architecture"]
+    },
+    {
+      "id": 17,
+      "question": "Which of the following describes the correct steps to iteratively reverse a Singly Linked List using three pointer variables: prev, curr, and next?",
+      "options": [
+        "Initialize prev = NULL, curr = head; inside loop: next = curr->next; curr->next = prev; prev = curr; curr = next; finally update head = prev;",
+        "Initialize prev = head, curr = head->next; inside loop: curr->next = prev; prev = curr; curr = curr->next;",
+        "Initialize prev = NULL, curr = head; inside loop: curr->next = next; next = curr; curr = prev;",
+        "Initialize prev = head, curr = NULL; inside loop: next = curr->next; prev->next = curr; curr = next;"
+      ],
+      "answer": "Initialize prev = NULL, curr = head; inside loop: next = curr->next; curr->next = prev; prev = curr; curr = next; finally update head = prev;",
+      "difficulty": "Hard",
+      "source": "GATE CS 2016 / CIL MT",
+      "explanation": "To reverse a Singly Linked List iteratively without losing access to the rest of the list, we use three pointers:\n1. Initialize: prev = NULL, curr = head\n2. Loop while curr is not NULL:\n   - next = curr->next (Save the remaining list address before cutting the link)\n   - curr->next = prev (Reverse the current node's pointer direction to point to previous)\n   - prev = curr (Move prev forward to current node)\n   - curr = next (Move curr forward to next saved node)\n3. After loop, set head = prev (New head of reversed list).",
+      "examTrick": "SLL Reversal 4-step loop sequence: 'next = curr->next; curr->next = prev; prev = curr; curr = next'. Remember: Save -> Redirect -> Advance prev -> Advance curr!",
+      "importance": "High",
+      "tags": ["Linked Lists", "Reversing SLL", "Algorithm Trace"]
+    },
+    {
+      "id": 18,
+      "question": "A system implements a Queue using two Stacks (S1 and S2). Stack S1 is used for enqueuing, and S2 is used for dequeuing. If we wish to dequeue an element when S2 is completely empty, what is the sequence of operations required, and what is its amortized time complexity?",
+      "options": [
+        "Pop all elements from S1 and push them into S2, then pop from S2; amortized complexity is O(1).",
+        "Pop 1 element from S1 and push it to S2; complexity is O(N).",
+        "Clear S1 completely and return its bottom; complexity is O(1).",
+        "Throw an underflow error immediately; complexity is O(1)."
+      ],
+      "answer": "Pop all elements from S1 and push them into S2, then pop from S2; amortized complexity is O(1).",
+      "difficulty": "Hard",
+      "source": "GATE CS 2018",
+      "explanation": "To simulate FIFO (Queue) using LIFO (Stacks):\n1. Enqueue: Push element directly to Stack S1. (Takes O(1) time).\n2. Dequeue: \n   - If S2 has elements: Pop directly from S2. (Takes O(1) time).\n   - If S2 is empty: Pop all elements from S1 one-by-one and Push them into S2. This reverses their order (making LIFO turn into FIFO). Then pop the top element of S2.\n3. Amortized Analysis: Although a single transfer of N elements takes O(N) time, each element is pushed to S1 once, transferred to S2 once, and popped from S2 once. Thus, the total operations for N elements is 3N, yielding an average of O(1) operations per element.",
+      "examTrick": "Queue with 2 Stacks: Push directly to S1. Pop from S2. If S2 is dry, dump S1 to S2 first! Amortized cost is O(1) per element because each element pays a fixed 3-step transit fee.",
+      "importance": "High",
+      "tags": ["Stacks", "Queues", "Simulated DS", "Amortized Analysis"]
+    },
+    {
+      "id": 19,
+      "question": "In terms of memory efficiency and caching behaviors, which of the following represents a major disadvantage of Linked Lists compared to contiguous Arrays?",
+      "options": [
+        "Linked lists store elements non-contiguously in memory, leading to high cache-miss rates, and incur pointer storage overhead (sizeof(pointer) per node).",
+        "Linked lists require dynamic sizing which uses double the memory on stack frames.",
+        "Linked lists are slow because they are always stored in read-only Text segments.",
+        "Linked lists cannot store structures or floating-point elements."
+      ],
+      "answer": "Linked lists store elements non-contiguously in memory, leading to high cache-miss rates, and incur pointer storage overhead (sizeof(pointer) per node).",
+      "difficulty": "Medium",
+      "source": "PSU Computer Organization",
+      "explanation": "According to Section 6.1 of the linked lists PDF:\n- Arrays are allocated in contiguous memory blocks. This enables Spatial Locality of Reference, where fetching one element loads adjacent elements into high-speed CPU caches, minimizing cache misses.\n- Linked lists allocate nodes dynamically and non-contiguously across the Heap. When traversing, the next node's address can be anywhere in RAM, causing heavy cache-misses.\n- Additionally, each list node must store an explicit next pointer, introducing memory pointer overhead.",
+      "examTrick": "Array = contiguous = high CPU cache hits. Linked List = scattered heap nodes = high cache misses + pointer storage tax (8 bytes per node on 64-bit systems!).",
+      "importance": "High",
+      "tags": ["Arrays", "Linked Lists", "Memory Performance", "Cache Locality"]
+    },
+    {
+      "id": 20,
+      "question": "In a Josephus Problem simulation, N people stand in a circle and every M-th person is eliminated recursively until only one remains. Which data structure is mathematically optimal to implement this simulation with minimum boundary resets?",
+      "options": [
+        "Circular Linked List",
+        "Doubly Linked List",
+        "Singly Linked List",
+        "Static 1D Array"
+      ],
+      "answer": "Circular Linked List",
+      "difficulty": "Medium",
+      "source": "PSU Algorithms",
+      "explanation": "The Josephus Problem represents a circular sequence of eliminations. \n- A Circular Linked List allows us to traverse the circle continuously. Once we count M nodes, we delete that node in O(1) time and continue counting from its successor without needing index bounds checking or wrapping logic. This makes it the mathematically optimal and structurally natural choice.",
+      "examTrick": "Josephus Problem = Circular queue/circle of people = Circular Linked List! Simply skip M-1 nodes and delete the M-th node, over and over.",
+      "importance": "Medium",
+      "tags": ["Linked Lists", "Circular Linked List", "Josephus Problem", "Applications"]
+    }
+  ]
+}

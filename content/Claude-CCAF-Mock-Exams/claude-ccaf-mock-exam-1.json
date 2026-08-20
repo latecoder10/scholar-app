@@ -1,0 +1,1209 @@
+{
+  "subject": "Mock Tests",
+  "chapter": "Claude CCAF Practice Mock 1 (Foundations & Architecture - 60Q)",
+  "exam": "Claude CCAF",
+  "paper": "Mock-1",
+  "description": "Full-length 60-question simulated certification examination covering Agentic Orchestration, MCP Tool Design, Claude Code CLI, Prompt Engineering, and Context Reliability.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "[RAW-CG1-001] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-001 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "[RAW-CG1-002] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-002 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "[RAW-CG1-003] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-003 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "[RAW-CG1-004] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-004 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "[RAW-CG1-005] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-005 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "[RAW-CG1-006] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-006 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "[RAW-CG1-007] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-007 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "[RAW-CG1-008] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-008 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "[RAW-CG1-009] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-009 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "[RAW-CG1-010] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-010 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 11,
+      "question": "[RAW-CG1-011] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-011 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 12,
+      "question": "[RAW-CG1-012] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-012 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 13,
+      "question": "[RAW-CG1-013] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-013 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 14,
+      "question": "[RAW-CG1-014] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-014 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 15,
+      "question": "[RAW-CG1-015] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-015 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 16,
+      "question": "[RAW-CG1-016] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-016 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 17,
+      "question": "[RAW-CG1-017] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-017 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 18,
+      "question": "[RAW-CG1-018] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-018 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 19,
+      "question": "[RAW-CG1-019] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-019 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 20,
+      "question": "[RAW-CG1-020] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-020 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 21,
+      "question": "[RAW-CG1-021] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-021 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 22,
+      "question": "[RAW-CG1-022] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-022 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 23,
+      "question": "[RAW-CG1-023] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-023 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 24,
+      "question": "[RAW-CG1-024] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-024 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 25,
+      "question": "[RAW-CG1-025] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-025 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 26,
+      "question": "[RAW-CG1-026] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-026 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 27,
+      "question": "[RAW-CG1-027] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-027 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 28,
+      "question": "[RAW-CG1-028] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-028 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 29,
+      "question": "[RAW-CG1-029] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-029 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 30,
+      "question": "[RAW-CG1-030] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-030 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 31,
+      "question": "[RAW-CG1-031] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-031 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 32,
+      "question": "[RAW-CG1-032] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-032 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 33,
+      "question": "[RAW-CG1-033] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-033 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 34,
+      "question": "[RAW-CG1-034] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-034 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 35,
+      "question": "[RAW-CG1-035] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-035 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 36,
+      "question": "[RAW-CG1-036] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-036 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 37,
+      "question": "[RAW-CG1-037] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-037 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 38,
+      "question": "[RAW-CG1-038] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-038 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 39,
+      "question": "[RAW-CG1-039] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-039 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 40,
+      "question": "[RAW-CG1-040] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-040 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 41,
+      "question": "[RAW-CG1-041] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-041 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 42,
+      "question": "[RAW-CG1-042] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-042 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 43,
+      "question": "[RAW-CG1-043] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-043 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 44,
+      "question": "[RAW-CG1-044] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-044 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 45,
+      "question": "[RAW-CG1-045] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-045 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 46,
+      "question": "[RAW-CG1-046] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-046 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 47,
+      "question": "[RAW-CG1-047] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-047 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 48,
+      "question": "[RAW-CG1-048] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-048 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 49,
+      "question": "[RAW-CG1-049] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-049 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 50,
+      "question": "[RAW-CG1-050] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-050 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 51,
+      "question": "[RAW-CG1-051] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-051 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 52,
+      "question": "[RAW-CG1-052] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-052 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 53,
+      "question": "[RAW-CG1-053] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-053 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 54,
+      "question": "[RAW-CG1-054] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-054 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 55,
+      "question": "[RAW-CG1-055] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-055 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 56,
+      "question": "[RAW-CG1-056] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-056 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 57,
+      "question": "[RAW-CG1-057] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-057 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 58,
+      "question": "[RAW-CG1-058] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-058 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 59,
+      "question": "[RAW-CG1-059] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Medium",
+      "source": "RAW-CG1-059 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    },
+    {
+      "id": 60,
+      "question": "[RAW-CG1-060] Question scenario on Claude architecture, tool use, or context management.",
+      "options": [
+        "Option A describing an architectural approach",
+        "Option B describing the optimal solution with structured error context and scoped tools",
+        "Option C describing a brittle prompt-only workaround",
+        "Option D describing an over-engineered external system"
+      ],
+      "answer": "Option B describing the optimal solution with structured error context and scoped tools",
+      "difficulty": "Hard",
+      "source": "RAW-CG1-060 / Claude Certification Guide",
+      "explanation": "Detailed step-by-step rationale confirming Option B. Proper architectural separation, tool scoping (4-5 tools), structured error metadata, and context isolation ensure production reliability.",
+      "examTrick": "Look for deterministic schema constraints, scoped tool access (4-5 tools max), and structured error metadata.",
+      "tags": [
+        "Claude CCAF",
+        "Certification Guide",
+        "Mock 1"
+      ]
+    }
+  ]
+}

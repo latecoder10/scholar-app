@@ -1,0 +1,347 @@
+{
+  "subject": "Computer Networks",
+  "chapter": "OSI Model and TCP IP",
+  "description": "Fundamental concepts of networking models, layer functionalities, protocols, and standard architectures.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which layer of the OSI reference model is responsible for translation, encryption, and compression of data?",
+      "options": [
+        "Session Layer",
+        "Presentation Layer",
+        "Application Layer",
+        "Transport Layer"
+      ],
+      "answer": "Presentation Layer",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021 / GATE CS",
+      "explanation": "The Presentation layer ensures that information sent by the application layer of one system is readable by the application layer of another system. It handles data formatting, syntax translation, data encryption/decryption, and compression.",
+      "examTrick": "Remember 'P-E-C' (Presentation handles Presentation, Encryption, Compression). Application layer is just the interface.",
+      "importance": "High",
+      "tags": ["OSI Model", "Security", "Presentation Layer"]
+    },
+    {
+      "id": 2,
+      "question": "A protocol data unit (PDU) at the Transport layer of the OSI model is called a:",
+      "options": [
+        "Packet",
+        "Frame",
+        "Segment or Datagram",
+        "Bit"
+      ],
+      "answer": "Segment or Datagram",
+      "difficulty": "Easy",
+      "source": "ISRO Scientist / CIL MT",
+      "explanation": "The PDU at the Transport layer is called a 'Segment' for TCP or 'Datagram' for UDP. At the Network layer, it is called a 'Packet'. At the Data Link layer, it is a 'Frame'. At the Physical layer, it is a 'Bit'.",
+      "examTrick": "Use the mnemonic 'Some People Fear Public Speaking': Segments (Transport) -> Packets (Network) -> Frames (Data Link) -> Bits (Physical) from top to bottom.",
+      "importance": "High",
+      "tags": ["OSI Model", "Transport Layer", "PDU"]
+    },
+    {
+      "id": 3,
+      "question": "Which of the following field in IPv4 header is used to prevent routing loops by limiting packet lifetime?",
+      "options": [
+        "Header Checksum",
+        "Time to Live (TTL)",
+        "Protocol",
+        "Identification"
+      ],
+      "answer": "Time to Live (TTL)",
+      "difficulty": "Medium",
+      "source": "CIL MT 2022 / GATE",
+      "explanation": "The Time to Live (TTL) field is an 8-bit field in the IPv4 header. It is decremented by 1 at every router hop. If TTL reaches 0, the packet is discarded and an ICMP Time Exceeded message is sent back to the source, preventing infinite routing loops.",
+      "examTrick": "TTL is a hop count limit, NOT an absolute time duration in seconds, despite the name 'Time to Live'!",
+      "importance": "High",
+      "tags": ["IPv4 Header", "Routing", "TTL"]
+    },
+    {
+      "id": 4,
+      "question": "In the TCP/IP suite, which protocol is responsible for resolving a logical IP address to a physical MAC address?",
+      "options": [
+        "DHCP",
+        "DNS",
+        "ARP",
+        "ICMP"
+      ],
+      "answer": "ARP",
+      "difficulty": "Medium",
+      "source": "BARC / CIL MT",
+      "explanation": "Address Resolution Protocol (ARP) maps a dynamic IPv4 address to a 48-bit physical MAC address on a local area network. DHCP is for dynamic host configuration, DNS is for domain name resolution, and ICMP is for control/error reporting.",
+      "examTrick": "ARP resolves IP -> MAC (Layer 2.5 protocol), whereas Reverse ARP (RARP) or DHCP resolves MAC -> IP.",
+      "importance": "High",
+      "tags": ["ARP", "Addressing", "Protocols"]
+    },
+    {
+      "id": 5,
+      "question": "What is the size of the TCP Header without any optional fields?",
+      "options": [
+        "10 bytes",
+        "20 bytes",
+        "32 bytes",
+        "40 bytes"
+      ],
+      "answer": "20 bytes",
+      "difficulty": "Hard",
+      "source": "GATE CS 2018",
+      "explanation": "The minimum size of a TCP header is 20 bytes (when the Options field is empty). The maximum size is 60 bytes, governed by the 4-bit Data Offset (Header Length) field, which specifies the header size in 32-bit (4-byte) words (max value 15 * 4 = 60).",
+      "examTrick": "Both TCP and IPv4 minimum header sizes are 20 bytes! Max header size for both is 60 bytes. It's a highly tested PSU number.",
+      "importance": "High",
+      "tags": ["TCP", "Header Format", "Transport Layer"]
+    },
+    {
+      "id": 6,
+      "question": "A packet is sent from source host S to destination host D through 5 intermediate routers. How many times is the Network layer visited in total during this transmission?",
+      "options": [
+        "5 times",
+        "6 times",
+        "7 times",
+        "10 times"
+      ],
+      "answer": "7 times",
+      "difficulty": "Medium",
+      "source": "GATE CSE Standard",
+      "explanation": "The Network layer is visited 1 time at the source host (to encapsulate the packet), 1 time at each of the N intermediate routers (to decapsulate up to Layer 3, inspect the IP header, make routing decisions, and re-encapsulate), and 1 time at the destination host (to receive and process). Total visits = N + 2. Since N = 5, visits = 5 + 2 = 7 times.",
+      "examTrick": "Network Layer Visits = N + 2. Data Link Layer Visits = 2(N + 1). Memorizing these formulas directly saves precious time in GATE and competitive PSU exams!",
+      "importance": "High",
+      "tags": ["OSI Model", "Network Layer", "Layer Traversal"]
+    },
+    {
+      "id": 7,
+      "question": "A packet is sent from a source host to a destination host through 4 intermediate routers. How many times is the Data Link layer visited during the entire journey?",
+      "options": [
+        "4 times",
+        "5 times",
+        "8 times",
+        "10 times"
+      ],
+      "answer": "10 times",
+      "difficulty": "Medium",
+      "source": "GATE CSE standard",
+      "explanation": "Framing and deframing occur on both sides of every physical link hop. For N routers, there are N + 1 distinct hops. At each hop, the Data Link layer is visited twice (once on the sending node, once on the receiving node). Thus, total visits = 2 * (N + 1). For N = 4 routers, total visits = 2 * (4 + 1) = 10 times.",
+      "examTrick": "Data Link visits are always even! Simply count the number of physical links (which is Routers + 1) and multiply by 2. Formula: 2(N + 1).",
+      "importance": "High",
+      "tags": ["OSI Model", "Data Link Layer", "Layer Traversal"]
+    },
+    {
+      "id": 8,
+      "question": "Which of the following functions is primarily handled by the Session Layer of the OSI reference model?",
+      "options": [
+        "Process-to-process reliable data delivery",
+        "User log-in, log-out operations, session synchronization, and token management",
+        "Syntax conversion, character code translation, and data compression",
+        "Mechanical and electrical interface specifications"
+      ],
+      "answer": "User log-in, log-out operations, session synchronization, and token management",
+      "difficulty": "Medium",
+      "source": "ISRO CS / CIL MT",
+      "explanation": "The Session layer establishes, maintains, coordinates, and terminates dialogues between applications. Key tasks include managing user logging, session synchronization points (checkpointing to resume after a crash), and token management (to prevent simultaneous conflicts).",
+      "examTrick": "Mnemonic: Think of the Session layer as the 'Dialogue Manager'. It manages Checkpoints, Log-in/out, and Token control!",
+      "importance": "Medium",
+      "tags": ["OSI Model", "Session Layer", "Functions"]
+    },
+    {
+      "id": 9,
+      "question": "In contrast to IPv4, how does an IPv6 router handle an incoming packet that exceeds the Maximum Transmission Unit (MTU) of the next outgoing link?",
+      "options": [
+        "The router fragments the packet into smaller fragments and forwards them",
+        "The router buffers the packet and waits for link congestion to clear",
+        "The router discards the packet and sends an 'ICMPv6 Packet Too Big' message back to the source",
+        "The router converts the packet format to IPv4 and retries transmission"
+      ],
+      "answer": "The router discards the packet and sends an 'ICMPv6 Packet Too Big' message back to the source",
+      "difficulty": "Hard",
+      "source": "CIL MT 2022 / GATE CS",
+      "explanation": "Under the IPv6 protocol, intermediate routers do not perform packet fragmentation. If a packet exceeds a link's MTU, the router drops it and notifies the sender using an ICMPv6 'Packet Too Big' message. The source host must perform Path MTU Discovery (PMTUD) and handle any fragmentation at the source using extension headers.",
+      "examTrick": "No Router Fragmentation in IPv6! This removes significant processing overhead from routers, speeding up core network performance.",
+      "importance": "High",
+      "tags": ["IPv6", "Fragmentation", "MTU", "ICMPv6"]
+    },
+    {
+      "id": 10,
+      "question": "What is the primary purpose of the 20-bit 'Flow Label' field in the IPv6 header?",
+      "options": [
+        "To specify the total size of any active extension headers",
+        "To identify and handle delay-sensitive real-time traffic flows without analyzing inner payloads",
+        "To determine the maximum number of hops a packet can traverse before being dropped",
+        "To encrypt the packet payload using symmetric cryptography"
+      ],
+      "answer": "To identify and handle delay-sensitive real-time traffic flows without analyzing inner payloads",
+      "difficulty": "Hard",
+      "source": "GATE CSE Syllabus",
+      "explanation": "The 20-bit Flow Label field in IPv6 enables routers to identify and provide special QoS/real-time handling for a sequence of packets belonging to a specific communication flow (e.g., real-time audio/video streams) without needing to inspect inner packet headers or TCP/UDP ports.",
+      "examTrick": "Flow Label = Real-time QoS! It is a 20-bit field that replaces the need for deep packet inspection at intermediate routers.",
+      "importance": "Medium",
+      "tags": ["IPv6", "Flow Label", "Header Format", "QoS"]
+    },
+    {
+      "id": 11,
+      "question": "If the 4-bit 'Data Offset' (Header Length) field in a TCP header has the binary value '1010', what is the size of the options field in the TCP header?",
+      "options": [
+        "0 bytes",
+        "10 bytes",
+        "20 bytes",
+        "40 bytes"
+      ],
+      "answer": "20 bytes",
+      "difficulty": "Hard",
+      "source": "GATE CS 2019 / CIL MT",
+      "explanation": "The 4-bit Data Offset field represents the TCP header length in 32-bit (4-byte) words. The binary value '1010' is 10 in decimal. Thus, the total header length = 10 * 4 bytes = 40 bytes. Since the base TCP header size is 20 bytes, the size of the options field is 40 - 20 = 20 bytes.",
+      "examTrick": "Header Length = Binary Value * 4 bytes. Binary '1010' = 10. 10 * 4 = 40 bytes. Options = Total (40) - Base (20) = 20 bytes.",
+      "importance": "High",
+      "tags": ["TCP", "Data Offset", "Header Format"]
+    },
+    {
+      "id": 12,
+      "question": "Why does the UDP checksum calculation include a 'Pseudo-Header' derived from the IP layer?",
+      "options": [
+        "To encrypt the UDP payload before sending it over physical links",
+        "To allow the UDP layer to determine the physical MAC address of the destination",
+        "To detect misrouted packets by verifying that the source and destination IP addresses match",
+        "To compress the UDP header size for low-overhead links"
+      ],
+      "answer": "To detect misrouted packets by verifying that the source and destination IP addresses match",
+      "difficulty": "Medium",
+      "source": "GATE CS Standard",
+      "explanation": "The UDP checksum is calculated over a 'Pseudo-Header' containing the Source IP, Destination IP, Protocol (17), and UDP Length, along with the actual UDP header and payload. This provides protection against misrouted packets if an IP address field is corrupted in transit.",
+      "examTrick": "UDP Checksum protects against delivery errors. Including IP addresses in the pseudo-header detects if the packet arrived at the wrong host.",
+      "importance": "Medium",
+      "tags": ["UDP", "Checksum", "Pseudo-Header"]
+    },
+    {
+      "id": 13,
+      "question": "In a cryptographic Challenge-Response authentication protocol, how does a claimant prove her identity to a verifier?",
+      "options": [
+        "By sending her secret key encrypted with a symmetric cipher",
+        "By solving a mathematical challenge using her secret key without ever sending the key itself",
+        "By transmitting her digital certificate over a secure TLS session",
+        "By generating a one-time random password and emailing it to the verifier"
+      ],
+      "answer": "By solving a mathematical challenge using her secret key without ever sending the key itself",
+      "difficulty": "Medium",
+      "source": "CIL MT CS 2021",
+      "explanation": "Challenge-Response works by the verifier sending a random, temporary challenge value (nonce) R. The claimant computes a cryptographic signature/response f(Ks, R) using her secret key Ks and sends it back. The verifier performs the same computation and compares the result. The secret key is never sent over the wire, protecting it from eavesdropping.",
+      "examTrick": "Challenge-Response = Prove knowledge of key without sending key! Relies on a random challenge (nonce) to prevent replay attacks.",
+      "importance": "High",
+      "tags": ["Security", "Authentication", "Challenge-Response"]
+    },
+    {
+      "id": 14,
+      "question": "In server-side socket programming using TCP, which sequence of system primitives is correct for setting up a connection-oriented listener?",
+      "options": [
+        "socket() -> listen() -> bind() -> accept()",
+        "socket() -> bind() -> listen() -> accept()",
+        "socket() -> connect() -> accept() -> bind()",
+        "socket() -> accept() -> listen() -> bind()"
+      ],
+      "answer": "socket() -> bind() -> listen() -> accept()",
+      "difficulty": "Easy",
+      "source": "ISRO CS / BARC",
+      "explanation": "The standard server-side TCP socket flow is: 1. socket(): Create a new communication endpoint. 2. bind(): Associate a local IP address and port number with the socket. 3. listen(): Configure the socket to listen for incoming connection requests. 4. accept(): Block execution until an incoming connection is received, returning a new socket for data transfer.",
+      "examTrick": "Mnemonic: S-B-L-A (Socket, Bind, Listen, Accept). Client uses S-C (Socket, Connect). Remember this order for PSU exams!",
+      "importance": "High",
+      "tags": ["Socket Programming", "TCP", "Protocols"]
+    },
+    {
+      "id": 15,
+      "question": "As a data payload moves down the TCP/IP stack from the Application layer to the Physical layer, which layer is responsible for appending BOTH a header and a trailer?",
+      "options": [
+        "Transport Layer",
+        "Network Layer",
+        "Data Link Layer",
+        "Physical Layer"
+      ],
+      "answer": "Data Link Layer",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "The Data Link layer encapsulates the Network layer packet (IP datagram) into a Frame by adding both a Header (containing source and destination physical MAC addresses) and a Trailer (containing a Frame Check Sequence or CRC-32 checksum for error detection).",
+      "examTrick": "Data Link layer is the ONLY layer that adds both a Header and a Trailer! Other layers only add headers.",
+      "importance": "High",
+      "tags": ["OSI Model", "Data Link Layer", "Encapsulation"]
+    },
+    {
+      "id": 16,
+      "question": "Which of the following describes the difference between the service models of the Data Link layer and the Transport layer?",
+      "options": [
+        "Data Link layer provides process-to-process delivery; Transport layer provides node-to-node delivery",
+        "Data Link layer provides node-to-node frame delivery; Transport layer provides end-to-end process delivery",
+        "Data Link layer handles logical addressing; Transport layer handles physical MAC addressing",
+        "Data Link layer is connection-oriented; Transport layer is strictly connectionless"
+      ],
+      "answer": "Data Link layer provides node-to-node frame delivery; Transport layer provides end-to-end process delivery",
+      "difficulty": "Medium",
+      "source": "GATE CSE Syllabus",
+      "explanation": "The Data Link layer is responsible for transmitting frames over a single physical link (node-to-node/hop-by-hop delivery). The Transport layer is responsible for the delivery of the message from the source process running on one host to the destination process running on another host (end-to-end/process-to-process delivery).",
+      "examTrick": "Data Link = Node-to-Node (Local Hop). Network = Host-to-Host (Global Path). Transport = Process-to-Process (End-to-End Ports)!",
+      "importance": "High",
+      "tags": ["OSI Model", "Transport Layer", "Data Link Layer"]
+    },
+    {
+      "id": 17,
+      "question": "When an intermediate router receives a packet and routes it towards its destination, which layers of the network stack are active in the router?",
+      "options": [
+        "Physical, Data Link, and Network layers",
+        "Physical and Data Link layers only",
+        "Physical, Data Link, Network, and Transport layers",
+        "All 5 layers of the TCP/IP stack"
+      ],
+      "answer": "Physical, Data Link, and Network layers",
+      "difficulty": "Medium",
+      "source": "ISRO Scientist Exam",
+      "explanation": "Routers are Layer-3 (Network layer) devices. When a packet arrives, the router receives bits at the Physical layer, decapsulates the frame at the Data Link layer, and inspects the IP header at the Network layer to make routing decisions. It then re-encapsulates the packet down through the Data Link and Physical layers to forward it. It does not look at the Transport layer or above.",
+      "examTrick": "Intermediate routers only go up to Layer 3 (Network)! Switches go up to Layer 2 (Data Link). Hubs/Repeaters operate at Layer 1 (Physical).",
+      "importance": "High",
+      "tags": ["OSI Model", "Network Layer", "Routing"]
+    },
+    {
+      "id": 18,
+      "question": "How does the IPv6 header handle optional fields that were previously present in the IPv4 header's variable-size options?",
+      "options": [
+        "By placing them inside a variable-length field inside the base 40-byte header",
+        "By using chained 'Extension Headers' pointed to by the 'Next Header' field",
+        "By sending them as a separate UDP packet before the main packet",
+        "IPv6 completely removed support for optional fields"
+      ],
+      "answer": "By using chained 'Extension Headers' pointed to by the 'Next Header' field",
+      "difficulty": "Hard",
+      "source": "GATE CSE standard",
+      "explanation": "IPv6 has a fixed-size 40-byte base header. If optional features are needed (like routing, fragmentation, or security), they are placed in separate, optional 'Extension Headers' that are inserted between the base IPv6 header and the upper-layer payload. Each header contains a 'Next Header' field pointing to the next extension header or the transport protocol.",
+      "examTrick": "Chained list of headers! This allows the base header to remain fixed at 40 bytes, which greatly speeds up routing lookup times.",
+      "importance": "High",
+      "tags": ["IPv6", "Extension Headers", "Header Format"]
+    },
+    {
+      "id": 19,
+      "question": "During a graceful TCP connection teardown (Four-way handshake), which control flags are exchanged to coordinate the close of both data transmission directions?",
+      "options": [
+        "SYN and ACK",
+        "FIN and ACK",
+        "RST and SYN",
+        "URG and PSH"
+      ],
+      "answer": "FIN and ACK",
+      "difficulty": "Medium",
+      "source": "GATE CS / CIL MT",
+      "explanation": "TCP connection teardown uses the FIN (Finish) and ACK (Acknowledgment) flags. The client sends a segment with FIN=1, the server responds with ACK=1 (entering half-closed state). Once the server is finished sending data, it sends its own FIN=1, and the client responds with ACK=1 to fully close the connection.",
+      "examTrick": "SYN for Start, FIN for Finish! Each side must send a FIN and receive an ACK to close its direction of the full-duplex connection.",
+      "importance": "High",
+      "tags": ["TCP", "Connection Management", "Teardown"]
+    },
+    {
+      "id": 20,
+      "question": "Which of the following lists contains ONLY devices that operate strictly at the Physical layer (Layer 1) of the OSI model?",
+      "options": [
+        "Hub, Repeater, and Passive Tap",
+        "Switch, Router, and Hub",
+        "Bridge, Gateway, and Repeater",
+        "Modem, Access Point, and L3 Switch"
+      ],
+      "answer": "Hub, Repeater, and Passive Tap",
+      "difficulty": "Easy",
+      "source": "BARC Exam",
+      "explanation": "Hubs, Repeaters, cables, and passive taps operate strictly at the Physical layer (Layer 1). They deal with raw bits, electrical voltages, and mechanical connectors, without any concept of frames, MAC addresses, or packet routing. Switches and Bridges operate at Layer 2 (Data Link), while Routers operate at Layer 3 (Network).",
+      "examTrick": "Physical Layer = Dumb hardware that just forwards electrical/light signals! If it looks at MAC addresses, it's Layer 2. If it looks at IP, it's Layer 3.",
+      "importance": "High",
+      "tags": ["OSI Model", "Physical Layer", "Devices"]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.5 Iterative Refinement & Multi-Pass Review",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "Explore-Plan-Code lifecycle, independent reviewer instances, per-file vs integration passes, and stopping criteria.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A 14-file PR reviewed in a single pass yields contradictory findings — file A's refactor breaks assumptions made while reviewing file B. How do you improve the review architecture?",
+      "options": [
+        "Sequential file-by-file review building cumulative understanding.",
+        "Single comprehensive review with extended thinking time.",
+        "Increase context window size for complete simultaneous review.",
+        "Multi-pass review: per-file local analysis passes plus a cross-file integration pass."
+      ],
+      "answer": "Multi-pass review: per-file local analysis passes plus a cross-file integration pass.",
+      "difficulty": "Hard",
+      "source": "UD3-008 | Long context prompting tips · Claude Code best practices",
+      "explanation": "Multi-pass review separates concerns: per-file local passes ensure deep file-level analysis without dilution, while a final integration pass reconciles cross-file data flows.",
+      "examTrick": "Large PR review = Local per-file passes + Cross-file integration pass.",
+      "importance": "High",
+      "tags": [
+        "Multi-Pass Review",
+        "Code Review Architecture"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Code review in CI/CD; the review instance must not have access to the generation reasoning. How do you ensure independence?",
+      "options": [
+        "Same instance with extended thinking time for critical review mode.",
+        "Review-specific system prompt overriding generation context with critical evaluation.",
+        "Clear conversation history before review, removing generation context.",
+        "A separate independent Claude instance for review, without generation reasoning context."
+      ],
+      "answer": "A separate independent Claude instance for review, without generation reasoning context.",
+      "difficulty": "Medium",
+      "source": "UD3-013 | Building effective agents — evaluator-optimizer",
+      "explanation": "Evaluator independence requires structural separation: a fresh Claude instance evaluating code without the generator's confirmation-biased reasoning trace.",
+      "examTrick": "Independent code review = Separate Claude instance without generation reasoning context.",
+      "importance": "High",
+      "tags": [
+        "Evaluator-Optimizer",
+        "Reviewer Independence",
+        "Confirmation Bias"
+      ]
+    }
+  ]
+}

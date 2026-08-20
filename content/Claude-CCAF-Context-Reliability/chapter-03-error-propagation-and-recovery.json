@@ -1,0 +1,51 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.3 Multi-Agent Error Propagation & Resilience",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "Token bucket rate limiting, graceful degradation on partial outages, and non-retryable error classification.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A third-party API is limited to 100 requests/minute and the agent's rapid tool calls exceed it. Where should rate limiting be implemented?",
+      "options": [
+        "In the system prompt: \"Wait at least 600ms between API calls\".",
+        "In Claude's API parameters via a request_delay field.",
+        "In the MCP server implementation, using a token bucket algorithm that queues requests exceeding the rate limit.",
+        "In a PreToolUse hook that adds a delay between tool invocations."
+      ],
+      "answer": "In the MCP server implementation, using a token bucket algorithm that queues requests exceeding the rate limit.",
+      "difficulty": "Medium",
+      "source": "UD5-025 | Writing tools for agents · API errors and rate limits",
+      "explanation": "Rate limiting is an infrastructure concern that belongs in the MCP server adapter using token bucket / leaky bucket queuing, preventing 429 errors.",
+      "examTrick": "Rate limiting on external APIs belongs in MCP server implementation (token bucket queue).",
+      "importance": "High",
+      "tags": [
+        "Rate Limiting",
+        "Token Bucket",
+        "MCP Server"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "A docs pipeline reads source comments, wiki pages, and API schemas. Wiki retrieval times out; the other two succeed. The pipeline currently halts entirely on any source failure. Best error handling strategy?",
+      "options": [
+        "Retry the wiki three times with exponential backoff; if all retries fail, halt to prevent incomplete documentation.",
+        "Return structured error context for the wiki failure, proceed with available sources, and mark the gaps that lack wiki content.",
+        "Silently skip the wiki source and generate from the remaining two without noting the omission.",
+        "Use the source comments to infer what the wiki pages would have contained."
+      ],
+      "answer": "Return structured error context for the wiki failure, proceed with available sources, and mark the gaps that lack wiki content.",
+      "difficulty": "Medium",
+      "source": "UD5-036 | Multi-agent research system — partial results · Building effective agents",
+      "explanation": "Graceful degradation with disclosure: continue pipeline execution with the successful sources (comments + schemas) while explicitly annotating sections missing wiki data.",
+      "examTrick": "Partial pipeline source outage = Graceful degradation with explicit gap annotations.",
+      "importance": "High",
+      "tags": [
+        "Partial Outages",
+        "Graceful Degradation",
+        "Gap Disclosure"
+      ]
+    }
+  ]
+}

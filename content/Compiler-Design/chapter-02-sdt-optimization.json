@@ -1,0 +1,262 @@
+{
+  "subject": "Compiler Design",
+  "chapter": "SDT, Intermediate Code, and Optimization",
+  "description": "Explores Syntax-Directed Translation (S-attributed, L-attributed), bottom-up evaluation, Intermediate Code (DAGs, Three-Address Code), and standard Code Optimizations.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "An S-attributed Syntax Directed Translation (SDT) can be evaluated during bottom-up parsing because S-attributed definitions use:",
+      "options": [
+        "Only inherited attributes",
+        "Only synthesized attributes",
+        "Both inherited and synthesized attributes",
+        "No attributes"
+      ],
+      "answer": "Only synthesized attributes",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "In syntax-directed translation:\n- A synthesized attribute is computed at a parent node solely from the attribute values of its children.\n- S-attributed definitions use ONLY synthesized attributes.\n- Since synthesized attributes can be computed by climbing up the parse tree, they are natural for bottom-up parsers (evaluated at each reduce action).",
+      "examTrick": "S-attributed = Synthesized attributes only. L-attributed = Synthesized and restricted inherited attributes (inherited only from left siblings or parent). S-attributed is a strict subset of L-attributed!",
+      "importance": "High",
+      "tags": ["SDT", "Synthesized Attributes", "S-Attributed", "CIL PYQ"]
+    },
+    {
+      "id": 2,
+      "question": "Which of the following compiler optimization techniques replaces a multiplication operation with a sequence of additions or bit-shifts?",
+      "options": [
+        "Loop Unrolling",
+        "Constant Folding",
+        "Strength Reduction",
+        "Common Subexpression Elimination"
+      ],
+      "answer": "Strength Reduction",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "Strength reduction is a compiler optimization where expensive operations are replaced with equivalent cheaper operations. For example, replacing 'x * 8' with a left shift 'x << 3', or replacing multiplication inside a loop with additions.",
+      "examTrick": "Strength Reduction = replacing an expensive operation with a cheaper equivalent! Standard example is x * 2 -> x + x or x << 1.",
+      "importance": "High",
+      "tags": ["Code Optimization", "Strength Reduction", "CIL PYQ"]
+    },
+    {
+      "id": 3,
+      "question": "Consider the following statements regarding L-attributed definitions:\nI. Every L-attributed definition is also an S-attributed definition.\nII. Every S-attributed definition is also an L-attributed definition.\nWhich of the statements is/are TRUE?",
+      "options": [
+        "Only I",
+        "Only II",
+        "Both I and II",
+        "Neither I nor II"
+      ],
+      "answer": "Only II",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "An S-attributed definition is a special case of L-attributed definition where there are no inherited attributes (it only has synthesized attributes). Therefore, every S-attributed definition is L-attributed. However, an L-attributed definition can contain inherited attributes, so not all L-attributed definitions are S-attributed. Hence, only statement II is true.",
+      "examTrick": "S-attributed ⊂ L-attributed. Think of L-attributed as 'Left-to-right' (more general). Think of S-attributed as 'Synthesized-only' (strictly nested inside).",
+      "importance": "High",
+      "tags": ["SDT", "L-Attributed", "S-Attributed"]
+    },
+    {
+      "id": 4,
+      "question": "In intermediate code generation, a Three-Address Code (3AC) instruction contains at most how many operands?",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "answer": "3",
+      "difficulty": "Easy",
+      "source": "PSU Intermediate Code",
+      "explanation": "Three-Address Code (3AC) is a standard intermediate representation where each instruction has at most three operands/addresses (usually two sources and one destination, e.g., x = y + z).",
+      "examTrick": "Three-Address Code doesn't mean it must always have exactly three; it means it has AT MOST three addresses! x = -y (two addresses) is also a valid 3AC instruction.",
+      "importance": "Medium",
+      "tags": ["Intermediate Code", "Three-Address Code"]
+    },
+    {
+      "id": 5,
+      "question": "What does 'constant folding' optimization do?",
+      "options": [
+        "It folds loops with constant ranges into a single block.",
+        "It evaluates expressions with constant values at compile-time instead of running them at runtime.",
+        "It allocates global variables to constant registers.",
+        "It removes code blocks that are never executed."
+      ],
+      "answer": "It evaluates expressions with constant values at compile-time instead of running them at runtime.",
+      "difficulty": "Easy",
+      "source": "GATE CS / PSU",
+      "explanation": "Constant folding is an optimization technique where constant expressions are simplified at compile time. For example, replacing the statement 'int seconds = 60 * 60 * 24;' with 'int seconds = 86400;' in the compiled binary so that no math operations are executed at runtime.",
+      "examTrick": "Constant Folding = evaluate math at compile-time. Constant Propagation = substituting values of known constants into subsequent expressions. They are often applied together!",
+      "importance": "High",
+      "tags": ["Code Optimization", "Constant Folding"]
+    },
+    {
+      "id": 6,
+      "question": "If the attribute dependency graph of a parsed syntax tree has a cycle, which of the following is true regarding attribute evaluation?",
+      "options": [
+        "Attributes can be evaluated using a post-order traversal",
+        "Attributes cannot be evaluated for that parse tree",
+        "The evaluation must be performed from right-to-left",
+        "Only inherited attributes can be evaluated"
+      ],
+      "answer": "Attributes cannot be evaluated for that parse tree",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU",
+      "explanation": "A dependency graph shows the order of calculation of attributes (where an edge from b to a means b must be computed before a). If the graph contains a cycle, there is a circular dependency (e.g., a depends on b, b depends on a). Consequently, there is no valid topological sort, and the attributes cannot be evaluated.",
+      "examTrick": "Cycle in dependency graph = No topological sort = Impossible to evaluate attributes! Well-formed L-attributed and S-attributed grammars never produce cycles.",
+      "importance": "High",
+      "tags": ["SDT", "Dependency Graphs", "Cycles"]
+    },
+    {
+      "id": 7,
+      "question": "In an L-attributed Syntax Directed Translation Scheme (SDTS) evaluated during top-down LL(1) parsing, where can the semantic actions be placed?",
+      "options": [
+        "Only at the extreme right end of the production RHS",
+        "Anywhere within the RHS of the production",
+        "Only before any terminal symbols",
+        "Only at the left end of the production before the non-terminals"
+      ],
+      "answer": "Anywhere within the RHS of the production",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU",
+      "explanation": "During top-down (LL) parsing, the parse tree is constructed from the top down and expanded from left to right. This allows semantic actions to be embedded *anywhere* in the production RHS. They execute immediately when they are reached in a left-to-right depth-first traversal.",
+      "examTrick": "LL Parser (Top-Down) = Action can be ANYWHERE on RHS. LR Parser (Bottom-Up) = Action must be at the very END on RHS (Postfix SDT) to execute during reduction!",
+      "importance": "High",
+      "tags": ["SDT", "L-Attributed", "Translation Schemes"]
+    },
+    {
+      "id": 8,
+      "question": "In the standard virtual memory layout of a running program, how do the Stack and Heap segments grow relative to each other, and why?",
+      "options": [
+        "Both segments grow upward to prevent address collision",
+        "The stack grows downward (high address to low address) and the heap grows upward (low address to high address) towards each other to maximize free memory utility",
+        "The stack grows upward and the heap grows downward away from each other",
+        "Both segments are allocated static, fixed sizes that do not grow"
+      ],
+      "answer": "The stack grows downward (high address to low address) and the heap grows upward (low address to high address) towards each other to maximize free memory utility",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "To make the most flexible use of available virtual memory, the stack (which manages function calls and local variables) starts at the top of the memory space and grows downwards. The heap (which handles dynamic memory allocations like malloc/new) starts at the bottom and grows upwards. They grow towards each other, sharing the unallocated space in the middle.",
+      "examTrick": "Stack grows Down (↓), Heap grows Up (↑). Growing towards each other prevents premature Out of Memory crashes when one is small and the other is large!",
+      "importance": "Medium",
+      "tags": ["Runtime Environments", "Memory Layout"]
+    },
+    {
+      "id": 9,
+      "question": "Which field in a function's activation record (stack frame) is used to point to the activation record of the lexically enclosing (statically parent) scope to access non-local variables?",
+      "options": [
+        "Control Link (Dynamic Link)",
+        "Access Link (Static Link)",
+        "Saved Machine State",
+        "Frame Pointer"
+      ],
+      "answer": "Access Link (Static Link)",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU",
+      "explanation": "- The Access Link (or Static Link) points to the stack frame of the lexically (statically) enclosing procedure. This is essential in languages supporting nested functions to look up non-local variables.\n- The Control Link (or Dynamic Link) points to the stack frame of the actual caller procedure, which may be different from the static parent.",
+      "examTrick": "Static Link (Access Link) = points to lexical/static parent (for scoping). Dynamic Link (Control Link) = points to the CALLER (for stack cleanup on return). Static = Scope, Dynamic = Call Flow!",
+      "importance": "High",
+      "tags": ["Runtime Environments", "Activation Records"]
+    },
+    {
+      "id": 10,
+      "question": "If a programming language supports both recursion (functions calling themselves) and dynamic arrays whose dimensions are determined at runtime, which of the following storage allocation strategies must the runtime environment support?",
+      "options": [
+        "Static allocation only",
+        "Stack allocation only",
+        "Heap allocation only",
+        "Both Stack and Heap allocation"
+      ],
+      "answer": "Both Stack and Heap allocation",
+      "difficulty": "Medium",
+      "source": "PSU Compiler Exam",
+      "explanation": "- Recursion requires activation records to be allocated dynamically on a Stack because the number of nested calls is not known at compile-time.\n- Dynamic arrays whose size is decided at runtime cannot be allocated on the stack easily because stack frames must have a constant offset for local variable lookup. They are allocated on the Heap, while a pointer to them is stored on the stack.",
+      "examTrick": "Recursion = Stack. Runtime dynamic sizing (malloc, new) = Heap. Globals/static variables = Static Data segment.",
+      "importance": "Medium",
+      "tags": ["Runtime Environments", "Storage Strategies"]
+    },
+    {
+      "id": 11,
+      "question": "In parameter passing, under which mechanism is the actual parameter expression evaluated lazily and re-evaluated every time the formal parameter is referenced in the procedure body?",
+      "options": [
+        "Call by Value",
+        "Call by Reference",
+        "Call by Value-Result",
+        "Call by Name"
+      ],
+      "answer": "Call by Name",
+      "difficulty": "Medium",
+      "source": "GATE CS / CIL MT",
+      "explanation": "Call by Name (used in Algol 60) acts like textual macro substitution. The actual parameter expression is passed directly into the function. It is not evaluated at the time of the call, but rather evaluated 'on-demand' (lazily) each time the formal parameter is used in the function body.",
+      "examTrick": "Call by Name is the ultimate lazy-evaluation mechanism! It is re-evaluated with every single read or write access inside the called function.",
+      "importance": "High",
+      "tags": ["Runtime Environments", "Parameter Passing"]
+    },
+    {
+      "id": 12,
+      "question": "In intermediate representation, what is the main difference between Quadruples and Triples?",
+      "options": [
+        "Quadruples require explicit temporary variable names to store results, whereas Triples refer to intermediate results implicitly using the instruction indices",
+        "Triples require 4 addresses while Quadruples require 3 addresses",
+        "Quadruples are harder to re-order for optimization than Triples",
+        "Triples do not support unary operator instructions"
+      ],
+      "answer": "Quadruples require explicit temporary variable names to store results, whereas Triples refer to intermediate results implicitly using the instruction indices",
+      "difficulty": "Medium",
+      "source": "GATE CS / PSU",
+      "explanation": "- Quadruples have 4 fields: (op, arg1, arg2, result). The 'result' is an explicit temporary variable.\n- Triples have 3 fields: (op, arg1, arg2). There is no result field. If subsequent instructions need the result, they refer to it using the index/line number of the triple (e.g., '(0)' or '(1)'), which makes code reordering/optimization difficult.",
+      "examTrick": "Quadruples = 4 fields (named results, easy to move). Triples = 3 fields (no result name, referenced by index, hard to move). Indirect Triples use a pointer list to solve the re-ordering problem!",
+      "importance": "High",
+      "tags": ["Intermediate Code", "Quadruples", "Triples"]
+    },
+    {
+      "id": 13,
+      "question": "What is the total number of nodes (including leaves and internal operators) in the minimal Directed Acyclic Graph (DAG) for the expression:\nx = (a + b) * (a + b) + c",
+      "options": [
+        "5",
+        "6",
+        "7",
+        "9"
+      ],
+      "answer": "6",
+      "difficulty": "Hard",
+      "source": "GATE CS 2014 / CIL MT",
+      "explanation": "Let's construct the minimal DAG:\n1. Leaf nodes: We have variables 'a', 'b', and 'c'. That is 3 leaf nodes.\n2. Add operation node for (a + b): Since (a + b) is repeated, we only create ONE '+' node (let's call it N1) with left child 'a' and right child 'b'.\n3. Add multiplication node (*): Both the left and right operands of '*' are (a + b). So we create a '*' node (let's call it N2) with both its left and right pointers pointing to N1.\n4. Add addition node (+): The final expression adds 'c' to the product. We create a '+' node (let's call it N3) with left child N2 and right child 'c'.\nTotal nodes = Leaf nodes {a, b, c} (3) + Operator nodes {+, *, +} (3) = 6 nodes.",
+      "examTrick": "An Abstract Syntax Tree (AST) would have 9 nodes. But a DAG merges duplicates! The subexpression (a+b) is repeated, so it is evaluated once and reused. 3 leaves + 3 operator nodes = 6 nodes total!",
+      "importance": "High",
+      "tags": ["Intermediate Code", "DAG", "Optimization"]
+    },
+    {
+      "id": 14,
+      "question": "Which of the following compiler optimization techniques moves a computation that yields the same value in every iteration of a loop to a point outside the loop?",
+      "options": [
+        "Constant Folding",
+        "Loop Invariant Code Motion (Code Motion)",
+        "Strength Reduction",
+        "Dead Code Elimination"
+      ],
+      "answer": "Loop Invariant Code Motion (Code Motion)",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "Loop Invariant Code Motion (or Code Motion) detects expressions inside a loop that compute the same value on every iteration because their operands do not change inside the loop. The compiler moves these expressions outside (before the loop) so they are evaluated only once rather than N times.",
+      "examTrick": "Loop Invariant = doesn't change with loop index! Code Motion shifts it outside the loop header to save (N-1) computations.",
+      "importance": "High",
+      "tags": ["Code Optimization", "Loop Invariant"]
+    },
+    {
+      "id": 15,
+      "question": "In Static Single Assignment (SSA) form, every variable is assigned exactly once. What mathematical helper function is used to select the correct version of a variable when two distinct control flow paths merge?",
+      "options": [
+        "μ-function (mu-function)",
+        "λ-function (lambda-function)",
+        "φ-function (phi-function)",
+        "θ-function (theta-function)"
+      ],
+      "answer": "φ-function (phi-function)",
+      "difficulty": "Hard",
+      "source": "GATE CS 2016",
+      "explanation": "In SSA form, because each variable can only be assigned once, when two different control flow paths merge (e.g., after an if-else block), a special φ-function (phi-function) is introduced. It dynamically chooses the correct version of the variable depending on which block of code actually executed to reach the merge point.",
+      "examTrick": "SSA = Assigned exactly once! Merging paths = φ-function (phi-function) selector. Simple, classic compiler exam question.",
+      "importance": "High",
+      "tags": ["Intermediate Code", "SSA Form", "Optimization"]
+    }
+  ]
+}

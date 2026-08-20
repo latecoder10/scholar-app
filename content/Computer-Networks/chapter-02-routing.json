@@ -1,0 +1,262 @@
+{
+  "subject": "Computer Networks",
+  "chapter": "Routing Algorithms and Protocols",
+  "description": "Explores routing techniques, Distance Vector vs Link State routing, OSPF, BGP, and Dijkstra's shortest path algorithm.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which of the following routing protocols uses the Bellman-Ford algorithm to find the shortest path?",
+      "options": [
+        "OSPF",
+        "RIP",
+        "BGP",
+        "IS-IS"
+      ],
+      "answer": "RIP",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020 / PSU Exam",
+      "explanation": "Routing Information Protocol (RIP) is a Distance Vector routing protocol which relies on the Bellman-Ford algorithm to compute routing tables. RIP uses Hop Count as its metric (max 15 hops, 16 is infinity).",
+      "examTrick": "RIP = Distance Vector = Bellman-Ford = Hop Count. OSPF = Link State = Dijkstra = Cost.",
+      "importance": "High",
+      "tags": ["Routing", "RIP", "Bellman-Ford"]
+    },
+    {
+      "id": 2,
+      "question": "Which routing protocol is categorized as an Exterior Gateway Protocol (EGP) and is used to route traffic between Autonomous Systems (AS)?",
+      "options": [
+        "OSPF",
+        "BGP",
+        "RIP",
+        "EIGRP"
+      ],
+      "answer": "BGP",
+      "difficulty": "Medium",
+      "source": "CIL MT 2022 / GATE",
+      "explanation": "Border Gateway Protocol (BGP) is an inter-domain routing protocol used to exchange routing information between different Autonomous Systems (AS) on the Internet. It is a Path Vector protocol.",
+      "examTrick": "BGP is the protocol of the Internet. Whenever you see 'between Autonomous Systems' or 'inter-domain', think BGP immediately.",
+      "importance": "High",
+      "tags": ["BGP", "Internet Protocols", "EGP"]
+    },
+    {
+      "id": 3,
+      "question": "In a Link State routing protocol, what mechanism is used to distribute topology information to all routers in the routing domain?",
+      "options": [
+        "Distance vector flooding",
+        "Reliable Flooding of Link State Advertisements (LSA)",
+        "Split Horizon",
+        "Route Poisoning"
+      ],
+      "answer": "Reliable Flooding of Link State Advertisements (LSA)",
+      "difficulty": "Medium",
+      "source": "GATE CS 2015",
+      "explanation": "Link State routing protocols (like OSPF) build a complete map of the network topology. Routers share information about their direct links via Link State Advertisements (LSAs), which are flooded reliably to all other routers in the area.",
+      "examTrick": "Split Horizon and Route Poisoning are mechanisms used to prevent loops in *Distance Vector* protocols, NOT Link State protocols!",
+      "importance": "Medium",
+      "tags": ["OSPF", "Link State", "LSA"]
+    },
+    {
+      "id": 4,
+      "question": "What is the primary reason for OSPF to establish Router ID (RID)?",
+      "options": [
+        "To encrypt connection packets",
+        "To uniquely identify a router within an OSPF routing domain",
+        "To determine the network bandwidth limit",
+        "To map IP addresses to virtual LANs"
+      ],
+      "answer": "To uniquely identify a router within an OSPF routing domain",
+      "difficulty": "Easy",
+      "source": "CCNA / CIL MT",
+      "explanation": "OSPF uses a 32-bit Router ID (formatted like an IP address) to uniquely identify each router in the OSPF domain. This is essential for building the link-state database and performing Dijkstra's shortest-path tree calculation.",
+      "examTrick": "The OSPF Router ID is determined by selecting the highest logical interface IP (loopback) or the highest active physical interface IP upon boot.",
+      "importance": "Medium",
+      "tags": ["OSPF", "Routing", "Router ID"]
+    },
+    {
+      "id": 5,
+      "question": "How does the 'Split Horizon' mechanism prevent routing loops in Distance Vector routing protocols?",
+      "options": [
+        "It limits the maximum hop count of any path to 15",
+        "It prevents a router from advertising routing information back out of the same interface from which it learned that information",
+        "It immediately broadcasts an infinite distance metric to all neighbors when a link fails",
+        "It forces the router to run Dijkstra's algorithm to verify paths"
+      ],
+      "answer": "It prevents a router from advertising routing information back out of the same interface from which it learned that information",
+      "difficulty": "Medium",
+      "source": "CIL MT CS Syllabus",
+      "explanation": "Split Horizon is a method of preventing routing loops in distance-vector routing protocols. It operates on the rule that it is never useful to send information about a route back in the direction from which it came. This prevents neighboring routers from bouncing stale routing updates back and forth.",
+      "examTrick": "Mnemonic: Split Horizon = Don't look back! If you learned a route from interface A, never advertise it back to interface A.",
+      "importance": "High",
+      "tags": ["Routing", "Distance Vector", "Split Horizon"]
+    },
+    {
+      "id": 6,
+      "question": "What is the key technical difference between 'Split Horizon' and 'Split Horizon with Poison Reverse' loop-prevention mechanisms?",
+      "options": [
+        "Poison Reverse disables advertisements entirely, whereas Split Horizon permits them",
+        "Poison Reverse actively advertises a failed route with an infinite metric (e.g., hop count 16) back to the node it learned it from, rather than omitting it from the advertisement",
+        "Poison Reverse is used in Link State protocols, while Split Horizon is used in Distance Vector protocols",
+        "There is no difference; they are synonymous terms in routing theory"
+      ],
+      "answer": "Poison Reverse actively advertises a failed route with an infinite metric (e.g., hop count 16) back to the node it learned it from, rather than omitting it from the advertisement",
+      "difficulty": "Hard",
+      "source": "GATE CSE standard",
+      "explanation": "With pure Split Horizon, a router completely omits advertisements for routes learned on an interface. With Poison Reverse, the router actively includes those routes in its updates but sets their metric to infinity (hop count 16 for RIP). This explicitly tells the neighbor that the route is unreachable, breaking routing loops much faster than pure Split Horizon.",
+      "examTrick": "Split Horizon = Keep quiet about it. Poison Reverse = Shout 'it's unreachable!' back.",
+      "importance": "High",
+      "tags": ["Routing", "Distance Vector", "Poison Reverse"]
+    },
+    {
+      "id": 7,
+      "question": "Which of the following parameters can be utilized as edge costs (weights) in Dijkstra's shortest path routing algorithm to calculate the optimal path?",
+      "options": [
+        "Hop count only",
+        "Hop count, link bandwidth, queue delay, and link congestion",
+        "Autonomous System Path vector only",
+        "MAC address hop length"
+      ],
+      "answer": "Hop count, link bandwidth, queue delay, and link congestion",
+      "difficulty": "Medium",
+      "source": "CN Reference PDF Section 3.4",
+      "explanation": "As discussed in the Network Layer reference material, routing algorithms determine least-cost paths based on edge costs. These edge costs are customizable metrics that can represent hop counts, physical link bandwidth, queue delay, or dynamic link congestion, represented as positive edge weights.",
+      "examTrick": "Dijkstra is extremely versatile! Any non-negative numeric edge weight representing a cost can be minimized by Dijkstra. But it fails on negative edge weights (where Bellman-Ford succeeds).",
+      "importance": "High",
+      "tags": ["Routing Algorithms", "Dijkstra", "Metrics"]
+    },
+    {
+      "id": 8,
+      "question": "Which of the following routing loop scenarios in Distance Vector routing is characterized by neighboring nodes repeatedly incrementing their hop counts to each other in a loop when a destination link breaks?",
+      "options": [
+        "BGP convergence lag",
+        "Count-to-Infinity problem",
+        "OSPF flooding storm",
+        "Dijkstra oscillation"
+      ],
+      "answer": "Count-to-Infinity problem",
+      "difficulty": "Medium",
+      "source": "GATE CS 2017",
+      "explanation": "When a link to a destination breaks, a router might receive a stale route advertisement from its neighbor claiming to have a path to that destination. The router increments this metric and advertises it back. This bouncing update loops back and forth, slowly incrementing the metric to infinity.",
+      "examTrick": "Count-to-Infinity is the classic structural flaw of Distance Vector protocols. Split Horizon and Poison Reverse are specifically designed to mitigate this!",
+      "importance": "High",
+      "tags": ["Routing Loop", "Distance Vector", "Count-to-Infinity"]
+    },
+    {
+      "id": 9,
+      "question": "Why does Open Shortest Path First (OSPF) converge significantly faster than RIP on large network topologies?",
+      "options": [
+        "OSPF uses the Bellman-Ford algorithm, which converges faster than Dijkstra",
+        "OSPF routers maintain a complete synchronized map of the network topology and run Dijkstra locally when a link-state change occurs, rather than waiting for periodic vector updates",
+        "OSPF limits the maximum hop count of any path to 15",
+        "OSPF does not use any acknowledgments for packets"
+      ],
+      "answer": "OSPF routers maintain a complete synchronized map of the network topology and run Dijkstra locally when a link-state change occurs, rather than waiting for periodic vector updates",
+      "difficulty": "Hard",
+      "source": "CIL MT CS 2019 / GATE CS",
+      "explanation": "OSPF is a Link State routing protocol. Every router maintains an identical, synchronized database of the network topology (LSDB). When a link changes, an LSA is immediately flooded, and each router runs Dijkstra locally. This results in near-instantaneous convergence, whereas RIP depends on slow periodic sharing of distance vectors.",
+      "examTrick": "Link State = Global topology database + Dijkstra. Distance Vector = Local table only + Bellman-Ford. Global view means faster, error-free path recalculation!",
+      "importance": "High",
+      "tags": ["OSPF", "RIP", "Convergence"]
+    },
+    {
+      "id": 10,
+      "question": "In Routing Information Protocol (RIP), why is infinity represented by a relatively small number like 16?",
+      "options": [
+        "To save bandwidth in the RIP packet headers",
+        "To limit the maximum time a packet can spend in a loop by capping the convergence iterations during a count-to-infinity event",
+        "Because 16 is the maximum size of a MAC address table",
+        "To align RIP packets with 32-bit alignments"
+      ],
+      "answer": "To limit the maximum time a packet can spend in a loop by capping the convergence iterations during a count-to-infinity event",
+      "difficulty": "Medium",
+      "source": "ISRO CS 2021",
+      "explanation": "RIP defines 16 as infinity to put an upper limit on the Count-to-Infinity problem. If a route loops, routers will increment the metric until it reaches 16, at which point the route is marked unreachable and discarded. Capping it at 16 limits the time and resources wasted during loop convergence.",
+      "examTrick": "Capping infinity at 16 prevents endless looping during Count-to-Infinity, but it limits the maximum network diameter to 15 hops.",
+      "importance": "High",
+      "tags": ["RIP", "Hop Count", "Count-to-Infinity"]
+    },
+    {
+      "id": 11,
+      "question": "In Link State routing, what specific information is contained within a Link State Packet (LSP) built and flooded by a router?",
+      "options": [
+        "The entire routing table of the router with calculated next-hops",
+        "The ID of the router, its directly connected neighbors, and the cost/status of those direct links",
+        "A list of all MAC addresses active on the local subnet",
+        "A set of public keys for OSPF encryption"
+      ],
+      "answer": "The ID of the router, its directly connected neighbors, and the cost/status of those direct links",
+      "difficulty": "Medium",
+      "source": "CCNA Syllabus",
+      "explanation": "An LSP contains local link state information: the identity of the router, the list of its active, directly connected links, and the cost associated with each link. LSPs are flooded globally so that every router has the same raw material to construct the complete network topology map.",
+      "examTrick": "LSPs only contain LOCAL connectivity information! Routers flood this local info to build the GLOBAL Link State Database (LSDB).",
+      "importance": "Medium",
+      "tags": ["OSPF", "Link State", "LSP"]
+    },
+    {
+      "id": 12,
+      "question": "Why is Border Gateway Protocol (BGP) classified as a Path Vector routing protocol rather than a standard Distance Vector protocol?",
+      "options": [
+        "Because BGP utilizes physical angles of transmission on fiber optic lines",
+        "Because BGP advertises the entire list of Autonomous Systems (AS-Path) traversed to reach a destination to prevent routing loops",
+        "Because BGP does not use TCP for its connections",
+        "Because BGP is limited to 15 AS hops"
+      ],
+      "answer": "Because BGP advertises the entire list of Autonomous Systems (AS-Path) traversed to reach a destination to prevent routing loops",
+      "difficulty": "Hard",
+      "source": "GATE CS 2021",
+      "explanation": "BGP is a Path Vector protocol because its routing updates contain the list of entire Autonomous Systems (AS-Path) that a packet must traverse to reach the destination network. If a router sees its own AS number in the advertised AS-Path, it immediately rejects the route, preventing loops across the Internet.",
+      "examTrick": "AS-Path = Loop Prevention! This makes BGP scalable and prevents routing loops across the global internet.",
+      "importance": "High",
+      "tags": ["BGP", "AS-Path", "Path Vector"]
+    },
+    {
+      "id": 13,
+      "question": "Which of the following is a key advantage of Non-Adaptive (Static) routing over Adaptive (Dynamic) routing?",
+      "options": [
+        "It can easily route around link failures automatically",
+        "It has zero CPU and memory overhead for computing routing tables and consumes no network bandwidth for routing updates",
+        "It is highly scalable for extremely large networks like the global internet",
+        "It automatically learns new subnets added to the network"
+      ],
+      "answer": "It has zero CPU and memory overhead for computing routing tables and consumes no network bandwidth for routing updates",
+      "difficulty": "Easy",
+      "source": "BARC Exam CS",
+      "explanation": "Static routing is manually configured by an administrator. Because routes are fixed, routers do not run routing algorithms (like Bellman-Ford or Dijkstra) and do not exchange periodic routing updates, saving valuable router CPU/RAM and link bandwidth.",
+      "examTrick": "Static = Fixed, manual, secure, and resource-free, but highly fragile under link failures!",
+      "importance": "Medium",
+      "tags": ["Routing", "Static Routing"]
+    },
+    {
+      "id": 14,
+      "question": "Why does OSPF partition a large routing domain into distinct hierarchical 'Areas' with a backbone Area 0?",
+      "options": [
+        "To limit the maximum transmission speed of packets",
+        "To restrict IP address allocation to specific classes",
+        "To limit the flooding of Link State Advertisements (LSAs) and reduce the size of the link-state database on individual routers",
+        "To enforce different routing protocols in different departments"
+      ],
+      "answer": "To limit the flooding of Link State Advertisements (LSAs) and reduce the size of the link-state database on individual routers",
+      "difficulty": "Hard",
+      "source": "GATE CS Syllabus",
+      "explanation": "In OSPF, every router in an area has an identical Link State Database (LSDB). In a massive network, the LSDB would become huge, and running Dijkstra would overwhelm router memory and CPU. Partitioning the network into areas limits LSA flooding to within each area, keeping the LSDB small and Dijkstra fast.",
+      "examTrick": "Divide and conquer! Areas compartmentalize topology details. Backbone Area 0 coordinates inter-area traffic.",
+      "importance": "High",
+      "tags": ["OSPF", "OSPF Areas", "LSDB"]
+    },
+    {
+      "id": 15,
+      "question": "What is a major limitation of Dijkstra's shortest path algorithm that makes it unsuitable for Distance Vector routing protocols?",
+      "options": [
+        "It requires a global, synchronized view of the entire network topology, which Distance Vector routers do not have",
+        "It cannot handle multiple paths to the same destination",
+        "It is computationally slower than the Bellman-Ford algorithm on all graphs",
+        "It only operates on directed graphs"
+      ],
+      "answer": "It requires a global, synchronized view of the entire network topology, which Distance Vector routers do not have",
+      "difficulty": "Hard",
+      "source": "ISRO CS Syllabus",
+      "explanation": "Dijkstra's algorithm requires knowing the complete graph topology (all nodes and edge weights) before it can calculate the shortest path tree. Distance Vector routers only know their directly connected neighbors and the summary vectors reported by those neighbors (routing by rumor), which is why they must use the iterative, distributed Bellman-Ford algorithm.",
+      "examTrick": "Dijkstra = Needs Global Map (OSPF). Bellman-Ford = Works on local rumors (RIP).",
+      "importance": "High",
+      "tags": ["Routing Algorithms", "Dijkstra", "Bellman-Ford"]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "subject": "Theory of Computation",
+  "chapter": "Finite Automata and Regular Languages",
+  "description": "Reviews Deterministic Finite Automata (DFA), Non-deterministic Finite Automata (NFA), Regular Expressions, closure properties, and the Pumping Lemma for Regular Languages.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the minimum number of states in a Deterministic Finite Automaton (DFA) that accepts all binary strings containing the substring '110'?",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "answer": "4",
+      "difficulty": "Easy",
+      "source": "GATE CS 2011 / PSU Exam",
+      "explanation": "To accept strings containing '110', the DFA needs to track the progress towards matching the pattern '110':\n- State q0: Initial state (no match yet).\n- State q1: Seen '1'.\n- State q2: Seen '11'.\n- State q3: Seen '110' (accepting state. Once reached, any further input '0' or '1' keeps the DFA in q3, acting as a trap/absorbing state).\nThus, the minimum number of states is 4.",
+      "examTrick": "For a substring of length k, the minimum states in a DFA accepting strings containing that substring is always k + 1! Here, substring '110' has length 3, so DFA needs 3 + 1 = 4 states.",
+      "importance": "High",
+      "tags": ["Finite Automata", "DFA Minimization", "Substring Recognition"]
+    },
+    {
+      "id": 2,
+      "question": "Which of the following classes of languages is NOT closed under the complementation operation?",
+      "options": [
+        "Regular Languages",
+        "Context-Free Languages (CFL)",
+        "Recursive Languages",
+        "Context-Sensitive Languages"
+      ],
+      "answer": "Context-Free Languages (CFL)",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020 / GATE CS",
+      "explanation": "Let's review the closure properties:\n- Regular languages are closed under complementation.\n- Recursive languages are closed under complementation.\n- Context-Sensitive languages are closed under complementation.\n- Context-Free Languages (CFLs) are NOT closed under complementation (nor are they closed under intersection). This is because the intersection/complement of non-deterministic CFLs can lead to languages that require two stacks, which is outside the CFL class.",
+      "examTrick": "This is a favorite question in competitive exams! CFLs are closed under union, concatenation, Kleene star, reversal, but NOT under intersection or complementation. Deterministic CFLs (DCFLs) ARE closed under complementation, but NOT union/intersection.",
+      "importance": "High",
+      "tags": ["Closure Properties", "Context-Free Languages", "CIL PYQ"]
+    },
+    {
+      "id": 3,
+      "question": "The language L = {a^n b^n | n >= 0} is which type of language?",
+      "options": [
+        "Regular Language",
+        "Context-Free Language (CFL)",
+        "Context-Sensitive Language",
+        "Unrestricted Language"
+      ],
+      "answer": "Context-Free Language (CFL)",
+      "difficulty": "Easy",
+      "source": "PSU Exams CS",
+      "explanation": "The language L requires counting the number of 'a's and ensuring the number of 'b's matches it exactly. Since a finite automaton has finite memory, it cannot count arbitrarily high, so L is not regular. However, it can be parsed by a Pushdown Automaton (PDA) using a single stack (push 'a's, pop 'a' for each 'b'), making it a Context-Free Language.",
+      "examTrick": "L = {a^n b^n} is Context-Free (1 stack needed). L = {a^n b^n c^n} is Context-Sensitive (requires 2 stacks or linear bounded automaton).",
+      "importance": "High",
+      "tags": ["Chomsky Hierarchy", "Context-Free Languages", "Automata Theory"]
+    },
+    {
+      "id": 4,
+      "question": "Which of the following regular expressions represents the set of all binary strings that end with '01'?",
+      "options": [
+        "(0+1)*01",
+        "(01)*(0+1)*",
+        "(0+1)*01*",
+        "0*1*01"
+      ],
+      "answer": "(0+1)*01",
+      "difficulty": "Easy",
+      "source": "PSU CS Exams",
+      "explanation": "Let's dissect the regular expression:\n- (0+1)* matches any sequence of 0s and 1s of any length (including empty string).\n- 01 appended at the end forces the string to terminate with exactly '0' followed by '1'.\nThus, (0+1)*01 is the correct expression.",
+      "examTrick": "In regular expressions, '+' is often used to denote OR (like union '|'), and '*' is the Kleene star. The string must end with '01', so '01' must be the final suffix.",
+      "importance": "Medium",
+      "tags": ["Regular Expressions", "Automata Theory"]
+    },
+    {
+      "id": 5,
+      "question": "The Pumping Lemma for Regular Languages is primarily used to:",
+      "options": [
+        "Prove that a language is regular",
+        "Prove that a language is non-regular",
+        "Minimize the number of states in a DFA",
+        "Convert an NFA into an equivalent DFA"
+      ],
+      "answer": "Prove that a language is non-regular",
+      "difficulty": "Medium",
+      "source": "GATE CS / ISRO",
+      "explanation": "The Pumping Lemma is a necessary property of all regular languages: any sufficiently long string in a regular language can be 'pumped' (repeating a middle section) and still remain in the language. Since it is a necessary condition, if a language violates the pumping lemma, it is guaranteed to be non-regular. It cannot be used to prove a language is regular (as some non-regular languages can satisfy it).",
+      "examTrick": "Pumping Lemma is a tool for PROVING NEGATIVES (proving a language is NOT regular or NOT context-free). It is a proof by contradiction!",
+      "importance": "High",
+      "tags": ["Pumping Lemma", "Regular Languages", "Non-Regularity"]
+    }
+  ]
+}

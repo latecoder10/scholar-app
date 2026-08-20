@@ -1,0 +1,214 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.4 Workflow Enforcement & Human Handoff Protocols",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "Programmatic prerequisite gating, PreToolUse hooks, deterministic vs probabilistic guardrails, and self-contained human handoff summaries.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A support agent processes refunds without verifying account ownership in 8% of cases despite a system prompt saying \"always verify customer before refunds.\" Which architectural fix provides a deterministic guarantee for financial operations?",
+      "options": [
+        "Improve the system prompt with stronger instructions and more examples.",
+        "Add few-shot examples showing get_customer before every refund.",
+        "Implement a programmatic prerequisite hook blocking process_refund until get_customer completes successfully.",
+        "Deploy a separate classifier routing refund requests through identity verification."
+      ],
+      "answer": "Implement a programmatic prerequisite hook blocking process_refund until get_customer completes successfully.",
+      "difficulty": "Medium",
+      "source": "UD1-008 | Claude Code hooks — PreToolUse · Building effective agents",
+      "explanation": "Prompts are probabilistic. Financial operations requiring deterministic guarantees must use code-level PreToolUse hooks that block execution unless prerequisite conditions (e.g. verified get_customer) are satisfied.",
+      "examTrick": "Deterministic financial/policy guarantee = PreToolUse programmatic prerequisite hook.",
+      "importance": "High",
+      "tags": [
+        "Programmatic Enforcement",
+        "PreToolUse",
+        "Financial Safety"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "A support agent must compile a self-contained handoff summary when escalating; the human has no transcript access. What must be included?",
+      "options": [
+        "Escalation reason only, as the human will investigate independently.",
+        "References to conversation turn numbers for the human to look up.",
+        "A brief summary assuming the human has full conversation context.",
+        "Customer ID, conversation summary, root cause, refund amount, recommended action."
+      ],
+      "answer": "Customer ID, conversation summary, root cause, refund amount, recommended action.",
+      "difficulty": "Easy",
+      "source": "UD1-016 | Building effective agents — human handoff",
+      "explanation": "A self-contained handoff must provide all necessary facts directly (Customer ID, root cause, amounts, attempted actions, recommended next steps) without requiring transcript access.",
+      "examTrick": "Self-contained handoff: Customer ID + Root cause + Amounts/Details + Attempted steps + Recommended action.",
+      "importance": "High",
+      "tags": [
+        "Human Handoff",
+        "Escalation Package"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "A customer asks to speak with a human manager after one unsuccessful troubleshooting attempt. The agent has more steps it could try. What should the agent do?",
+      "options": [
+        "Ask the customer if they'd like to try one more troubleshooting step before escalating.",
+        "Escalate but first run diagnostic checks to provide the human with context.",
+        "Honor the customer's explicit request for a human representative immediately.",
+        "Attempt the remaining troubleshooting steps since the agent may resolve the issue."
+      ],
+      "answer": "Honor the customer's explicit request for a human representative immediately.",
+      "difficulty": "Easy",
+      "source": "UD1-066 | Building effective agents — human-in-the-loop",
+      "explanation": "An explicit customer request for a human is a hard escalation trigger. Overriding it damages user trust. Escalate immediately with the context already gathered.",
+      "examTrick": "Explicit customer request for human = Immediate escalation without delaying for extra diagnostic calls.",
+      "importance": "High",
+      "tags": [
+        "Escalation Triggers",
+        "Customer Trust"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Policy requires human approval for refunds above $500; a customer requests $847. An emphatic system prompt still yields a 3% failure rate. What fix provides zero tolerance?",
+      "options": [
+        "A separate classifier model evaluating each refund request first.",
+        "A self-check step where the agent validates the amount before calling process_refund.",
+        "An application-layer hook intercepting process_refund, blocking it server-side when the amount exceeds $500, and triggering human escalation.",
+        "Strengthen the system prompt with more emphatic language and examples."
+      ],
+      "answer": "An application-layer hook intercepting process_refund, blocking it server-side when the amount exceeds $500, and triggering human escalation.",
+      "difficulty": "Medium",
+      "source": "UD1-076 | Claude Code hooks · Building effective agents",
+      "explanation": "Threshold comparisons are deterministic numbers. Server-side PreToolUse hooks enforce numerical thresholds at code level (amount > 500 -> block & escalate), providing 0% bypass.",
+      "examTrick": "Zero-tolerance policy threshold = Server-side hook intercepting tool call and enforcing threshold.",
+      "importance": "High",
+      "tags": [
+        "Server-Side Hooks",
+        "Threshold Enforcement"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "A payment call times out, the agent retries, and a duplicate charge occurs. What pattern prevents duplicate transactions?",
+      "options": [
+        "Increase the timeout to prevent timeouts from occurring.",
+        "Add a 30-second delay between retries so the first request completes or fails.",
+        "Use idempotency keys with each payment request so retries produce the same result as the original call.",
+        "Check the account balance before retrying to see if the first charge went through."
+      ],
+      "answer": "Use idempotency keys with each payment request so retries produce the same result as the original call.",
+      "difficulty": "Medium",
+      "source": "UD1-078 | Implement tool use — error handling and retries · API errors",
+      "explanation": "Timeouts are ambiguous (network drop vs processing success). Idempotency keys ensure payment providers deduplicate retries and return existing transaction records without double charging.",
+      "examTrick": "Prevent duplicate charges on timeout retry = Client-generated Idempotency Keys.",
+      "importance": "High",
+      "tags": [
+        "Idempotency",
+        "Payment Safety",
+        "Retry Hazards"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "In Claude Code's permission model, what is the correct evaluation order?",
+      "options": [
+        "Allow -> Ask -> Deny",
+        "Ask -> Allow -> Deny",
+        "Deny -> Ask -> Allow",
+        "Allow -> Deny -> Ask"
+      ],
+      "answer": "Deny -> Ask -> Allow",
+      "difficulty": "Easy",
+      "source": "UD1-098 | Claude Code settings — permission rule precedence",
+      "explanation": "Deny is evaluated first so prohibitions cannot be overridden by broad allows. Ask is evaluated second. Allow is evaluated last.",
+      "examTrick": "Claude Code permission precedence order: Deny -> Ask -> Allow.",
+      "importance": "High",
+      "tags": [
+        "Permission Model",
+        "Rule Precedence",
+        "Security"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "The refund flow works end to end, but 3% of sessions refund without a fresh identity check — traced to a session-cache race condition under load, not an agent reasoning error. Most effective fix?",
+      "options": [
+        "Add a hook-based prerequisite that blocks process_refund unless a fresh, cache-validated get_customer result exists for this turn.",
+        "Add few-shot examples reinforcing \"always verify identity first.\"",
+        "Reduce the session cache TTL to shrink the race window.",
+        "Add a retry loop that re-runs get_customer whenever process_refund is called."
+      ],
+      "answer": "Add a hook-based prerequisite that blocks process_refund unless a fresh, cache-validated get_customer result exists for this turn.",
+      "difficulty": "Hard",
+      "source": "QD1-01 | Claude Code hooks — PreToolUse",
+      "explanation": "Because the defect is a session-cache race rather than agent reasoning, prompt changes are irrelevant. A PreToolUse hook validating fresh, verified identity check for the current turn closes the race condition.",
+      "examTrick": "Cache race condition / state staleness = PreToolUse hook validating freshness on current turn.",
+      "importance": "High",
+      "tags": [
+        "PreToolUse",
+        "Race Conditions",
+        "State Validation"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "A tool result passes schema validation but refund_amount is negative, which is nonsensical here. What does this reveal?",
+      "options": [
+        "The schema itself is broken and needs a type change from number to string.",
+        "This is purely a reasoning error, fixable via prompt instructions rather than validation.",
+        "Schema validation is redundant once semantic validation exists, so it can be dropped.",
+        "Schema validation alone isn't sufficient."
+      ],
+      "answer": "Schema validation alone isn't sufficient.",
+      "difficulty": "Medium",
+      "source": "QD1-39 | Structured outputs and strict tool use · Implement tool use",
+      "explanation": "Schema validation verifies structure and types (e.g. number), but cannot verify domain semantics (e.g. amount >= 0, date not in future). Semantic validation gates are complementary and required.",
+      "examTrick": "Schema validation enforces structure/type; Semantic validation enforces domain business logic.",
+      "importance": "High",
+      "tags": [
+        "Schema vs Semantic Validation",
+        "Data Quality"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "An agent occasionally uses an overly casual tone in customer-facing summaries. No safety, financial, or irreversible consequence — a style preference. Best fix?",
+      "options": [
+        "Add a validation gate rejecting any output not matching a strict tone template.",
+        "This requires the same programmatic enforcement as a payment threshold, since any behavior can theoretically drift.",
+        "A prompt instruction/style guide is sufficient here.",
+        "Add a hook blocking any response containing casual phrasing."
+      ],
+      "answer": "A prompt instruction/style guide is sufficient here.",
+      "difficulty": "Easy",
+      "source": "QD1-42 | Prompt engineering — system prompts and style · Building effective agents",
+      "explanation": "Controls should be proportional to risk. Stylistic and tone preferences are low-stakes and subjective, best handled via prompt instructions and style guides without heavyweight hooks.",
+      "examTrick": "Low-stakes style/tone preference = Prompt instruction/style guide (do not over-engineer with hooks).",
+      "importance": "High",
+      "tags": [
+        "Proportional Controls",
+        "Style & Tone"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "A Bash tool is exposed via MCP; security wants destructive shell commands refused. An engineer adds \"You are a careful DevOps expert; never run destructive commands.\" A red-team request still elicits one. MOST accurate architectural assessment?",
+      "options": [
+        "The persona grants authority to block destructive commands; the failure must stem from a malformed prompt section.",
+        "Setting temperature to 0 will make refusals deterministic.",
+        "More forceful language and capitalized warnings will make the constraint reliable enough to serve as the control.",
+        "Prompt-based guardrails are probabilistic and can fail under adversarial input; the destructive-command block belongs in the MCP tool's deterministic permission layer."
+      ],
+      "answer": "Prompt-based guardrails are probabilistic and can fail under adversarial input; the destructive-command block belongs in the MCP tool's deterministic permission layer.",
+      "difficulty": "Hard",
+      "source": "BU1-001 (§1.4) | Claude Code hooks and permissions · Claude Code security · MCP",
+      "explanation": "Personas and prompt instructions are probabilistic and susceptible to adversarial prompt injection. Destructive command restrictions must be enforced in the tool's deterministic permission/command-allowlist layer.",
+      "examTrick": "Adversarial security / destructive actions = Enforce in code/MCP permission layer, never prompts.",
+      "importance": "High",
+      "tags": [
+        "Security Boundaries",
+        "Prompt Injection",
+        "Deterministic Permissions"
+      ]
+    }
+  ]
+}

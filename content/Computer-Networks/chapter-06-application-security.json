@@ -1,0 +1,262 @@
+{
+  "subject": "Computer Networks",
+  "chapter": "Application Layer Protocols and Network Security",
+  "description": "Reviews common application services (DNS, HTTP, SMTP, FTP) and essential network security mechanisms, including firewalls and public/private key cryptography.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Consider the following statements regarding network firewalls:\nI. A Packet Filter Firewall analyzes network traffic at the transport layer.\nII. A Circuit Level Firewall operates at the transport and session layers of the OSI Model.\nWhich of the statements is/are TRUE?",
+      "options": [
+        "Only I",
+        "Only II",
+        "None",
+        "I and II"
+      ],
+      "answer": "I and II",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020",
+      "explanation": "Let's analyze both statements:\n- Statement I is True: Packet filtering firewalls work primarily at the network and transport layers (Layers 3 and 4) by examining source/destination IP addresses, protocol types, and port numbers (TCP/UDP segments).\n- Statement II is True: Circuit-level gateways operate at the transport and session layers of the OSI model (Layers 4 and 5) to monitor TCP handshakes and determine whether a requested session is legitimate before establishing a circuit.",
+      "examTrick": "Firewalls summary:\n- Packet Filter: Layers 3 & 4 (fastest, stateless)\n- Circuit Level: Layers 4 & 5 (monitors handshakes/TCP state)\n- Application / Proxy: Layer 7 (deep content inspection, slowest)",
+      "importance": "High",
+      "tags": ["Firewalls", "Security", "OSI Layers"]
+    },
+    {
+      "id": 2,
+      "question": "In the RSA public-key cryptosystem, if the two prime numbers are p = 7 and q = 11, and the encryption key is chosen as e = 13, what is the value of the decryption key d?",
+      "options": [
+        "23",
+        "40",
+        "37",
+        "13"
+      ],
+      "answer": "37",
+      "difficulty": "Hard",
+      "source": "CIL MT 2020 / GATE CS",
+      "explanation": "Let's perform the RSA mathematical steps:\n1. Compute n = p * q = 7 * 11 = 77.\n2. Compute Euler's totient function φ(n) = (p - 1) * (q - 1) = 6 * 10 = 60.\n3. The decryption key d must satisfy the congruency relation: d * e ≡ 1 (mod φ(n))\n   d * 13 ≡ 1 (mod 60)\n4. We find d by finding the multiplicative inverse of 13 modulo 60:\n   Let's check d = 37: 37 * 13 = 481.\n   481 / 60 = 8 with a remainder of 1. Thus, 481 ≡ 1 (mod 60).\nTherefore, d = 37.",
+      "examTrick": "Decryption key 'd' is calculated as the modular multiplicative inverse of 'e' modulo φ(n). Never use modulo n, always use modulo φ(n) = (p-1)(q-1)!",
+      "importance": "High",
+      "tags": ["RSA", "Cryptography", "Calculations"]
+    },
+    {
+      "id": 3,
+      "question": "Which of the following is NOT a public key (asymmetric) cryptosystem?",
+      "options": [
+        "El Gamal",
+        "Rabin",
+        "AES",
+        "RSA"
+      ],
+      "answer": "AES",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "Asymmetric (public key) algorithms use a pair of keys: a public key for encryption and a private key for decryption. Examples include RSA, El Gamal, Rabin, and Diffie-Hellman. Advanced Encryption Standard (AES) is a symmetric-key block cipher algorithm where the same key is used for both encryption and decryption.",
+      "examTrick": "Symmetric algorithms (S-K-D-A): DES, 3DES, AES, RC4, Blowfish. Asymmetric algorithms (A-R-E-D): RSA, Rabin, El Gamal, Diffie-Hellman.",
+      "importance": "High",
+      "tags": ["Cryptography", "AES", "Asymmetric Key"]
+    },
+    {
+      "id": 4,
+      "question": "In the RSA public-key algorithm, how is the encryption key 'e' selected with respect to the totient function φ(n)?",
+      "options": [
+        "e must be chosen as a relative prime to q",
+        "e must be chosen as a relative prime to p",
+        "e must be chosen as a relative prime to φ(n)",
+        "e must be chosen as a relative prime to n"
+      ],
+      "answer": "e must be chosen as a relative prime to φ(n)",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020 / GATE",
+      "explanation": "In RSA, once φ(n) = (p-1)(q-1) is computed, the public exponent 'e' is chosen such that 1 < e < φ(n) and e is coprime (relatively prime) to φ(n). That is, the greatest common divisor gcd(e, φ(n)) must be exactly 1, guaranteeing that a modular multiplicative inverse d exists.",
+      "examTrick": "The selection rule is gcd(e, φ(n)) = 1. If they are not relatively prime, you cannot compute the decryption key 'd'!",
+      "importance": "High",
+      "tags": ["RSA", "Cryptography", "Key Generation"]
+    },
+    {
+      "id": 5,
+      "question": "Which of the following application layer protocol maps well-known default port 53 and uses UDP for standard queries, but can fall back to TCP for large zone transfers?",
+      "options": [
+        "DHCP",
+        "DNS",
+        "SMTP",
+        "FTP"
+      ],
+      "answer": "DNS",
+      "difficulty": "Easy",
+      "source": "PSU General CS",
+      "explanation": "Domain Name System (DNS) resolves human-readable domain names (like google.com) to IP addresses. DNS queries are small and speed is vital, so it uses UDP on port 53. However, DNS uses TCP port 53 for reliable connection-oriented actions like zone transfers between primary and secondary DNS servers, or when response sizes exceed 512 bytes.",
+      "examTrick": "DNS uses BOTH UDP and TCP on port 53! Queries use UDP, zone transfers/large responses use TCP.",
+      "importance": "High",
+      "tags": ["DNS", "Application Protocols", "UDP"]
+    },
+    {
+      "id": 6,
+      "question": "In the File Transfer Protocol (FTP), which port numbers are utilized for the Data Connection and the Control Connection respectively in active mode?",
+      "options": [
+        "Port 20 for Control, Port 21 for Data",
+        "Port 21 for Control, Port 20 for Data",
+        "Port 80 for Control, Port 443 for Data",
+        "Port 25 for Control, Port 110 for Data"
+      ],
+      "answer": "Port 21 for Control, Port 20 for Data",
+      "difficulty": "Medium",
+      "source": "PSU Computer Networks",
+      "explanation": "FTP is an out-of-band protocol because it uses two separate TCP connections:\n1. Control Connection (Port 21): Used for sending commands and receiving server responses (e.g., login, file list requests).\n2. Data Connection (Port 20 in active mode): Used for actual file transfers.",
+      "examTrick": "Control comes first (21), then Data follows (20). FTP is one of the few protocols that uses TWO separate ports!",
+      "importance": "Medium",
+      "tags": ["FTP", "Application Protocols", "Ports"]
+    },
+    {
+      "id": 7,
+      "question": "In a Diffie-Hellman Key Exchange, the public parameters are a prime p = 11 and its primitive root g = 2. If Alice selects private key a = 3 and Bob selects private key b = 4, what is the shared secret key K computed by both?",
+      "options": [
+        "K = 1",
+        "K = 2",
+        "K = 3",
+        "K = 4"
+      ],
+      "answer": "K = 4",
+      "difficulty": "Hard",
+      "source": "GATE CS 2017 / Cryptography Standard",
+      "explanation": "1. Alice computes her public value A = g^a mod p = 2^3 mod 11 = 8.\n2. Bob computes his public value B = g^b mod p = 2^4 mod 11 = 16 mod 11 = 5.\n3. Alice computes the shared secret K = B^a mod p = 5^3 mod 11 = 125 mod 11 = 4.\n4. Bob computes the shared secret K = A^b mod p = 8^4 mod 11 = 4096 mod 11 = 4 (since 4096 = 11 * 372 + 4). Both calculate the identical shared secret K = 4.",
+      "examTrick": "Diffie-Hellman formula for shared secret: K = B^a mod p = A^b mod p. Here, K = 5^3 mod 11 = 125 mod 11 = 4.",
+      "importance": "High",
+      "tags": ["Diffie-Hellman", "Cryptography", "Key Exchange"]
+    },
+    {
+      "id": 8,
+      "question": "In a network containing 'N' users, what is the total number of unique keys required for secure pairwise communication under a Symmetric Key Cryptosystem vs. an Asymmetric Key Cryptosystem?",
+      "options": [
+        "N keys for Symmetric, N^2 keys for Asymmetric",
+        "N(N-1)/2 keys for Symmetric, 2N keys for Asymmetric",
+        "2N keys for Symmetric, N(N-1)/2 keys for Asymmetric",
+        "N keys for both cryptosystems"
+      ],
+      "answer": "N(N-1)/2 keys for Symmetric, 2N keys for Asymmetric",
+      "difficulty": "Medium",
+      "source": "BARC CS 2019 / PSU",
+      "explanation": "In a symmetric cryptosystem, every communicating pair requires a distinct shared key. The number of unique pairs among N users is N(N-1)/2. In an asymmetric cryptosystem, each user requires exactly 2 keys (one public, one private), totaling 2N keys for the entire network.",
+      "examTrick": "Symmetric = Pairwise = N(N-1)/2 (Scales quadratically!). Asymmetric = 2 per user = 2N (Scales linearly!). This is why asymmetric cryptography is highly scalable for large networks.",
+      "importance": "High",
+      "tags": ["Key Management", "Symmetric Cryptography", "Asymmetric Cryptography"]
+    },
+    {
+      "id": 9,
+      "question": "Which of the following correctly describes the distinct roles of SMTP vs. POP3/IMAP in email communications?",
+      "options": [
+        "SMTP is used to retrieve email from a server; POP3/IMAP are used to push email from a client to a server",
+        "SMTP is used to push email from a client to a server and between servers; POP3 and IMAP are pull protocols used by a client to retrieve email from a mail server",
+        "SMTP operates over UDP port 25; POP3/IMAP operate over UDP port 80",
+        "SMTP encrypts email; POP3/IMAP decrypt email"
+      ],
+      "answer": "SMTP is used to push email from a client to a server and between servers; POP3 and IMAP are pull protocols used by a client to retrieve email from a mail server",
+      "difficulty": "Easy",
+      "source": "PSU Computer Networks Syllabus",
+      "explanation": "Simple Mail Transfer Protocol (SMTP) is a push protocol operating on TCP port 25, used to transmit mails from clients to mail servers and to relay mail between mail servers. Post Office Protocol (POP3) and Internet Message Access Protocol (IMAP) are pull protocols used by end clients to retrieve their email from mail servers.",
+      "examTrick": "SMTP = Send Mail To People (Push, Port 25). POP3/IMAP = Pull protocols to download mail. POP3 downloads and deletes, IMAP keeps emails synced on the server!",
+      "importance": "Medium",
+      "tags": ["SMTP", "POP3", "IMAP"]
+    },
+    {
+      "id": 10,
+      "question": "An HTML web page contains text and 5 embedded images. To download this complete page from a web server with a round-trip time (RTT) of 20 ms, how much total time is required under Non-Persistent HTTP without parallel connections vs. Persistent HTTP with pipelining (ignoring transmission times)?",
+      "options": [
+        "120 ms for Non-Persistent, 40 ms for Persistent",
+        "240 ms for Non-Persistent, 40 ms for Persistent",
+        "240 ms for Non-Persistent, 60 ms for Persistent",
+        "100 ms for Non-Persistent, 20 ms for Persistent"
+      ],
+      "answer": "240 ms for Non-Persistent, 60 ms for Persistent",
+      "difficulty": "Hard",
+      "source": "GATE CS 2013",
+      "explanation": "Let's perform the RTT calculations:\n1. Non-Persistent HTTP: Each object needs a new connection (1 RTT for handshake, 1 RTT for request/response = 2 RTTs per object).\n   - Base HTML file: 2 RTTs.\n   - 5 Images: 5 * 2 RTTs = 10 RTTs.\n   - Total = 12 RTTs * 20 ms = 240 ms.\n2. Persistent HTTP with Pipelining: Uses a single TCP connection for all items.\n   - Handshake + HTML file: 1 RTT + 1 RTT = 2 RTTs.\n   - All 5 images are requested in parallel / pipelined: 1 RTT.\n   - Total = 3 RTTs * 20 ms = 60 ms.",
+      "examTrick": "Non-Persistent: 2 * (1 + Images) RTTs. Persistent with Pipelining: 1 RTT (Handshake) + 1 RTT (HTML) + 1 RTT (All Images) = 3 RTTs total! If the connection is already open, it is just 2 RTTs.",
+      "importance": "High",
+      "tags": ["HTTP", "RTT", "Persistent HTTP"]
+    },
+    {
+      "id": 11,
+      "question": "In symmetric block ciphers, which operation mode processes each block independently, causing identical plaintext blocks to produce identical ciphertext blocks, and making it highly vulnerable to pattern analyses?",
+      "options": [
+        "Cipher Block Chaining (CBC)",
+        "Electronic Codebook (ECB)",
+        "Cipher Feedback (CFB)",
+        "Output Feedback (OFB)"
+      ],
+      "answer": "Electronic Codebook (ECB)",
+      "difficulty": "Medium",
+      "source": "ISRO CS Syllabus",
+      "explanation": "Electronic Codebook (ECB) is the simplest mode of operation. Each block of plaintext is encrypted individually using the same key. Therefore, identical plaintext blocks always result in identical ciphertext blocks, which preserves structural patterns. To prevent this, modes like CBC (Cipher Block Chaining) XOR each plaintext block with the previous ciphertext block before encryption.",
+      "examTrick": "ECB = Penguin Tux visibility vulnerability! Because identical blocks yield identical ciphertexts, image outlines (like the Linux Tux) remain visible even after encryption. Use CBC or CTR mode to secure structures!",
+      "importance": "High",
+      "tags": ["Block Cipher Modes", "ECB", "Symmetric Cryptography"]
+    },
+    {
+      "id": 12,
+      "question": "How does a sender 'Alice' cryptographically sign an email message to prove non-repudiation and integrity to receiver 'Bob'?",
+      "options": [
+        "Alice encrypts the message with Bob's public key",
+        "Alice encrypts a hash of the message with her own private key",
+        "Alice encrypts the message with her own public key",
+        "Alice hashes the message with Bob's private key"
+      ],
+      "answer": "Alice encrypts a hash of the message with her own private key",
+      "difficulty": "Hard",
+      "source": "GATE CS 2016",
+      "explanation": "A digital signature is generated by first hashing the message to a fixed size and then encrypting that hash using the sender's private key. The receiver (Bob) can decrypt the signature using the sender's (Alice's) public key and verify that it matches a freshly computed hash of the received message. Since only Alice possesses her private key, she cannot deny sending the message (non-repudiation) and any modification would break the hash (integrity).",
+      "examTrick": "Digital Signature: Sign with SENDER'S PRIVATE key, verify with SENDER'S PUBLIC key! (Confidentiality is opposite: Encrypt with RECEIVER'S PUBLIC key, decrypt with RECEIVER'S PRIVATE key).",
+      "importance": "High",
+      "tags": ["Digital Signatures", "Asymmetric Cryptography", "Security"]
+    },
+    {
+      "id": 13,
+      "question": "What is the difference between a recursive DNS query and an iterative DNS query?",
+      "options": [
+        "Recursive queries are encrypted; iterative queries are plaintext",
+        "In a recursive query, the DNS client demands the local DNS server resolve the address completely, whereas in an iterative query, the server returns the IP address of the next DNS server to ask",
+        "Recursive queries use TCP; iterative queries use UDP",
+        "There is no difference; they are synonyms"
+      ],
+      "answer": "In a recursive query, the DNS client demands the local DNS server resolve the address completely, whereas in an iterative query, the server returns the IP address of the next DNS server to ask",
+      "difficulty": "Medium",
+      "source": "PSU Computer Networks",
+      "explanation": "In a recursive query, the client requests that the DNS server complete the resolution entirely and return either the final IP or an error. In an iterative query, the DNS server returns the IP of the next-level DNS server (Root, TLD, or Authoritative) that is closer to the destination, and the client must query that next server itself.",
+      "examTrick": "Recursive = 'Do all the work for me and give me the final answer.' Iterative = 'I don't know the final answer, but here is the IP of the next server you should ask!'",
+      "importance": "Medium",
+      "tags": ["DNS", "Recursive Query", "Iterative Query"]
+    },
+    {
+      "id": 14,
+      "question": "During an SSL/TLS session negotiation, what is the role of the 'Server Key Exchange' message, and when is it sent?",
+      "options": [
+        "It is sent by the server to transfer its digital certificate containing its public key",
+        "It is sent by the server to deliver temporary key parameters (e.g., Diffie-Hellman parameters) when the server's public key in its certificate is not sufficient for key exchange",
+        "It is sent to request the client's credit card credentials",
+        "It is sent to compress the HTTP headers"
+      ],
+      "answer": "It is sent by the server to deliver temporary key parameters (e.g., Diffie-Hellman parameters) when the server's public key in its certificate is not sufficient for key exchange",
+      "difficulty": "Hard",
+      "source": "GATE CSE standard",
+      "explanation": "In SSL/TLS handshakes, if the negotiated key exchange algorithm is ephemeral (like Ephemeral Diffie-Hellman, DHE/ECDHE), the server's certificate public key is only used to sign the session parameters. The actual temporary key parameters must be sent separately in a 'Server Key Exchange' message so that forward secrecy can be achieved. If static RSA is used (where the client encrypts the pre-master secret using the server's certificate public key directly), this message is omitted.",
+      "examTrick": "Server Key Exchange is only sent if the certificate's static public key isn't used for the direct key exchange (e.g., DHE/ECDHE). It contains the ephemeral key parameters.",
+      "importance": "High",
+      "tags": ["SSL/TLS", "Handshake", "Cryptography"]
+    },
+    {
+      "id": 15,
+      "question": "Which SMTP command is sent by the client to gracefully terminate an established SMTP mail exchange session?",
+      "options": [
+        "QUIT",
+        "CLOSE",
+        "EXIT",
+        "BYE"
+      ],
+      "answer": "QUIT",
+      "difficulty": "Easy",
+      "source": "PSU Computer Networks",
+      "explanation": "The SMTP protocol utilizes simple ASCII commands. To gracefully terminate the TCP connection, the client transmits the QUIT command, and the server responds with a '221 Service closing transmission channel' code before tearing down the connection.",
+      "examTrick": "SMTP terminating command is QUIT. Server responds with code 221! Memorize this response code for CIL MT / PSU exams.",
+      "importance": "Medium",
+      "tags": ["SMTP", "Application Protocols", "Commands"]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "subject": "Software Engineering",
+  "chapter": "SDLC, Requirements, and Design",
+  "description": "Reviews Software Development Life Cycle (SDLC) models (Waterfall, Spiral, Prototype, Agile), requirements engineering (SRS), cohesion and coupling, and system design.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which software development life cycle (SDLC) model is specifically characterized by an explicit focus on risk analysis and management at each iteration?",
+      "options": [
+        "Waterfall Model",
+        "Spiral Model",
+        "Iterative Waterfall Model",
+        "Rapid Application Development (RAD)"
+      ],
+      "answer": "Spiral Model",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021 / PSU Exam",
+      "explanation": "The Spiral Model, proposed by Barry Boehm, is an evolutionary SDLC model that combines the iterative nature of prototyping with the systematic aspects of the waterfall model. It is uniquely structured into four quadrants, with each quadrant containing a dedicated 'Risk Analysis' phase to identify and mitigate risks before proceeding.",
+      "examTrick": "If a question mentions 'Risk Analysis' or 'Risk Management' as a core characteristic, the answer is ALWAYS the Spiral Model!",
+      "importance": "High",
+      "tags": ["SDLC Models", "Spiral Model", "Risk Management"]
+    },
+    {
+      "id": 2,
+      "question": "Which of the following is classified as a NON-FUNCTIONAL requirement in a Software Requirements Specification (SRS) document?",
+      "options": [
+        "The system must allow users to reset their passwords via email.",
+        "The system must generate weekly sales report PDFs for administrators.",
+        "The system must process all online transactions within 2 seconds.",
+        "The system must authenticate users using OAuth 2.0."
+      ],
+      "answer": "The system must process all online transactions within 2 seconds.",
+      "difficulty": "Easy",
+      "source": "CIL MT 2022",
+      "explanation": "- Functional requirements define WHAT the system does (specific features, inputs, outputs, processes).\n- Non-functional requirements (also known as quality attributes) define HOW WELL the system performs its functions (performance, response time, scalability, security, availability, usability).\n- Processing transactions within 2 seconds is a performance constraint, making it a non-functional requirement.",
+      "examTrick": "Functional = WHAT the system does (features, reports, buttons, calculations). Non-Functional = HOW the system is (performance, speed, capacity, uptime, safety).",
+      "importance": "High",
+      "tags": ["Requirements Engineering", "SRS", "Non-Functional Requirements"]
+    },
+    {
+      "id": 3,
+      "question": "For a robust, maintainable, and modular software design, which of the following characteristics should be prioritized?",
+      "options": [
+        "High coupling and low cohesion",
+        "Low coupling and high cohesion",
+        "High coupling and high cohesion",
+        "Low coupling and low cohesion"
+      ],
+      "answer": "Low coupling and high cohesion",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "- Coupling measures the degree of interdependence between different software modules. We want LOW coupling to ensure modules are independent and changes in one do not break others.\n- Cohesion measures how closely focused the responsibilities of a single module are. We want HIGH cohesion to ensure each module does exactly one logical job.\nThus, we strive for 'Low coupling and High cohesion'.",
+      "examTrick": "Desirable software design rule: High Cohesion (inside a module, elements are tightly knit) + Low Coupling (between modules, connections are loose and clean)!",
+      "importance": "High",
+      "tags": ["Software Design", "Coupling", "Cohesion", "Modular Design"]
+    },
+    {
+      "id": 4,
+      "question": "Which of the following types of coupling is the LEAST desirable (i.e., worst) in software design, indicating the tightest interdependence?",
+      "options": [
+        "Data Coupling",
+        "Stamp Coupling",
+        "Control Coupling",
+        "Content Coupling"
+      ],
+      "answer": "Content Coupling",
+      "difficulty": "Medium",
+      "source": "GATE CS 2014 / PSU Exam",
+      "explanation": "The coupling hierarchy from best (loosest) to worst (tightest) is:\n1. Data Coupling (Best: pass simple data parameters)\n2. Stamp Coupling (pass composite data structures)\n3. Control Coupling (pass flags that control execution flow)\n4. External Coupling (modules share external formats)\n5. Common Coupling (modules share global data)\n6. Content Coupling (Worst: one module modifies the code or internal state of another module directly).\nThus, Content Coupling is the worst.",
+      "examTrick": "Coupling order mnemonic (Best to Worst): Data -> Stamp -> Control -> Common -> Content. Remember, Data is the most desirable/loose, Content is the least desirable/tightest!",
+      "importance": "High",
+      "tags": ["Software Design", "Coupling Hierarchy", "Modular Design"]
+    },
+    {
+      "id": 5,
+      "question": "Which type of cohesion is exhibited when a module performs several tasks that must occur in a specific chronological sequence, where the output of one task serves as the input to the next task?",
+      "options": [
+        "Temporal Cohesion",
+        "Procedural Cohesion",
+        "Sequential Cohesion",
+        "Functional Cohesion"
+      ],
+      "answer": "Sequential Cohesion",
+      "difficulty": "Medium",
+      "source": "GATE CS 2012 / ISRO",
+      "explanation": "- Sequential Cohesion: The module tasks are sequential, where the output of one step is the input to the next (e.g., read file, parse text).\n- Functional Cohesion (Best): Module performs exactly one well-defined function.\n- Procedural Cohesion: Tasks are grouped because they follow a specific execution sequence, but data does not flow between them.\n- Temporal Cohesion: Tasks are grouped because they must occur at the same time (e.g., initialization routines).",
+      "examTrick": "Sequential vs Procedural: In Sequential, there is a data pipeline (output of step A is input to step B). In Procedural, there is only an execution order (step A runs, then step B runs), but no direct data flow.",
+      "importance": "Medium",
+      "tags": ["Software Design", "Cohesion Types", "Modular Design"]
+    }
+  ]
+}

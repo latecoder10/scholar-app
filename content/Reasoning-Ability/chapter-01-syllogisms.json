@@ -1,0 +1,42 @@
+{
+  "subject": "Reasoning Ability",
+  "chapter": "Syllogisms and Venn Diagrams",
+  "description": "Reviews deductive logic, syllogistic deductions, and logical relationships depicted via Euler or Venn diagrams for CIL MT Paper I.",
+  "paper": "Paper-I",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Statements:\nI. Some coal mines are deep.\nII. All deep mines are dangerous.\n\nConclusions:\n1. Some dangerous mines are coal mines.\n2. No deep mine is a coal mine.\n\nWhich of the conclusions logically follows?",
+      "options": [
+        "Only conclusion 1 follows",
+        "Only conclusion 2 follows",
+        "Both conclusions 1 and 2 follow",
+        "Neither conclusion 1 nor 2 follows"
+      ],
+      "answer": "Only conclusion 1 follows",
+      "difficulty": "Easy",
+      "source": "CIL MT Paper I 2021",
+      "explanation": "Let's draw Venn diagrams or use Euler deductions:\n- 'Some coal mines are deep' means there is an intersection between Coal Mines and Deep Mines.\n- 'All deep mines are dangerous' means the entire set of Deep Mines lies within Dangerous Mines.\n- Since some coal mines are deep, and all deep mines are dangerous, that intersection area of (Coal Mines & Deep Mines) must also be Dangerous Mines. Therefore, 'Some dangerous mines are coal mines' is definitely true. Conclusion 1 follows.\n- Since 'Some coal mines are deep' is true, 'No deep mine is a coal mine' is false. Conclusion 2 does not follow.",
+      "examTrick": "Venn Diagram Rule: 'Some A are B' + 'All B are C' = 'Some A are C'! Since the intersection between A and B is inside C, at least some C must be A.",
+      "importance": "High",
+      "tags": ["Deductive Logic", "Syllogism", "Reasoning"]
+    },
+    {
+      "id": 2,
+      "question": "Choose the Venn diagram that best represents the relationship among the following classes:\nCoal, Carbon, Diamond",
+      "options": [
+        "Three disjoint circles",
+        "One circle inside another, which is inside a third circle",
+        "Two concentric circles inside a larger third circle, with the two inner circles being completely disjoint",
+        "Two intersecting circles inside a larger third circle"
+      ],
+      "answer": "Two concentric circles inside a larger third circle, with the two inner circles being completely disjoint",
+      "difficulty": "Medium",
+      "source": "PSU General Intelligence 2018",
+      "explanation": "Both Coal and Diamond are allotropes or chemical forms of Carbon, meaning they are completely made of Carbon. Thus, the set 'Coal' is fully contained within 'Carbon', and the set 'Diamond' is also fully contained within 'Carbon'. However, Coal and Diamond are completely distinct minerals with different crystal structures and characteristics. Thus, Coal and Diamond are disjoint sets. This represents two disjoint circles inside a larger circle.",
+      "examTrick": "Chemical classification: Coal ∈ Carbon and Diamond ∈ Carbon, but Coal ∩ Diamond = ∅. This is a classic 'All A are C, All B are C, but no A is B' relationship!",
+      "importance": "Medium",
+      "tags": ["Venn Diagrams", "Logical Relations", "Reasoning"]
+    }
+  ]
+}

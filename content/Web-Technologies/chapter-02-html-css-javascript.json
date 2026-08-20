@@ -1,0 +1,92 @@
+{
+  "subject": "Web Technologies",
+  "chapter": "HTML, CSS, and JavaScript Core Concepts",
+  "description": "Reviews HTML5 features, CSS layout models (Box Model, Flexbox, Grid), and core JavaScript mechanics (closures, hoisting, promises, event loop, DOM manipulation).",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the output of the following JavaScript code snippet?\n\n```js\nvar x = 10;\nfunction test() {\n  console.log(x);\n  var x = 20;\n}\ntest();\n```",
+      "options": [
+        "10",
+        "20",
+        "undefined",
+        "ReferenceError"
+      ],
+      "answer": "undefined",
+      "difficulty": "Medium",
+      "source": "PSU CS Exam / JS Basics",
+      "explanation": "This is a classic demonstration of JavaScript variable hoisting. Within the function `test()`, the local variable declaration `var x = 20;` is hoisted to the top of the function scope, but its initialization remains on its original line. Therefore, at the moment of `console.log(x);`, the local variable `x` exists but has not been assigned a value yet, resulting in `undefined` rather than the global value `10` or a ReferenceError.",
+      "examTrick": "Hoisting Rule: Only declarations are hoisted, NOT initializations! For 'var', declarations are hoisted and initialized to 'undefined'. For 'let' and 'const', declarations are hoisted but remain in the 'Temporal Dead Zone' (TDZ), causing a ReferenceError if accessed early.",
+      "importance": "High",
+      "tags": ["JavaScript", "Hoisting", "Scope", "Closures"]
+    },
+    {
+      "id": 2,
+      "question": "In the standard CSS Box Model, how does setting 'box-sizing: border-box;' affect the calculation of an element's total width and height?",
+      "options": [
+        "The width and height properties include content, padding, and border, but exclude margins.",
+        "The width and height properties only include the content area, excluding padding, borders, and margins.",
+        "The width and height properties include content, padding, border, and margin.",
+        "The width and height properties are calculated automatically based on the viewport size."
+      ],
+      "answer": "The width and height properties include content, padding, and border, but exclude margins.",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "- By default (`box-sizing: content-box`), the width and height properties specify only the width/height of the content area. Padding and borders are added on top of the width/height, making the element larger on screen.\n- With `box-sizing: border-box`, the width and height properties include the content, padding, and border. If you set width: 200px, the total visual width is exactly 200px, and the content area shrinks to accommodate the padding and border.",
+      "examTrick": "Box Sizing Cheat Sheet:\n- content-box (Default): Visual Width = width + 2*padding + 2*border.\n- border-box: Visual Width = specified width! Padding and borders are absorbed inside the specified width, making layouts much easier to manage.",
+      "importance": "High",
+      "tags": ["CSS", "Box Model", "Web Design"]
+    },
+    {
+      "id": 3,
+      "question": "Consider the following JavaScript asynchronous execution block. In what order will the letters be logged to the console?\n\n```js\nconsole.log('A');\nsetTimeout(() => console.log('B'), 0);\nPromise.resolve().then(() => console.log('C'));\nconsole.log('D');\n```",
+      "options": [
+        "A -> B -> C -> D",
+        "A -> D -> B -> C",
+        "A -> D -> C -> B",
+        "A -> C -> D -> B"
+      ],
+      "answer": "A -> D -> C -> B",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Technical",
+      "explanation": "Let's trace JavaScript's Event Loop execution:\n1. Synchronous tasks run first: `console.log('A')` prints 'A', then `console.log('D')` prints 'D'.\n2. `setTimeout(..., 0)` registers a callback in the Macrotask Queue.\n3. `Promise.resolve().then(...)` registers a callback in the Microtask Queue.\n4. Once the call stack is empty (after printing 'D'), the event loop checks the Microtask Queue first. The Promise callback runs, printing 'C'.\n5. Finally, after the Microtask Queue is completely cleared, the event loop processes the Macrotask Queue, executing the `setTimeout` callback which prints 'B'.\nSo, the final order is A -> D -> C -> B.",
+      "examTrick": "Event Loop priority order: Synchronous Code > Microtasks (Promises, process.nextTick, MutationObserver) > Macrotasks (setTimeout, setInterval, setImmediate, I/O tasks)!",
+      "importance": "High",
+      "tags": ["JavaScript", "Asynchronous", "Event Loop", "Promises"]
+    },
+    {
+      "id": 4,
+      "question": "In DOM (Document Object Model) event handling, what is the distinction between event bubbling and event capturing (trickling)?",
+      "options": [
+        "Bubbling propagates the event from the target element up to the root, while capturing propagates the event from the root down to the target element.",
+        "Capturing propagates the event from the target element up to the root, while bubbling propagates the event from the root down to the target element.",
+        "Bubbling works on text nodes, whereas capturing works only on element nodes.",
+        "Bubbling is supported only in old browsers, while capturing is the modern standard."
+      ],
+      "answer": "Bubbling propagates the event from the target element up to the root, while capturing propagates the event from the root down to the target element.",
+      "difficulty": "Medium",
+      "source": "PSU Computer Science Section",
+      "explanation": "Standard DOM events undergo three phases: Capturing Phase (Phase 1, event moves from Window down to the target), Target Phase (Phase 2, event reaches the target), and Bubbling Phase (Phase 3, event bubbles up from the target back to Window). By default, event listeners registered via `addEventListener('click', handler)` run during the Bubbling phase. To listen during the Capturing phase, you must pass `true` or `{ capture: true }` as the third argument.",
+      "examTrick": "Capturing goes DOWN (Root -> Target). Bubbling goes UP (Target -> Root). Think of bubbles rising up from the bottom of a pool to the surface!",
+      "importance": "Medium",
+      "tags": ["DOM", "Events", "Bubbling", "Capturing"]
+    },
+    {
+      "id": 5,
+      "question": "When parsing XML documents in web applications, what is the primary operational difference between a DOM parser and a SAX (Simple API for XML) parser?",
+      "options": [
+        "DOM is an event-driven parser that reads XML line-by-line, while SAX loads the entire document into memory as a tree.",
+        "DOM loads the entire XML document into memory to build a tree structure, while SAX is a pull/event-driven parser that parses XML sequentially/line-by-line without loading the whole file.",
+        "DOM is only used for JSON, while SAX is used for XML.",
+        "DOM is synchronous, whereas SAX is completely asynchronous."
+      ],
+      "answer": "DOM loads the entire XML document into memory to build a tree structure, while SAX is a pull/event-driven parser that parses XML sequentially/line-by-line without loading the whole file.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020 / PSU Exam",
+      "explanation": "- A DOM (Document Object Model) parser reads the complete XML document and constructs an in-memory tree representation of nodes. This allows random access, modification, and backward navigation, but consumes high memory (not suited for large files).\n- A SAX parser is event-driven and parses sequentially. It triggers callbacks (like `startElement`, `endElement`) as it reads tokens on the fly, consuming virtually no memory, but is read-only and does not allow random access.",
+      "examTrick": "Memory-intensive, random access, tree-based = DOM Parser. Fast, memory-light, read-only, stream/event-based = SAX Parser!",
+      "importance": "Medium",
+      "tags": ["XML", "DOM Parser", "SAX Parser", "Web Data"]
+    }
+  ]
+}

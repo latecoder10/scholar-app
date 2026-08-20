@@ -1,0 +1,156 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.5 Agent SDK Hooks, Lifecycle Events & Policy Enforcement",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "PreToolUse vs PostToolUse, data normalization hooks, fail-closed defaults, exit codes, and enterprise audit logging.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A compliance workflow must verify identity before financial operations; a system prompt saying \"verify first\" is insufficient. Which Agent SDK hook enforces verification?",
+      "options": [
+        "PostToolUse hook validating tool results after execution for compliance.",
+        "Hooks cannot enforce compliance; programmatic checks required separately.",
+        "Agent reasoning hook guiding decision making toward compliant behavior.",
+        "PreToolUse hook checking conditions before tool execution, blocking violations."
+      ],
+      "answer": "PreToolUse hook checking conditions before tool execution, blocking violations.",
+      "difficulty": "Easy",
+      "source": "UD1-001 | Claude Code hooks — PreToolUse · Hooks guide",
+      "explanation": "PreToolUse intercepts the call before execution and can return exit code 2 / deny to prevent the unauthorized financial action.",
+      "examTrick": "PreToolUse = Gating before execution. PostToolUse = Inspecting/transforming after execution.",
+      "importance": "High",
+      "tags": [
+        "PreToolUse",
+        "Hooks",
+        "Compliance Gating"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "Multiple MCP tools return timestamps as Unix epochs, ISO 8601, and locale-specific strings; the agent struggles with cross-format comparison. Where should timestamp normalization occur?",
+      "options": [
+        "Fix the timestamp format at source in all MCP tools, returning a consistent format.",
+        "The agent should flexibly handle all common formats without normalization.",
+        "PostToolUse hook normalizing all timestamps to ISO 8601 before processing.",
+        "Agent system prompt with instructions for handling multiple formats."
+      ],
+      "answer": "PostToolUse hook normalizing all timestamps to ISO 8601 before processing.",
+      "difficulty": "Medium",
+      "source": "UD1-032 | Claude Code hooks — PostToolUse · Writing tools for agents",
+      "explanation": "When consuming third-party or heterogeneous MCP tools you cannot modify at source, a PostToolUse hook normalizes tool outputs into canonical ISO 8601 before the model reasons over them.",
+      "examTrick": "Normalizing heterogeneous third-party tool outputs = PostToolUse transformation hook.",
+      "importance": "High",
+      "tags": [
+        "PostToolUse",
+        "Data Normalization",
+        "Heterogeneous Tools"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "Extracted services must use com.company.service.<service-name>; subagents sometimes write com.company.app.<name> or com.company.<name>. A teammate proposes stronger system-prompt instructions. Correct approach?",
+      "options": [
+        "Add the naming convention to the system prompt with three concrete examples.",
+        "Implement a PostToolUse hook that inspects written files and normalises package declarations to the correct format.",
+        "Create a separate validation subagent reviewing written files after each batch.",
+        "Use tool_choice to restrict the agent to a custom write_java_file tool that enforces the convention."
+      ],
+      "answer": "Implement a PostToolUse hook that inspects written files and normalises package declarations to the correct format.",
+      "difficulty": "Hard",
+      "source": "UD1-088 | Claude Code hooks — PostToolUse · Hooks guide",
+      "explanation": "A mechanically checkable regex/string pattern is best enforced mechanically. A PostToolUse hook on Edit/Write checks the written file and automatically normalizes package headers.",
+      "examTrick": "Mechanical syntax/package normalization on write = PostToolUse hook.",
+      "importance": "High",
+      "tags": [
+        "PostToolUse",
+        "Automated Formatting",
+        "Code Quality"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "A hard rule: never push to main. Where should it live so Claude cannot skip it?",
+      "options": [
+        "In the project CLAUDE.md as an \"IMPORTANT\" rule.",
+        "In the local CLAUDE.md so it is scoped to you.",
+        "In a pre-tool use hook that stops the push.",
+        "In a skill's reference.md file."
+      ],
+      "answer": "In a pre-tool use hook that stops the push.",
+      "difficulty": "Easy",
+      "source": "UD1-089 | Claude Code hooks · Claude Code memory",
+      "explanation": "A PreToolUse hook inspecting Bash commands and blocking git push origin main executes in deterministic code outside the LLM context, making it impossible to bypass via prompt phrasing.",
+      "examTrick": "Non-negotiable hard constraint (e.g. block push to main) = PreToolUse hook.",
+      "importance": "High",
+      "tags": [
+        "PreToolUse",
+        "Git Safety",
+        "Hooks"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "A PreToolUse hook meant to validate a precondition throws an unexpected exception due to a bug in the hook's own code. Safest default?",
+      "options": [
+        "Disable the hook automatically after its first error",
+        "Fail closed",
+        "Fail open",
+        "Retry the hook indefinitely until it stops erroring"
+      ],
+      "answer": "Fail closed",
+      "difficulty": "Medium",
+      "source": "QD1-45 | Claude Code hooks — exit codes · Claude Code security",
+      "explanation": "Failing closed (blocking the tool call when the validator errors) preserves safety invariants. Failing open would allow unchecked execution whenever a hook crashes.",
+      "examTrick": "Safety-critical hook exceptions MUST fail closed (deny/block execution).",
+      "importance": "High",
+      "tags": [
+        "Fail Closed",
+        "Hook Exception Handling",
+        "Security"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "A compliance rule prevents refund processing above $500 without manager approval. Which hook configuration correctly implements this?",
+      "options": [
+        "A PreToolUse hook on process_refund with exit code 2 and JSON output containing a deny decision when the amount exceeds $500.",
+        "A SessionStart hook setting a global $500 limit for all financial operations.",
+        "A PostToolUse hook on process_refund that reverses transactions over $500.",
+        "A system prompt instruction specifying the $500 threshold with examples."
+      ],
+      "answer": "A PreToolUse hook on process_refund with exit code 2 and JSON output containing a deny decision when the amount exceeds $500.",
+      "difficulty": "Hard",
+      "source": "UD2-022 | Claude Code hooks — PreToolUse, matchers, exit codes, and JSON output",
+      "explanation": "PreToolUse scoped to process_refund uses exit code 2 with JSON decision output {\"decision\": \"deny\", \"reason\": \"...\"} to block the call and return a clear rationale to the model.",
+      "examTrick": "PreToolUse blocking: Exit code 2 + JSON deny decision to block tool execution.",
+      "importance": "High",
+      "tags": [
+        "PreToolUse Matchers",
+        "Exit Codes",
+        "JSON Decision Output"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "Every Bash command issued by the agent must appear in a central audit log with the user identity. Which mechanism BEST supports this?",
+      "options": [
+        "A CLAUDE.md instruction asking the agent to log each command itself.",
+        "Manual review of session transcripts after each session.",
+        "A PostToolUse hook (or PreToolUse for pre-execution capture) firing on every Bash invocation, writing command + arguments + user identity to the central audit log.",
+        "Enable verbose logging on the underlying system shell."
+      ],
+      "answer": "A PostToolUse hook (or PreToolUse for pre-execution capture) firing on every Bash invocation, writing command + arguments + user identity to the central audit log.",
+      "difficulty": "Medium",
+      "source": "BU1-005 (§1.5) | Claude Code hooks · Monitoring and usage",
+      "explanation": "Hooks fire deterministically at the harness level on every matching tool invocation, capturing structured command parameters, timestamp, and user context without relying on model compliance.",
+      "examTrick": "Central audit logging of tool commands = PostToolUse/PreToolUse hook firing on tool matchers.",
+      "importance": "High",
+      "tags": [
+        "Audit Logging",
+        "Observability",
+        "Hooks"
+      ]
+    }
+  ]
+}

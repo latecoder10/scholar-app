@@ -1,0 +1,143 @@
+{
+  "subject": "DBMS",
+  "chapter": "Entity Relationship Model",
+  "description": "Examines entities, weak entity sets, relationship sets, attributes, cardinalities, and standard ER diagram notation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "In an Entity-Relationship (ER) diagram, how are multi-valued attributes represented?",
+      "options": [
+        "Single Ellipse",
+        "Double Ellipse",
+        "Dashed Ellipse",
+        "Rectangle"
+      ],
+      "answer": "Double Ellipse",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021 / PSU Exam",
+      "explanation": "In standard ER diagrams (Chen's notation), a simple attribute is a single ellipse. A multi-valued attribute (like Phone Number, which can contain multiple values for a single entity instance) is represented by a double ellipse.",
+      "examTrick": "Attribute shapes recap: Double Ellipse = Multi-valued, Dashed Ellipse = Derived, Oval with underline = Key attribute.",
+      "importance": "High",
+      "tags": ["ER Model", "Attributes", "Chen Notation"]
+    },
+    {
+      "id": 2,
+      "question": "A weak entity set in an ER diagram is represented by a:",
+      "options": [
+        "Double Rectangle",
+        "Double Diamond",
+        "Double Ellipse",
+        "Dashed Rectangle"
+      ],
+      "answer": "Double Rectangle",
+      "difficulty": "Easy",
+      "source": "CIL MT 2022",
+      "explanation": "A weak entity set is an entity set that does not have a primary key of its own; its existence depends on a strong identifying entity set. It is represented by a double rectangle. Its identifying relationship set is represented by a double diamond.",
+      "examTrick": "Weak Entity = Double Rectangle. Identifying Relationship = Double Diamond. Discriminator (partial key) = Dotted Underline.",
+      "importance": "High",
+      "tags": ["ER Model", "Weak Entity Sets"]
+    },
+    {
+      "id": 3,
+      "question": "Which of the following describes a relationship where an occurrence of entity A is associated with any number of occurrences of entity B, and an occurrence of B is associated with at most one occurrence of A?",
+      "options": [
+        "Many-to-Many (M:N)",
+        "One-to-Many (1:N)",
+        "Many-to-One (N:1)",
+        "One-to-One (1:1)"
+      ],
+      "answer": "One-to-Many (1:N)",
+      "difficulty": "Medium",
+      "source": "GATE CS 2011",
+      "explanation": "An occurrence of entity A is associated with any number of occurrences of entity B (1 to many), and an occurrence of entity B is associated with at most one occurrence of entity A (many to 1, looking from B to A). Therefore, this is a One-to-Many (1:N) relationship from A to B.",
+      "examTrick": "Pay attention to the direction: A -> B can have many, but B -> A can have at most 1. Hence, 1-to-many from A to B.",
+      "importance": "Medium",
+      "tags": ["ER Model", "Cardinality", "Relationships"]
+    },
+    {
+      "id": 4,
+      "question": "In the ER model, what is the 'degree' of a relationship set?",
+      "options": [
+        "The number of entities in an entity set",
+        "The number of participating entity sets in the relationship set",
+        "The maximum number of relationship instances",
+        "The number of attributes associated with the relationship"
+      ],
+      "answer": "The number of participating entity sets in the relationship set",
+      "difficulty": "Medium",
+      "source": "GATE CS 2014",
+      "explanation": "The degree of a relationship set is the number of entity sets that participate in it. A relationship set of degree two is called binary; degree three is called ternary.",
+      "examTrick": "Cardinality is about 'how many instances' are mapped. Degree is about 'how many entity types' are connected. Don't confuse the two!",
+      "importance": "High",
+      "tags": ["ER Model", "Relationship Degree"]
+    },
+    {
+      "id": 5,
+      "question": "Consider a ternary relationship set R involving entity sets A, B, and C. If we decompose R into three binary relationship sets Rab (between A and B), Rbc (between B and C), and Rca (between C and A), which of the following is correct?",
+      "options": [
+        "The decomposition is always lossless and preserves all semantic constraints.",
+        "The decomposition generally causes a loss of the combined association, as binary relationships only represent pairwise connections.",
+        "The ternary relationship can always be reconstructed exactly via a simple natural join of the three binary relationships.",
+        "Ternary relationships are mathematically prohibited in the Relational Model and must be decomposed."
+      ],
+      "answer": "The decomposition generally causes a loss of the combined association, as binary relationships only represent pairwise connections.",
+      "difficulty": "Hard",
+      "source": "GATE CS / CIL MT Exam",
+      "explanation": "A ternary relationship (degree 3) represents an association among three entity sets simultaneously. For example, 'Supplier S1 supplies Part P1 specifically to Project J1'. If we decompose this into three binary relationships (Supplier-Part, Part-Project, Supplier-Project), we only record that S1 supplies P1, P1 is used in J1, and S1 works on J1. However, we lose the combined association of which supplier supplies which part specifically to which project. This represents the 'Ternary Decomposition Gotcha' where binary relationships fail to capture the full multi-way constraint, leading to spurious combinations upon reconstruction.",
+      "examTrick": "Ternary Decomposition Gotcha: 1 Ternary ≠ 3 Binaries! Decomposing a degree-3 relationship into three degree-2 relationships results in a loss of semantic association.",
+      "importance": "High",
+      "tags": ["ER Model", "Relationship Degree", "Ternary Relationship"]
+    },
+    {
+      "id": 6,
+      "question": "In structural constraint modeling of ER diagrams, the (min, max) notation is used. Consider a 1:N relationship set 'PLACES' between 'Customer' and 'Order' (where a customer places zero or more orders, and each order is placed by exactly one customer). What are the correct (min, max) values placed on the edges connecting 'Customer' and 'Order' to the 'PLACES' relationship, respectively?",
+      "options": [
+        "On Customer edge: (0, N); On Order edge: (1, 1)",
+        "On Customer edge: (1, 1); On Order edge: (0, N)",
+        "On Customer edge: (0, 1); On Order edge: (1, N)",
+        "On Customer edge: (1, N); On Order edge: (0, 1)"
+      ],
+      "answer": "On Customer edge: (0, N); On Order edge: (1, 1)",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "The (min, max) notation has a critical reversal compared to standard cardinality placement. Under standard notation, the cardinality ratio 'N' of Customer-to-Order is placed on the 'Order' side, and '1' is placed on the 'Customer' side. However, in (min, max) notation, the constraints are placed on the OWN connecting edge of each entity:\n- For Customer: A customer can participate in the 'PLACES' relationship a minimum of 0 times (partial participation) and a maximum of N times (many). So, the Customer edge gets (0, N).\n- For Order: Each order must participate a minimum of 1 time (total participation, must be placed by someone) and a maximum of 1 time (placed by exactly one customer). So, the Order edge gets (1, 1).",
+      "examTrick": "Reversal Rule: Standard cardinality ratio is on the opposite side. Min-Max notation is on the OWN connecting edge of the entity!",
+      "importance": "High",
+      "tags": ["ER Model", "Min-Max Notation", "Structural Constraints"]
+    },
+    {
+      "id": 7,
+      "question": "Consider an ER diagram with a strong entity set 'Employee' having primary key 'EmpID', and a weak entity set 'Dependent' having partial key 'DepName' (with total participation in the identifying relationship 'HAS'). When mapping this weak entity set to a relational table, what is the primary key of the resulting 'Dependent' table?",
+      "options": [
+        "DepName",
+        "EmpID",
+        "A composite primary key consisting of (EmpID, DepName)",
+        "A newly generated surrogate key"
+      ],
+      "answer": "A composite primary key consisting of (EmpID, DepName)",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021 / ISRO",
+      "explanation": "A weak entity set does not possess a primary key of its own. It is identified by combining the primary key of its identifying owner strong entity set with its own partial key (also called a discriminator). In this case, the owner is 'Employee' (EmpID) and the weak entity is 'Dependent' (partial key DepName). Therefore, the combined primary key of the mapped table is the composite key (EmpID, DepName). The identifying relationship 'HAS' itself does not need a separate table.",
+      "examTrick": "Weak Entity Key Formula: PK = Owner's PK + Weak's Partial Key (Discriminator). Represented visually with double rectangle (entity), double diamond (identifying relationship), and dashed underline (partial key).",
+      "importance": "High",
+      "tags": ["ER Model", "Weak Entity Sets", "Relational Mapping"]
+    },
+    {
+      "id": 8,
+      "question": "An ER diagram has 3 strong entity sets E1 with simple key K1, E2 with simple key K2, and E3 with simple key K3. There is a many-to-many (M:N) binary relationship set R12 between E1 and E2, and a many-to-one (N:1) binary relationship set R23 between E2 and E3 (where participation is partial on both sides). Additionally, E1 has a multi-valued attribute M1. What is the minimum number of relational tables required to represent this schema without losing any information?",
+      "options": [
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "answer": "5",
+      "difficulty": "Hard",
+      "source": "GATE CS 2018 / CIL MT",
+      "explanation": "Let's calculate the minimum tables step-by-step using relational mapping rules:\n1. Strong Entities: E1, E2, E3 each map to 1 table. (3 tables)\n2. Multi-valued attribute M1 of E1: Always requires 1 separate table consisting of the primary key of E1 and the attribute value: (K1, M1). (+1 table)\n3. Many-to-Many (M:N) Relationship R12: Requires a separate junction table with a composite primary key consisting of keys from both sides: (K1, K2). (+1 table)\n4. Many-to-One (N:1) Relationship R23: Does NOT require a separate table. The foreign key K3 is simply placed in the table of the 'Many' side (E2). Since participation is partial, K3 can be NULL. (0 extra tables)\n\nTotal minimum tables = 3 (for E1, E2, E3) + 1 (for M1) + 1 (for R12) + 0 (for R23) = 5 tables.",
+      "examTrick": "Minimum Tables Quick Guide: Strong Entity = 1 table, Multi-valued Attribute = +1 extra, M:N relationship = +1 extra, 1:N or 1:1 relationships = 0 extra (merged or mapped via FK).",
+      "importance": "High",
+      "tags": ["ER Model", "Relational Mapping", "Minimum Tables"]
+    }
+  ]
+}

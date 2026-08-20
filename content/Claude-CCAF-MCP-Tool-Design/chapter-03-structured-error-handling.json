@@ -1,0 +1,93 @@
+{
+  "subject": "Tool Design & Model Context Protocol (MCP)",
+  "chapter": "Structured Error Handling & Error Categorization",
+  "exam": "Claude CCAF",
+  "paper": "Domain-2",
+  "description": "Protocol vs tool execution errors, 4 error categories (transient, validation, business, permission), isError boolean, and retryAfterMs metadata.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A research agent calls an external API via an MCP server. After 30 queries in a batch of 50, the API returns HTTP 429 rate limit errors. The server currently returns generic 'Request failed'. What MCP server change would most improve resilience?",
+      "options": [
+        "Implement automatic retry with exponential backoff inside the MCP server, hiding rate limits from the agent",
+        "Return errorCategory: 'transient', isRetryable: true, with a retryAfterMs field telling the agent how long to wait",
+        "Return errorCategory: 'business', isRetryable: false to tell the agent to stop making requests",
+        "Queue all 50 requests at the MCP server level and process them sequentially"
+      ],
+      "answer": "Return errorCategory: 'transient', isRetryable: true, with a retryAfterMs field telling the agent how long to wait",
+      "difficulty": "Medium",
+      "source": "Claude Certification Guide Q04",
+      "explanation": "Rate limiting is a transient error. Returning structured error metadata with errorCategory: 'transient', isRetryable: true, and retryAfterMs enables the agent to pause intelligently and resume rather than abandoning the batch.",
+      "examTrick": "HTTP 429 / Rate Limit = errorCategory: 'transient', isRetryable: true + retryAfterMs.",
+      "importance": "High",
+      "tags": [
+        "Rate Limits",
+        "Structured Errors",
+        "Transient Errors"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "A search_papers MCP tool has three failure patterns: (1) upstream HTTP 503 during peak hours, (2) user requests papers from an unlicensed restricted journal, and (3) agent submits a malformed DOI string. Which errorCategory and isRetryable combination is correct?",
+      "options": [
+        "All three should be errorCategory: 'transient', isRetryable: true",
+        "HTTP 503: transient/retryable; restricted journal: business/not retryable; malformed DOI: validation/retryable",
+        "HTTP 503: transient/retryable; restricted journal: transient/retryable; malformed DOI: transient/retryable",
+        "HTTP 503: validation/retryable; restricted journal: business/not retryable; malformed DOI: business/not retryable"
+      ],
+      "answer": "HTTP 503: transient/retryable; restricted journal: business/not retryable; malformed DOI: validation/retryable",
+      "difficulty": "Hard",
+      "source": "Claude Certification Guide Q14",
+      "explanation": "HTTP 503 = Transient (temporary outage, retry later). Restricted Journal = Business (licensing policy, retries will never work -> escalate). Malformed DOI = Validation (agent must fix format and retry).",
+      "examTrick": "The 4 MCP Error Categories: 1. Transient (503/429 - retryable), 2. Validation (bad schema/regex - repair input & retry), 3. Business (policy/license - non-retryable, escalate), 4. Permission (auth failed - non-retryable).",
+      "importance": "High",
+      "tags": [
+        "Error Categories",
+        "isRetryable",
+        "MCP Standards"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "Your MCP server implements check_availability for a calendar API. You encounter: (1) missing required user_email parameter, (2) calendar API returns 404 user not found, (3) calendar API returns 503 service unavailable. How should each be reported in MCP?",
+      "options": [
+        "Report all three as tool results with isError: true",
+        "Report errors 1 and 2 as JSON-RPC protocol errors, report error 3 as tool result with isError: true",
+        "Report error 1 as a JSON-RPC protocol error, report errors 2 and 3 as tool results with isError: true",
+        "Report all three as JSON-RPC protocol errors"
+      ],
+      "answer": "Report error 1 as a JSON-RPC protocol error, report errors 2 and 3 as tool results with isError: true",
+      "difficulty": "Hard",
+      "source": "Exam Heist Q17",
+      "explanation": "Malformed JSON-RPC requests (missing required params at protocol level) are JSON-RPC Protocol Errors. Valid tool calls that execute but fail upstream (404 user not found, 503 outage) are Tool Results with isError: true.",
+      "examTrick": "Protocol Error = Malformed RPC message / unknown method. Tool Result with isError: true = Downstream business / execution / API failures.",
+      "importance": "High",
+      "tags": [
+        "Protocol Errors",
+        "Tool Result isError",
+        "JSON-RPC"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "The data platform's fetch_api tool calls a pricing API. When the API key has expired, the tool returns { 'data': [], 'status': 'ok' }. The agent tells the user 'No pricing data is available for that product'. What is the root cause?",
+      "options": [
+        "The agent should be instructed via prompt to treat empty arrays as errors",
+        "The tool cannot distinguish an access failure (expired key) from a valid empty result, so the agent treats a permission error as no data",
+        "The third-party API is poorly designed and should be replaced",
+        "The context window was too small to hold the API response"
+      ],
+      "answer": "The tool cannot distinguish an access failure (expired key) from a valid empty result, so the agent treats a permission error as no data",
+      "difficulty": "Medium",
+      "source": "Claude Certification Guide Q56",
+      "explanation": "Masking an access/auth failure as a successful empty array { data: [], status: 'ok' } prevents the agent from realizing an authentication error occurred. Tools must return isError: true with specific errorCategory for access failures.",
+      "examTrick": "Access Failure vs Empty Result: Never return empty data [] for permission/network errors. Use isError: true with permission/transient errorCategory.",
+      "importance": "High",
+      "tags": [
+        "Access Failure vs Empty Result",
+        "isError",
+        "Error Masking"
+      ]
+    }
+  ]
+}

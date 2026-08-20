@@ -1,0 +1,261 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.1 CLAUDE.md Hierarchy & Memory Management",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "Root vs subdirectory inheritance, managed settings precedence, and permission deny rule union.",
+  "questions": [
+    {
+      "question": "A pattern is defined in `.claude/rules/error_handling.yaml` with `glob: '**/*.ts'`. Some developers aren't following it; investigation shows a user-level `~/.claude.json` overriding project rules. How do you ensure project rules take precedence?",
+      "options": [
+        "Add a flag in `.mcp.json` that enforces project rules and disables personal configuration overrides.",
+        "Remove `~/.claude.json`, forcing all developers to use only project rules.",
+        "User-level `~/.claude.json` takes precedence over project rules by design.",
+        "Team conventions are the only enforcement mechanism, since user-level overrides of project rules are technically possible and cannot be blocked by any configuration flag."
+      ],
+      "answer": "Team conventions are the only enforcement mechanism, since user-level overrides of project rules are technically possible and cannot be blocked by any configuration flag.",
+      "difficulty": "Medium",
+      "source": "Claude Code settings — precedence · Claude Code memory · Claude Code IAM — managed settings ---",
+      "explanation": "Of the four options it is the only one that is both truthful about the mechanism and responsive to the question: no per-project flag exists to disable personal configuration, so at the level described the remedy is social — documented team convention, code review, and CI checks — rather than configurational.\n> **Important caveat for the exam and for practice.** Two things are worth knowing beyond this item. First, for `settings.json` values the documented precedence actually places **project settings above user settings** (see GEN3-006), so a user file does not generally override project configuration. Second, an organisation *can* enforce policy that users cannot override — that is exactly what enterprise **`managed-settings.json`** is for (UD3-086). Neither appears among the options here, so D remains the best available answer, but do not carry away the belief that overrides are unpreventable in general.\n\nWhy distractors fail:\n- **A** — `.mcp.json` configures MCP servers. It has no bearing on rule precedence, and no such flag exists.\n- **B** — Deletes a file holding legitimate personal configuration, and nothing stops a developer recreating it.\n- **C** — States a (contested) fact rather than answering \"how do we ensure precedence\"; it offers no action.",
+      "examTrick": "Exam Rule:  — Of the four options it is the only one that is both truthful about the mechanism and responsive to the question: no per-project flag exists ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 1
+    },
+    {
+      "question": "Global architecture rules live in the project root CLAUDE.md; directory-specific linting conventions live in subdirectory CLAUDE.md files. How does Claude Code apply the hierarchy?",
+      "options": [
+        "Subdirectory CLAUDE.md overrides project root for files in that directory.",
+        "All CLAUDE.md files are merged, applying all rules to all files.",
+        "The closest CLAUDE.md to the working file determines rules; no inheritance.",
+        "Only the project root CLAUDE.md is applied; subdirectory files are ignored."
+      ],
+      "answer": "Subdirectory CLAUDE.md overrides project root for files in that directory.",
+      "difficulty": "Medium",
+      "source": "Claude Code memory — CLAUDE.md hierarchy ---",
+      "explanation": "Both files are in effect, and **specificity resolves conflicts**: the root's architecture rules continue to apply inside the subdirectory, while the subdirectory's linting conventions win wherever the two disagree. That is the inheritance-with-override model, and it is why teams can state a rule once at the root and refine it locally.\n\nWhy distractors fail:\n- **B** — \"All rules to all files\" would apply a subdirectory's local conventions to unrelated parts of the repository, defeating the point of scoping them.\n- **C** — Correct that the closest file wins on conflicts, wrong that there is **no inheritance**: root rules that the subdirectory does not contradict remain in force.\n- **D** — Would make subdirectory files pointless.",
+      "examTrick": "Exam Rule:  — Both files are in effect, and specificity resolves conflicts: the root's architecture rules continue to apply inside the subdirectory, while",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 2
+    },
+    {
+      "question": "Architectural rules apply globally; `src/` and `tests/` have directory-specific conventions. Where should each go?",
+      "options": [
+        "Global rules in `.claude/rules/` with broad globs; directory rules in subdirectory CLAUDE.md.",
+        "Global rules in the project CLAUDE.md; directory rules in `src/CLAUDE.md` and `tests/CLAUDE.md`.",
+        "All rules in the project root CLAUDE.md with conditional logic per directory.",
+        "A single CLAUDE.md with path-checking logic embedded throughout."
+      ],
+      "answer": "Global rules in the project CLAUDE.md; directory rules in `src/CLAUDE.md` and `tests/CLAUDE.md`.",
+      "difficulty": "Medium",
+      "source": "Claude Code memory · Claude Code settings ---",
+      "explanation": "Placement mirrors scope. Global rules go in the root file where they apply to everything; directory conventions go in the CLAUDE.md **inside the directory they govern**, so they load exactly when work happens there and are obviously owned by that area.\n\nWhy distractors fail:\n- **A** — Inverted: `.claude/rules/` with globs is the mechanism for *path-specific* rules, while the root CLAUDE.md is the natural home for global ones.\n- **C** and **D** — Both encode location logic as prose the model must interpret on every file (\"if you are editing under tests/, then…\"). The hierarchy already does this deterministically, and prose conditionals grow unreadable and get missed.",
+      "examTrick": "Exam Rule:  — Placement mirrors scope. Global rules go in the root file where they apply to everything; directory conventions go in the CLAUDE.md inside t",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 3
+    },
+    {
+      "question": "Shared architectural rules must be followed by all developers and version-controlled with the codebase. Where should they be stored?",
+      "options": [
+        "Each developer's `~/.claude.json` with manual synchronization.",
+        "Team wiki documentation with manual Claude Code configuration per developer.",
+        "A central configuration service distributing rules to all developer instances.",
+        "Project CLAUDE.md and `.mcp.json` files committed to repository version control."
+      ],
+      "answer": "Project CLAUDE.md and `.mcp.json` files committed to repository version control.",
+      "difficulty": "Medium",
+      "source": "Claude Code memory · Claude Code MCP ---",
+      "explanation": "Committing the configuration to the repository satisfies every stated requirement at once: everyone who clones gets it automatically, it is versioned alongside the code it governs, changes go through review, and rules evolve in the same commit as the architecture they describe.\n\nWhy distractors fail:\n- **A** — Manual synchronisation across developers guarantees drift, and user files are not version-controlled.\n- **B** — A wiki documents rules for humans; nothing loads them into Claude's context.\n- **C** — Custom distribution infrastructure to replicate what `git clone` already does.",
+      "examTrick": "Exam Rule:  — Committing the configuration to the repository satisfies every stated requirement at once: everyone who clones gets it automatically, it is ",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 4
+    },
+    {
+      "question": "A legacy codebase has inconsistent patterns; the team wants Claude to learn existing patterns before suggesting improvements. How should existing patterns be provided as context?",
+      "options": [
+        "Upload the entire codebase to provide complete pattern examples.",
+        "CLAUDE.md with few-shot examples showing key patterns and team conventions.",
+        "Reference the codebase directory location for Claude to explore and learn patterns.",
+        "Iterative pattern learning: Claude identifies patterns through codebase exploration."
+      ],
+      "answer": "CLAUDE.md with few-shot examples showing key patterns and team conventions.",
+      "difficulty": "Medium",
+      "source": "Claude Code memory · Multishot prompting ---",
+      "explanation": "The codebase is **inconsistent**, so exploration cannot tell Claude which patterns are the ones to follow — it would find several and no basis for choosing. Curated examples in CLAUDE.md make the *intended* conventions explicit, load automatically in every session, and cost a fraction of the tokens of exploration.\n\nWhy distractors fail:\n- **A** — Not possible within a context window, and it reproduces the inconsistency rather than resolving it.\n- **C** and **D** — Both delegate the judgement to exploration. Faced with three competing patterns, Claude may adopt the most common one, which in a legacy codebase is often the one the team wants to retire.",
+      "examTrick": "Exam Rule:  — The codebase is inconsistent, so exploration cannot tell Claude which patterns are the ones to follow — it would find several and no basis f",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 5
+    },
+    {
+      "question": "Architectural rules are in the root CLAUDE.md; test conventions in `tests/CLAUDE.md`. Claude works on `tests/integration_test.py`. Which rules apply?",
+      "options": [
+        "All CLAUDE.md files merged, applying all rules simultaneously.",
+        "Only `tests/CLAUDE.md` applies, as the closest configuration.",
+        "Only the root CLAUDE.md applies; subdirectory files are ignored.",
+        "Both root and `tests/CLAUDE.md` apply, with subdirectory rules overriding conflicts."
+      ],
+      "answer": "Both root and `tests/CLAUDE.md` apply, with subdirectory rules overriding conflicts.",
+      "difficulty": "Medium",
+      "source": "Claude Code memory — CLAUDE.md hierarchy ---",
+      "explanation": "The precise statement of the model: architectural rules from the root still bind test code, and where the two files disagree the nearer file wins. Both halves matter — inheritance *and* override.\n\nWhy distractors fail:\n- **A** — \"All rules simultaneously\" ignores conflict resolution and would also apply *other* subdirectories' rules here.\n- **B** — Discards the root's architectural rules, which were never limited to non-test code.\n- **C** — Discards the test conventions entirely.",
+      "examTrick": "Exam Rule:  — The precise statement of the model: architectural rules from the root still bind test code, and where the two files disagree the nearer file",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 6
+    },
+    {
+      "question": "The main branch's CLAUDE.md has production rules; a feature branch's has experimental conventions. How does Claude Code handle branch-specific CLAUDE.md files?",
+      "options": [
+        "Uses the CLAUDE.md from the current working branch, respecting branch-specific conventions.",
+        "Always uses the main branch CLAUDE.md regardless of the current branch.",
+        "Reads CLAUDE.md from the repository default branch only.",
+        "Merges main and feature branch CLAUDE.md together."
+      ],
+      "answer": "Uses the CLAUDE.md from the current working branch, respecting branch-specific conventions.",
+      "difficulty": "Medium",
+      "source": "Claude Code memory ---",
+      "explanation": "Claude Code reads files **from the working tree**, and the working tree contains whatever the checked-out branch provides. CLAUDE.md is not special-cased — it is versioned like any other file, so branch-specific conventions work naturally and merge into main through the normal review process.\n\nWhy distractors fail:\n- **B** and **C** — Both assume special git awareness that reads from a branch other than the one checked out. Claude Code has no such mechanism; it sees files on disk.\n- **D** — Cross-branch merging of a file is not something the tool does; git merges branches, not Claude Code.",
+      "examTrick": "Exam Rule:  — Claude Code reads files from the working tree, and the working tree contains whatever the checked-out branch provides. CLAUDE.md is not spec",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 7
+    },
+    {
+      "question": "A new team member's Claude Code is not applying the team's Python standards; the standards live in `~/.claude/CLAUDE.md` on the senior engineer's machine. Root cause and fix?",
+      "options": [
+        "The new member needs to run `/memory reload`.",
+        "User-level `~/.claude/CLAUDE.md` applies only to that user and is not shared via version control. The standards should be moved to the project-level CLAUDE.md committed to the repository.",
+        "The standards need to be duplicated in both user-level and project-level CLAUDE.md files.",
+        "The new member should manually copy the standards to their own `~/.claude/CLAUDE.md`."
+      ],
+      "answer": "User-level `~/.claude/CLAUDE.md` applies only to that user and is not shared via version control. The standards should be moved to the project-level CLAUDE.md committed to the repository.",
+      "difficulty": "Medium",
+      "source": "Claude Code memory — memory types and locations ---",
+      "explanation": "It identifies both the cause (the rules are in a personal, machine-local file that nobody else has) and the correct fix (**team** standards belong in the **committed project** file). Moving them means every current and future developer gets them automatically, with no per-person action.\n\nWhy distractors fail:\n- **A** — Reloading cannot load a file that does not exist on this machine.\n- **C** — Duplication creates two sources of truth that will drift, and the user-level copy still needs manual distribution.\n- **D** — Fixes one developer today and repeats the problem for every new hire; also unversioned.",
+      "examTrick": "Exam Rule:  — It identifies both the cause (the rules are in a personal, machine-local file that nobody else has) and the correct fix (team standards belo",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 8
+    },
+    {
+      "question": "API conventions apply in some sessions but not others on the same project; the developer suspects the wrong memory files are loading. Fastest way to confirm what a session has actually loaded?",
+      "options": [
+        "Run `/memory` in the session to list the loaded memory files.",
+        "Run `/compact` to reload the configuration hierarchy from disk.",
+        "Delete `~/.claude/CLAUDE.md` so only project-level configuration can load.",
+        "Ask Claude in the session to repeat the team's API conventions back."
+      ],
+      "answer": "Run `/memory` in the session to list the loaded memory files.",
+      "difficulty": "Medium",
+      "source": "Claude Code memory — the `/memory` command · Claude Code slash commands ---",
+      "explanation": "`/memory` reports exactly this: which memory files the current session has loaded and from where. It is direct evidence rather than inference, and it takes one command.\n\nWhy distractors fail:\n- **B** — `/compact` summarises conversation history to reclaim context; it neither reloads nor reports configuration.\n- **C** — Destructive guesswork: it removes a file that may be innocent, and it does not tell you what *was* loaded in the failing sessions.\n- **D** — Asking the model to recite the conventions tests whether it can produce them, not which files are loaded — and a plausible recitation from general knowledge would be actively misleading.",
+      "examTrick": "Exam Rule:  — `/memory` reports exactly this: which memory files the current session has loaded and from where. It is direct evidence rather than inferenc",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 9
+    },
+    {
+      "question": "Every Java file written during refactoring must be formatted with the project's Checkstyle rules before being saved; developers forget to run it manually. Correct hook configuration?",
+      "options": [
+        "A PreToolUse hook on Write that runs Checkstyle on the content before the file is written.",
+        "A PostToolUse hook on file write operations that runs the Checkstyle formatter on the written file, automatically correcting any style violations.",
+        "Add \"Always run Checkstyle before saving files\" to CLAUDE.md.",
+        "A PreToolUse hook on Read that verifies Java files are Checkstyle-compliant before being read into context."
+      ],
+      "answer": "A PostToolUse hook on file write operations that runs the Checkstyle formatter on the written file, automatically correcting any style violations.",
+      "difficulty": "Medium",
+      "source": "Claude Code hooks — PostToolUse for linting and formatting · Hooks guide ---",
+      "explanation": "Formatters operate on **files**, so the natural point is immediately after the write: the file exists on disk, the formatter runs against it, and violations are corrected automatically. This is the standard lint/format hook pattern, and it fires on every write without depending on anyone remembering.\n\nWhy distractors fail:\n- **A** — The closest alternative, and workable in principle, but it requires intercepting and rewriting in-flight content rather than running the formatter against a real file — awkward for a tool designed to reformat files in place.\n- **C** — CLAUDE.md is guidance; the stem asks for a guarantee, and \"developers occasionally forget\" is precisely the failure guidance does not fix.\n- **D** — Hooks the wrong operation entirely: reading a file has nothing to do with formatting what Claude writes.",
+      "examTrick": "Exam Rule:  — Formatters operate on files, so the natural point is immediately after the write: the file exists on disk, the formatter runs against it, an",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 10
+    },
+    {
+      "question": "Project CLAUDE.md says 4-space indentation; an architect's user-level CLAUDE.md says 2-space, and their code has been coming back in 2 spaces and breaking the build. The team needs a **guarantee** of 4-space indentation on every save. What should they do?",
+      "options": [
+        "Add a PostToolUse hook that runs the team's formatter after every Write/Edit, so 4-space indentation is enforced regardless of what Claude generates.",
+        "Leave the rule in project-level `.claude/CLAUDE.md`.",
+        "Ask the architect to delete their user-level `~/.claude/CLAUDE.md`.",
+        "Move the 4-space rule into a `CLAUDE.local.md` at the project root so it is appended last."
+      ],
+      "answer": "Add a PostToolUse hook that runs the team's formatter after every Write/Edit, so 4-space indentation is enforced regardless of what Claude generates.",
+      "difficulty": "Medium",
+      "source": "Claude Code hooks · Claude Code memory ---",
+      "explanation": "\"Guarantee\" rules out every context-layer answer. A formatter hook makes indentation **independent of what the model generates or which CLAUDE.md files are loaded** — whatever is written gets reformatted deterministically, so the build cannot break on indentation again. It also generalises: the same hook enforces the rest of the team's formatting.\n\nWhy distractors fail:\n- **B** — Restates the current state, which is producing the failure.\n- **C** — Relies on one person's cooperation, removes their legitimate personal settings, and the next contributor reintroduces the problem.\n- **D** — Load-order tinkering to win a precedence race; still guidance, still probabilistic, and `CLAUDE.local.md` is deprecated (GEN3-002).",
+      "examTrick": "Exam Rule:  — \"Guarantee\" rules out every context-layer answer. A formatter hook makes indentation independent of what the model generates or which CLAUDE",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 11
+    },
+    {
+      "question": "A consultancy works across 12 client projects. There are personal developer preferences, firm-wide coding standards, per-client conventions, and subsystem-specific rules. Correct configuration architecture?",
+      "options": [
+        "User `~/.claude/CLAUDE.md` for personal preferences; project `.claude/CLAUDE.md` for firm-wide standards **and** client conventions; directory-level CLAUDE.md / `.claude/rules/` for subsystem rules.",
+        "User `~/.claude/CLAUDE.md` for personal preferences **and firm-wide standards**; project `.claude/CLAUDE.md` for client-specific conventions; directory-level CLAUDE.md / `.claude/rules/` for subsystem-specific rules.",
+        "A single CLAUDE.md at each project root containing all four levels with clear section headings.",
+        "User `~/.claude/CLAUDE.md` for everything, using `@` path imports to pull in project-specific files."
+      ],
+      "answer": "User `~/.claude/CLAUDE.md` for personal preferences **and firm-wide standards**; project `.claude/CLAUDE.md` for client-specific conventions; directory-level CLAUDE.md / `.claude/rules/` for subsystem-specific rules.",
+      "difficulty": "Medium",
+      "source": "Claude Code memory — memory types · Claude Code settings",
+      "explanation": "Each rule sits at the layer matching its **scope**. Firm-wide standards apply to all 12 projects for a given consultant, so the user level holds them once instead of duplicating them into twelve repositories that would then drift. Client conventions are per-repository, so they belong in that project's committed file. Subsystem rules are path-scoped, so they go directory-level. Four scopes, four layers, no duplication.\n\nWhy distractors fail:\n- **A** — Differs from B only in placing firm-wide standards in each project file — which means maintaining twelve copies and updating all of them whenever a firm standard changes. That single difference is the item's discriminator.\n- **C** — Collapses four scopes into one file per project: personal preferences end up committed to client repositories, and firm standards are duplicated twelve times.\n- **D** — Puts client-specific configuration in a personal file, so nothing is shared with the client team or version-controlled with their code.",
+      "examTrick": "Exam Rule:  — Each rule sits at the layer matching its scope. Firm-wide standards apply to all 12 projects for a given consultant, so the user level holds",
+      "importance": "High",
+      "tags": [
+        "CCAF",
+        "Domain-3",
+        "3.1"
+      ],
+      "id": 12
+    }
+  ]
+}

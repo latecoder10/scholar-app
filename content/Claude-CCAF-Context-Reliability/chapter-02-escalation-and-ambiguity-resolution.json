@@ -1,0 +1,90 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.2 Escalation Triggers & Ambiguity Resolution",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "Explicit escalation triggers, human-in-the-loop gates, ambiguity vs irreversibility, and policy gap handling.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Policy covers refunds within 30 days. A customer asks for a price adjustment matching a competitor — something the policy does not address. What should the agent do?",
+      "options": [
+        "Ask the customer to submit a formal exception request.",
+        "Deny the request since it is not in the policy.",
+        "Apply the closest analogous policy (30-day price guarantee) by inference.",
+        "Escalate to a human, since the request involves a policy gap not addressed by existing guidelines."
+      ],
+      "answer": "Escalate to a human, since the request involves a policy gap not addressed by existing guidelines.",
+      "difficulty": "Easy",
+      "source": "UD5-033 | Building effective agents — escalation",
+      "explanation": "Policy gaps (uncovered scenarios) must be escalated to human operators. Agents must never fabricate policy or infer non-existent rules.",
+      "examTrick": "Uncovered policy gaps = Escalate to human operator; never fabricate analogous rules.",
+      "importance": "High",
+      "tags": [
+        "Policy Gaps",
+        "Escalation Triggers"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "\"This is frustrating. I've explained my issue twice and nothing is being resolved. I want to talk to a real person NOW.\" The agent has not yet called any tools. What should it do?",
+      "options": [
+        "Acknowledge the frustration and ask one targeted question before escalating.",
+        "Briefly explain what the agent can help with and offer to resolve it quickly, escalating only if the customer repeats the request.",
+        "Immediately call escalate_to_human with the conversation history.",
+        "First call get_customer and lookup_order to gather account context, then escalate."
+      ],
+      "answer": "Immediately call escalate_to_human with the conversation history.",
+      "difficulty": "Easy",
+      "source": "CS5-004 (§5.2) | Building effective agents — human-in-the-loop",
+      "explanation": "Explicit requests for human representatives must be honoured immediately without delaying the user for extra tool calls or negotiations.",
+      "examTrick": "Explicit customer human request = Immediate escalate_to_human with existing context.",
+      "importance": "High",
+      "tags": [
+        "Human Escalation",
+        "Customer Service Safety"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "\"Cancel my plan and refund me\" — the account has two active plans and two recent charges, so the target is ambiguous, and both actions are irreversible. Which approach BEST balances autonomy and safety?",
+      "options": [
+        "Treat the unresolved ambiguity over irreversible actions as an escalation trigger to human-in-the-loop confirmation, then proceed.",
+        "Pick the most recent plan and charge by default, since dynamic planning means committing to a best guess.",
+        "Replan repeatedly with different assumptions until one path completes without an error, then report that path.",
+        "Lower the temperature so the model deterministically resolves the ambiguity."
+      ],
+      "answer": "Treat the unresolved ambiguity over irreversible actions as an escalation trigger to human-in-the-loop confirmation, then proceed.",
+      "difficulty": "Medium",
+      "source": "BU5-007 (§5.2) | Building effective agents — human-in-the-loop",
+      "explanation": "Ambiguity over irreversible/destructive actions is a primary trigger for human-in-the-loop confirmation before executing state mutations.",
+      "examTrick": "Unresolved ambiguity + Irreversible action = Human confirmation gate before execution.",
+      "importance": "High",
+      "tags": [
+        "Ambiguity Resolution",
+        "Irreversible Actions",
+        "Human in the Loop"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Which escalation-trigger approach will most reliably identify cases that genuinely require human intervention?",
+      "options": [
+        "Escalate when the customer requests a human, when the issue requires policy exceptions, or when the agent cannot make meaningful progress.",
+        "Escalate after three consecutive tool calls that fail to resolve the issue.",
+        "Sentiment analysis monitoring frustration indicators, escalating above a threshold.",
+        "A rules engine mapping issue types, customer segments, and product categories to escalation decisions."
+      ],
+      "answer": "Escalate when the customer requests a human, when the issue requires policy exceptions, or when the agent cannot make meaningful progress.",
+      "difficulty": "Medium",
+      "source": "CS5-006 (§5.2) | Building effective agents — escalation",
+      "explanation": "Structural escalation triggers (explicit human request, policy exception, inability to progress) correlate directly with human necessity, unlike noisy sentiment proxies.",
+      "examTrick": "Reliable escalation triggers: (1) Explicit human request, (2) Policy exception required, (3) Stuck/no progress.",
+      "importance": "High",
+      "tags": [
+        "Structural Escalation Triggers",
+        "System Architecture"
+      ]
+    }
+  ]
+}

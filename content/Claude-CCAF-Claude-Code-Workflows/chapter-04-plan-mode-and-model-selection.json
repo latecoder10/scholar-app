@@ -1,0 +1,51 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.4 Plan Mode vs Direct Execution & Model Tiering",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "Plan mode approval gates, direct execution, model tiering (Opus vs Sonnet vs Haiku), and spend management.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A developer wants Claude Code to choose plan mode vs. direct execution automatically based on task complexity. Can it?",
+      "options": [
+        "Claude Code defaults to plan mode for all tasks unless overridden.",
+        "No, plan mode versus direct execution must be explicitly specified by the developer.",
+        "Yes, Claude Code analyzes task complexity and selects the mode automatically.",
+        "Mode selection based on file count: plan for multiple files, direct for single."
+      ],
+      "answer": "No, plan mode versus direct execution must be explicitly specified by the developer.",
+      "difficulty": "Easy",
+      "source": "UD3-005 | Claude Code interactive mode and permission modes",
+      "explanation": "Plan mode is an explicit developer choice (via Shift+Tab / plan toggle / CLI). Claude Code does not automatically toggle plan mode based on complexity.",
+      "examTrick": "Plan Mode is an explicit developer toggle; it is never auto-switched by Claude.",
+      "importance": "High",
+      "tags": [
+        "Plan Mode",
+        "Interactive Mode",
+        "Permission Gates"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "A team does high-volume routine work (boilerplate, formatting) and lower-volume complex architectural refactoring. Correct model configuration?",
+      "options": [
+        "Haiku for all tasks.",
+        "Opus for all tasks.",
+        "Sonnet as default, with Opus available for complex architectural tasks.",
+        "Haiku for routine tasks, Sonnet for complex tasks, with Opus disabled."
+      ],
+      "answer": "Sonnet as default, with Opus available for complex architectural tasks.",
+      "difficulty": "Medium",
+      "source": "UD3-088 | Choosing a model · Claude Code settings",
+      "explanation": "Sonnet provides the ideal speed/cost/intelligence balance as default, with Opus reserved for deep architectural reasoning.",
+      "examTrick": "Model tiering: Sonnet default for balanced development; Opus for deep architecture.",
+      "importance": "High",
+      "tags": [
+        "Model Selection",
+        "Cost vs Intelligence",
+        "Sonnet & Opus"
+      ]
+    }
+  ]
+}

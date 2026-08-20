@@ -1,0 +1,51 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.3 Path-Specific Rules & Scoping",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "Glob-based rule files in .claude/rules/, path scoping frontmatter, and modular project guidelines.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Terraform conventions should load only when editing .tf files, not for all files. How do you configure this?",
+      "options": [
+        "Create a /terraform slash command that loads the conventions on demand.",
+        "Create a .claude/rules/ file with YAML frontmatter paths: ['terraform/**/*'] so the rules only activate when editing matching files.",
+        "Add Terraform conventions to the root CLAUDE.md under a # Terraform section header.",
+        "Create a CLAUDE.md file in the terraform/ directory."
+      ],
+      "answer": "Create a .claude/rules/ file with YAML frontmatter paths: ['terraform/**/*'] so the rules only activate when editing matching files.",
+      "difficulty": "Medium",
+      "source": "UD3-057 | Claude Code settings — rules and path scoping",
+      "explanation": ".claude/rules/*.md files with YAML frontmatter paths: ['glob_pattern'] activate conditionally when files matching the pattern are edited.",
+      "examTrick": "Conditionally loaded rules for file types/paths = .claude/rules/ with paths frontmatter globs.",
+      "importance": "High",
+      "tags": [
+        "Path Rules",
+        ".claude/rules/",
+        "Glob Scoping"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "A project uses JavaScript (Prettier) and Rust (rustfmt). How should CLAUDE.md handle this dual-language setup?",
+      "options": [
+        "Rely on the language-specific formatters and don't include formatting rules in CLAUDE.md.",
+        "Use .claude/rules/ with glob-based rules: one file with **/*.js,**/*.ts for Prettier rules, another with **/*.rs for rustfmt rules.",
+        "Create separate CLAUDE.md files in js/ and rust/ directories.",
+        "Include both conventions in the root CLAUDE.md with clear section headers."
+      ],
+      "answer": "Use .claude/rules/ with glob-based rules: one file with **/*.js,**/*.ts for Prettier rules, another with **/*.rs for rustfmt rules.",
+      "difficulty": "Medium",
+      "source": "UD2-024 | Claude Code settings — rules · Memory",
+      "explanation": "Glob-based rules in .claude/rules/ decouple conventions from directory structure, loading Prettier rules for JS/TS and rustfmt for Rust automatically.",
+      "examTrick": "Dual-language repos = .claude/rules/ with language-specific path globs.",
+      "importance": "High",
+      "tags": [
+        "Multi-Language Repos",
+        ".claude/rules/",
+        "Prettier & Rustfmt"
+      ]
+    }
+  ]
+}

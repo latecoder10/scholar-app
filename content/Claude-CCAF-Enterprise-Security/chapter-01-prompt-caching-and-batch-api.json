@@ -1,0 +1,94 @@
+{
+  "subject": "Claude CCAF: Enterprise Security & Performance",
+  "chapter": "Prompt Caching, Message Batches API & High Availability",
+  "exam": "Claude CCAF",
+  "paper": "Domain-6",
+  "description": "Enterprise engineering: Prompt Caching prefix mechanics, Message Batches API 50% discount rules, rate limit resilience with exponential backoff & jitter.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the structural requirement for an exact cache hit when using Anthropic's Prompt Caching mechanism?",
+      "options": [
+        "The system prompt must change completely on every single API request turn.",
+        "The prompt prefix (from the beginning of the prompt up to the cache breakpoint marker) must be structurally and textually identical to a previously cached sequence.",
+        "The user must be connecting from the exact same IP address.",
+        "The max_tokens parameter must be set to an odd number."
+      ],
+      "answer": "The prompt prefix (from the beginning of the prompt up to the cache breakpoint marker) must be structurally and textually identical to a previously cached sequence.",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-053",
+      "explanation": "Prompt caching requires an exact character-for-character prefix match starting from token 0 up to the cache breakpoint marker. Any dynamic variable placed early invalidates downstream caching.",
+      "examTrick": "Cache Hit Requirement = 100% identical prompt prefix from index 0 to cache control breakpoint.",
+      "importance": "High",
+      "tags": [
+        "Prompt Caching",
+        "Prefix Matching",
+        "Cost Optimization"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "You place the current_timestamp and user_session_id at the very beginning of the system prompt, followed by a 40,000-token corporate policy document. What is the impact on cache performance?",
+      "options": [
+        "Cache hit rate will be 100% because the massive document is included.",
+        "Cache hit rate will drop to 0% because the dynamic variables at the beginning change every time, invalidating the exact prefix match required for the subsequent static text.",
+        "The API will automatically move the dynamic variables to the end of the prompt.",
+        "The cost will be reduced by 90% regardless of the order."
+      ],
+      "answer": "Cache hit rate will drop to 0% because the dynamic variables at the beginning change every time, invalidating the exact prefix match required for the subsequent static text.",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-054",
+      "explanation": "Placing dynamic, frequently changing variables (timestamps, session IDs) at the start of a prompt breaks the static prefix match, dropping the cache hit rate to zero.",
+      "examTrick": "Dynamic variables at start of prompt = 0% cache hit rate. Keep static text at the prefix, dynamic data at the tail.",
+      "importance": "High",
+      "tags": [
+        "Prompt Caching",
+        "Cache Invalidation",
+        "Prefix Alignment"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "What is the minimum token threshold required to trigger or construct a cache milestone for Claude 3.5 Sonnet prompts?",
+      "options": [
+        "10 tokens",
+        "1,024 tokens (Standard minimum for caching sequences)",
+        "100,000 tokens",
+        "50,000 tokens"
+      ],
+      "answer": "1,024 tokens (Standard minimum for caching sequences)",
+      "difficulty": "Easy",
+      "source": "RAW-GQ-055",
+      "explanation": "The minimum prompt length required to establish a cache breakpoint on Claude 3.5 Sonnet is 1,024 tokens.",
+      "examTrick": "Claude 3.5 Sonnet Prompt Caching minimum threshold = 1,024 tokens.",
+      "importance": "High",
+      "tags": [
+        "Prompt Caching",
+        "Token Thresholds",
+        "Sonnet Specifications"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Your application experiences a sudden surge in traffic, resulting in HTTP 429 (Too Many Requests) rate limit errors from the Anthropic API. What is the correct architectural pattern to manage this gracefully?",
+      "options": [
+        "Immediately retry the request in an unconstrained loop as fast as possible.",
+        "Implement an exponential backoff retry strategy with jitter in the client gateway orchestrator.",
+        "Crash the application server and force a hard reboot.",
+        "Lower the API key security permission level."
+      ],
+      "answer": "Implement an exponential backoff retry strategy with jitter in the client gateway orchestrator.",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-058",
+      "explanation": "HTTP 429 rate limit exceptions require exponential backoff with randomized jitter to prevent thundering herd retries on API gateway pathways.",
+      "examTrick": "HTTP 429 Rate Limits = Exponential backoff with randomized jitter.",
+      "importance": "High",
+      "tags": [
+        "Rate Limits",
+        "HTTP 429",
+        "Exponential Backoff",
+        "Jitter"
+      ]
+    }
+  ]
+}

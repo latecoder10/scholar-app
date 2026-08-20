@@ -1,0 +1,347 @@
+{
+  "subject": "Programming and Data Structures",
+  "chapter": "C Programming and Recursion",
+  "description": "Deep dive into C syntax, compilation pipeline, pointers & memory scaling, structures vs unions, storage classes, and recursive activation records.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the output of the following C program?\n\n#include <stdio.h>\nint main() {\n    int x = 5, y = 9;\n    x = (x = x + y) - (y = x - y);\n    printf(\"%d %d \", x, y);\n    return 0;\n}",
+      "options": [
+        "5 14",
+        "5 9",
+        "14 5",
+        "9 5"
+      ],
+      "answer": "9 5",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020",
+      "explanation": "Let's trace the expression: x = (x = x + y) - (y = x - y);\nInitially, x = 5, y = 9.\n1. First nested assignment: (x = x + y) evaluates to 5 + 9 = 14. Now x is updated to 14.\n2. Second nested assignment: (y = x - y). Since x was just updated to 14, this evaluates to 14 - 9 = 5. Now y is updated to 5.\n3. The main expression becomes: x = (14) - (5) = 9.\nSo x is updated to 9, and y is 5.\nThus, the printed output is '9 5'.",
+      "examTrick": "This is a clever swap trick! (x = x + y) - (y = x - y) swaps the values of x and y. x becomes original y (9) and y becomes original x (5). No temp variable needed!",
+      "importance": "High",
+      "tags": ["C Programming", "Operator Precedence", "CIL PYQ"]
+    },
+    {
+      "id": 2,
+      "question": "What is the output of the following C program?\n\n#include <stdio.h>\nint main() {\n    int i = 5;\n    printf(\"%d %d %d\", i++, i, ++i);\n    return 0;\n}",
+      "options": [
+        "7 6 6",
+        "6 7 8",
+        "6 7 7",
+        "5 6 7"
+      ],
+      "answer": "6 7 7",
+      "difficulty": "Hard",
+      "source": "CIL MT 2020",
+      "explanation": "In C, the evaluation order of function arguments in a printf call is not strictly specified by the standard, but most major compilers like GCC evaluate arguments from right to left (using the call stack layout rules on x86 architectures):\n- Initial: i = 5\n- 3rd argument: ++i (pre-increment). i becomes 6, evaluates to 6 (or reference to i).\n- 2nd argument: i. Evaluates to current value of i, which is 6.\n- 1st argument: i++ (post-increment). Evaluates to current i (6), and then i is incremented to 7.\n- When printing, post-increment printed value is 6. The second argument (i) has been updated to 7. The third argument (++i) also points to the updated i, which is 7.\nHence, on standard GCC-like platforms tested in PSU exams, the output printed is '6 7 7'.",
+      "examTrick": "Printf arguments evaluate Right-to-Left (R-to-L). Evaluate ++i first (i becomes 6), then i (6), then i++ (returns 6, then i becomes 7). The final printed values are 6, 7, 7. High-yield trick for PSU papers!",
+      "importance": "High",
+      "tags": ["C Programming", "printf Evaluation", "Increment Operators", "CIL PYQ"]
+    },
+    {
+      "id": 3,
+      "question": "Consider the following recursive function in C:\n\nint function(int x, int y) {\n    if (y <= 0) return x;\n    return function(y, x % y);\n}\n\nWhat does this recursive function compute?",
+      "options": [
+        "Greatest Common Divisor (GCD) of x and y",
+        "Least Common Multiple (LCM) of x and y",
+        "x raised to the power of y",
+        "Highest Common Factor (HCF) of x and y"
+      ],
+      "answer": "Greatest Common Divisor (GCD) of x and y",
+      "difficulty": "Easy",
+      "source": "CIL MT 2020",
+      "explanation": "This is a classic recursive implementation of the Euclidean algorithm to find the Greatest Common Divisor (GCD) of two numbers. In each recursive step, the parameters are swapped: function(y, x % y), until the divisor y becomes <= 0, at which point the last non-zero remainder x is returned as the GCD.",
+      "examTrick": "Euclidean GCD recursive formula is function(y, x % y). The return value when y reaches 0 is the GCD (or HCF). Highly tested!",
+      "importance": "High",
+      "tags": ["Recursion", "Algorithms", "GCD", "CIL PYQ"]
+    },
+    {
+      "id": 4,
+      "question": "Which of the following describes the sequence of translation phases in a standard C compilation pipeline, and what is the typical file extension generated immediately after the compilation phase before code reaches the assembler?",
+      "options": [
+        "Preprocessor -> Compiler (.s) -> Assembler (.o) -> Linker (.exe)",
+        "Preprocessor -> Assembler (.o) -> Compiler (.s) -> Linker (.exe)",
+        "Compiler (.s) -> Preprocessor -> Assembler (.o) -> Linker (.exe)",
+        "Preprocessor -> Linker (.exe) -> Compiler (.s) -> Assembler (.o)"
+      ],
+      "answer": "Preprocessor -> Compiler (.s) -> Assembler (.o) -> Linker (.exe)",
+      "difficulty": "Medium",
+      "source": "CIL MT 2022",
+      "explanation": "According to Section 1.1 of the C programming internals PDF, executing a C program involves a 4-step compilation pipeline:\n1. Preprocessor: Expands directives (like #include, #define) and strips comments.\n2. Compiler: Translates the preprocessed C source code into assembly language (producing an assembly file with a '.s' extension).\n3. Assembler: Converts assembly code '.s' into machine code/binary relocatable object code (producing an object file '.o' or '.obj').\n4. Linker: Links object files with system library files to produce a standalone executable (e.g. '.exe' or dynamic ELF binary).",
+      "examTrick": "Memory mnemonic: PCAL - Preprocessor (P), Compiler (C, outputs .s), Assembler (A, outputs .o), Linker (L, outputs .exe). Fast and flawless!",
+      "importance": "High",
+      "tags": ["C Programming", "Compilation Pipeline", "C Internals"]
+    },
+    {
+      "id": 5,
+      "question": "In the standard Application Memory Layout of a running C program, which memory segment stores uninitialized global and static variables, and in which direction do Stack and Heap segments grow respectively?",
+      "options": [
+        "BSS segment; Stack grows downwards (higher to lower addresses), Heap grows upwards (lower to higher addresses)",
+        "Data segment; Stack grows upwards, Heap grows downwards",
+        "Text segment; Stack grows downwards, Heap grows upwards",
+        "Stack segment; Both Stack and Heap grow downwards into free memory space"
+      ],
+      "answer": "BSS segment; Stack grows downwards (higher to lower addresses), Heap grows upwards (lower to higher addresses)",
+      "difficulty": "Medium",
+      "source": "GATE CS 2018",
+      "explanation": "According to Section 1.2 of the C internals PDF, a running program's RAM layout consists of:\n- Stack: Stores local/automatic variables and function call stack frames. Grows downwards (towards lower memory addresses).\n- Free Memory: Dynamic shared region between Stack and Heap.\n- Heap: Dedicated segment for dynamic memory allocation (via malloc/calloc). Grows upwards (towards higher memory addresses).\n- BSS (Block Started by Symbol): Stores uninitialized global and static variables (automatically zero-initialized by the OS kernel loader).\n- Initialized Data Segment: Stores explicitly initialized global and static variables.\n- Text Segment: Stores the read-only compiled assembly instructions (executable segment).",
+      "examTrick": "U-B-I-D: Uninitialized = BSS segment; Initialized = Data segment! Stack grows DOWN (S-D) and Heap grows UP (H-U). This is a golden, recurring PSU question!",
+      "importance": "High",
+      "tags": ["C Internals", "Memory Layout", "BSS", "Stack and Heap"]
+    },
+    {
+      "id": 6,
+      "question": "What is the structural compilation mechanism of a switch-case statement compared to an if-else block in C, and what is the outcome if a developer forgets to include a 'break;' statement at the end of a matching case?",
+      "options": [
+        "Switch-case compiles down to a Jump Table (O(1) branching) instead of sequential branches; missing a break causes 'Fallthrough' where the CPU continues executing subsequent instructions blindly.",
+        "Switch-case is purely syntactic sugar for if-else and has identical O(N) performance; missing a break causes a syntax compilation error.",
+        "Switch-case compiles down to a binary tree of branches; missing a break results in a stack overflow.",
+        "Switch-case executes cases in parallel; missing a break makes the default case run first."
+      ],
+      "answer": "Switch-case compiles down to a Jump Table (O(1) branching) instead of sequential branches; missing a break causes 'Fallthrough' where the CPU continues executing subsequent instructions blindly.",
+      "difficulty": "Medium",
+      "source": "PSU Computer Architecture",
+      "explanation": "According to Section 1.3 of the C internals PDF:\n- Unlike an if-else ladder which evaluates conditions sequentially (O(N) worst case), a switch statement with contiguous case labels is optimized by compilers into a Jump Table. This allows the CPU to branch directly to the correct case label in O(1) constant time.\n- If a developer omits the 'break;' statement, the CPU executes the instructions under the matching case label and blindly 'falls through' to execute every subsequent statement beneath it until a break or the end of the switch block is reached.",
+      "examTrick": "Switch = Jump Table = O(1) branching. No break = Fallthrough trap. Remember, the CPU doesn't check subsequent case conditions once a match is found; it just flows straight down!",
+      "importance": "High",
+      "tags": ["C Programming", "Switch Case", "Jump Table", "Fallthrough"]
+    },
+    {
+      "id": 7,
+      "question": "Using the 'Spiral Rule' of C declarations, translate the following complex declaration into English:\n\nint (*P)(char *a[])",
+      "options": [
+        "P is a pointer to a function that accepts an array of character pointers as an argument and returns an integer.",
+        "P is an array of pointers to functions that return char pointer and accept integer values.",
+        "P is a function returning a pointer to an integer, which accepts an array of characters.",
+        "P is a pointer to an array of character pointers, which returns an integer."
+      ],
+      "answer": "P is a pointer to a function that accepts an array of character pointers as an argument and returns an integer.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2012 / CIL MT",
+      "explanation": "According to Section 1.4 of the C internals PDF, we apply the Spiral Rule (or Right-Left Rule) to translate complex C declarations:\n1. Start at variable name: P.\n2. Move left: inside (*P), encountering '*', meaning 'P is a pointer to...'\n3. Move right: outside parentheses, encountering '(char *a[])', meaning 'a function accepting an argument which is an array of char pointers (char *)...'\n4. Move left: encountering 'int', meaning 'and returning an integer.'\nCombining these: 'P is a pointer to a function that accepts an array of character pointers and returns an integer.'",
+      "examTrick": "Spiral Rule Steps: Start at the identifier, go right, then left, then right again inside parentheses. (*P) indicates 'P is a pointer to', (char *a[]) indicates 'a function accepting an array of char pointers', returning 'int'. Perfect translation!",
+      "importance": "High",
+      "tags": ["C Programming", "Spiral Rule", "Pointer Declarations"]
+    },
+    {
+      "id": 8,
+      "question": "Assume a 64-bit system where integers take 4 bytes. An integer pointer in C is initialized as: int *p = 1000; What is the numerical value of the expression p + 3, and what is the outcome of the pointer subtraction (p + 3) - p?",
+      "options": [
+        "p + 3 evaluates to 1012; Subtraction evaluates to 3 elements.",
+        "p + 3 evaluates to 1003; Subtraction evaluates to 3 bytes.",
+        "p + 3 evaluates to 1012; Subtraction evaluates to 12 bytes.",
+        "p + 3 evaluates to 1003; Subtraction evaluates to 12 elements."
+      ],
+      "answer": "p + 3 evaluates to 1012; Subtraction evaluates to 3 elements.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2014",
+      "explanation": "According to Section 1.5 of the C internals PDF:\n1. Pointer Arithmetic scales by the size of the data type the pointer points to. Since p points to int (4 bytes), adding 3 to p increments the address by: 3 * sizeof(int) = 3 * 4 = 12 bytes. Thus, 1000 + 12 = 1012.\n2. Pointer subtraction returns the number of elements of that data type between the two addresses, NOT the literal byte difference. Therefore, (p + 3) - p evaluates to exactly 3 elements, which is mathematically independent of the underlying integer size.",
+      "examTrick": "Pointers do NOT scale by bytes! Addition: ptr + i = address + (i * sizeof(*ptr)). Subtraction: ptr1 - ptr2 = (address1 - address2) / sizeof(*ptr). (ptr+3) - ptr is ALWAYS 3!",
+      "importance": "High",
+      "tags": ["C Programming", "Pointer Arithmetic", "Memory Scaling"]
+    },
+    {
+      "id": 9,
+      "question": "In C, an array name decays to a pointer to its first element. For a 1D array defined as int arr[10]; which of the following is syntactically INVALID in C, and why?",
+      "options": [
+        "arr++",
+        "*(arr + 5)",
+        "5[arr]",
+        "&arr[0]"
+      ],
+      "answer": "arr++",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 1.6 of the C internals PDF:\n- An array name like 'arr' behaves as a constant pointer (specifically, its address cannot be changed, acting like 'int * const'). Because of this, we cannot perform increment or decrement operations directly on the array name, so 'arr++' is invalid and will fail compilation.\n- By commutative properties, arr[5] is identical to *(arr + 5) and *(5 + arr), which means '5[arr]' is completely valid C syntax.\n- '&arr[0]' is the address of the first element, which is also valid.",
+      "examTrick": "An array name is a constant pointer (r-value)! You cannot reassign it (arr = p) or increment/decrement it (arr++). But commutativity makes i[arr] perfectly valid!",
+      "importance": "High",
+      "tags": ["C Programming", "Array Decay", "Constant Pointers", "Commutative Access"]
+    },
+    {
+      "id": 10,
+      "question": "Consider a 2D array declared as: int A[3][4]; stored in row-major order. Assume a 32-bit compilation where pointer sizes are 8 bytes and integers are 4 bytes. Which of the following is correct regarding the structural offsets and scale factors of A, *A, and &A when we increment them by 1?",
+      "options": [
+        "A + 1 skips 16 bytes (1 row); *A + 1 skips 4 bytes (1 int); &A + 1 skips 48 bytes (entire 2D array block).",
+        "A + 1 skips 4 bytes; *A + 1 skips 16 bytes; &A + 1 skips 48 bytes.",
+        "A + 1 skips 16 bytes; *A + 1 skips 16 bytes; &A + 1 skips 16 bytes.",
+        "A + 1 skips 48 bytes; *A + 1 skips 4 bytes; &A + 1 skips 8 bytes."
+      ],
+      "answer": "A + 1 skips 16 bytes (1 row); *A + 1 skips 4 bytes (1 int); &A + 1 skips 48 bytes (entire 2D array block).",
+      "difficulty": "Hard",
+      "source": "GATE CS 2015",
+      "explanation": "According to Section 1.6 of the C internals PDF, for 'int A[3][4]' (3 rows, 4 columns of 4-byte integers):\n1. A (pointer to a 1D array of 4 integers): A + 1 skips an entire row, which is 4 * sizeof(int) = 16 bytes.\n2. *A or A[0] (pointer to a single integer): *A + 1 skips a single integer, which is 1 * sizeof(int) = 4 bytes.\n3. &A (pointer to the entire 2D array of 3x4 = 12 integers): &A + 1 skips the entire 3D block, which is 3 * 4 * sizeof(int) = 48 bytes.",
+      "examTrick": "Type Hierarchy in 2D Arrays:\n- &A is pointer to entire 2D array (scale = row * col * size = 48 bytes).\n- A is pointer to 1D row (scale = col * size = 16 bytes).\n- *A is pointer to single element (scale = size = 4 bytes). Always scale by parent structure!",
+      "importance": "High",
+      "tags": ["C Programming", "2D Arrays", "Memory Addressing", "Pointer Scale"]
+    },
+    {
+      "id": 11,
+      "question": "Assume a 64-bit operating system. A developer declares two variables:\nI. int (*ptr)[3];\nII. int *arr[3];\nWhat are the memory sizes allocated to 'ptr' and 'arr' respectively?",
+      "options": [
+        "ptr: 8 bytes; arr: 24 bytes",
+        "ptr: 12 bytes; arr: 24 bytes",
+        "ptr: 12 bytes; arr: 12 bytes",
+        "ptr: 24 bytes; arr: 8 bytes"
+      ],
+      "answer": "ptr: 8 bytes; arr: 24 bytes",
+      "difficulty": "Medium",
+      "source": "GATE CS 2013 / PSU",
+      "explanation": "According to Section 1.7 of the C internals PDF:\n1. 'int (*ptr)[3]' declares a single pointer that points to an array of 3 integers. Since it is a singular pointer, on any 64-bit operating system, all pointers occupy exactly 8 bytes of memory (sizeof(ptr) = 8).\n2. 'int *arr[3]' is an array of 3 separate integer pointers (brackets take precedence). Its size is 3 * sizeof(int*) = 3 * 8 = 24 bytes of memory (sizeof(arr) = 24).",
+      "examTrick": "Parentheses force pointer priority: (*ptr) is a singular pointer (always 8 bytes on 64-bit!). Brackets take precedence in *arr[3], making it an array of 3 pointers (3 * 8 = 24 bytes). Standard high-yield MCQ!",
+      "importance": "High",
+      "tags": ["C Programming", "Pointers", "sizeof Operator", "Memory Layout"]
+    },
+    {
+      "id": 12,
+      "question": "Which of the following is TRUE regarding 'Void Pointers' and 'Function Pointers' in C programming?",
+      "options": [
+        "A void pointer cannot be directly dereferenced without an explicit cast first; a function pointer stores the address of executable code located in the Text segment.",
+        "A void pointer automatically casts to any size on dereference; function pointers are stored on the program's Heap.",
+        "A void pointer is 0 bytes in size; a function pointer can be incremented to access local variables in stack frames.",
+        "Function pointers can only point to functions with void return types; void pointers cannot point to structures."
+      ],
+      "answer": "A void pointer cannot be directly dereferenced without an explicit cast first; a function pointer stores the address of executable code located in the Text segment.",
+      "difficulty": "Medium",
+      "source": "PSU Systems Programming",
+      "explanation": "According to Section 1.8 of the C internals PDF:\n- A Void Pointer (void *) is a generic pointer. It cannot be directly dereferenced because the compiler does not know the size of the underlying data type to read. It must be explicitly cast to a specific type first (e.g. *(int*)vptr).\n- A Function Pointer stores the starting address of a function's executable machine code in memory, which resides in the read-only 'Text Segment' (or Code Segment) of the application RAM layout.",
+      "examTrick": "Void * has no scale (size is unknown), so dereferencing it directly is a compiler error. Function pointers point to the Text segment. Remember: void * is the key to generic C programming (like qsort)!",
+      "importance": "High",
+      "tags": ["C Programming", "Void Pointers", "Function Pointers", "Memory Segments"]
+    },
+    {
+      "id": 13,
+      "question": "Consider a 32-bit system (where packing/padding is ignored). A structure and union are declared as:\n\nstruct MyStruct { char a; int b; float c; };\nunion MyUnion { char a; int b; float c; };\n\nWhat are the memory sizes of MyStruct and MyUnion respectively?",
+      "options": [
+        "MyStruct: 9 bytes; MyUnion: 4 bytes",
+        "MyStruct: 12 bytes; MyUnion: 4 bytes",
+        "MyStruct: 9 bytes; MyUnion: 9 bytes",
+        "MyStruct: 12 bytes; MyUnion: 12 bytes"
+      ],
+      "answer": "MyStruct: 9 bytes; MyUnion: 4 bytes",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 1.9 of the C internals PDF (ignoring packing and padding structure alignment):\n- A structure allocates separate contiguous memory blocks for each of its members. Total size is the sum of sizes: sizeof(char) + sizeof(int) + sizeof(float) = 1 + 4 + 4 = 9 bytes.\n- A union allocates a single shared memory block that is equal to the size of its largest member. The members are overlapped. The largest member is either int or float (both 4 bytes). Thus, the total size of MyUnion is 4 bytes.",
+      "examTrick": "Struct size = Sum of member sizes (with padding). Union size = Size of the largest member. Writing to one union member overwrites others because they share the exact same memory offset!",
+      "importance": "High",
+      "tags": ["C Programming", "Structures", "Unions", "Memory Allocation"]
+    },
+    {
+      "id": 14,
+      "question": "A C program performs dynamic memory operations. What is the fundamental difference between 'malloc(size)' and 'calloc(n, size)', and what happens if a programmer fails to execute 'free(ptr)' on dynamically allocated memory?",
+      "options": [
+        "malloc allocates uninitialized memory containing garbage; calloc allocates and initializes all bits to zero; failing to free causes a 'Memory Leak'.",
+        "malloc initializes memory to zero; calloc allocates uninitialized garbage; failing to free causes a dangling pointer.",
+        "malloc allocates on the Stack; calloc allocates on the Heap; failing to free results in a stack overflow.",
+        "There is no difference, both are identical; failing to free causes an automatic compiler warning and crash."
+      ],
+      "answer": "malloc allocates uninitialized memory containing garbage; calloc allocates and initializes all bits to zero; failing to free causes a 'Memory Leak'.",
+      "difficulty": "Easy",
+      "source": "CIL MT 2022",
+      "explanation": "According to Section 1.10 of the C internals PDF:\n- malloc(size) allocates a contiguous block of raw memory on the Heap without modifying it, so it contains uninitialized garbage values.\n- calloc(n, size) allocates memory for an array of n elements, each of a specified size, and automatically initializes all bits to zero.\n- Failing to free(ptr) dynamic allocations means that memory is never returned to the OS. Over time, this leads to a 'Memory Leak' where the system slowly runs out of available RAM.",
+      "examTrick": "C-Alloc = Clear/Zero-Alloc (initializes to 0). M-Alloc = Raw Allocation (contains garbage). Failing to free heap pointer = Memory Leak!",
+      "importance": "High",
+      "tags": ["C Programming", "Dynamic Memory", "malloc and calloc", "Memory Leaks"]
+    },
+    {
+      "id": 15,
+      "question": "A developer writes a file handling system in C using 'FILE *fp;'. Which of the following is correct regarding file modes and error handling?",
+      "options": [
+        "Modes 'rb' and 'wb' are used to read and write binary files; if fopen() fails to locate or open a file, it returns NULL, which must be verified to prevent crashes.",
+        "Mode 'w' appends contents without clearing the file; if a file does not exist, 'r' mode automatically creates a new empty file.",
+        "The EOF marker is always a positive integer (通常 1); checking error is done via malloc_error().",
+        "File operations are managed entirely on the Stack, so fopen() never returns a pointer."
+      ],
+      "answer": "Modes 'rb' and 'wb' are used to read and write binary files; if fopen() fails to locate or open a file, it returns NULL, which must be verified to prevent crashes.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2021",
+      "explanation": "According to Section 1.11 of the C internals PDF:\n- Mode 'r' reads text files, and 'rb' and 'wb' are used specifically for binary I/O (prevents newline transformations on systems like Windows).\n- If fopen() fails (due to file not found, permission denied, etc.), it returns a NULL pointer. Accessing a NULL pointer results in a segmentation fault, so it must be checked immediately.\n- The EOF (End of File) macro is typically a negative integer (-1).",
+      "examTrick": "fopen() failure returns NULL. Always check 'if (fp == NULL)' to avoid segmentation faults! Binary mode uses the 'b' suffix ('rb', 'wb').",
+      "importance": "High",
+      "tags": ["C Programming", "File Handling", "NULL checks", "Binary Modes"]
+    },
+    {
+      "id": 16,
+      "question": "In C programming, how do 'static' and 'extern' storage classes differ with respect to scope, lifetime, and initial memory segments?",
+      "options": [
+        "A static local variable has local scope but retains its value across function calls (stored in BSS/Data); an extern variable is used for global variables with external linkage across different files.",
+        "A static variable is allocated on the local Stack frame; an extern variable is allocated dynamically on the Heap.",
+        "A static variable is visible globally across all compiled files; an extern variable is private to its declaring block.",
+        "Both static and extern variables have identical block scopes and are destroyed when their declaring block terminates."
+      ],
+      "answer": "A static local variable has local scope but retains its value across function calls (stored in BSS/Data); an extern variable is used for global variables with external linkage across different files.",
+      "difficulty": "Medium",
+      "source": "GATE CS 2017",
+      "explanation": "According to Section 1.12 of the C internals PDF:\n- Local static variables have block scope (only visible within the function) but global lifetime. They are not destroyed when the function exits; they retain their value across calls because they are stored in the BSS/Data segments instead of the stack.\n- Extern variables declare global variables that are defined in another source file, establishing external linkage across different files.",
+      "examTrick": "Static local: invisible outside, but lives forever (persists in BSS/Data segment). Extern: acts as a declaration to tell compiler a global variable exists in another file. Essential storage class rules!",
+      "importance": "High",
+      "tags": ["C Programming", "Storage Classes", "static and extern", "Scope and Lifetime"]
+    },
+    {
+      "id": 17,
+      "question": "Consider the following macro definition in C:\n\n#define SQUARE(x) x * x\n\nWhat is the value of the expression SQUARE(3 + 2) in C, and what is the best preprocessor design practice to avoid this error?",
+      "options": [
+        "11; Best practice is to parenthesize all arguments and the entire macro: #define SQUARE(x) ((x) * (x))",
+        "25; Best practice is to avoid macros and always use recursive templates.",
+        "13; Best practice is to cast the macro parameters to float.",
+        "15; Best practice is to write macros in lowercase."
+      ],
+      "answer": "11; Best practice is to parenthesize all arguments and the entire macro: #define SQUARE(x) ((x) * (x))",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "According to Section 1.12 of the C internals PDF:\n- Macros perform pure text substitution BEFORE compilation. Under '#define SQUARE(x) x * x', the expression SQUARE(3 + 2) expands literally to: 3 + 2 * 3 + 2.\n- Applying standard arithmetic operator precedence (multiplication before addition): 2 * 3 is evaluated first (6), then 3 + 6 + 2 = 11.\n- To prevent this unexpected behavior, we must wrap both the macro arguments and the final evaluated expression in parenthetical guards: '#define SQUARE(x) ((x) * (x))'. This forces (3+2) * (3+2) = 25.",
+      "examTrick": "Macro pitfalls! Parenthesize everything inside macros: '#define MULT(a, b) ((a) * (b))'. Otherwise, text substitution + operator precedence will destroy your logic!",
+      "importance": "High",
+      "tags": ["C Programming", "Preprocessors", "Macros", "Operator Precedence"]
+    },
+    {
+      "id": 18,
+      "question": "What is 'Tail Recursion', and why is it considered highly advantageous in terms of system call stack space optimizations during compiler execution?",
+      "options": [
+        "It is recursion where the recursive call is the absolute last operation; the compiler optimizes it into a simple goto loop, reducing call stack space from O(N) to O(1).",
+        "It is recursion where the base case is placed at the end of the file; it speeds up disk execution.",
+        "It is recursion that traverses the tail of a linked list; it reduces pointer dereferencing costs.",
+        "It is recursion where the return value is multiplied by a global static factor."
+      ],
+      "answer": "It is recursion where the recursive call is the absolute last operation; the compiler optimizes it into a simple goto loop, reducing call stack space from O(N) to O(1).",
+      "difficulty": "Medium",
+      "source": "GATE CS 2016",
+      "explanation": "According to Section 2.2 of the recursion internals PDF, a recursive function is Tail Recursive if the recursive call is the absolute last operation in the function, with no computations pending after it returns. Because no state needs to be saved for the current activation record, modern compilers aggressively optimize this via Tail Call Elimination (TCE), converting the recursion into a simple iterative loop (goto loop). This reduces the stack space complexity from O(N) linear to O(1) constant, avoiding stack overflow.",
+      "examTrick": "Tail Recursion = last call has nothing left to calculate! Space complexity drops from O(N) stack frames to O(1) stack frames due to compiler reuse of the active frame.",
+      "importance": "High",
+      "tags": ["Recursion", "Tail Recursion", "Compiler Optimization", "Space Complexity"]
+    },
+    {
+      "id": 19,
+      "question": "What is the output of the following recursive C program?\n\n#include <stdio.h>\nvoid count(int n) {\n    if (n <= 0) return;\n    printf(\"%d \", n);\n    count(n - 1);\n    printf(\"%d \", n);\n}\nint main() {\n    count(3);\n    return 0;\n}",
+      "options": [
+        "3 2 1 1 2 3",
+        "3 2 1 3 2 1",
+        "1 2 3 3 2 1",
+        "3 2 1 0 1 2 3"
+      ],
+      "answer": "3 2 1 1 2 3",
+      "difficulty": "Medium",
+      "source": "GATE CS 2011 / CIL MT",
+      "explanation": "Let's trace the activation stack of count(3):\n- count(3): prints 3, calls count(2).\n  - count(2): prints 2, calls count(1).\n    - count(1): prints 1, calls count(0).\n      - count(0): hits base case (n <= 0), returns immediately.\n    - count(1) resumes: prints 1, returns.\n  - count(2) resumes: prints 2, returns.\n- count(3) resumes: prints 3, returns.\nCombining the prints: Winding prints '3 2 1', and Unwinding prints '1 2 3'.\nThus, the total output is '3 2 1 1 2 3'.",
+      "examTrick": "Winding Phase (before recursive call) prints in descending order. Unwinding Phase (after recursive call) prints in ascending order. This is a standard stack unwinding trace!",
+      "importance": "High",
+      "tags": ["Recursion", "Call Stack", "Winding and Unwinding"]
+    },
+    {
+      "id": 20,
+      "question": "A developer compiles a C program using the register storage class: register int x = 10; Which of the following is correct regarding this variable?",
+      "options": [
+        "The address-of operator '&' cannot be applied to 'x' because register variables may reside in CPU registers rather than RAM.",
+        "The compiler is forced to store x in CPU registers, failing compilation if no registers are free.",
+        "The variable x is placed in the read-only Text segment.",
+        "The lifetime of x is global and persists across the entire program execution."
+      ],
+      "answer": "The address-of operator '&' cannot be applied to 'x' because register variables may reside in CPU registers rather than RAM.",
+      "difficulty": "Medium",
+      "source": "CIL MT 2020",
+      "explanation": "According to Section 1.12 of the C internals PDF:\n- The 'register' storage class suggests to the compiler that the variable should be stored in a high-speed CPU register instead of RAM, for faster access.\n- Because CPU registers do not have memory addresses (they are accessed via register identifiers like EAX, EBX, etc.), it is syntactically invalid to apply the address-of operator '&' to a register variable. Attempting to print or use '&x' will result in a compiler error, even if the compiler opted to store it in RAM.",
+      "examTrick": "Register Variable Trap: You CANNOT use the '&' address-of operator on register variables! This is a legendary C compiler syntax rule.",
+      "importance": "High",
+      "tags": ["C Programming", "Storage Classes", "Register", "Address-of Operator"]
+    }
+  ]
+}

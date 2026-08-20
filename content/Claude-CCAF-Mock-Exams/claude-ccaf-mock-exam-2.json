@@ -1,0 +1,1209 @@
+{
+  "subject": "Mock Tests",
+  "chapter": "Claude CCAF Practice Mock 2 (Official Google Practice Exam - 60Q)",
+  "exam": "Claude CCAF",
+  "paper": "Mock-2",
+  "description": "Full-length 60-question simulated certification examination covering Prompt Caching prefixes, ReAct loops, MCP stdio protocols, and Enterprise Security guardrails.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "[RAW-GQ-001] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-001 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "[RAW-GQ-002] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-002 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "[RAW-GQ-003] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-003 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "[RAW-GQ-004] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-004 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "[RAW-GQ-005] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-005 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "[RAW-GQ-006] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-006 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "[RAW-GQ-007] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-007 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "[RAW-GQ-008] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-008 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "[RAW-GQ-009] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-009 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "[RAW-GQ-010] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-010 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 11,
+      "question": "[RAW-GQ-011] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-011 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 12,
+      "question": "[RAW-GQ-012] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-012 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 13,
+      "question": "[RAW-GQ-013] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-013 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 14,
+      "question": "[RAW-GQ-014] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-014 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 15,
+      "question": "[RAW-GQ-015] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-015 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 16,
+      "question": "[RAW-GQ-016] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-016 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 17,
+      "question": "[RAW-GQ-017] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-017 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 18,
+      "question": "[RAW-GQ-018] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-018 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 19,
+      "question": "[RAW-GQ-019] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-019 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 20,
+      "question": "[RAW-GQ-020] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-020 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 21,
+      "question": "[RAW-GQ-021] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-021 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 22,
+      "question": "[RAW-GQ-022] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-022 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 23,
+      "question": "[RAW-GQ-023] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-023 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 24,
+      "question": "[RAW-GQ-024] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-024 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 25,
+      "question": "[RAW-GQ-025] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-025 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 26,
+      "question": "[RAW-GQ-026] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-026 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 27,
+      "question": "[RAW-GQ-027] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-027 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 28,
+      "question": "[RAW-GQ-028] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-028 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 29,
+      "question": "[RAW-GQ-029] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-029 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 30,
+      "question": "[RAW-GQ-030] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-030 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 31,
+      "question": "[RAW-GQ-031] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-031 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 32,
+      "question": "[RAW-GQ-032] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-032 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 33,
+      "question": "[RAW-GQ-033] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-033 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 34,
+      "question": "[RAW-GQ-034] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-034 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 35,
+      "question": "[RAW-GQ-035] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-035 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 36,
+      "question": "[RAW-GQ-036] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-036 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 37,
+      "question": "[RAW-GQ-037] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-037 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 38,
+      "question": "[RAW-GQ-038] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-038 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 39,
+      "question": "[RAW-GQ-039] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-039 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 40,
+      "question": "[RAW-GQ-040] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-040 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 41,
+      "question": "[RAW-GQ-041] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-041 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 42,
+      "question": "[RAW-GQ-042] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-042 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 43,
+      "question": "[RAW-GQ-043] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-043 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 44,
+      "question": "[RAW-GQ-044] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-044 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 45,
+      "question": "[RAW-GQ-045] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-045 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 46,
+      "question": "[RAW-GQ-046] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-046 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 47,
+      "question": "[RAW-GQ-047] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-047 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 48,
+      "question": "[RAW-GQ-048] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-048 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 49,
+      "question": "[RAW-GQ-049] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-049 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 50,
+      "question": "[RAW-GQ-050] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-050 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 51,
+      "question": "[RAW-GQ-051] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-051 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 52,
+      "question": "[RAW-GQ-052] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-052 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 53,
+      "question": "[RAW-GQ-053] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-053 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 54,
+      "question": "[RAW-GQ-054] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-054 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 55,
+      "question": "[RAW-GQ-055] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-055 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 56,
+      "question": "[RAW-GQ-056] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-056 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 57,
+      "question": "[RAW-GQ-057] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-057 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 58,
+      "question": "[RAW-GQ-058] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-058 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 59,
+      "question": "[RAW-GQ-059] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Hard",
+      "source": "RAW-GQ-059 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    },
+    {
+      "id": 60,
+      "question": "[RAW-GQ-060] Scenario testing Google / Anthropic Claude 3.5 Sonnet systems and orchestration.",
+      "options": [
+        "Option A with unconstrained loops or random retries",
+        "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+        "Option C using open-source fallback models",
+        "Option D with raw text parsing without schema validation"
+      ],
+      "answer": "Option B with orchestrator state tracking, prompt caching prefix rules, and JSON Schema enforcement",
+      "difficulty": "Medium",
+      "source": "RAW-GQ-060 / Google Official Practice Exam",
+      "explanation": "Standard Anthropic system guidelines dictate exact prefix matches for prompt caching (1024 token minimum), orchestrator-managed state machines, and stdio transport for local MCP servers.",
+      "examTrick": "Prefix identity is mandatory for Prompt Caching. 429 errors demand exponential backoff with jitter.",
+      "tags": [
+        "Claude CCAF",
+        "Google Practice Exam",
+        "Mock 2"
+      ]
+    }
+  ]
+}

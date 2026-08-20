@@ -1,0 +1,143 @@
+{
+  "subject": "DBMS",
+  "chapter": "Normalization",
+  "description": "Explores functional dependencies, candidate keys, and normalization forms: 1NF, 2NF, 3NF, BCNF, and 4NF.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A relation is in 2NF if it is in 1NF and there is no:",
+      "options": [
+        "Transitive dependency",
+        "Partial dependency",
+        "Multi-valued dependency",
+        "Join dependency"
+      ],
+      "answer": "Partial dependency",
+      "difficulty": "Easy",
+      "source": "CIL MT 2021",
+      "explanation": "A relation is in Second Normal Form (2NF) if it is in 1NF and every non-prime attribute is fully functionally dependent on the primary key. In other words, there must be no partial dependencies (where a non-prime attribute depends on a proper subset of a composite candidate key).",
+      "examTrick": "Partial dependency can ONLY occur when you have a composite candidate key! If the candidate key is single-attributed, the relation is automatically in 2NF (if it's in 1NF).",
+      "importance": "High",
+      "tags": ["Normalization", "2NF", "Functional Dependencies"]
+    },
+    {
+      "id": 2,
+      "question": "A relation schema R is in Third Normal Form (3NF) if, for every non-trivial functional dependency X -> A, either X is a superkey of R or:",
+      "options": [
+        "A is a non-prime attribute",
+        "A is a prime attribute",
+        "X is a prime attribute",
+        "X is a subset of some candidate key"
+      ],
+      "answer": "A is a prime attribute",
+      "difficulty": "Medium",
+      "source": "CIL MT 2022 / GATE CS",
+      "explanation": "By definition, a relation schema R is in 3NF if, for every non-trivial functional dependency X -> A, either X is a superkey of R, OR A is a prime attribute (part of some candidate key).",
+      "examTrick": "The 3NF condition is lenient compared to BCNF because of this 'OR A is prime' rule. If A is prime, it's 3NF-compliant even if X is not a superkey.",
+      "importance": "High",
+      "tags": ["Normalization", "3NF", "Functional Dependencies"]
+    },
+    {
+      "id": 3,
+      "question": "Which of the following is true regarding Boyce-Codd Normal Form (BCNF)?",
+      "options": [
+        "Every BCNF relation is also in 3NF, and BCNF is dependency-preserving by default.",
+        "Every BCNF relation is also in 3NF, but BCNF is NOT always dependency-preserving.",
+        "BCNF is weaker than 3NF.",
+        "BCNF eliminates multi-valued dependencies."
+      ],
+      "answer": "Every BCNF relation is also in 3NF, but BCNF is NOT always dependency-preserving.",
+      "difficulty": "Hard",
+      "source": "GATE CS 2017",
+      "explanation": "BCNF is a stricter form of 3NF. For every non-trivial functional dependency X -> A, X must be a superkey. Every relation in BCNF is also in 3NF, but decomposing a relation into BCNF does not guarantee that we can preserve all functional dependencies (unlike 3NF, which always guarantees both lossless join and dependency preservation).",
+      "examTrick": "Classic GATE/PSU question! 3NF is ALWAYS lossless-join and dependency-preserving. BCNF is ALWAYS lossless-join, but NOT ALWAYS dependency-preserving.",
+      "importance": "High",
+      "tags": ["Normalization", "BCNF", "Lossless Join"]
+    },
+    {
+      "id": 4,
+      "question": "Which normal form is specifically designed to eliminate multi-valued dependencies?",
+      "options": [
+        "3NF",
+        "BCNF",
+        "4NF",
+        "5NF"
+      ],
+      "answer": "4NF",
+      "difficulty": "Medium",
+      "source": "PSU Exam / CIL MT",
+      "explanation": "Fourth Normal Form (4NF) is designed to handle multi-valued dependencies (MVDs). A relation is in 4NF if it is in BCNF and contains no non-trivial multi-valued dependencies (or every MVD X ->-> Y is such that X is a superkey).",
+      "examTrick": "Mnemonic mapping: 1NF = Atomic values, 2NF = Full functional dependencies (No partial), 3NF = No transitive dependencies, BCNF = Strict superkey, 4NF = Multi-valued, 5NF = Join dependencies.",
+      "importance": "Medium",
+      "tags": ["Normalization", "4NF", "MVD"]
+    },
+    {
+      "id": 5,
+      "question": "Consider a relation R(A, B, C, D, E) with the following functional dependencies: F = { AB -> C, C -> D, D -> B, D -> E }. Which of the following is a Candidate Key of R?",
+      "options": [
+        "AB only",
+        "AB and AD only",
+        "AB, AD, and AC only",
+        "AC and AD only"
+      ],
+      "answer": "AB, AD, and AC only",
+      "difficulty": "Hard",
+      "source": "GATE CS / CIL MT Exam",
+      "explanation": "Let's calculate attribute closures to identify all candidate keys:\n1. (AB)+ closure:\n- Start: {A, B}\n- AB -> C: {A, B, C}\n- C -> D: {A, B, C, D}\n- D -> E: {A, B, C, D, E} (All attributes. No proper subset is a key, so AB is a Candidate Key)\n2. (AD)+ closure:\n- Start: {A, D}\n- D -> B: {A, D, B}\n- AB -> C: {A, D, B, C}\n- D -> E: {A, D, B, C, E} (All attributes. No proper subset is a key, so AD is a Candidate Key)\n3. (AC)+ closure:\n- Start: {A, C}\n- C -> D: {A, C, D}\n- D -> B: {A, C, D, B}\n- D -> E: {A, C, D, B, E} (All attributes. No proper subset is a key, so AC is a Candidate Key)\nHence, AB, AD, and AC are all valid candidate keys.",
+      "examTrick": "Key substitution trick: Since AB is a candidate key and we have D -> B, we can replace B with D in the key AB, yielding AD as another key. Since C -> D, we can replace D with C in the key AD, yielding AC as another key!",
+      "importance": "High",
+      "tags": ["Normalization", "Attribute Closure", "Candidate Keys"]
+    },
+    {
+      "id": 6,
+      "question": "A relation schema R(A, B, C, D) with functional dependencies F = { A -> B, B -> C } is decomposed into R1(A, B) and R2(A, C, D). Which of the following statements is true regarding this decomposition?",
+      "options": [
+        "The decomposition is both lossless-join and dependency-preserving.",
+        "The decomposition is lossless-join, but NOT dependency-preserving.",
+        "The decomposition is dependency-preserving, but NOT lossless-join.",
+        "The decomposition is neither lossless-join nor dependency-preserving."
+      ],
+      "answer": "The decomposition is both lossless-join and dependency-preserving.",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "Let's analyze both properties:\n1. Lossless Join: The intersection of R1 and R2 is R1 ∩ R2 = {A}. In R1, we have A -> B, which means A is a superkey of R1. Since the intersection functionally determines one of the decomposed relations, the decomposition is lossless-join.\n2. Dependency Preservation: The FD A -> B is directly checkable on R1(A, B). The FD B -> C is not directly checkable on R2(A, C, D), but can we infer it? In R2, we can check A -> C because A -> B -> C holds in R. The union of checkable FDs is {A -> B, A -> C}. From these, we can reconstruct the dependency closure, which includes B -> C under transitive laws over R. Therefore, no dependencies are lost, and the decomposition is dependency-preserving.",
+      "examTrick": "Lossless Join Rule: Look at the common attribute. If it's a primary/candidate key of either sub-relation, the join is 100% lossless!",
+      "importance": "High",
+      "tags": ["Normalization", "Lossless Join", "Decomposition"]
+    },
+    {
+      "id": 7,
+      "question": "Which of the following describes a fundamental design trade-off in relational database normalization when decomposing a relation schema?",
+      "options": [
+        "It is always possible to achieve a 3NF decomposition that is both lossless-join and dependency-preserving, but for BCNF, we can only guarantee lossless-join (dependency preservation is not always possible).",
+        "It is always possible to achieve a BCNF decomposition that is both lossless-join and dependency-preserving, but for 3NF, dependency preservation is not always possible.",
+        "Both 3NF and BCNF can always guarantee lossless-join and dependency preservation simultaneously.",
+        "BCNF eliminates all redundancy but can never produce a lossless-join decomposition."
+      ],
+      "answer": "It is always possible to achieve a 3NF decomposition that is both lossless-join and dependency-preserving, but for BCNF, we can only guarantee lossless-join (dependency preservation is not always possible).",
+      "difficulty": "Medium",
+      "source": "GATE CS / CIL MT",
+      "explanation": "For any relational schema with a set of functional dependencies, we are guaranteed to be able to decompose it into 3NF in a way that is both lossless-join and preserves all functional dependencies. However, for BCNF, we can only guarantee that a lossless-join decomposition exists; we may have to sacrifice dependency preservation. A classic example is R(A, B, C) with AB -> C and C -> A.",
+      "examTrick": "Decomposition trade-off summary: 3NF = Lossless + Dependency Preservation (Always). BCNF = Lossless (Always), Dependency Preservation (NOT always).",
+      "importance": "High",
+      "tags": ["Normalization", "3NF", "BCNF", "Trade-offs"]
+    },
+    {
+      "id": 8,
+      "question": "Consider a relation schema R(A, B, C, D, E, P, G) with functional dependencies F = { AB -> C, C -> DE, E -> P, P -> G }. What is the highest normal form of R?",
+      "options": [
+        "1NF",
+        "2NF",
+        "3NF",
+        "BCNF"
+      ],
+      "answer": "2NF",
+      "difficulty": "Hard",
+      "source": "GATE CS / PSU Exam",
+      "explanation": "Let's find the Candidate Key first:\n- AB does not appear on the right side of any dependency, so AB must be part of any key.\n- Since (AB)+ = {A, B, C, D, E, P, G}, the composite key is AB. The prime attributes are A and B; non-prime attributes are C, D, E, P, G.\n- To check 2NF: A partial dependency occurs if a non-prime attribute depends on a proper subset of a composite key (A or B alone). Here, no dependency has only A or only B on the left hand side. Therefore, there are no partial dependencies, so R is in 2NF.\n- To check 3NF: For C -> DE, C is neither a superkey nor is D or E prime. This is a transitive dependency. Thus, R is not in 3NF.\nTherefore, the highest normal form is 2NF.",
+      "examTrick": "Check composite key subsets first! Since there are no FDs with only A or only B on the left, there is NO partial dependency. This guarantees it is at least in 2NF!",
+      "importance": "High",
+      "tags": ["Normalization", "2NF", "3NF", "Normal Form Identification"]
+    }
+  ]
+}
