@@ -12,9 +12,9 @@ import {
   Check, 
   X, 
   AlertTriangle, 
-  Play, 
-  Flame, 
-  BookOpen, 
+  Play,
+  Lightbulb,
+  BookOpen,
   HelpCircle, 
   RefreshCw, 
   FileText, 
@@ -27,6 +27,9 @@ import {
   Sparkles
 } from "lucide-react";
 import { Subject, Chapter, Question, UserProgress, UserAnswerSubmission } from "../types";
+import { EXAM_REGISTRY, resolveExamForSubject, resolveExamForEntry } from "../../shared/exams";
+import { getExamColorClasses, getColorClasses } from "../lib/examTheme";
+import RichText from "./RichText";
 
 interface MockTestArenaProps {
   subjects: Subject[];
@@ -35,6 +38,9 @@ interface MockTestArenaProps {
   onSubmitAnswer: (submission: UserAnswerSubmission) => Promise<any>;
   onRefreshContent: () => Promise<void>;
   onNavigate: (tab: string) => void;
+  /** AI expansion writes generated questions back into content/, so it is off
+   *  on deployments with a non-persistent disk. See shared/capabilities.ts. */
+  canExpandWithAi?: boolean;
 }
 
 interface MockExam {
@@ -54,9 +60,10 @@ export default function MockTestArena({
   subjects, 
   progress, 
   selectedExam = "all",
-  onSubmitAnswer, 
-  onRefreshContent, 
-  onNavigate 
+  onSubmitAnswer,
+  onRefreshContent,
+  onNavigate,
+  canExpandWithAi = false
 }: MockTestArenaProps) {
   // Simulator Navigation State
   const [activeView, setActiveView] = useState<"selection" | "instructions" | "simulator" | "results">("selection");
@@ -163,29 +170,28 @@ export default function MockTestArena({
   useEffect(() => {
     const exams: MockExam[] = [];
     
-    // Find all mock subjects (e.g., "Mock Tests" under CIL MT, or "Mock Tests" under Claude CCAF)
+    // Find all mock subjects (e.g., "Mock Tests" under any registered exam track)
     const mockSubjects = subjects.filter(s => s.name === "Mock Tests" || s.name.toLowerCase().includes("mock"));
-    
+
     mockSubjects.forEach(mockSubject => {
-      const isClaude = mockSubject.exam === "Claude CCAF" || mockSubject.name.toLowerCase().includes("claude") || mockSubject.name.toLowerCase().includes("ccaf");
-      
       mockSubject.chapters.forEach(chap => {
-        const isClaudeChap = isClaude || chap.name.toLowerCase().includes("claude") || chap.name.toLowerCase().includes("ccaf");
+        const chapExam = resolveExamForEntry({
+          exam: chap.exam || mockSubject.exam,
+          subject: mockSubject.name,
+          chapterId: chap.id,
+          name: chap.name,
+        });
         exams.push({
           id: chap.id,
           name: chap.name,
           subject: mockSubject.name,
           chapterId: chap.id,
-          exam: isClaudeChap ? "Claude CCAF" : "CIL MT",
-          description: chap.description || (isClaudeChap 
-            ? "Comprehensive simulated certification exam for Claude Certified Architect - Foundations."
-            : "Simulate a real-time CIL MT standard Technical exam."),
+          exam: chapExam.matchExam,
+          description: chap.description || chapExam.defaultMockDescription,
           questionsCount: chap.questionsCount,
           durationMinutes: Math.max(15, Math.ceil(chap.questionsCount * 1.5)), // 1.5 minutes per question
-          paper: chap.paper || (isClaudeChap ? "CCAF-Simulation" : "Paper-II"),
-          syllabus: isClaudeChap 
-            ? ["Agentic Loops", "Subagent Spawning", "MCP Tools & Schemas", "Claude Code Workflows", "Prompt Caching", "Context Reliability"]
-            : ["Digital Logic", "COA", "Programming & DS", "Algorithms", "TOC", "Compiler", "OS", "DBMS", "Networks"]
+          paper: chap.paper || chapExam.defaultMockPaper || chapExam.id,
+          syllabus: chapExam.mockSyllabusTags
         });
       });
     });
@@ -284,7 +290,7 @@ export default function MockTestArena({
   // Auto submit when timer runs out
   const handleAutoSubmit = () => {
     if (timerRef.current) clearInterval(timerRef.current);
-    showToast("TIME IS UP! Your flight session was automatically completed and submitted.");
+    showToast("Time's up — your exam was submitted automatically.");
     processSubmission();
   };
 
@@ -329,7 +335,7 @@ export default function MockTestArena({
         isCorrect: isCorrect
       };
       
-      // Asynchronously record to flight log (ignore if empty response)
+      // Persist asynchronously; failures are logged but don't block the results screen
       onSubmitAnswer(submission).catch(err => console.error("Error submitting mock answer:", err));
 
       return {
@@ -434,7 +440,7 @@ export default function MockTestArena({
         copyReviews[reviewIndex] = { ...copyReviews[reviewIndex], savedToMistakes: true };
         return { ...prev, questionReviews: copyReviews };
       });
-      showToast("Question successfully logged into your Mistake Book!");
+      showToast("Added to Mistakes.");
     } catch (e) {
       console.error("Failed to sync mistake", e);
     }
@@ -457,63 +463,77 @@ export default function MockTestArena({
       
       {/* 1. MOCK TEST SELECTION TAB SCREEN */}
       {activeView === "selection" && (() => {
+        const resolveMockExam = (exam: MockExam) =>
+          resolveExamForEntry({ exam: exam.exam, subject: exam.subject, chapterId: exam.chapterId, name: exam.name });
+
+        // One filter option per exam without paper groupings, or one per paper for exams that declare them.
+        const filterOptions: { value: string; label: string; count: number; colorKey: string }[] = [];
+        EXAM_REGISTRY.forEach((exam) => {
+          if (exam.papers && exam.papers.length > 0) {
+            exam.papers.forEach((paper) => {
+              filterOptions.push({
+                value: paper.id,
+                label: paper.label,
+                count: mockExams.filter(e => e.paper === paper.id).length,
+                colorKey: paper.color || exam.color,
+              });
+            });
+          } else {
+            filterOptions.push({
+              value: exam.id,
+              label: `${exam.shortName} Mocks`,
+              count: mockExams.filter(e => resolveMockExam(e).id === exam.id).length,
+              colorKey: exam.color,
+            });
+          }
+        });
+        const activeFilterOption = filterOptions.find(o => o.value === selectedPaperFilter);
+
         const filteredExams = mockExams.filter((exam) => {
           if (selectedPaperFilter === "All") {
-            if (selectedExam === "claude-ccaf") return exam.exam === "Claude CCAF";
-            if (selectedExam === "cil-mt") return exam.exam === "CIL MT";
-            return true;
+            return selectedExam === "all" || resolveMockExam(exam).id === selectedExam;
           }
-          if (selectedPaperFilter === "Claude CCAF") return exam.exam === "Claude CCAF";
-          if (selectedPaperFilter === "Paper-I") return exam.paper === "Paper-I";
-          if (selectedPaperFilter === "Paper-II") return exam.paper === "Paper-II";
-          return true;
+          const examDef = resolveMockExam(exam);
+          if (examDef.papers && examDef.papers.length > 0) {
+            return exam.paper === selectedPaperFilter;
+          }
+          return examDef.id === selectedPaperFilter;
         });
 
         return (
           <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase">
-                    Certification & Exam Simulations
-                  </span>
-                </div>
-                <h1 className="font-display text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2 mt-1">
+                <h1 className="font-display text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
                   <Award className="w-6 h-6 text-indigo-600" />
-                  Mock Test & Exam Simulator Arena
+                  Mock Tests
                 </h1>
                 <p className="text-slate-500 text-xs">
-                  Simulate high-stakes, time-boxed technical examinations tailored for Claude CCAF and CIL MT success.
+                  Timed practice exams for {EXAM_REGISTRY.map(e => e.shortName).join(" and ")}.
                 </p>
               </div>
               <button
                 onClick={onRefreshContent}
-                className="inline-flex items-center gap-1.5 text-xs font-bold font-mono text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
               >
-                <RefreshCw className="w-3.5 h-3.5" /> Synchronize Exams
+                <RefreshCw className="w-3.5 h-3.5" /> Refresh
               </button>
             </div>
 
             {/* Syllabus Banner */}
-            <div className="bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-2xl text-white shadow-md relative overflow-hidden border border-slate-800">
-              <div className="relative z-10 space-y-3 max-w-xl">
-                <span className="text-[9px] font-mono font-bold bg-indigo-500/30 text-indigo-300 border border-indigo-400/20 px-2 py-0.5 rounded uppercase tracking-wider">
-                  Real-time Blueprint Simulator
-                </span>
-                <h2 className="font-display text-lg font-bold">Standard Simulation & Diagnostic Engine</h2>
-                <p className="text-slate-300 text-xs leading-relaxed">
-                  Every mock exam features timed sessions, live question palette navigation, instant score calculation, and direct export of missed problems to your Mistake Book.
+            <div className="bg-indigo-50/60 border border-indigo-100 p-4 sm:p-6 rounded-2xl">
+              <div className="space-y-3 max-w-xl">
+                <h2 className="font-display text-lg font-bold text-slate-900">Every mock test includes</h2>
+                <p className="text-slate-600 text-xs leading-relaxed">
+                  A live countdown timer, a question palette to jump between and flag questions, instant scoring, and one-click export of missed questions to your Mistakes list.
                 </p>
-                <div className="flex flex-wrap gap-1.5 pt-2">
-                  {["Claude CCAF Full Mocks", "Agentic Systems", "MCP Protocols", "CIL MT Paper-I", "CIL MT Paper-II", "GATE CSE Level"].map((topic) => (
-                    <span key={topic} className="text-[9px] font-mono font-semibold bg-white/10 text-white/90 px-2 py-0.5 rounded">
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {EXAM_REGISTRY.flatMap(e => e.mockBannerTags || e.mockSyllabusTags).map((topic) => (
+                    <span key={topic} className="text-[11px] font-medium bg-white text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-md">
                       {topic}
                     </span>
                   ))}
                 </div>
-              </div>
-              <div className="absolute right-0 bottom-0 top-0 w-1/3 opacity-15 hidden md:block">
-                <Flame className="w-full h-full text-indigo-500" />
               </div>
             </div>
 
@@ -522,13 +542,13 @@ export default function MockTestArena({
               {/* Left Sidebar Sections */}
               <div className="lg:col-span-1 space-y-4">
                 <div className="bg-white border border-slate-150 p-4 rounded-2xl space-y-3 shadow-xs">
-                  <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider block border-b border-slate-100 pb-2">
-                    Exam Filter
+                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide block border-b border-slate-100 pb-2">
+                    Filter
                   </h3>
                   <nav className="flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
                     <button
                       onClick={() => setSelectedPaperFilter("All")}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
+                      className={`w-full text-left px-3.5 py-2.5 min-h-11 sm:min-h-0 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
                         selectedPaperFilter === "All"
                           ? "bg-indigo-600 text-white shadow-xs"
                           : "text-slate-600 hover:bg-slate-50"
@@ -542,100 +562,70 @@ export default function MockTestArena({
                       </span>
                     </button>
 
-                    <button
-                      onClick={() => setSelectedPaperFilter("Claude CCAF")}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
-                        selectedPaperFilter === "Claude CCAF"
-                          ? "bg-purple-700 text-white shadow-xs"
-                          : "text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <span>Claude CCAF Mocks</span>
-                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                        selectedPaperFilter === "Claude CCAF" ? "bg-white/20 text-white" : "bg-slate-150 text-slate-500"
-                      }`}>
-                        {mockExams.filter(e => e.exam === "Claude CCAF").length}
-                      </span>
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedPaperFilter("Paper-I")}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
-                        selectedPaperFilter === "Paper-I"
-                          ? "bg-indigo-600 text-white shadow-xs"
-                          : "text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <span>CIL Paper-I (Aptitude)</span>
-                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                        selectedPaperFilter === "Paper-I" ? "bg-white/20 text-white" : "bg-slate-150 text-slate-500"
-                      }`}>
-                        {mockExams.filter(e => e.paper === "Paper-I").length}
-                      </span>
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedPaperFilter("Paper-II")}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
-                        selectedPaperFilter === "Paper-II"
-                          ? "bg-indigo-600 text-white shadow-xs"
-                          : "text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      <span>CIL Paper-II (Technical)</span>
-                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                        selectedPaperFilter === "Paper-II" ? "bg-white/20 text-white" : "bg-slate-150 text-slate-500"
-                      }`}>
-                        {mockExams.filter(e => e.paper === "Paper-II").length}
-                      </span>
-                    </button>
+                    {filterOptions.map((opt) => {
+                      const optColors = getColorClasses(opt.colorKey);
+                      const isActive = selectedPaperFilter === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          onClick={() => setSelectedPaperFilter(opt.value)}
+                          className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
+                            isActive
+                              ? `${optColors.solidBg} text-white shadow-xs`
+                              : "text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
+                          <span>{opt.label}</span>
+                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                            isActive ? "bg-white/20 text-white" : "bg-slate-150 text-slate-500"
+                          }`}>
+                            {opt.count}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </nav>
                 </div>
 
                 {/* Strategy Insight Card */}
                 <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-2xl hidden lg:block space-y-2">
-                  <span className="text-[10px] font-mono font-bold text-indigo-800 uppercase tracking-wider block">
-                    Simulation Tip
+                  <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-wide block">
+                    Tip
                   </span>
                   <p className="text-[11px] text-indigo-950/80 leading-relaxed font-semibold">
-                    Simulations mirror the real countdown timers and navigation palettes. Mark doubtful questions for review to maximize scoring under time pressure.
+                    The timer and question palette match the real exam. Flag questions you're unsure of and come back to them before submitting.
                   </p>
                 </div>
               </div>
 
               {/* Right Mock Sheet Grid */}
               <div className="lg:col-span-3 space-y-4">
-                <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
-                  Available Exam Sheets ({selectedPaperFilter === "All" ? "All Tracks" : selectedPaperFilter})
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+                  Available Exams ({selectedPaperFilter === "All" ? "All Tracks" : activeFilterOption?.label || selectedPaperFilter})
                 </h3>
 
                 {filteredExams.length === 0 ? (
                   <div className="bg-white border border-slate-100 rounded-2xl p-8 text-center text-slate-400">
-                    No mock sheets found for the selected filter.
+                    No exams match this filter.
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredExams.map((exam) => {
-                      const isClaudeExam = exam.exam === "Claude CCAF";
+                      const examDef = resolveMockExam(exam);
+                      const paper = examDef.papers?.find(p => p.id === exam.paper);
+                      const cardColors = getColorClasses(paper?.color || examDef.color);
+                      const badgeLabel = paper
+                        ? `${examDef.shortName.toUpperCase()}: ${(paper.tag || paper.label).toUpperCase()}`
+                        : `${examDef.shortName.toUpperCase()} CERTIFICATION`;
                       return (
-                        <div 
+                        <div
                           key={exam.id}
-                          className="bg-white border border-slate-150 hover:border-indigo-300 rounded-2xl p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6 group"
+                          className="bg-white border border-slate-150 hover:border-indigo-300 rounded-2xl p-4 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6 group"
                         >
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <span className={`inline-flex items-center gap-1 border text-[9px] font-mono font-bold px-2.5 py-0.5 rounded ${
-                                isClaudeExam
-                                  ? "bg-purple-50 border-purple-200 text-purple-800"
-                                  : exam.paper === "Paper-I"
-                                  ? "bg-blue-50 border-blue-100 text-blue-800"
-                                  : "bg-amber-50 border-amber-100 text-amber-800"
-                              }`}>
-                                {isClaudeExam 
-                                  ? "CLAUDE CCAF CERTIFICATION" 
-                                  : exam.paper === "Paper-I" 
-                                  ? "CIL MT: PAPER-I APTITUDE" 
-                                  : "CIL MT: PAPER-II TECHNICAL"}
+                              <span className={`inline-flex items-center gap-1 border text-[9px] font-mono font-bold px-2.5 py-0.5 rounded ${cardColors.badgeBg} ${cardColors.badgeBorder} ${cardColors.badgeText}`}>
+                                {badgeLabel}
                               </span>
                               <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1 font-semibold">
                                 <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -665,13 +655,9 @@ export default function MockTestArena({
                             </div>
                             <button
                               onClick={() => handleSelectMock(exam)}
-                              className={`inline-flex items-center gap-2 text-xs font-extrabold text-white px-4 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer ${
-                                isClaudeExam 
-                                  ? "bg-purple-700 hover:bg-purple-800" 
-                                  : "bg-indigo-600 hover:bg-indigo-700"
-                              }`}
+                              className={`inline-flex items-center gap-2 text-xs font-extrabold text-white px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl shadow-xs transition-all cursor-pointer ${cardColors.solidBg} ${cardColors.solidHoverBg}`}
                             >
-                              Launch Simulation <Play className="w-3 h-3 text-white fill-white" />
+                              Start Exam <Play className="w-3 h-3 text-white fill-white" />
                             </button>
                           </div>
                         </div>
@@ -695,54 +681,56 @@ export default function MockTestArena({
               <FileText className="w-6 h-6" />
             </div>
             <h2 className="font-display text-xl font-bold text-slate-800">
-              Exam Instructions & Flight Briefing
+              Exam Instructions
             </h2>
-            <p className="text-xs text-slate-400 font-mono">
-              PRE-FLIGHT AUDIT • {selectedMock.name.toUpperCase()}
+            <p className="text-xs text-slate-400">
+              {selectedMock.name}
             </p>
           </div>
 
           {/* Exam Specs Grid */}
           <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
             <div className="space-y-1">
-              <span className="text-[10px] font-mono text-slate-400 font-semibold block">DURATION</span>
-              <span className="text-base font-display font-extrabold text-slate-800">{selectedMock.durationMinutes} Minutes</span>
+              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide block">Duration</span>
+              <span className="text-base font-display font-extrabold text-slate-800">{selectedMock.durationMinutes} min</span>
             </div>
             <div className="space-y-1 border-x border-slate-200">
-              <span className="text-[10px] font-mono text-slate-400 font-semibold block">TOTAL ITEMS</span>
-              <span className="text-base font-display font-extrabold text-slate-800">{loadingQuestions ? "Loading..." : questions.length} MCQs</span>
+              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide block">Questions</span>
+              <span className="text-base font-display font-extrabold text-slate-800">{loadingQuestions ? "Loading…" : questions.length}</span>
             </div>
             <div className="space-y-1">
-              <span className="text-[10px] font-mono text-slate-400 font-semibold block">MARKING SCHEME</span>
-              <span className="text-base font-display font-extrabold text-emerald-600">+1.00 / 0.00</span>
+              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide block">Marking</span>
+              <span className="text-base font-display font-extrabold text-emerald-600">+1 / 0</span>
             </div>
           </div>
 
           {/* Instructions List */}
           <div className="space-y-3">
-            <h3 className="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">Important Guidelines:</h3>
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Guidelines</h3>
             <ul className="text-xs text-slate-600 space-y-2.5 list-disc pl-5 leading-relaxed">
-              <li>This is a **strictly timed simulator**. Once started, the countdown timer cannot be paused.</li>
-              <li>There is **no negative marking** (following standard PSU Coal India MT guidelines). Unanswered questions receive 0 marks.</li>
-              <li>The **Question Palette** on the right allows you to quickly jump between questions, check visited status, and view flagged elements.</li>
-              <li>Click **"Mark for Review & Next"** to flag questions you want to reconsider. These will display as purple on your console grid.</li>
-              <li>Explanations, solution keys, and the Professor's **Exam Tricks** are hidden until you click **Submit Exam** to maintain cognitive rigor.</li>
-              <li>When the timer hits zero, the simulator will auto-submit all saved answers immediately.</li>
+              <li>This is a <strong>strictly timed</strong> exam. Once started, the countdown timer cannot be paused.</li>
+              <li>There is <strong>no negative marking</strong>. Unanswered questions receive 0 marks.</li>
+              <li>The <strong>question palette</strong> on the right lets you jump between questions and see which ones you've visited or flagged.</li>
+              <li>Click <strong>"Mark for Review & Next"</strong> to flag a question to revisit later.</li>
+              <li>Explanations and exam tips stay hidden until you <strong>submit the exam</strong>.</li>
+              <li>When the timer hits zero, your saved answers are submitted automatically.</li>
             </ul>
           </div>
 
-          {/* AI Virtual Teacher Expansion Hub */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-150 p-5 rounded-2xl space-y-4 shadow-sm">
+          {/* AI Question Expansion — hidden unless the deployment can persist
+              the generated questions (shared/capabilities.ts). */}
+          {canExpandWithAi && (
+          <div className="bg-indigo-50/60 border border-indigo-100 p-5 rounded-2xl space-y-4">
             <div className="flex items-start gap-3">
               <div className="p-2.5 bg-indigo-100 text-indigo-700 rounded-xl shrink-0">
                 <Sparkles className="w-5 h-5 text-indigo-700" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-display font-extrabold text-indigo-950 text-sm flex items-center gap-2">
-                  AI Virtual Teacher • Content Expander
+                <h4 className="font-display font-extrabold text-indigo-950 text-sm">
+                  Need more questions?
                 </h4>
                 <p className="text-slate-500 text-[11px] leading-relaxed">
-                  CIL MT Domain Knowledge Series Mock Test Sheets contain {questions.length} premium questions by default to load quickly. Use the **Virtual Teacher** to expand this sheet to the full **100-question master series** on-demand!
+                  This {resolveExamForEntry({ exam: selectedMock?.exam, subject: selectedMock?.subject, chapterId: selectedMock?.chapterId, name: selectedMock?.name }).shortName} mock has {questions.length} questions loaded by default. Use AI to expand it to a full 100-question set.
                 </p>
               </div>
             </div>
@@ -757,7 +745,7 @@ export default function MockTestArena({
               <button
                 onClick={() => handleExpandMock(20)}
                 disabled={expanding || questions.length >= 100}
-                className="inline-flex items-center gap-1.5 text-xs font-bold font-mono bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1.5 text-xs font-bold font-mono bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 px-3.5 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all cursor-pointer shadow-2xs"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${expanding ? "animate-spin" : ""}`} />
                 Add 20 MCQs
@@ -765,13 +753,13 @@ export default function MockTestArena({
               <button
                 onClick={() => handleExpandMock(40)}
                 disabled={expanding || questions.length >= 100}
-                className="inline-flex items-center gap-1.5 text-xs font-bold font-mono bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40 px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-sm"
+                className="inline-flex items-center gap-1.5 text-xs font-bold font-mono bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40 px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all cursor-pointer shadow-sm"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Add 40 MCQs
               </button>
               {questions.length >= 100 ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 px-3.5 py-2.5 rounded-xl">
+                <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 px-3.5 py-2.5 min-h-11 sm:min-h-0 rounded-xl">
                   <CheckCircle className="w-4 h-4 text-emerald-600" /> Fully Expanded Master (100 MCQ Series)
                 </span>
               ) : (
@@ -781,6 +769,7 @@ export default function MockTestArena({
               )}
             </div>
           </div>
+          )}
 
           {/* Action Buttons */}
           <div className="pt-6 border-t border-slate-100 flex items-center justify-between gap-4">
@@ -807,13 +796,13 @@ export default function MockTestArena({
         <div className="space-y-6">
           
           {/* Main Dark Simulator HUD */}
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between text-white gap-4 shadow-lg">
-            <div className="space-y-1 text-center md:text-left">
-              <div className="text-[10px] font-bold font-mono text-indigo-400 tracking-wider uppercase flex items-center justify-center md:justify-start gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-indigo-400 fill-indigo-400" />
-                CIL MT CONSOLE LIVE SCREEN
+          <div className="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between text-white gap-4 shadow-lg">
+            <div className="space-y-1 text-center md:text-left min-w-0 w-full md:w-auto">
+              <div className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wide flex items-center justify-center md:justify-start gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-indigo-400" />
+                Exam in progress
               </div>
-              <h2 className="text-base font-bold font-display leading-tight truncate max-w-sm md:max-w-xl">
+              <h2 className="text-sm sm:text-base font-bold font-display leading-tight truncate max-w-full md:max-w-xl">
                 {selectedMock?.name}
               </h2>
             </div>
@@ -836,7 +825,7 @@ export default function MockTestArena({
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
             
             {/* Left Column (Main Question panel - Span 3) */}
-            <div className="lg:col-span-3 bg-white border border-slate-100 rounded-2xl p-6 md:p-8 shadow-xs flex flex-col justify-between min-h-[500px]">
+            <div className="lg:col-span-3 bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xs flex flex-col justify-between min-h-[500px]">
               
               {/* Question Header Status */}
               <div className="space-y-6">
@@ -863,8 +852,8 @@ export default function MockTestArena({
 
                 {/* Question Body */}
                 <div className="space-y-6">
-                  <h3 className="font-display font-bold text-slate-800 text-base leading-relaxed whitespace-pre-line">
-                    {questions[currentIndex].question}
+                  <h3 className="font-display font-bold text-slate-800 text-base leading-relaxed">
+                    <RichText>{questions[currentIndex].question}</RichText>
                   </h3>
 
                   {/* Options Stack */}
@@ -890,7 +879,7 @@ export default function MockTestArena({
                             }`}>
                               {letters[idx]}
                             </span>
-                            <span>{option}</span>
+                            <span><RichText inline>{option}</RichText></span>
                           </div>
                           {isSelected && (
                             <div className="p-1 bg-white/20 rounded-full">
@@ -952,7 +941,7 @@ export default function MockTestArena({
               
               {/* Stats HUD */}
               <div className="space-y-3">
-                <h3 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">Exam Console Status</h3>
+                <h3 className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Question Status</h3>
                 <div className="grid grid-cols-2 gap-2 text-center text-xs">
                   <div className="bg-slate-800/40 p-2.5 rounded-xl border border-slate-800/60">
                     <span className="text-[9px] font-mono text-slate-500 block mb-0.5 uppercase">Answered</span>
@@ -1002,21 +991,54 @@ export default function MockTestArena({
                 </div>
               </div>
 
-              {/* Submit Console */}
+              {/* Submit */}
               <div className="pt-4 border-t border-slate-800 space-y-3">
                 <button
                   onClick={handleManualSubmit}
-                  className="w-full text-center py-3 bg-rose-600 hover:bg-rose-700 rounded-xl text-xs font-bold font-mono tracking-wider transition-all cursor-pointer shadow-sm text-white"
+                  className="w-full text-center py-3 bg-rose-600 hover:bg-rose-700 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer shadow-sm text-white"
                 >
-                  SUBMIT FLIGHT RECORD
+                  Submit Exam
                 </button>
-                <p className="text-[9px] font-mono text-slate-500 text-center leading-normal">
-                  Completing submission stops the flight clock and archives answers.
+                <p className="text-[10px] text-slate-500 text-center leading-normal">
+                  This stops the timer and finalizes your answers.
                 </p>
               </div>
 
             </div>
 
+          </div>
+
+          {/*
+            On phones the palette console (and its Submit button) stacks below a
+            tall question card, so submitting meant scrolling past the whole
+            question. This pins the exam-critical actions to the bottom instead.
+          */}
+          <div className="lg:hidden sticky bottom-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-white/95 backdrop-blur-sm border-t border-slate-200 flex items-center gap-2 shadow-[0_-2px_12px_rgba(15,23,42,0.06)]">
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              aria-label="Previous question"
+              className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-xl bg-slate-100 text-slate-600 disabled:opacity-40 transition-all cursor-pointer shrink-0"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={currentIndex === questions.length - 1}
+              aria-label="Next question"
+              className="inline-flex items-center justify-center min-h-11 min-w-11 rounded-xl bg-slate-100 text-slate-600 disabled:opacity-40 transition-all cursor-pointer shrink-0"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+            <div className="flex-1 text-center text-[11px] font-mono font-bold text-slate-400 min-w-0 truncate">
+              {totalAnswered}/{questions.length} answered
+            </div>
+            <button
+              onClick={handleManualSubmit}
+              className="inline-flex items-center justify-center min-h-11 px-5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer shadow-sm shrink-0"
+            >
+              Submit
+            </button>
           </div>
 
         </div>
@@ -1027,7 +1049,7 @@ export default function MockTestArena({
         <div className="space-y-6 animate-fade-in">
           
           {/* Main Results Board */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 shadow-sm space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-6 gap-4">
               <div className="space-y-1">
                 <div className="text-[9px] font-bold font-mono text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded uppercase tracking-wider inline-block">
@@ -1082,18 +1104,18 @@ export default function MockTestArena({
                     ? "text-indigo-600" 
                     : "text-rose-600"
                 }`}>
-                  {savedExamResult.accuracy >= 85 
-                    ? "Flight Commander (Excellent)" 
-                    : savedExamResult.accuracy >= 70 
-                    ? "Management Trainee (Qualified)" 
-                    : "Cadet (Requires Revision)"}
+                  {savedExamResult.accuracy >= 85
+                    ? "Excellent"
+                    : savedExamResult.accuracy >= 70
+                    ? "Qualified"
+                    : "Needs revision"}
                 </span>
               </div>
             </div>
 
             {/* Subject wise Diagnostics breakdown */}
             <div className="space-y-3.5">
-              <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">Subject-Wise Analytics Breakdown</h3>
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Breakdown by Subject</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {Object.entries(savedExamResult.subjectStats).map(([subj, statValue]) => {
                   const stat = statValue as { total: number; correct: number };
@@ -1102,7 +1124,7 @@ export default function MockTestArena({
                     <div key={subj} className="border border-slate-100 p-4 rounded-xl space-y-2 text-xs bg-slate-50/50">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-slate-700 truncate max-w-[150px]">{subj}</span>
-                        <span className="font-mono font-bold text-slate-500">{stat.correct} / {stat.total} Correct ({pct}%)</span>
+                        <span className="font-semibold text-slate-500">{stat.correct} / {stat.total} ({pct}%)</span>
                       </div>
                       <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                         <div className="bg-indigo-600 h-full rounded-full" style={{ width: `${pct}%` }} />
@@ -1175,8 +1197,8 @@ export default function MockTestArena({
                     </div>
 
                     {/* Question Statement */}
-                    <h4 className="font-display font-bold text-slate-800 text-sm md:text-base leading-relaxed whitespace-pre-line">
-                      {review.question.question}
+                    <h4 className="font-display font-bold text-slate-800 text-sm md:text-base leading-relaxed">
+                      <RichText>{review.question.question}</RichText>
                     </h4>
 
                     {/* Options Stack */}
@@ -1207,9 +1229,9 @@ export default function MockTestArena({
                               }`}>
                                 {letters[oIdx]}
                               </span>
-                              <span>{option}</span>
+                              <span><RichText inline>{option}</RichText></span>
                             </div>
-                            
+
                             {isCorrectOption && (
                               <span className="text-[10px] bg-emerald-100/60 text-emerald-800 font-bold px-2 py-0.5 rounded font-mono">
                                 CORRECT
@@ -1226,25 +1248,25 @@ export default function MockTestArena({
                     </div>
 
                     {/* Expandable Explanation block */}
-                    <div className="bg-slate-50 border border-slate-150/60 rounded-2xl p-5 md:p-6 space-y-4">
+                    <div className="bg-slate-50 border border-slate-150/60 rounded-2xl p-5 md:p-4 sm:p-6 space-y-4">
                       
                       {/* Detailed Solution */}
                       <div className="space-y-1 text-xs">
-                        <h5 className="font-mono font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Academic Explanation & Formulae:
+                        <h5 className="font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Explanation
                         </h5>
-                        <p className="text-slate-600 leading-relaxed whitespace-pre-line pt-1">
-                          {review.question.explanation}
-                        </p>
+                        <div className="text-slate-600 leading-relaxed pt-1">
+                          <RichText>{review.question.explanation}</RichText>
+                        </div>
                       </div>
 
-                      {/* Prof Flight Trick */}
+                      {/* Exam Trick */}
                       <div className="border-t border-slate-200/50 pt-4 space-y-1.5 text-xs">
-                        <h5 className="font-mono font-bold text-amber-600 uppercase tracking-wide flex items-center gap-1">
-                          <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-400" /> Exam Shortcut / flight Trick:
+                        <h5 className="font-semibold text-amber-600 uppercase tracking-wide flex items-center gap-1">
+                          <Lightbulb className="w-3.5 h-3.5 text-amber-500" /> Tip
                         </h5>
-                        <div className="bg-amber-50/60 border border-amber-100 p-3.5 rounded-xl text-amber-900 leading-relaxed italic">
-                          "{review.question.examTrick}"
+                        <div className="bg-amber-50/60 border border-amber-100 p-3.5 rounded-xl text-amber-900 leading-relaxed">
+                          <RichText>{review.question.examTrick}</RichText>
                         </div>
                       </div>
                     </div>
@@ -1274,16 +1296,16 @@ export default function MockTestArena({
       {/* 5. SUBMIT CONFIRM MODAL OVERLAY */}
       {showSubmitConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-slate-150 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5 animate-scale-up">
+          <div className="bg-white border border-slate-150 rounded-2xl p-4 sm:p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5 animate-scale-up">
             <div className="text-center space-y-3">
               <div className="p-3 bg-rose-50 border border-rose-100 text-rose-600 rounded-full w-14 h-14 flex items-center justify-center mx-auto">
-                <AlertTriangle className="w-6 h-6 animate-bounce" />
+                <AlertTriangle className="w-6 h-6" />
               </div>
               <h3 className="font-display text-lg font-bold text-slate-800">
-                Submit Your Flight Record?
+                Submit this exam?
               </h3>
               <p className="text-slate-400 text-xs">
-                You are about to complete and lock this mock exam session. Make sure you audit your actions before continuing.
+                You won't be able to change your answers after submitting.
               </p>
             </div>
 

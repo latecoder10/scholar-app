@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MobileQuestion, UserStats, AnswerRecord } from '../types';
 import examManifest from '../data/examManifest.json';
+import { EXAM_REGISTRY, DEFAULT_EXAM_ID, getExamById } from '../data/examRegistry';
 
 const STATS_KEY = '@exam_scholar_stats_v1';
 const ANSWERS_KEY = '@exam_scholar_answers_v1';
@@ -12,19 +13,14 @@ const DEFAULT_STATS: UserStats = {
   currentStreak: 1,
   bestStreak: 1,
   accuracy: 0,
-  activeExam: 'claude-ccaf', // Defaults to focused track rather than loading all
+  activeExam: DEFAULT_EXAM_ID, // Defaults to focused track rather than loading all
   bookmarks: [],
   mistakeIds: []
 };
 
-// In-memory lazy cache: holds only the active exam dataset to avoid RAM spikes and UI freezing
-const memoryCache: {
-  ccaf: MobileQuestion[] | null;
-  cil: MobileQuestion[] | null;
-} = {
-  ccaf: null,
-  cil: null
-};
+// In-memory lazy cache: holds only the loaded exam datasets to avoid RAM spikes and UI freezing.
+// Keyed by exam id so any number of registered exams can be cached independently.
+const memoryCache: Record<string, MobileQuestion[] | null> = {};
 
 export const MobileStorageService = {
   /**
@@ -95,52 +91,43 @@ export const MobileStorageService = {
   },
 
   /**
-   * LAZY LOADER: Loads ONLY the requested exam questions chunk into memory.
-   * Isolates Claude CCAF (425 Qs) and CIL MT (703 Qs) so phones never run out of memory.
+   * LAZY LOADER: Loads ONLY the requested exam's questions chunk into memory,
+   * via the registry's per-exam static import() — isolating each track so
+   * phones never run out of memory loading everything at once.
    */
-  async loadExamQuestions(exam: 'claude-ccaf' | 'cil-mt' | 'all' = 'claude-ccaf'): Promise<MobileQuestion[]> {
-    // 1. Lazy load Claude CCAF chunk
-    if (exam === 'claude-ccaf') {
-      if (!memoryCache.ccaf) {
-        const ccafModule = await import('../data/ccafQuestions.json');
-        memoryCache.ccaf = (ccafModule.default || ccafModule) as MobileQuestion[];
-      }
-      return memoryCache.ccaf;
+  async loadExamQuestions(exam: string = DEFAULT_EXAM_ID): Promise<MobileQuestion[]> {
+    if (exam === 'all') {
+      const chunks = await Promise.all(
+        EXAM_REGISTRY.map(async (def) => {
+          if (!memoryCache[def.id]) {
+            memoryCache[def.id] = await def.load();
+          }
+          return memoryCache[def.id]!;
+        })
+      );
+      return chunks.flat();
     }
 
-    // 2. Lazy load CIL MT chunk
-    if (exam === 'cil-mt') {
-      if (!memoryCache.cil) {
-        const cilModule = await import('../data/cilQuestions.json');
-        memoryCache.cil = (cilModule.default || cilModule) as MobileQuestion[];
-      }
-      return memoryCache.cil;
-    }
+    const examDef = getExamById(exam);
+    if (!examDef) return [];
 
-    // 3. If "all" is explicitly chosen, lazily load both and merge
-    if (!memoryCache.ccaf) {
-      const ccafModule = await import('../data/ccafQuestions.json');
-      memoryCache.ccaf = (ccafModule.default || ccafModule) as MobileQuestion[];
+    if (!memoryCache[examDef.id]) {
+      memoryCache[examDef.id] = await examDef.load();
     }
-    if (!memoryCache.cil) {
-      const cilModule = await import('../data/cilQuestions.json');
-      memoryCache.cil = (cilModule.default || cilModule) as MobileQuestion[];
-    }
-
-    return [...memoryCache.ccaf, ...memoryCache.cil];
+    return memoryCache[examDef.id]!;
   },
 
   /**
    * Session Generator: Slices a manageable chunk (e.g. 20-30 questions) for smooth 60fps quiz render
    */
   async getSessionPool(options: {
-    exam?: 'claude-ccaf' | 'cil-mt' | 'all';
+    exam?: string;
     limit?: number;
     shuffle?: boolean;
     subject?: string;
     mistakeOnly?: boolean;
   } = {}): Promise<MobileQuestion[]> {
-    const { exam = 'claude-ccaf', limit = 25, shuffle = true, subject, mistakeOnly } = options;
+    const { exam = DEFAULT_EXAM_ID, limit = 25, shuffle = true, subject, mistakeOnly } = options;
     const allForExam = await this.loadExamQuestions(exam);
 
     let pool = [...allForExam];

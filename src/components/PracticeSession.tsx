@@ -18,6 +18,8 @@ import {
   CornerDownRight
 } from "lucide-react";
 import { Question, UserAnswerSubmission } from "../types";
+import { resolveExamForEntry } from "../../shared/exams";
+import RichText from "./RichText";
 
 interface PracticeSessionProps {
   questions: Question[];
@@ -84,9 +86,7 @@ export default function PracticeSession({
 
     try {
       setIsSubmitting(true);
-      const isClaudeTrack = (subject && (subject.includes("Claude") || subject.includes("CCAF") || subject.includes("MCP") || subject.includes("Agentic"))) ||
-        (chapterId && chapterId.includes("claude")) ||
-        (chapterName && chapterName.toLowerCase().includes("claude"));
+      const resolvedExam = resolveExamForEntry({ subject, chapterId, name: chapterName });
 
       const submission: UserAnswerSubmission = {
         subject,
@@ -101,7 +101,7 @@ export default function PracticeSession({
         userAnswer: selectedOption,
         confidence,
         isCorrect,
-        exam: isClaudeTrack ? "Claude CCAF" : "CIL MT",
+        exam: resolvedExam.matchExam,
       };
 
       await onSubmitAnswer(submission);
@@ -130,63 +130,58 @@ export default function PracticeSession({
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in pb-12">
-      {/* Flight HUD / Status Bar */}
-      <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between text-white shadow-xs">
-        <div className="space-y-0.5">
-          <div className="text-[9px] font-bold font-mono text-slate-500 tracking-wider uppercase">
-            FLIGHT MISSION: {mode.toUpperCase()} MODE
+      {/* Session Status Bar */}
+      <div className="bg-white border border-slate-150 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="space-y-0.5 min-w-0">
+          <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+            {mode.charAt(0).toUpperCase() + mode.slice(1)} session
           </div>
-          <div className="text-sm font-bold font-display leading-tight truncate max-w-xs md:max-w-md">
+          <div className="text-sm font-bold font-display leading-tight truncate max-w-full md:max-w-md text-slate-800">
             {chapterName}
           </div>
         </div>
-        <div className="text-right shrink-0">
-          <div className="text-[10px] font-mono text-slate-400">
-            QUESTION <strong className="text-white">{currentIndex + 1}</strong> OF <strong className="text-white">{questions.length}</strong>
+        <div className="text-left sm:text-right shrink-0">
+          <div className="text-xs text-slate-500">
+            Question <strong className="text-slate-800">{currentIndex + 1}</strong> of <strong className="text-slate-800">{questions.length}</strong>
           </div>
-          <div className="w-24 bg-slate-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
-            <div className="bg-emerald-500 h-full rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
+          <div className="w-full sm:w-24 bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
+            <div className="bg-indigo-600 h-full rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
           </div>
         </div>
       </div>
 
       {/* Main Card */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 md:p-8 shadow-xs">
+      <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xs">
         
         {/* Difficulty, Source and Importance */}
-        <div className="flex flex-wrap items-center gap-3 mb-5 text-[10px] font-mono">
-          <span className={`px-2 py-0.5 border rounded-md font-semibold uppercase tracking-wider ${
-            currentQuestion.difficulty === 'Easy' 
-              ? 'bg-emerald-50 border-emerald-100 text-emerald-700' 
-              : currentQuestion.difficulty === 'Medium' 
-              ? 'bg-indigo-50 border-indigo-100 text-indigo-700' 
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-5 text-[11px]">
+          <span className={`px-2 py-0.5 border rounded-md font-semibold ${
+            currentQuestion.difficulty === 'Easy'
+              ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
+              : currentQuestion.difficulty === 'Medium'
+              ? 'bg-indigo-50 border-indigo-100 text-indigo-700'
               : 'bg-rose-50 border-rose-100 text-rose-700'
           }`}>
             {currentQuestion.difficulty || 'Medium'}
           </span>
-          <span className="text-slate-400">•</span>
-          <span className="text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md">
-            SOURCE: {currentQuestion.source || "CIL MT Mock"}
+          <span className="text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md truncate max-w-full">
+            {currentQuestion.source || "Practice question"}
           </span>
           {currentQuestion.importance && (
-            <>
-              <span className="text-slate-400">•</span>
-              <span className={`px-2 py-0.5 rounded-md font-semibold ${
-                currentQuestion.importance === 'High' 
-                  ? 'bg-amber-50 text-amber-700 border border-amber-100' 
-                  : 'bg-slate-50 text-slate-500'
-              }`}>
-                IMPORTANCE: {currentQuestion.importance}
-              </span>
-            </>
+            <span className={`px-2 py-0.5 rounded-md font-semibold ${
+              currentQuestion.importance === 'High'
+                ? 'bg-amber-50 text-amber-700 border border-amber-100'
+                : 'bg-slate-50 text-slate-500'
+            }`}>
+              {currentQuestion.importance} priority
+            </span>
           )}
         </div>
 
         {/* Question Statement */}
-        <div className="space-y-1">
-          <span className="text-xs font-bold font-mono text-indigo-600 block">QUESTION PROMPT</span>
+        <div>
           <h2 className="text-lg md:text-xl font-bold font-display text-slate-800 leading-snug">
-            {currentQuestion.question}
+            <RichText inline>{currentQuestion.question}</RichText>
           </h2>
         </div>
 
@@ -232,7 +227,7 @@ export default function PracticeSession({
                   {letter}
                 </span>
                 <span className="text-sm font-medium text-slate-700 leading-relaxed">
-                  {option}
+                  <RichText inline>{option}</RichText>
                 </span>
               </button>
             );
@@ -242,14 +237,14 @@ export default function PracticeSession({
         {/* Confidence Selector (Hidden when already answered) */}
         {!isAnswered && (
           <div className="mt-8 pt-6 border-t border-slate-50 space-y-3">
-            <label className="text-xs font-bold font-mono text-slate-400 block uppercase tracking-wider">
-              Calibrate Confidence Level
+            <label className="text-xs font-semibold text-slate-400 block">
+              How confident are you?
             </label>
             <div className="grid grid-cols-3 gap-3">
               {[
-                { level: "Guess", color: "border-amber-200 text-amber-700 bg-amber-50/30 ring-amber-500", icon: "🎲" },
-                { level: "Somewhat Sure", color: "border-blue-200 text-blue-700 bg-blue-50/30 ring-blue-500", icon: "⚖️" },
-                { level: "Very Sure", color: "border-emerald-200 text-emerald-700 bg-emerald-50/30 ring-emerald-500", icon: "🛡️" }
+                { level: "Guess", color: "border-amber-200 text-amber-700 bg-amber-50/30 ring-amber-500" },
+                { level: "Somewhat Sure", color: "border-blue-200 text-blue-700 bg-blue-50/30 ring-blue-500" },
+                { level: "Very Sure", color: "border-emerald-200 text-emerald-700 bg-emerald-50/30 ring-emerald-500" }
               ].map((item) => {
                 const isActive = confidence === item.level;
                 return (
@@ -257,14 +252,13 @@ export default function PracticeSession({
                     key={item.level}
                     type="button"
                     onClick={() => setConfidence(item.level as any)}
-                    className={`p-3 rounded-xl border text-center font-mono text-xs font-semibold flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer transition-all ${
-                      isActive 
-                        ? `${item.color} ring-1 font-bold border-transparent` 
+                    className={`p-3 rounded-xl border text-center text-xs font-semibold flex items-center justify-center cursor-pointer transition-all ${
+                      isActive
+                        ? `${item.color} ring-1 font-bold border-transparent`
                         : "border-slate-100 text-slate-400 hover:bg-slate-50 hover:text-slate-500"
                     }`}
                   >
-                    <span>{item.icon}</span>
-                    <span>{item.level}</span>
+                    {item.level}
                   </button>
                 );
               })}
@@ -277,16 +271,16 @@ export default function PracticeSession({
           <div className="mt-6 flex justify-between items-center gap-4">
             <button
               onClick={onFinish}
-              className="px-5 py-3 text-xs font-bold font-mono text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              className="px-5 py-3 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
             >
-              Abort Mission
+              End session
             </button>
             <button
               onClick={handleSubmit}
               disabled={!selectedOption || isSubmitting}
-              className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all cursor-pointer shadow-xs"
             >
-              {isSubmitting ? "Locking Answer..." : "Submit Answer"}
+              {isSubmitting ? "Submitting…" : "Submit Answer"}
             </button>
           </div>
         )}
@@ -295,7 +289,7 @@ export default function PracticeSession({
 
       {/* Answer Screen / Explanations Panel (Appears after answer submitted) */}
       {isAnswered && (
-        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6 md:p-8 space-y-6 animate-slide-up">
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 space-y-6 animate-slide-up">
           
           {/* Correction Banner */}
           <div className="flex items-start gap-4">
@@ -310,11 +304,10 @@ export default function PracticeSession({
             )}
 
             <div>
-              <div className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider">Verdict</div>
               <h3 className={`font-display text-lg font-bold ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}`}>
-                {isCorrect 
-                  ? "Correct Answer! Target secured." 
-                  : `Incorrect. Correct answer is Option: ${currentQuestion.answer}`
+                {isCorrect
+                  ? "Correct!"
+                  : `Incorrect — the correct answer is: ${currentQuestion.answer}`
                 }
               </h3>
               <p className="text-slate-400 text-xs mt-0.5">
@@ -325,25 +318,24 @@ export default function PracticeSession({
 
           {/* Explanation Section */}
           <div className="space-y-2 border-t border-slate-200/60 pt-5">
-            <span className="text-xs font-bold font-mono text-slate-400 block uppercase tracking-wider">Solution Explanation</span>
-            <div className="text-slate-600 text-sm leading-relaxed whitespace-pre-line bg-white p-4 rounded-xl border border-slate-100">
-              {currentQuestion.explanation}
+            <span className="text-xs font-semibold text-slate-400 block">Explanation</span>
+            <div className="text-slate-600 text-sm leading-relaxed bg-white p-4 rounded-xl border border-slate-100">
+              <RichText>{currentQuestion.explanation}</RichText>
             </div>
           </div>
 
           {/* Exam Trick Section */}
           {currentQuestion.examTrick && (
             <div className="space-y-2">
-              <span className="text-xs font-bold font-mono text-slate-400 block uppercase tracking-wider">Exam Tactic / Trick</span>
-              <div className="bg-linear-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-4 rounded-xl flex items-start gap-3">
+              <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex items-start gap-3">
                 <Lightbulb className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-xs font-bold text-amber-800 font-display uppercase tracking-wider">
-                    {subject.includes("Claude") || chapterId.includes("claude") ? "Claude CCAF Architecture Tip" : "Exam Strategy & Shortcut"}
+                  <h4 className="text-xs font-bold text-amber-800 font-display">
+                    {resolveExamForEntry({ subject, chapterId, name: chapterName }).questionTipLabel || "Tip"}
                   </h4>
-                  <p className="text-xs text-amber-700 leading-relaxed mt-0.5 font-medium">
-                    {currentQuestion.examTrick}
-                  </p>
+                  <div className="text-xs text-amber-700 leading-relaxed mt-0.5 font-medium">
+                    <RichText>{currentQuestion.examTrick}</RichText>
+                  </div>
                 </div>
               </div>
             </div>
@@ -352,10 +344,10 @@ export default function PracticeSession({
           {/* Tags */}
           {currentQuestion.tags && currentQuestion.tags.length > 0 && (
             <div className="space-y-2">
-              <span className="text-xs font-bold font-mono text-slate-400 block uppercase tracking-wider">Tags & Taxonomy</span>
+              <span className="text-xs font-semibold text-slate-400 block">Topics</span>
               <div className="flex flex-wrap gap-2">
                 {currentQuestion.tags.map((tag) => (
-                  <span key={tag} className="inline-flex items-center gap-1 text-[10px] font-mono font-semibold bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-1 rounded-md">
+                  <span key={tag} className="inline-flex items-center gap-1 text-[11px] font-medium bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-1 rounded-md">
                     <Tag className="w-3 h-3" /> {tag}
                   </span>
                 ))}

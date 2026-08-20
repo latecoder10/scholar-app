@@ -16,6 +16,7 @@ import {
   Sliders 
 } from "lucide-react";
 import { Subject, UserProgress, parseProgressKey } from "../types";
+import { getExamById, resolveExamForSubject } from "../../shared/exams";
 
 interface AnalyticsViewProps {
   subjects: Subject[];
@@ -34,10 +35,7 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
   // Filter subjects according to selectedExam
   const filteredSubjects = subjects.filter((s) => {
     if (selectedExam === "all") return true;
-    const isClaude = s.exam === "Claude CCAF" || s.name.toLowerCase().includes("ccaf") || s.name.includes("Claude");
-    if (selectedExam === "claude-ccaf") return isClaude;
-    if (selectedExam === "cil-mt") return !isClaude;
-    return true;
+    return resolveExamForSubject(s).id === selectedExam;
   });
 
   const attemptedKeys = Object.keys(progress.answeredQuestions);
@@ -71,24 +69,24 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
     (overallCoverage * 0.4) + (overallAccuracy * 0.4) + (verySureRatio * 100 * 0.2)
   );
 
-  // Flight Ranking
-  let flightRank = "Pre-Flight (Baseline)";
-  let rankDesc = "Continue working through initial content packs to build coverage.";
+  // Readiness tier
+  let readinessTier = "Getting Started";
+  let rankDesc = "Work through more chapters to start building your readiness score.";
   let rankColor = "text-slate-500 border-slate-200 bg-slate-50";
 
-  const examTargetName = selectedExam === "claude-ccaf" ? "Claude Certified Architect" : selectedExam === "cil-mt" ? "CIL MT / GATE" : "Competitive Exam";
+  const examTargetName = selectedExam === "all" ? "Competitive Exam" : (getExamById(selectedExam)?.analyticsTargetName || getExamById(selectedExam)?.shortName || "Competitive Exam");
 
   if (readinessScore >= 80) {
-    flightRank = "Command Mission Director";
-    rankDesc = `Outstanding coverage, precision, and confidence calibration. High-percentile ${examTargetName} readiness.`;
+    readinessTier = "Exam Ready";
+    rankDesc = `Strong coverage, accuracy, and confidence. You're in good shape for the ${examTargetName}.`;
     rankColor = "text-emerald-700 border-emerald-200 bg-emerald-50/50";
   } else if (readinessScore >= 60) {
-    flightRank = "First Officer (Co-Pilot)";
-    rankDesc = "Stable readiness. Focus on converting 'Guesses' to secure knowledge in Mistake Book.";
+    readinessTier = "On Track";
+    rankDesc = "Solid progress. Review your Mistakes list to turn guesses into sure knowledge.";
     rankColor = "text-indigo-700 border-indigo-200 bg-indigo-50/40";
   } else if (readinessScore >= 30) {
-    flightRank = "Flight Cadet";
-    rankDesc = "Fundamental skills established. Increase chapter coverage to progress.";
+    readinessTier = "Building Momentum";
+    rankDesc = "Good foundation. Keep increasing chapter coverage to move up.";
     rankColor = "text-amber-700 border-amber-200 bg-amber-50/40";
   }
 
@@ -140,13 +138,13 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Banner */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-slate-100 p-6 rounded-2xl shadow-xs">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-slate-100 p-4 sm:p-6 rounded-2xl shadow-xs">
         <div>
           <h1 className="font-display text-2xl md:text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-            <BarChart className="w-7 h-7 text-indigo-600" /> Deep Analytics Flight-Deck
+            <BarChart className="w-7 h-7 text-indigo-600" /> Analytics
           </h1>
           <p className="text-slate-400 text-xs mt-1 max-w-xl">
-            Complete exam-readiness logs. Measure coverage, calibration precision, and conceptual strong/weak points.
+            Track your coverage, accuracy, and confidence, and see where your strengths and weak spots are.
           </p>
         </div>
       </div>
@@ -154,10 +152,10 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Left Column: Readiness gauge & Flight ranks (5 cols) */}
+        {/* Left Column: Readiness gauge & tier (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs text-center space-y-6">
-            <span className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider block">Overall Flight Readiness</span>
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs text-center space-y-6">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Overall Readiness</span>
             
             {/* Circle progress bar */}
             <div className="relative w-40 h-40 mx-auto flex items-center justify-center">
@@ -179,7 +177,7 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
               </svg>
               <div className="absolute text-center">
                 <span className="text-4xl font-extrabold font-display text-slate-800">{readinessScore}%</span>
-                <span className="text-[10px] font-mono text-slate-400 block mt-0.5">EST. SCORE</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5 uppercase tracking-wide">Readiness</span>
               </div>
             </div>
 
@@ -187,7 +185,7 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
             <div className={`p-4 rounded-xl border text-left ${rankColor}`}>
               <div className="flex items-center gap-2">
                 <Award className="w-4 h-4 shrink-0" />
-                <h4 className="text-sm font-bold font-display uppercase tracking-wider">{flightRank}</h4>
+                <h4 className="text-sm font-bold font-display">{readinessTier}</h4>
               </div>
               <p className="text-xs leading-relaxed mt-1 opacity-90 font-medium">
                 {rankDesc}
@@ -197,11 +195,11 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
             {/* Quick Metrics */}
             <div className="grid grid-cols-2 gap-3 text-left pt-2">
               <div className="bg-slate-50 p-3 rounded-xl">
-                <span className="text-[10px] font-mono text-slate-400 block uppercase">Attempted</span>
+                <span className="text-[10px] text-slate-400 block uppercase tracking-wide">Attempted</span>
                 <strong className="text-lg font-bold text-slate-700">{totalAttempted} qns</strong>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl">
-                <span className="text-[10px] font-mono text-slate-400 block uppercase">Accuracy</span>
+                <span className="text-[10px] text-slate-400 block uppercase tracking-wide">Accuracy</span>
                 <strong className="text-lg font-bold text-slate-700">{overallAccuracy}%</strong>
               </div>
             </div>
@@ -212,9 +210,9 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
         <div className="lg:col-span-7 space-y-6">
           
           {/* Subject Stats */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs space-y-5">
-            <h3 className="font-display text-sm font-bold text-slate-800 uppercase tracking-wider font-mono pb-3 border-b border-slate-50 flex items-center gap-2">
-              <Target className="w-4 h-4 text-indigo-600" /> Subject-level Diagnostics
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs space-y-5">
+            <h3 className="font-display text-sm font-bold text-slate-800 pb-3 border-b border-slate-50 flex items-center gap-2">
+              <Target className="w-4 h-4 text-indigo-600" /> By Subject
             </h3>
 
             <div className="space-y-4">
@@ -256,13 +254,13 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
           </div>
 
           {/* Confidence Metacognitive Calibration */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs space-y-5">
-            <h3 className="font-display text-sm font-bold text-slate-800 uppercase tracking-wider font-mono pb-3 border-b border-slate-50 flex items-center gap-2">
-              <Compass className="w-4 h-4 text-indigo-600" /> Metacognitive Calibration
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs space-y-5">
+            <h3 className="font-display text-sm font-bold text-slate-800 pb-3 border-b border-slate-50 flex items-center gap-2">
+              <Compass className="w-4 h-4 text-indigo-600" /> Confidence vs. Accuracy
             </h3>
 
             <p className="text-slate-400 text-xs leading-relaxed">
-              Compares your estimated confidence against actual performance. Perfect calibration is high accuracy on 'Very Sure' answers, and lower accuracy on 'Guesses'.
+              How well your confidence matches your actual performance. Ideally, "Very Sure" answers should have the highest accuracy and "Guess" the lowest.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -275,7 +273,7 @@ export default function AnalyticsView({ subjects, progress, selectedExam = "all"
 
                 return (
                   <div key={item.level} className={`p-4 border rounded-xl space-y-1 ${colorMap.bg} ${colorMap.border}`}>
-                    <span className="text-[10px] font-bold font-mono text-slate-400 block uppercase">{item.level}</span>
+                    <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wide">{item.level}</span>
                     <strong className={`text-2xl font-bold font-display block ${colorMap.text}`}>
                       {item.count > 0 ? `${item.accuracy}%` : "—"}
                     </strong>

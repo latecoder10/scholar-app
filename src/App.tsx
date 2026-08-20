@@ -3,27 +3,26 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from "react";
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  AlertTriangle, 
-  RefreshCw, 
-  BarChart, 
-  Upload, 
-  Cpu, 
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from "react-router-dom";
+import {
+  LayoutDashboard,
+  BookOpen,
+  AlertTriangle,
+  RefreshCw,
+  BarChart,
+  Upload,
+  Cpu,
   CheckCircle,
   HelpCircle,
   Menu,
   X,
-  Flame,
+  Play,
   Award,
   GraduationCap,
   ChevronLeft,
   ChevronRight,
   Trash2,
-  BrainCircuit,
-  Layers,
   Sparkles,
   Smartphone
 } from "lucide-react";
@@ -40,9 +39,331 @@ import ContentPackManager from "./components/ContentPackManager";
 import TechArchitecture from "./components/TechArchitecture";
 import MockTestArena from "./components/MockTestArena";
 import MobileAppHub from "./components/MobileAppHub";
-import ExamSelectorModal, { AVAILABLE_EXAMS } from "./components/ExamSelectorModal";
+import ExamSelectorModal from "./components/ExamSelectorModal";
+import { EXAM_REGISTRY, ExamDefinition, getExamById, resolveExamForSubject, resolveExamForEntry } from "../shared/exams";
+import { getExamIcon, getExamColorClasses, ExamColorClasses } from "./lib/examTheme";
+import { getProgressStore } from "./lib/progressStore";
+import { getCapabilities } from "./lib/capabilityStore";
+import { NO_CAPABILITIES, type AppCapabilities } from "../shared/capabilities";
+
+// Nav items double as the route map — each id's path is the single source of truth
+// for both the sidebar links and the <Routes> below.
+const navItems = [
+  { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, path: "/" },
+  { id: "subjects", name: "Subjects", icon: BookOpen, path: "/subjects" },
+  { id: "mock-tests", name: "Mock Tests", icon: Award, path: "/mock-tests" },
+  { id: "mistakes", name: "Mistakes", icon: AlertTriangle, path: "/mistakes" },
+  { id: "revision", name: "Revision", icon: RefreshCw, path: "/revision" },
+  { id: "analytics", name: "Analytics", icon: BarChart, path: "/analytics" },
+  { id: "mobile-app", name: "Mobile App", icon: Smartphone, path: "/mobile-app" },
+  { id: "content-manager", name: "Content Manager", icon: Upload, path: "/content-manager" },
+  { id: "tech-spec", name: "API Reference", icon: Cpu, path: "/api-reference" },
+];
+
+// ---------------------------------------------------------------------------
+// Route pages that need URL params — kept in this file since they're small
+// and only used here, but declared at module scope (not nested closures)
+// so they don't remount on every App() render.
+// ---------------------------------------------------------------------------
+
+interface SubjectsPageProps {
+  subjects: Subject[];
+  progress: UserProgress;
+  selectedExam: string;
+  activeExamConfig: ExamDefinition;
+  activeExamColors: ExamColorClasses;
+  onOpenExamSelector: () => void;
+  onQuickPractice: (subjectName: string, chapter: Chapter) => void;
+  pickChapterForSubject: (sub: Subject) => Chapter | null;
+}
+
+function SubjectsPage({
+  subjects,
+  progress,
+  selectedExam,
+  activeExamConfig,
+  activeExamColors,
+  onOpenExamSelector,
+  onQuickPractice,
+  pickChapterForSubject,
+}: SubjectsPageProps) {
+  const navigate = useNavigate();
+  const [selectedPaperTab, setSelectedPaperTab] = useState<string>("all");
+
+  // Filter Curriculum Subjects (excluding raw mock test folders from regular curriculum list)
+  const curriculumSubjects = useMemo(
+    () => subjects.filter(s => s.name !== "Mock Tests" && !s.name.toLowerCase().includes("mock")),
+    [subjects]
+  );
+
+  const filteredCurriculumSubjects = useMemo(
+    () =>
+      curriculumSubjects.filter((s) => {
+        if (selectedExam === "all") return true;
+        return resolveExamForSubject(s).id === selectedExam;
+      }),
+    [curriculumSubjects, selectedExam]
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-1">
+          <h1 className="font-display text-2xl font-bold text-slate-800 tracking-tight">
+            Subjects
+          </h1>
+          <p className="text-slate-400 text-xs">
+            Chapters and practice questions for {activeExamConfig.name}.
+          </p>
+        </div>
+
+        <button
+          onClick={onOpenExamSelector}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition-colors"
+        >
+          <Sparkles className="w-3.5 h-3.5" /> {activeExamConfig.shortName}
+        </button>
+      </div>
+
+      {/* Tab Selection Filter — generic over the exam registry, so a new exam's
+          own paper/domain groupings (or lack thereof) "just work" here. */}
+      {selectedExam === "all" ? (
+        <div className="flex border-b border-slate-200 gap-6 overflow-x-auto">
+          <button
+            onClick={() => setSelectedPaperTab("all")}
+            className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              selectedPaperTab === "all"
+                ? "border-indigo-600 text-indigo-600 font-bold"
+                : "border-transparent text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            All Examination Tracks ({filteredCurriculumSubjects.length})
+          </button>
+          {EXAM_REGISTRY.map((exam) => {
+            const colors = getExamColorClasses(exam);
+            return (
+              <button
+                key={exam.id}
+                onClick={() => setSelectedPaperTab(exam.id)}
+                className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                  selectedPaperTab === exam.id
+                    ? `${colors.tabActiveBorder} ${colors.tabActiveText} font-bold`
+                    : "border-transparent text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                {exam.shortName} ({filteredCurriculumSubjects.filter(s => resolveExamForSubject(s).id === exam.id).length})
+              </button>
+            );
+          })}
+        </div>
+      ) : activeExamConfig.papers && activeExamConfig.papers.length > 0 ? (
+        <div className="flex border-b border-slate-200 gap-6 overflow-x-auto">
+          <button
+            onClick={() => setSelectedPaperTab("all")}
+            className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              selectedPaperTab === "all"
+                ? "border-indigo-600 text-indigo-600 font-bold"
+                : "border-transparent text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            All Papers ({filteredCurriculumSubjects.length})
+          </button>
+          {activeExamConfig.papers.map((paper) => (
+            <button
+              key={paper.id}
+              onClick={() => setSelectedPaperTab(paper.id)}
+              className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                selectedPaperTab === paper.id
+                  ? "border-indigo-600 text-indigo-600 font-bold"
+                  : "border-transparent text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              {paper.label} ({filteredCurriculumSubjects.filter(s => s.paper === paper.id).length})
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="flex border-b border-slate-200 gap-6">
+          <button className={`pb-3 text-sm font-semibold border-b-2 ${activeExamColors.tabActiveBorder} ${activeExamColors.tabActiveText} font-bold`}>
+            All {activeExamConfig.shortName} Domains ({filteredCurriculumSubjects.length})
+          </button>
+        </div>
+      )}
+
+      {filteredCurriculumSubjects.length > 0 ? (
+        <>
+          {(() => {
+            const activeShownSubjects = filteredCurriculumSubjects.filter(sub => {
+              if (selectedExam === "all") {
+                return selectedPaperTab === "all" || resolveExamForSubject(sub).id === selectedPaperTab;
+              }
+              if (activeExamConfig.papers && activeExamConfig.papers.length > 0) {
+                return selectedPaperTab === "all" || sub.paper === selectedPaperTab;
+              }
+              return true;
+            });
+
+            return activeShownSubjects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {activeShownSubjects.map((sub) => {
+                  const attemptedKeys = Object.keys(progress.answeredQuestions);
+                  let subAttempted = 0;
+                  attemptedKeys.forEach((k) => {
+                    if (k.startsWith(`${sub.name}:`)) subAttempted++;
+                  });
+                  const coveragePct = sub.totalQuestions > 0 ? Math.round((subAttempted / sub.totalQuestions) * 100) : 0;
+                  const subExam = resolveExamForSubject(sub);
+                  const subColors = getExamColorClasses(subExam);
+                  const subBadgeLabel = sub.paper
+                    ? `${subExam.shortName}: ${subExam.papers?.find(p => p.id === sub.paper)?.label || sub.paper}`
+                    : `${subExam.shortName} Domain`;
+
+                  return (
+                    <div
+                      key={sub.name}
+                      onClick={() => navigate(`/subjects/${encodeURIComponent(sub.name)}`)}
+                      className="bg-white border border-slate-150 hover:border-indigo-300 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border ${subColors.badgeBg} ${subColors.badgeBorder} ${subColors.badgeText}`}>
+                            {subBadgeLabel}
+                          </div>
+                          <span className="text-xs text-slate-400 font-semibold">
+                            {sub.chapters.length} Chapters
+                          </span>
+                        </div>
+                        <h3 className="font-display text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
+                          {sub.name}
+                        </h3>
+                        <p className="text-xs text-slate-500 line-clamp-2">
+                          Auto-discovered <strong>{sub.chapters.length}</strong> active content chapters containing <strong>{sub.totalQuestions}</strong> questions total.
+                        </p>
+                      </div>
+
+                      <div className="mt-6 pt-4 border-t border-slate-100 space-y-3">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-400">Total Coverage</span>
+                          <span className="font-semibold text-slate-700">{coveragePct}%</span>
+                        </div>
+                        <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${subColors.solidBg}`} style={{ width: `${coveragePct}%` }} />
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const chap = pickChapterForSubject(sub);
+                            if (chap) onQuickPractice(sub.name, chap);
+                          }}
+                          className="w-full inline-flex items-center justify-center gap-1.5 min-h-11 sm:min-h-0 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs py-2.5 rounded-xl transition-colors cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-white text-white" /> Practice
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-white border border-dashed border-slate-100 rounded-2xl max-w-xl mx-auto space-y-4">
+                <HelpCircle className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
+                <div className="space-y-1.5">
+                  <h3 className="font-display text-base font-bold text-slate-800">Nothing here yet</h3>
+                  <p className="text-slate-400 text-xs px-6">
+                    No subjects match this filter. Try a different tab.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+        </>
+      ) : (
+        <div className="text-center py-20 bg-white border border-dashed border-slate-100 rounded-2xl max-w-xl mx-auto space-y-4">
+          <HelpCircle className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
+          <div className="space-y-1.5">
+            <h3 className="font-display text-base font-bold text-slate-800">No content yet</h3>
+            <p className="text-slate-400 text-xs px-6">
+              Add a content pack to get started, or use the <strong>Content Manager</strong> to upload one.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/content-manager")}
+            className="text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl hover:bg-indigo-100 cursor-pointer"
+          >
+            Go to Content Manager
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface SubjectDetailPageProps {
+  subjects: Subject[];
+  progress: UserProgress;
+  onQuickPractice: (subjectName: string, chapter: Chapter) => void;
+}
+
+function SubjectDetailPage({ subjects, progress, onQuickPractice }: SubjectDetailPageProps) {
+  const navigate = useNavigate();
+  const { subjectSlug } = useParams();
+  const subject = subjects.find((s) => s.name === decodeURIComponent(subjectSlug || ""));
+
+  if (!subject) {
+    // Content may still be loading, or the slug is stale — send back to the list rather than erroring.
+    return <Navigate to="/subjects" replace />;
+  }
+
+  return (
+    <SubjectView
+      subject={subject}
+      progress={progress}
+      onBack={() => navigate("/subjects")}
+      onSelectChapter={(subjectName, chapter) =>
+        navigate(`/subjects/${encodeURIComponent(subjectName)}/${encodeURIComponent(chapter.id)}`)
+      }
+      onQuickPractice={onQuickPractice}
+    />
+  );
+}
+
+interface ChapterDetailPageProps {
+  subjects: Subject[];
+  progress: UserProgress;
+  onStartSession: (
+    questions: Question[],
+    mode: "practice" | "revision" | "mistakes",
+    chapterId: string,
+    chapterName: string,
+    subject: string
+  ) => void;
+}
+
+function ChapterDetailPage({ subjects, progress, onStartSession }: ChapterDetailPageProps) {
+  const navigate = useNavigate();
+  const { subjectSlug, chapterId } = useParams();
+  const subject = subjects.find((s) => s.name === decodeURIComponent(subjectSlug || ""));
+  const chapter = subject?.chapters.find((c) => c.id === chapterId);
+
+  if (!subject || !chapter) {
+    return <Navigate to="/subjects" replace />;
+  }
+
+  return (
+    <ChapterView
+      subjectName={subject.name}
+      chapter={chapter}
+      progress={progress}
+      onBack={() => navigate(`/subjects/${encodeURIComponent(subject.name)}`)}
+      onStartSession={onStartSession}
+    />
+  );
+}
 
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   // Exam Selection State
   const [selectedExam, setSelectedExam] = useState<string>(() => {
     try {
@@ -78,9 +399,7 @@ export default function App() {
   };
 
   // Navigation State
-  const [currentTab, setCurrentTab] = useState<string>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedPaperTab, setSelectedPaperTab] = useState<string>("all");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     try {
       const saved = localStorage.getItem("cil_sidebar_collapsed");
@@ -128,9 +447,9 @@ export default function App() {
     mistakes: [],
   });
 
-  // Flow State
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
-  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  // The only piece of "flow" state that can't live in the URL — an assembled,
+  // ephemeral question set (custom revision/mistakes sets aren't reconstructable
+  // from a route param). Entering it still pushes a real history entry.
   const [activeSession, setActiveSession] = useState<{
     questions: Question[];
     mode: "practice" | "revision" | "mistakes";
@@ -148,11 +467,12 @@ export default function App() {
       workspaceScrollRef.current.scrollTo({ top: 0, behavior: "instant" });
     }
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, [currentTab, selectedSubject?.name, selectedChapter?.id, activeSession?.chapterId, selectedExam, selectedPaperTab]);
+  }, [location.pathname, activeSession?.chapterId, selectedExam]);
 
   // Loading States
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [capabilities, setCapabilities] = useState<AppCapabilities>(NO_CAPABILITIES);
 
   // Fetch all curriculum subjects & chapters (Auto Discovery API)
   const fetchCurriculum = async () => {
@@ -161,20 +481,6 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         setSubjects(data.subjects || []);
-
-        // Sync currently viewed subject and chapter references to prevent stale render states
-        if (selectedSubject) {
-          const freshSub = data.subjects.find((s: Subject) => s.name === selectedSubject.name);
-          if (freshSub) {
-            setSelectedSubject(freshSub);
-            if (selectedChapter) {
-              const freshChap = freshSub.chapters.find((c: Chapter) => c.id === selectedChapter.id);
-              if (freshChap) {
-                setSelectedChapter(freshChap);
-              }
-            }
-          }
-        }
       }
     } catch (e) {
       console.error("Error fetching discovered content packs", e);
@@ -184,21 +490,24 @@ export default function App() {
   // Fetch active user stats & mistake books
   const fetchProgress = async () => {
     try {
-      const res = await fetch("/api/progress");
-      if (res.ok) {
-        const data = await res.json();
-        setProgress(data);
-      }
+      const data = await getProgressStore().getProgress();
+      setProgress(data);
     } catch (e) {
       console.error("Error fetching student progress", e);
     }
+  };
+
+  // Which authoring features this deployment offers. Never rejects — a static
+  // deploy with no server resolves to NO_CAPABILITIES.
+  const fetchCapabilities = async () => {
+    setCapabilities(await getCapabilities());
   };
 
   // Initial Boot loader
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await Promise.all([fetchCurriculum(), fetchProgress()]);
+      await Promise.all([fetchCurriculum(), fetchProgress(), fetchCapabilities()]);
       setLoading(false);
     };
     init();
@@ -209,22 +518,15 @@ export default function App() {
     setRefreshing(true);
     await Promise.all([fetchCurriculum(), fetchProgress()]);
     setRefreshing(false);
-    showToastNotification("All examination content & student flight logs refreshed.");
+    showToastNotification("Content and progress refreshed.");
   };
 
   // Handle question submission from Practice/Exam session
   const handleSubmitAnswer = async (submission: UserAnswerSubmission) => {
     try {
-      const res = await fetch("/api/answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submission),
-      });
-      if (res.ok) {
-        const updatedProgress = await res.json();
-        setProgress(updatedProgress);
-        return updatedProgress;
-      }
+      const updatedProgress = await getProgressStore().submitAnswer(submission);
+      setProgress(updatedProgress);
+      return updatedProgress;
     } catch (e) {
       console.error("Failed to persist answer record", e);
     }
@@ -233,18 +535,15 @@ export default function App() {
   // Handle clearing mistake book
   const handleClearMistakes = async () => {
     try {
-      const res = await fetch("/api/mistakes/clear", { method: "POST" });
-      if (res.ok) {
-        const updatedProgress = await res.json();
-        setProgress(updatedProgress);
-        showToastNotification("Mistake Book cleared successfully.");
-      }
+      const updatedProgress = await getProgressStore().clearMistakes();
+      setProgress(updatedProgress);
+      showToastNotification("Mistakes cleared.");
     } catch (e) {
       console.error("Failed to clear mistake logs", e);
     }
   };
 
-  // Reset entire flight progress
+  // Reset all saved progress
   const handleClearProgress = () => {
     setShowResetConfirm(true);
   };
@@ -252,36 +551,19 @@ export default function App() {
   const confirmClearProgress = async () => {
     setShowResetConfirm(false);
     try {
-      const res = await fetch("/api/progress/clear", { method: "POST" });
-      if (res.ok) {
-        const updatedProgress = await res.json();
-        setProgress(updatedProgress);
-        showToastNotification("All flight metrics and test records have been reset.");
-      }
+      const updatedProgress = await getProgressStore().clearProgress();
+      setProgress(updatedProgress);
+      showToastNotification("Progress reset.");
     } catch (e) {
-      console.error("Failed to reset flight logs", e);
+      console.error("Failed to reset progress", e);
     }
   };
 
-  // Handlers for subject & chapter selection
-  const handleSelectSubject = (subjectName: string) => {
-    const subj = subjects.find((s) => s.name === subjectName);
-    if (subj) {
-      setSelectedSubject(subj);
-      setSelectedChapter(null);
-      setActiveSession(null);
-      setCurrentTab("subjects");
-    }
-  };
-
+  // Handlers for subject & chapter selection — these keep the exact same
+  // signatures the child components already expect; only the internals
+  // changed from setState(tab) to navigate(path).
   const handleSelectChapter = (subjectName: string, chapter: Chapter) => {
-    const subj = subjects.find((s) => s.name === subjectName);
-    if (subj) {
-      setSelectedSubject(subj);
-      setSelectedChapter(chapter);
-      setActiveSession(null);
-      setCurrentTab("chapter-detail");
-    }
+    navigate(`/subjects/${encodeURIComponent(subjectName)}/${encodeURIComponent(chapter.id)}`);
   };
 
   const handleStartSession = (
@@ -298,95 +580,131 @@ export default function App() {
       chapterName,
       subject,
     });
-    setCurrentTab("active-session");
+    navigate("/practice-session");
   };
 
   const handleFinishSession = () => {
     setActiveSession(null);
     handleRefreshAll();
-    if (selectedChapter) {
-      setCurrentTab("chapter-detail");
-    } else {
-      setCurrentTab("dashboard");
+    // Return to whatever screen launched the session (a chapter, mistakes, revision, etc.)
+    // instead of hardcoding a single fallback — this is what real history makes possible.
+    navigate(-1);
+  };
+
+  // Pick which chapter to jump into for a subject-level "Practice" shortcut:
+  // prefer one with recent activity, else the first with unanswered questions, else the first chapter.
+  const pickChapterForSubject = (sub: Subject): Chapter | null => {
+    if (sub.chapters.length === 0) return null;
+    for (const recent of progress.recentActivity) {
+      if (recent.subject === sub.name) {
+        const match = sub.chapters.find((c) => c.id === recent.chapterId);
+        if (match) return match;
+      }
+    }
+    const attemptedKeys = Object.keys(progress.answeredQuestions);
+    for (const chap of sub.chapters) {
+      const attempted = attemptedKeys.filter((k) => k.startsWith(`${sub.name}:${chap.id}:`)).length;
+      if (attempted < chap.questionsCount) return chap;
+    }
+    return sub.chapters[0];
+  };
+
+  // Skip the chapter-detail screen and jump straight into a practice session.
+  const handleQuickPractice = async (subjectName: string, chapter: Chapter) => {
+    try {
+      const res = await fetch(`/api/chapter/${encodeURIComponent(subjectName.replace(/\s+/g, "-"))}/${encodeURIComponent(chapter.id)}`);
+      if (!res.ok) throw new Error("Failed to load chapter questions");
+      const data = await res.json();
+      handleStartSession(data.questions || [], "practice", chapter.id, chapter.name, subjectName);
+    } catch (e) {
+      console.error("Quick practice failed", e);
+      showToastNotification("Couldn't start practice — please try again.");
     }
   };
 
-  // Filter Curriculum Subjects (excluding raw mock test folders from regular curriculum list)
-  const curriculumSubjects = subjects.filter(s => s.name !== "Mock Tests" && !s.name.toLowerCase().includes("mock"));
+  const activeExamConfig = getExamById(selectedExam) || EXAM_REGISTRY[0];
+  const ActiveExamIcon = getExamIcon(activeExamConfig);
+  const activeExamColors = getExamColorClasses(activeExamConfig);
 
-  const filteredCurriculumSubjects = curriculumSubjects.filter((s) => {
-    if (selectedExam === "all") return true;
-    if (selectedExam === "claude-ccaf") {
-      return s.exam === "Claude CCAF" || s.name.toLowerCase().includes("ccaf");
-    }
-    if (selectedExam === "cil-mt") {
-      return s.exam !== "Claude CCAF" && !s.name.toLowerCase().includes("ccaf");
-    }
-    return true;
-  });
+  // Translates the old tab-id vocabulary child components still use for onNavigate
+  // props (Dashboard, MockTestArena) into a real route change.
+  const navigateToTab = (tabId: string) => {
+    const item = navItems.find((i) => i.id === tabId);
+    navigate(item ? item.path : "/");
+  };
 
-  const activeExamConfig = AVAILABLE_EXAMS.find(e => e.id === selectedExam) || AVAILABLE_EXAMS[0];
+  // Resolve the subject/chapter behind the current URL, purely for the topbar title —
+  // the actual routed pages look these up themselves via useParams().
+  const pathSegments = location.pathname.split("/").filter(Boolean);
+  const headerSubject = pathSegments[0] === "subjects" && pathSegments[1]
+    ? subjects.find((s) => s.name === decodeURIComponent(pathSegments[1]))
+    : undefined;
+  const headerChapter = headerSubject && pathSegments[2]
+    ? headerSubject.chapters.find((c) => c.id === decodeURIComponent(pathSegments[2]))
+    : undefined;
 
   // Helper to obtain rich header titles, subtitles, and icons for the topbar
   const getHeaderInfo = () => {
-    if (currentTab === "active-session" && activeSession) {
+    if (location.pathname === "/practice-session" && activeSession) {
       return {
         title: activeSession.chapterName,
-        subtitle: `Active Practice Session • ${activeSession.mode.toUpperCase()} MODE`,
+        subtitle: `${activeSession.mode.charAt(0).toUpperCase()}${activeSession.mode.slice(1)} session in progress`,
         icon: GraduationCap,
-        tag: "In Progress"
+        tag: "In progress"
       };
     }
-    if (selectedSubject && currentTab === "subjects") {
+    if (headerChapter && headerSubject) {
       return {
-        title: selectedSubject.name,
-        subtitle: `Curriculum Pack • ${selectedSubject.chapters.length} academic chapters available`,
+        title: headerChapter.name,
+        subtitle: "Study notes and practice questions for this chapter",
+        icon: GraduationCap,
+        tag: "Chapter"
+      };
+    }
+    if (headerSubject) {
+      return {
+        title: headerSubject.name,
+        subtitle: `${headerSubject.chapters.length} chapters available`,
         icon: BookOpen,
-        tag: "Subject Index"
+        tag: "Subject"
       };
     }
-    if (selectedChapter && currentTab === "chapter-detail") {
-      return {
-        title: selectedChapter.name,
-        subtitle: `Comprehensive chapter study deck and custom MCQ testing engines`,
-        icon: GraduationCap,
-        tag: "Chapter Deck"
-      };
-    }
-    
-    const activeItem = navItems.find(item => item.id === currentTab);
+
+    const activeItem = navItems.find(item =>
+      item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path)
+    );
     if (activeItem) {
       let subtitle = "";
       switch (activeItem.id) {
         case "dashboard":
-          subtitle = `${activeExamConfig.name} • Live coverage and readiness diagnostics`;
+          subtitle = `${activeExamConfig.name} — your progress and readiness at a glance`;
           break;
         case "subjects":
-          subtitle = "Explore discovered study notes, key curriculum formulas, and concept questions";
+          subtitle = "Browse subjects, chapters, and practice questions";
           break;
         case "mock-tests":
-          subtitle = "Simulated high-rigor exams structured to replicate actual certification standard guidelines";
+          subtitle = "Timed practice exams that mirror the real test format";
           break;
         case "mistakes":
-          subtitle = "Retake and master questions you previously answered incorrectly";
+          subtitle = "Review and retry questions you've gotten wrong";
           break;
         case "revision":
-          subtitle = "Compile personalized revision packs and practice sets from selected disciplines";
+          subtitle = "Build a custom practice set from any subject or topic";
           break;
         case "analytics":
-          subtitle = "Deep analytics overview measuring accuracy, coverage, and time velocity";
+          subtitle = "Accuracy, coverage, and progress over time";
           break;
         case "content-manager":
-          subtitle = "On-demand subject content-expansion, custom JSON loading, and offline packaging";
+          subtitle = "Add or manage content packs";
           break;
         case "mobile-app":
-          subtitle = "Standalone offline React Native & Expo mobile app codebase (/mobile)";
+          subtitle = "The companion offline mobile app (Expo / React Native)";
           break;
         case "tech-spec":
-          subtitle = "REST architectural blueprints and controller mappings for backend endpoints";
+          subtitle = "REST API reference for this app's backend";
           break;
         default:
-          subtitle = "Exam Scholar Hub preparation suite";
+          subtitle = "Exam Scholar";
       }
       return {
         title: activeItem.name,
@@ -395,65 +713,45 @@ export default function App() {
         tag: activeItem.name
       };
     }
-    
+
     return {
-      title: "Exam Scholar Hub",
-      subtitle: "Multi-Exam Cognitive Preparation Suite",
+      title: "Exam Scholar",
+      subtitle: "Multi-exam preparation platform",
       icon: GraduationCap,
-      tag: "Academic"
+      tag: "Home"
     };
   };
 
   // Active mistakes for selected exam track
-  const activeMistakes = (progress.mistakes || []).filter(m => {
-    if (selectedExam === "all") return true;
-    const isClaude = m.exam === "Claude CCAF" || 
-      (m.subject && (m.subject.includes("Claude") || m.subject.includes("CCAF") || m.subject.includes("MCP") || m.subject.includes("Agentic") || m.subject.includes("Prompt") || m.subject.includes("Context") || m.subject.includes("Enterprise"))) ||
-      (m.chapterId && m.chapterId.includes("claude"));
-    if (selectedExam === "claude-ccaf") return isClaude;
-    if (selectedExam === "cil-mt") return !isClaude;
-    return true;
-  });
-
-  // Nav Item List
-  const navItems = [
-    { id: "dashboard", name: "Mission Control", icon: LayoutDashboard },
-    { id: "subjects", name: "Curriculum Packs", icon: BookOpen },
-    { id: "mock-tests", name: "Mock Test Arena", icon: Award },
-    { id: "mistakes", name: "Mistake Book", icon: AlertTriangle, badge: activeMistakes.length },
-    { id: "revision", name: "Revision Engine", icon: RefreshCw },
-    { id: "analytics", name: "Performance Stats", icon: BarChart },
-    { id: "mobile-app", name: "Mobile App (Expo)", icon: Smartphone },
-    { id: "content-manager", name: "Plug-and-Play Hub", icon: Upload },
-    { id: "tech-spec", name: "System Spec Console", icon: Cpu },
-  ];
+  const activeMistakes = useMemo(
+    () =>
+      (progress.mistakes || []).filter(m => {
+        if (selectedExam === "all") return true;
+        return resolveExamForEntry(m).id === selectedExam;
+      }),
+    [progress.mistakes, selectedExam]
+  );
 
   const isCollapsed = sidebarCollapsed && !isMobile;
   const headerInfo = getHeaderInfo();
   const HeaderIcon = headerInfo.icon;
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50/50 flex flex-col md:flex-row font-sans text-slate-700 antialiased">
-      
+    <div className="h-dvh overflow-hidden bg-slate-50/50 flex flex-col md:flex-row font-sans text-slate-700 antialiased">
+
       {/* 1. Mobile Top Navigation Bar */}
       <div className="md:hidden bg-slate-50 border-b border-slate-200 sticky top-0 z-30 shrink-0 shadow-3xs p-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-600 shadow-3xs">
-            {selectedExam === "claude-ccaf" ? (
-              <BrainCircuit className="w-5 h-5 text-purple-600" />
-            ) : selectedExam === "cil-mt" ? (
-              <GraduationCap className="w-5 h-5 text-indigo-600" />
-            ) : (
-              <Layers className="w-5 h-5 text-indigo-600" />
-            )}
+            <ActiveExamIcon className={`w-5 h-5 ${activeExamColors.iconText}`} />
           </div>
           <div>
             <span className="font-display font-extrabold tracking-tight text-sm text-slate-900 block leading-none">
-              Exam Scholar Hub
+              Exam Scholar
             </span>
             <button
               onClick={() => setShowExamModal(true)}
-              className="text-[10px] font-mono font-bold text-indigo-600 uppercase tracking-wider block mt-0.5 hover:underline text-left cursor-pointer"
+              className="text-[10px] font-mono font-bold text-indigo-600 uppercase tracking-wider block py-2 -my-1 hover:underline text-left cursor-pointer"
             >
               {activeExamConfig.shortName} ▾
             </button>
@@ -462,14 +760,14 @@ export default function App() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowExamModal(true)}
-            className="p-2 bg-white border border-slate-200 rounded-xl text-indigo-600 text-xs font-mono font-bold"
+            className="inline-flex items-center justify-center min-h-11 min-w-11 bg-white border border-slate-200 rounded-xl text-indigo-600 text-xs font-mono font-bold"
             title="Switch Exam Track"
           >
             <Sparkles className="w-4 h-4" />
           </button>
-          <button 
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2.5 hover:bg-slate-100 border border-slate-200 active:bg-slate-200 rounded-xl text-slate-600 transition-all cursor-pointer"
+            className="inline-flex items-center justify-center min-h-11 min-w-11 hover:bg-slate-100 border border-slate-200 active:bg-slate-200 rounded-xl text-slate-600 transition-all cursor-pointer"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -478,7 +776,7 @@ export default function App() {
 
       {/* Mobile Sidebar Backdrop Overlay */}
       {mobileMenuOpen && (
-        <div 
+        <div
           onClick={() => setMobileMenuOpen(false)}
           className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-35 transition-opacity duration-300"
         />
@@ -498,13 +796,7 @@ export default function App() {
           }`}>
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="p-2 bg-indigo-50 border border-indigo-100/60 rounded-xl shadow-xs text-indigo-600 shrink-0">
-                {selectedExam === "claude-ccaf" ? (
-                  <BrainCircuit className="w-6 h-6 text-purple-600" />
-                ) : selectedExam === "cil-mt" ? (
-                  <GraduationCap className="w-6 h-6 text-indigo-600" />
-                ) : (
-                  <Layers className="w-6 h-6 text-indigo-600" />
-                )}
+                <ActiveExamIcon className={`w-6 h-6 ${activeExamColors.iconText}`} />
               </div>
               {!isCollapsed && (
                 <div className="min-w-0 animate-fade-in">
@@ -513,7 +805,7 @@ export default function App() {
                   </h2>
                   <button
                     onClick={() => setShowExamModal(true)}
-                    className="text-[9px] font-mono text-indigo-600 hover:text-indigo-700 font-bold block mt-1 tracking-wider uppercase truncate text-left cursor-pointer"
+                    className="text-[9px] font-mono text-indigo-600 hover:text-indigo-700 font-bold block py-1.5 -my-0.5 tracking-wider uppercase truncate text-left cursor-pointer"
                     title="Click to Switch Exam Track"
                   >
                     {activeExamConfig.shortName} ▾
@@ -538,7 +830,7 @@ export default function App() {
             {/* Close button on mobile */}
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="md:hidden p-1.5 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 active:bg-slate-200 transition-all cursor-pointer shrink-0"
+              className="md:hidden inline-flex items-center justify-center min-h-11 min-w-11 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 active:bg-slate-200 transition-all cursor-pointer shrink-0"
               title="Close Menu"
             >
               <X className="w-4 h-4" />
@@ -569,23 +861,20 @@ export default function App() {
           <nav className={`p-4 flex-1 overflow-y-auto ${isCollapsed ? "space-y-3" : "space-y-1.5"}`}>
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = currentTab === item.id || (item.id === "subjects" && currentTab === "chapter-detail");
+              const isActive = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
+              const badge = item.id === "mistakes" ? activeMistakes.length : undefined;
               return (
                 <button
                   key={item.id}
                   title={isCollapsed ? item.name : undefined}
                   onClick={() => {
-                    setCurrentTab(item.id);
-                    if (item.id === "subjects") {
-                      setSelectedSubject(null);
-                      setSelectedChapter(null);
-                    }
+                    navigate(item.path);
                     setMobileMenuOpen(false);
                     setActiveSession(null);
                   }}
                   className={`w-full flex items-center transition-all cursor-pointer ${
-                    isCollapsed 
-                      ? "justify-center p-3 rounded-xl" 
+                    isCollapsed
+                      ? "justify-center p-3 rounded-xl"
                       : "justify-between px-4 py-3 rounded-xl"
                   } text-xs font-semibold ${
                     isActive
@@ -596,20 +885,20 @@ export default function App() {
                   <div className={`flex items-center ${isCollapsed ? "justify-center relative" : "gap-3"} min-w-0`}>
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-500"}`} />
                     {!isCollapsed && <span className="truncate">{item.name}</span>}
-                    
+
                     {/* Corner badge overlay for collapsed mode */}
-                    {isCollapsed && item.badge !== undefined && item.badge > 0 && (
+                    {isCollapsed && badge !== undefined && badge > 0 && (
                       <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 bg-rose-500 text-white text-[8px] font-bold font-mono rounded-full flex items-center justify-center border border-white">
-                        {item.badge}
+                        {badge}
                       </span>
                     )}
                   </div>
 
-                  {!isCollapsed && item.badge !== undefined && item.badge > 0 && (
+                  {!isCollapsed && badge !== undefined && badge > 0 && (
                     <span className={`px-1.5 py-0.5 text-[9px] font-mono font-bold rounded shrink-0 ${
                       isActive ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600 border border-slate-300/40"
                     }`}>
-                      {item.badge}
+                      {badge}
                     </span>
                   )}
                 </button>
@@ -622,41 +911,41 @@ export default function App() {
         <div className={`border-t border-slate-200 shrink-0 bg-slate-100/50 transition-all ${
           isCollapsed ? "p-3 space-y-3 text-center" : "p-4 space-y-3"
         }`}>
-          <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-2"}`} title="Engine Live">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+          <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-2"}`} title="Content up to date">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             {!isCollapsed && (
-              <span className="text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider truncate">
-                Engine Auto-Discovery Live
+              <span className="text-[11px] font-medium text-slate-500 truncate">
+                Content up to date
               </span>
             )}
           </div>
           <button
             onClick={handleClearProgress}
-            title={isCollapsed ? "Reset Flight Records" : undefined}
+            title={isCollapsed ? "Reset progress" : undefined}
             className={`w-full text-rose-600 hover:text-rose-700 transition-all cursor-pointer flex items-center justify-center ${
               isCollapsed
                 ? "p-2.5 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl"
-                : "px-4 py-2 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl text-left text-[10px] font-mono font-semibold"
+                : "px-4 py-2 min-h-11 md:min-h-0 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl text-left text-xs font-semibold"
             }`}
           >
             {isCollapsed ? (
               <Trash2 className="w-4 h-4 text-rose-500" />
             ) : (
-              <span className="truncate">Reset Flight Records</span>
+              <span className="truncate">Reset progress</span>
             )}
           </button>
         </div>
       </div>
 
       {/* 3. Main Workspace Area */}
-      <div 
-        ref={workspaceScrollRef} 
-        id="main-workspace-scroll" 
+      <div
+        ref={workspaceScrollRef}
+        id="main-workspace-scroll"
         className="flex-1 flex flex-col min-w-0 overflow-y-auto scroll-smooth"
       >
-        
+
         {/* Dynamic Topbar */}
-        <header className="bg-white border-b border-slate-200/80 px-6 py-4 flex justify-between items-center shrink-0 shadow-2xs">
+        <header className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-3 shrink-0 shadow-2xs">
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="p-2 bg-indigo-50/80 border border-indigo-100/60 text-indigo-600 rounded-xl hidden sm:flex items-center justify-center shrink-0 shadow-3xs">
               <HeaderIcon className="w-4 h-4" />
@@ -667,7 +956,9 @@ export default function App() {
                   {headerInfo.title}
                 </h1>
                 {headerInfo.tag && (
-                  <span className="inline-flex items-center text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-md shrink-0">
+                  /* Usually just repeats the title beside it, so it only earns
+                     its place once the row is wide enough to spare. */
+                  <span className="hidden lg:inline-flex items-center text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-md shrink-0">
                     {headerInfo.tag}
                   </span>
                 )}
@@ -678,342 +969,179 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          {/* On phones these collapse to icon-only squares so the title keeps the row. */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={() => setShowExamModal(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold font-mono text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-3xs"
+              title={`Track: ${activeExamConfig.shortName}`}
+              className="inline-flex items-center justify-center gap-1.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 text-xs font-semibold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 border border-slate-200 px-2.5 sm:px-3 sm:py-2 rounded-xl transition-all cursor-pointer shadow-3xs"
             >
-              <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+              <Sparkles className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-indigo-500 shrink-0" />
               <span className="hidden sm:inline">Track: <strong>{activeExamConfig.shortName}</strong></span>
-              <span className="sm:hidden">{activeExamConfig.shortName}</span>
             </button>
 
             <button
               onClick={handleRefreshAll}
               disabled={refreshing}
-              className="inline-flex items-center gap-2 text-xs font-bold font-mono text-indigo-600 bg-indigo-50/80 hover:bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl disabled:opacity-50 transition-all cursor-pointer shadow-3xs hover:shadow-2xs active:scale-95"
+              title={refreshing ? "Refreshing…" : "Refresh"}
+              className="inline-flex items-center justify-center gap-2 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 text-xs font-semibold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-50 border border-indigo-100 px-2.5 sm:px-4 sm:py-2 rounded-xl disabled:opacity-50 transition-all cursor-pointer shadow-3xs hover:shadow-2xs active:scale-95"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-indigo-500 ${refreshing ? "animate-spin" : ""}`} /> 
-              <span className="hidden sm:inline">{refreshing ? "Syncing..." : "Sync Discovery"}</span>
-              <span className="sm:hidden">{refreshing ? "Sync" : "Sync"}</span>
+              <RefreshCw className={`w-4 h-4 sm:w-3.5 sm:h-3.5 text-indigo-500 shrink-0 ${refreshing ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">{refreshing ? "Refreshing…" : "Refresh"}</span>
             </button>
           </div>
         </header>
 
         {/* Dynamic View Body router */}
-        <main className="p-6 md:p-8 flex-1 max-w-7xl w-full mx-auto">
+        <main className="p-4 sm:p-6 md:p-8 flex-1 max-w-7xl w-full mx-auto">
           {loading ? (
             <div className="py-32 text-center space-y-4">
               <RefreshCw className="w-10 h-10 text-indigo-600 animate-spin mx-auto" />
               <div className="space-y-1">
-                <h3 className="font-display text-base font-bold text-slate-800">Booting Exam Scholar Hub</h3>
-                <p className="text-xs font-mono text-slate-400">Discovering JSON curriculum packs recursively...</p>
+                <h3 className="font-display text-base font-bold text-slate-800">Loading Exam Scholar</h3>
+                <p className="text-xs text-slate-400">Fetching your subjects and progress…</p>
               </div>
             </div>
           ) : (
-            <>
-              {/* Active exam taking HUD */}
-              {currentTab === "active-session" && activeSession && (
-                <PracticeSession
-                  questions={activeSession.questions}
-                  mode={activeSession.mode}
-                  chapterId={activeSession.chapterId}
-                  chapterName={activeSession.chapterName}
-                  subject={activeSession.subject}
-                  onFinish={handleFinishSession}
-                  onSubmitAnswer={handleSubmitAnswer}
-                />
-              )}
-
-              {/* Standard routed views */}
-              {currentTab === "dashboard" && (
-                <Dashboard
-                  subjects={subjects}
-                  progress={progress}
-                  selectedExam={selectedExam}
-                  onOpenExamSelector={() => setShowExamModal(true)}
-                  onSelectChapter={handleSelectChapter}
-                  onNavigate={setCurrentTab}
-                />
-              )}
-
-              {currentTab === "subjects" && (
-                <>
-                  {selectedSubject ? (
-                    <SubjectView
-                      subject={selectedSubject}
-                      progress={progress}
-                      onBack={() => setSelectedSubject(null)}
-                      onSelectChapter={handleSelectChapter}
+            <Routes>
+              <Route
+                path="/practice-session"
+                element={
+                  activeSession ? (
+                    <PracticeSession
+                      questions={activeSession.questions}
+                      mode={activeSession.mode}
+                      chapterId={activeSession.chapterId}
+                      chapterName={activeSession.chapterName}
+                      subject={activeSession.subject}
+                      onFinish={handleFinishSession}
+                      onSubmitAnswer={handleSubmitAnswer}
                     />
                   ) : (
-                    <div className="space-y-6">
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div className="space-y-1">
-                          <h1 className="font-display text-2xl font-bold text-slate-800 tracking-tight">
-                            Curriculum & Domain Packs
-                          </h1>
-                          <p className="text-slate-400 text-xs">
-                            Explore discovered chapter decks, study notes, and scenario-based questions for {activeExamConfig.name}.
-                          </p>
-                        </div>
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
 
-                        <button
-                          onClick={() => setShowExamModal(true)}
-                          className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition-colors"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" /> Filter Track: {activeExamConfig.shortName}
-                        </button>
-                      </div>
+              <Route
+                path="/"
+                element={
+                  <Dashboard
+                    subjects={subjects}
+                    progress={progress}
+                    selectedExam={selectedExam}
+                    onOpenExamSelector={() => setShowExamModal(true)}
+                    onSelectChapter={handleSelectChapter}
+                    onNavigate={navigateToTab}
+                  />
+                }
+              />
 
-                      {/* Tab Selection Filter */}
-                      {selectedExam === "claude-ccaf" ? (
-                        <div className="flex border-b border-slate-200 gap-6">
-                          <button
-                            className="pb-3 text-sm font-semibold border-b-2 border-purple-600 text-purple-700 font-bold"
-                          >
-                            All CCAF Domains ({filteredCurriculumSubjects.length})
-                          </button>
-                        </div>
-                      ) : selectedExam === "cil-mt" ? (
-                        <div className="flex border-b border-slate-200 gap-6">
-                          <button
-                            onClick={() => setSelectedPaperTab("all")}
-                            className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                              selectedPaperTab === "all"
-                                ? "border-indigo-600 text-indigo-600 font-bold"
-                                : "border-transparent text-slate-400 hover:text-slate-600"
-                            }`}
-                          >
-                            All Papers ({filteredCurriculumSubjects.length})
-                          </button>
-                          <button
-                            onClick={() => setSelectedPaperTab("Paper-I")}
-                            className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                              selectedPaperTab === "Paper-I"
-                                ? "border-indigo-600 text-indigo-600 font-bold"
-                                : "border-transparent text-slate-400 hover:text-slate-600"
-                            }`}
-                          >
-                            Paper I: General Aptitude ({filteredCurriculumSubjects.filter(s => s.paper === "Paper-I").length})
-                          </button>
-                          <button
-                            onClick={() => setSelectedPaperTab("Paper-II")}
-                            className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                              selectedPaperTab === "Paper-II"
-                                ? "border-indigo-600 text-indigo-600 font-bold"
-                                : "border-transparent text-slate-400 hover:text-slate-600"
-                            }`}
-                          >
-                            Paper II: Technical Core ({filteredCurriculumSubjects.filter(s => s.paper === "Paper-II").length})
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex border-b border-slate-200 gap-6">
-                          <button
-                            onClick={() => setSelectedPaperTab("all")}
-                            className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                              selectedPaperTab === "all"
-                                ? "border-indigo-600 text-indigo-600 font-bold"
-                                : "border-transparent text-slate-400 hover:text-slate-600"
-                            }`}
-                          >
-                            All Examination Tracks ({filteredCurriculumSubjects.length})
-                          </button>
-                          <button
-                            onClick={() => setSelectedPaperTab("Claude CCAF")}
-                            className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                              selectedPaperTab === "Claude CCAF"
-                                ? "border-purple-600 text-purple-700 font-bold"
-                                : "border-transparent text-slate-400 hover:text-slate-600"
-                            }`}
-                          >
-                            Claude CCAF ({filteredCurriculumSubjects.filter(s => s.exam === "Claude CCAF").length})
-                          </button>
-                          <button
-                            onClick={() => setSelectedPaperTab("CIL MT")}
-                            className={`pb-3 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                              selectedPaperTab === "CIL MT"
-                                ? "border-indigo-600 text-indigo-600 font-bold"
-                                : "border-transparent text-slate-400 hover:text-slate-600"
-                            }`}
-                          >
-                            CIL MT ({filteredCurriculumSubjects.filter(s => s.exam !== "Claude CCAF").length})
-                          </button>
-                        </div>
-                      )}
+              <Route
+                path="/subjects"
+                element={
+                  <SubjectsPage
+                    subjects={subjects}
+                    progress={progress}
+                    selectedExam={selectedExam}
+                    activeExamConfig={activeExamConfig}
+                    activeExamColors={activeExamColors}
+                    onOpenExamSelector={() => setShowExamModal(true)}
+                    onQuickPractice={handleQuickPractice}
+                    pickChapterForSubject={pickChapterForSubject}
+                  />
+                }
+              />
 
-                      {filteredCurriculumSubjects.length > 0 ? (
-                        <>
-                          {(() => {
-                            const activeShownSubjects = filteredCurriculumSubjects.filter(sub => {
-                              if (selectedExam === "cil-mt") {
-                                return selectedPaperTab === "all" || sub.paper === selectedPaperTab;
-                              }
-                              if (selectedExam === "all") {
-                                if (selectedPaperTab === "Claude CCAF") return sub.exam === "Claude CCAF";
-                                if (selectedPaperTab === "CIL MT") return sub.exam !== "Claude CCAF";
-                                return true;
-                              }
-                              return true;
-                            });
+              <Route
+                path="/subjects/:subjectSlug"
+                element={
+                  <SubjectDetailPage
+                    subjects={subjects}
+                    progress={progress}
+                    onQuickPractice={handleQuickPractice}
+                  />
+                }
+              />
 
-                            return activeShownSubjects.length > 0 ? (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {activeShownSubjects.map((sub) => {
-                                  const attemptedKeys = Object.keys(progress.answeredQuestions);
-                                  let subAttempted = 0;
-                                  attemptedKeys.forEach((k) => {
-                                    if (k.startsWith(`${sub.name}:`)) subAttempted++;
-                                  });
-                                  const coveragePct = sub.totalQuestions > 0 ? Math.round((subAttempted / sub.totalQuestions) * 100) : 0;
-                                  const isClaudeSubject = sub.exam === "Claude CCAF" || sub.name.toLowerCase().includes("ccaf");
+              <Route
+                path="/subjects/:subjectSlug/:chapterId"
+                element={
+                  <ChapterDetailPage
+                    subjects={subjects}
+                    progress={progress}
+                    onStartSession={handleStartSession}
+                  />
+                }
+              />
 
-                                  return (
-                                    <div
-                                      key={sub.name}
-                                      onClick={() => handleSelectSubject(sub.name)}
-                                      className="bg-white border border-slate-150 hover:border-indigo-300 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
-                                    >
-                                      <div className="space-y-2">
-                                        <div className="flex items-center justify-between">
-                                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-wider border ${
-                                            isClaudeSubject
-                                              ? "bg-purple-50 border-purple-200 text-purple-700"
-                                              : sub.paper === "Paper-I"
-                                              ? "bg-indigo-50 border-indigo-100 text-indigo-700"
-                                              : "bg-emerald-50 border-emerald-100 text-emerald-700"
-                                          }`}>
-                                            {isClaudeSubject 
-                                              ? "Claude CCAF Domain" 
-                                              : sub.paper === "Paper-I" 
-                                              ? "CIL: Paper I General" 
-                                              : "CIL: Paper II Technical"}
-                                          </div>
-                                          <span className="text-xs font-mono text-slate-400 font-semibold">
-                                            {sub.chapters.length} Chapters
-                                          </span>
-                                        </div>
-                                        <h3 className="font-display text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
-                                          {sub.name}
-                                        </h3>
-                                        <p className="text-xs text-slate-500 line-clamp-2">
-                                          Auto-discovered <strong>{sub.chapters.length}</strong> active content chapters containing <strong>{sub.totalQuestions}</strong> questions total.
-                                        </p>
-                                      </div>
+              <Route
+                path="/mock-tests"
+                element={
+                  <MockTestArena
+                    subjects={subjects}
+                    progress={progress}
+                    selectedExam={selectedExam}
+                    onSubmitAnswer={handleSubmitAnswer}
+                    onRefreshContent={handleRefreshAll}
+                    onNavigate={navigateToTab}
+                    canExpandWithAi={capabilities.aiExpand}
+                  />
+                }
+              />
 
-                                      <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
-                                        <div className="flex justify-between text-xs font-mono">
-                                          <span className="text-slate-400">Total Coverage</span>
-                                          <span className="font-semibold text-slate-700">{coveragePct}%</span>
-                                        </div>
-                                        <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                                          <div className={`h-full rounded-full ${
-                                            isClaudeSubject ? "bg-purple-600" : sub.paper === "Paper-I" ? "bg-indigo-600" : "bg-emerald-500"
-                                          }`} style={{ width: `${coveragePct}%` }} />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ) : (
-                              <div className="text-center py-16 bg-white border border-dashed border-slate-100 rounded-2xl max-w-xl mx-auto space-y-4">
-                                <HelpCircle className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
-                                <div className="space-y-1.5">
-                                  <h3 className="font-display text-base font-bold text-slate-800">No Content in Selected Filter</h3>
-                                  <p className="text-slate-400 text-xs px-6">
-                                    No active content packs matched this tab filter. Switch tabs to see all available packs.
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </>
-                      ) : (
-                        <div className="text-center py-20 bg-white border border-dashed border-slate-100 rounded-2xl max-w-xl mx-auto space-y-4">
-                          <HelpCircle className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
-                          <div className="space-y-1.5">
-                            <h3 className="font-display text-base font-bold text-slate-800">No Content Discovered</h3>
-                            <p className="text-slate-400 text-xs px-6">
-                              The `./content/` folder is currently empty. Drop some exam chapter JSON files in the content folder or use the <strong>Plug-and-Play Hub</strong> upload panel to place them!
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => setCurrentTab("content-manager")}
-                            className="text-xs font-bold font-mono text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl hover:bg-indigo-100 cursor-pointer"
-                          >
-                            Go to Upload Hub
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
+              <Route
+                path="/mistakes"
+                element={
+                  <MistakeBook
+                    progress={progress}
+                    selectedExam={selectedExam}
+                    onClearMistakes={handleClearMistakes}
+                    onStartSession={handleStartSession}
+                  />
+                }
+              />
 
-              {currentTab === "chapter-detail" && selectedSubject && selectedChapter && (
-                <ChapterView
-                  subjectName={selectedSubject.name}
-                  chapter={selectedChapter}
-                  progress={progress}
-                  onBack={() => setCurrentTab("subjects")}
-                  onStartSession={handleStartSession}
-                />
-              )}
+              <Route
+                path="/revision"
+                element={
+                  <RevisionEngine
+                    subjects={subjects}
+                    progress={progress}
+                    selectedExam={selectedExam}
+                    onStartSession={handleStartSession}
+                  />
+                }
+              />
 
-              {currentTab === "mock-tests" && (
-                <MockTestArena
-                  subjects={subjects}
-                  progress={progress}
-                  selectedExam={selectedExam}
-                  onSubmitAnswer={handleSubmitAnswer}
-                  onRefreshContent={handleRefreshAll}
-                  onNavigate={setCurrentTab}
-                />
-              )}
+              <Route
+                path="/analytics"
+                element={
+                  <AnalyticsView
+                    subjects={subjects}
+                    progress={progress}
+                    selectedExam={selectedExam}
+                  />
+                }
+              />
 
-              {currentTab === "mistakes" && (
-                <MistakeBook
-                  progress={progress}
-                  selectedExam={selectedExam}
-                  onClearMistakes={handleClearMistakes}
-                  onStartSession={handleStartSession}
-                />
-              )}
+              <Route path="/mobile-app" element={<MobileAppHub />} />
 
-              {currentTab === "revision" && (
-                <RevisionEngine
-                  subjects={subjects}
-                  progress={progress}
-                  selectedExam={selectedExam}
-                  onStartSession={handleStartSession}
-                />
-              )}
+              <Route
+                path="/content-manager"
+                element={
+                  <ContentPackManager
+                    subjects={subjects}
+                    onRefreshContent={handleRefreshAll}
+                    canUpload={capabilities.contentUpload}
+                  />
+                }
+              />
 
-              {currentTab === "analytics" && (
-                <AnalyticsView
-                  subjects={subjects}
-                  progress={progress}
-                  selectedExam={selectedExam}
-                />
-              )}
+              <Route path="/api-reference" element={<TechArchitecture />} />
 
-              {currentTab === "mobile-app" && (
-                <MobileAppHub />
-              )}
-
-              {currentTab === "content-manager" && (
-                <ContentPackManager
-                  subjects={subjects}
-                  onRefreshContent={handleRefreshAll}
-                />
-              )}
-
-              {currentTab === "tech-spec" && (
-                <TechArchitecture />
-              )}
-            </>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           )}
         </main>
       </div>
@@ -1035,24 +1163,24 @@ export default function App() {
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-display text-base font-bold text-slate-900">Reset Flight Records?</h3>
+                <h3 className="font-display text-base font-bold text-slate-900">Reset all progress?</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  CRITICAL WARNING: This will permanently wipe all your progress history, coverage metrics, mistake logs, and solved status. This action cannot be undone.
+                  This permanently deletes your answer history, accuracy stats, and mistake list. This can't be undone.
                 </p>
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">
               <button
                 onClick={() => setShowResetConfirm(false)}
-                className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold font-mono transition-colors cursor-pointer"
+                className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmClearProgress}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold font-mono transition-colors cursor-pointer"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
-                Confirm Reset
+                Reset progress
               </button>
             </div>
           </div>

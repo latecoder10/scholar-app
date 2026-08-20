@@ -3,32 +3,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect } from "react";
-import { 
-  Play, 
-  Award, 
-  BookOpen, 
-  AlertTriangle, 
-  Clock, 
-  ChevronRight, 
-  TrendingUp, 
-  CheckCircle, 
-  XCircle, 
-  Flame,
-  BrainCircuit,
-  GraduationCap,
+import React, { useEffect, useMemo } from "react";
+import {
+  Play,
+  Award,
+  BookOpen,
+  AlertTriangle,
+  Clock,
+  ChevronRight,
+  TrendingUp,
+  CheckCircle,
+  XCircle,
   Sparkles,
-  Layers,
-  ShieldCheck,
-  Zap
+  Lightbulb
 } from "lucide-react";
 import { Subject, UserProgress, Chapter, parseProgressKey } from "../types";
-import { AVAILABLE_EXAMS } from "./ExamSelectorModal";
+import { EXAM_REGISTRY, getExamById, resolveExamForSubject, resolveExamForEntry } from "../../shared/exams";
+import { getExamIcon, getExamColorClasses, getColorClasses } from "../lib/examTheme";
 
 interface DashboardProps {
   subjects: Subject[];
   progress: UserProgress;
-  selectedExam: string; // 'all' | 'claude-ccaf' | 'cil-mt'
+  selectedExam: string; // 'all' or an ExamDefinition.id from shared/exams.ts
   onOpenExamSelector: () => void;
   onSelectChapter: (subject: string, chapter: Chapter) => void;
   onNavigate: (tab: string) => void;
@@ -51,29 +47,37 @@ export default function Dashboard({
   }, [selectedExam]);
 
   // Filter subjects according to selectedExam
-  const filteredSubjects = subjects.filter((s) => {
-    if (selectedExam === "all") return true;
-    if (selectedExam === "claude-ccaf") {
-      return s.exam === "Claude CCAF" || s.name.toLowerCase().includes("ccaf");
-    }
-    if (selectedExam === "cil-mt") {
-      return s.exam !== "Claude CCAF" && !s.name.toLowerCase().includes("ccaf");
-    }
-    return true;
-  });
+  const filteredSubjects = useMemo(
+    () =>
+      subjects.filter((s) => {
+        if (selectedExam === "all") return true;
+        return resolveExamForSubject(s).id === selectedExam;
+      }),
+    [subjects, selectedExam]
+  );
 
-  const currentExamConfig = AVAILABLE_EXAMS.find(e => e.id === selectedExam) || AVAILABLE_EXAMS[0];
+  // Mock Tests is a subject bucket, not a curriculum domain — exclude it from the domain grid display.
+  const domainSubjects = useMemo(
+    () => filteredSubjects.filter((s) => s.name !== "Mock Tests" && !s.name.toLowerCase().includes("mock")),
+    [filteredSubjects]
+  );
+
+  const currentExamConfig = getExamById(selectedExam) || EXAM_REGISTRY[0];
+  const ActiveExamIcon = getExamIcon(currentExamConfig);
+  const activeColors = getExamColorClasses(currentExamConfig);
 
   // 1. Calculate overall stats for active view
   const totalQuestions = filteredSubjects.reduce((sum, s) => sum + s.totalQuestions, 0);
-  const attemptedKeys = Object.keys(progress.answeredQuestions);
-  
+
   // Filter attempted keys to active subjects
-  const activeAttemptedKeys = attemptedKeys.filter(key => {
-    const entry = progress.answeredQuestions[key];
-    const parsed = parseProgressKey(key, entry);
-    return filteredSubjects.some(s => s.name === parsed.subject);
-  });
+  const activeAttemptedKeys = useMemo(() => {
+    const subjectNames = new Set(filteredSubjects.map(s => s.name));
+    return Object.keys(progress.answeredQuestions).filter(key => {
+      const entry = progress.answeredQuestions[key];
+      const parsed = parseProgressKey(key, entry);
+      return subjectNames.has(parsed.subject);
+    });
+  }, [progress.answeredQuestions, filteredSubjects]);
 
   const totalAttempted = activeAttemptedKeys.length;
   
@@ -84,21 +88,15 @@ export default function Dashboard({
   const overallAccuracy = totalAttempted > 0 ? Math.round((correctCount / totalAttempted) * 100) : 0;
   const overallCoverage = totalQuestions > 0 ? Math.round((totalAttempted / totalQuestions) * 100) : 0;
 
-  // Track specific subsets
-  const isClaudeActive = selectedExam === "claude-ccaf";
-  const isCilActive = selectedExam === "cil-mt";
-  const isAllActive = selectedExam === "all";
-
   // Filter mistakes count by selected exam track
-  const filteredMistakes = (progress.mistakes || []).filter(m => {
-    if (selectedExam === "all") return true;
-    const isClaude = m.exam === "Claude CCAF" || 
-      (m.subject && (m.subject.includes("Claude") || m.subject.includes("CCAF") || m.subject.includes("MCP") || m.subject.includes("Agentic") || m.subject.includes("Prompt") || m.subject.includes("Context") || m.subject.includes("Enterprise"))) ||
-      (m.chapterId && m.chapterId.includes("claude"));
-    if (selectedExam === "claude-ccaf") return isClaude;
-    if (selectedExam === "cil-mt") return !isClaude;
-    return true;
-  });
+  const filteredMistakes = useMemo(
+    () =>
+      (progress.mistakes || []).filter(m => {
+        if (selectedExam === "all") return true;
+        return resolveExamForEntry(m).id === selectedExam;
+      }),
+    [progress.mistakes, selectedExam]
+  );
 
   // Calculate very sure percentage
   const verySureCount = activeAttemptedKeys.filter(
@@ -112,34 +110,36 @@ export default function Dashboard({
   );
 
   // 2. Identify weak chapters (< 60% accuracy or heavily missed)
-  const chaptersWithAttempts: { chapter: Chapter; attempted: number; correct: number; accuracy: number }[] = [];
-  
-  filteredSubjects.forEach((subj) => {
-    subj.chapters.forEach((chap) => {
-      let chapAttempted = 0;
-      let chapCorrect = 0;
-      
-      activeAttemptedKeys.forEach((key) => {
-        const entry = progress.answeredQuestions[key];
-        const parsed = parseProgressKey(key, entry);
-        if (parsed.subject === subj.name && parsed.chapterId === chap.id) {
-          chapAttempted++;
-          if (entry.isCorrect) {
-            chapCorrect++;
-          }
+  const chaptersWithAttempts = useMemo(() => {
+    // One pass over attempted keys to tally per-chapter stats, instead of
+    // rescanning all attempted keys for every chapter (was O(attempted x chapters)).
+    const statsByChapterKey = new Map<string, { attempted: number; correct: number }>();
+    activeAttemptedKeys.forEach((key) => {
+      const entry = progress.answeredQuestions[key];
+      const parsed = parseProgressKey(key, entry);
+      const chapterKey = `${parsed.subject}:${parsed.chapterId}`;
+      const stats = statsByChapterKey.get(chapterKey) || { attempted: 0, correct: 0 };
+      stats.attempted++;
+      if (entry.isCorrect) stats.correct++;
+      statsByChapterKey.set(chapterKey, stats);
+    });
+
+    const result: { chapter: Chapter; attempted: number; correct: number; accuracy: number }[] = [];
+    filteredSubjects.forEach((subj) => {
+      subj.chapters.forEach((chap) => {
+        const stats = statsByChapterKey.get(`${subj.name}:${chap.id}`);
+        if (stats && stats.attempted > 0) {
+          result.push({
+            chapter: chap,
+            attempted: stats.attempted,
+            correct: stats.correct,
+            accuracy: Math.round((stats.correct / stats.attempted) * 100)
+          });
         }
       });
-
-      if (chapAttempted > 0) {
-        chaptersWithAttempts.push({
-          chapter: chap,
-          attempted: chapAttempted,
-          correct: chapCorrect,
-          accuracy: Math.round((chapCorrect / chapAttempted) * 100)
-        });
-      }
     });
-  });
+    return result;
+  }, [activeAttemptedKeys, progress.answeredQuestions, filteredSubjects]);
 
   // Sort by accuracy (lowest first) to find weak chapters
   const weakChapters = chaptersWithAttempts
@@ -184,60 +184,34 @@ export default function Dashboard({
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* 1. Exam Target Track Header / Switcher Banner */}
-      <div className="bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-700/60 p-6 sm:p-7 rounded-3xl shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl -z-10" />
-        
+      {/* 1. Page Header */}
+      <div className="bg-white border border-slate-150 p-4 sm:p-6 sm:p-7 rounded-2xl shadow-xs">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1.5 ${
-                isClaudeActive
-                  ? "bg-purple-500/20 text-purple-300 border border-purple-400/30"
-                  : isCilActive
-                  ? "bg-amber-500/20 text-amber-300 border border-amber-400/30"
-                  : "bg-indigo-500/20 text-indigo-300 border border-indigo-400/30"
-              }`}>
-                {isClaudeActive ? (
-                  <BrainCircuit className="w-3.5 h-3.5" />
-                ) : isCilActive ? (
-                  <GraduationCap className="w-3.5 h-3.5" />
-                ) : (
-                  <Layers className="w-3.5 h-3.5" />
-                )}
-                {currentExamConfig.shortName} Track
-              </span>
-
-              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
-                <Flame className="w-3 h-3 text-emerald-400 animate-pulse" />
-                AUTO-DISCOVERY READY
-              </span>
+          <div className="flex items-start gap-4">
+            <div className={`p-3 rounded-xl shrink-0 border ${activeColors.iconBg} ${activeColors.iconBorder} ${activeColors.iconText}`}>
+              <ActiveExamIcon className="w-6 h-6" />
             </div>
-
-            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              {isClaudeActive 
-                ? "Claude CCAF Mission Control" 
-                : isCilActive 
-                ? "CIL MT Mission Control" 
-                : "Unified Exam Mission Control"}
-            </h1>
-            
-            <p className="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
-              {currentExamConfig.description}
-            </p>
+            <div className="space-y-1.5">
+              <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                {selectedExam === "all" ? "Dashboard" : `${currentExamConfig.shortName} Dashboard`}
+              </h1>
+              <p className="text-slate-500 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                {currentExamConfig.description}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={onOpenExamSelector}
-              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 active:bg-white/25 border border-white/20 text-white font-mono text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-xs backdrop-blur-xs"
+              className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all cursor-pointer shadow-3xs"
             >
-              <Sparkles className="w-4 h-4 text-indigo-300" />
-              Switch Target Track
+              <Sparkles className="w-4 h-4 text-indigo-500" />
+              Switch Track
             </button>
             <button
               onClick={() => onNavigate("mock-tests")}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-mono text-xs font-bold px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all cursor-pointer shadow-xs"
             >
               <Award className="w-4 h-4" />
               Mock Tests
@@ -251,7 +225,7 @@ export default function Dashboard({
         {/* Coverage Widget */}
         <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs hover:shadow-md transition-all">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 font-mono tracking-wider uppercase">Syllabus Coverage</span>
+            <span className="text-xs font-semibold text-slate-400 tracking-wide uppercase">Syllabus Coverage</span>
             <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
               <BookOpen className="w-5 h-5" />
             </div>
@@ -268,7 +242,7 @@ export default function Dashboard({
         {/* Accuracy Widget */}
         <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs hover:shadow-md transition-all">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 font-mono tracking-wider uppercase">Test Accuracy</span>
+            <span className="text-xs font-semibold text-slate-400 tracking-wide uppercase">Test Accuracy</span>
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
               <TrendingUp className="w-5 h-5" />
             </div>
@@ -285,7 +259,7 @@ export default function Dashboard({
         {/* Readiness Score Widget */}
         <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs hover:shadow-md transition-all">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 font-mono tracking-wider uppercase">Readiness Index</span>
+            <span className="text-xs font-semibold text-slate-400 tracking-wide uppercase">Readiness Index</span>
             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
               <Award className="w-5 h-5" />
             </div>
@@ -293,7 +267,7 @@ export default function Dashboard({
           <div className="mt-4">
             <span className="text-3xl font-bold font-display text-slate-800">{readinessScore}%</span>
             <span className="text-xs text-slate-400 ml-1.5 font-mono">
-              {isClaudeActive ? "CCAF Target" : isCilActive ? "GATE/PSU Target" : "Mastery Level"}
+              {currentExamConfig.readinessTargetLabel || "Mastery Level"}
             </span>
           </div>
           <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
@@ -307,7 +281,7 @@ export default function Dashboard({
           className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer group"
         >
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 font-mono tracking-wider uppercase">Mistake Book</span>
+            <span className="text-xs font-semibold text-slate-400 tracking-wide uppercase">Mistake Book</span>
             <div className="p-2 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition-colors">
               <AlertTriangle className="w-5 h-5" />
             </div>
@@ -322,42 +296,45 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* 3. Track-Specific Domain / Paper Overview */}
-      {isClaudeActive ? (
-        <div className="bg-white border border-slate-100 p-6 rounded-3xl shadow-xs">
+      {/* 3. Track-Specific Domain / Paper Overview — driven by the exam registry:
+          exams without `papers` get a domain grid, exams with `papers` get one
+          block per paper (not hardcoded to exactly two), and "all" gets one
+          chooser card per registered exam. */}
+      {selectedExam !== "all" && (!currentExamConfig.papers || currentExamConfig.papers.length === 0) ? (
+        <div className="bg-white border border-slate-100 p-4 sm:p-6 rounded-3xl shadow-xs">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-100">
             <div>
-              <span className="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-md uppercase">
-                ANTHROPIC CLAUDE CERTIFICATION DOMAINS
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wide border ${activeColors.badgeBg} ${activeColors.badgeBorder} ${activeColors.badgeText}`}>
+                {currentExamConfig.domainsLabel || `${currentExamConfig.category} Domains`}
               </span>
               <h3 className="font-display font-extrabold text-slate-900 text-lg mt-1">
-                Claude Certified Architect - Foundations (CCAF) Syllabus
+                {currentExamConfig.name} Syllabus
               </h3>
             </div>
-            <span className="text-xs font-mono text-slate-500 font-bold bg-slate-50 border border-slate-200 px-3 py-1 rounded-lg">
-              {filteredSubjects.length} Specialized Domains • {totalQuestions} Questions
+            <span className="text-xs text-slate-500 font-semibold bg-slate-50 border border-slate-200 px-3 py-1 rounded-lg">
+              {domainSubjects.length} domains • {totalQuestions} questions
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
-            {filteredSubjects.map((sub, idx) => {
+            {domainSubjects.map((sub, idx) => {
               const subQuestions = sub.totalQuestions;
               const subAttempted = activeAttemptedKeys.filter(k => k.startsWith(`${sub.name}:`)).length;
               const subCoverage = subQuestions > 0 ? Math.round((subAttempted / subQuestions) * 100) : 0;
 
               return (
-                <div 
+                <div
                   key={sub.name}
                   onClick={() => onNavigate("subjects")}
-                  className="p-4 rounded-2xl border border-slate-150 hover:border-purple-300 hover:bg-purple-50/20 transition-all cursor-pointer group"
+                  className="p-4 rounded-2xl border border-slate-150 hover:border-slate-300 hover:bg-slate-50/40 transition-all cursor-pointer group"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md ${activeColors.badgeBg} ${activeColors.badgeText}`}>
                       Domain {idx + 1}
                     </span>
                     <span className="text-xs font-mono text-slate-400 font-semibold">{sub.chapters.length} Modules</span>
                   </div>
-                  <h4 className="font-display font-bold text-slate-800 text-sm mt-2 group-hover:text-purple-700 transition-colors">
+                  <h4 className="font-display font-bold text-slate-800 text-sm mt-2 group-hover:text-indigo-600 transition-colors">
                     {sub.name}
                   </h4>
                   <div className="mt-3 flex items-center justify-between text-xs font-mono text-slate-500">
@@ -365,111 +342,82 @@ export default function Dashboard({
                     <span className="font-bold text-slate-700">{subCoverage}%</span>
                   </div>
                   <div className="w-full bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
-                    <div className="bg-purple-600 h-full rounded-full transition-all duration-300" style={{ width: `${subCoverage}%` }} />
+                    <div className={`h-full rounded-full transition-all duration-300 ${activeColors.solidBg}`} style={{ width: `${subCoverage}%` }} />
                   </div>
                 </div>
               );
             })}
           </div>
         </div>
-      ) : isCilActive ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Paper I Block */}
-          <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl -z-10" />
-            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-              <div>
-                <span className="text-[9px] font-mono font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md uppercase">STAGE I - NON-TECH</span>
-                <h3 className="font-display font-extrabold text-slate-800 text-sm mt-1">Paper I: General Aptitude & Reasoning</h3>
+      ) : selectedExam !== "all" && currentExamConfig.papers ? (
+        <div className={`grid grid-cols-1 gap-6 ${currentExamConfig.papers.length > 1 ? "md:grid-cols-2" : ""}`}>
+          {currentExamConfig.papers.map((paper) => {
+            const paperColors = getColorClasses(paper.color || currentExamConfig.color);
+            return (
+              <div key={paper.id} className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs relative overflow-hidden">
+                <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                  <div>
+                    {paper.stageLabel && (
+                      <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-md uppercase border ${paperColors.badgeBg} ${paperColors.badgeBorder} ${paperColors.badgeText}`}>
+                        {paper.stageLabel}
+                      </span>
+                    )}
+                    <h3 className="font-display font-extrabold text-slate-800 text-sm mt-1">{paper.fullLabel || paper.label}</h3>
+                  </div>
+                  {paper.tag && (
+                    <span className="text-xs font-mono text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded-md">{paper.tag}</span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-semibold font-mono block tracking-wider">COVERAGE</span>
+                    <span className="text-xl font-bold text-slate-800 font-display">{overallCoverage}%</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-semibold font-mono block tracking-wider">ACCURACY</span>
+                    <span className="text-xl font-bold text-slate-800 font-display">{overallAccuracy}%</span>
+                  </div>
+                </div>
+                <div className="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
+                  <div className={`h-full rounded-full transition-all duration-300 ${paperColors.solidBg}`} style={{ width: `${overallCoverage}%` }} />
+                </div>
               </div>
-              <span className="text-xs font-mono text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded-md">General Aptitude</span>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold font-mono block tracking-wider">COVERAGE</span>
-                <span className="text-xl font-bold text-slate-800 font-display">{overallCoverage}%</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold font-mono block tracking-wider">ACCURACY</span>
-                <span className="text-xl font-bold text-slate-800 font-display">{overallAccuracy}%</span>
-              </div>
-            </div>
-            <div className="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
-              <div className="bg-indigo-500 h-full rounded-full transition-all duration-300" style={{ width: `${overallCoverage}%` }} />
-            </div>
-          </div>
-
-          {/* Paper II Block */}
-          <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl -z-10" />
-            <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-              <div>
-                <span className="text-[9px] font-mono font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md uppercase">STAGE II - TECHNICAL</span>
-                <h3 className="font-display font-extrabold text-slate-800 text-sm mt-1">Paper II: Computer Science & Systems</h3>
-              </div>
-              <span className="text-xs font-mono text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded-md">Technical CS</span>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold font-mono block tracking-wider">COVERAGE</span>
-                <span className="text-xl font-bold text-slate-800 font-display">{overallCoverage}%</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold font-mono block tracking-wider">ACCURACY</span>
-                <span className="text-xl font-bold text-slate-800 font-display">{overallAccuracy}%</span>
-              </div>
-            </div>
-            <div className="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden">
-              <div className="bg-emerald-500 h-full rounded-full transition-all duration-300" style={{ width: `${overallCoverage}%` }} />
-            </div>
-          </div>
+            );
+          })}
         </div>
       ) : (
         /* All Examinations View */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div 
-            onClick={() => onNavigate("subjects")}
-            className="bg-white border-2 border-purple-200/80 p-6 rounded-3xl shadow-3xs hover:border-purple-400 hover:shadow-md transition-all cursor-pointer relative overflow-hidden group"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2.5 bg-purple-100 text-purple-700 rounded-xl">
-                <BrainCircuit className="w-6 h-6" />
+          {EXAM_REGISTRY.map((exam, idx) => {
+            const Icon = getExamIcon(exam);
+            const colors = getExamColorClasses(exam);
+            return (
+              <div
+                key={exam.id}
+                onClick={() => onNavigate("subjects")}
+                className={`bg-white border-2 p-6 rounded-3xl shadow-3xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${colors.badgeBorder}`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`p-2.5 rounded-xl ${colors.iconBg} ${colors.iconText}`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wide ${colors.badgeBg} ${colors.badgeText}`}>
+                      {exam.category}
+                    </span>
+                    <h4 className="font-display font-extrabold text-slate-900 text-base">{exam.shortName}</h4>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 line-clamp-2">
+                  {exam.tagline}
+                </p>
+                <div className={`mt-4 flex items-center justify-between text-xs font-mono font-bold ${colors.badgeText}`}>
+                  <span>{exam.trackCardCta || `Explore ${exam.shortName} Curriculum`}</span>
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
               </div>
-              <div>
-                <span className="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md uppercase">Track 1</span>
-                <h4 className="font-display font-extrabold text-slate-900 text-base">Claude CCAF Architect</h4>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 line-clamp-2">
-              Agentic loops, MCP tool design, Claude Code workflows, and prompt caching.
-            </p>
-            <div className="mt-4 flex items-center justify-between text-xs font-mono font-bold text-purple-700">
-              <span>View 6 Domains & Mock Sets</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
-          <div 
-            onClick={() => onNavigate("subjects")}
-            className="bg-white border-2 border-amber-200/80 p-6 rounded-3xl shadow-3xs hover:border-amber-400 hover:shadow-md transition-all cursor-pointer relative overflow-hidden group"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2.5 bg-amber-100 text-amber-800 rounded-xl">
-                <GraduationCap className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md uppercase">Track 2</span>
-                <h4 className="font-display font-extrabold text-slate-900 text-base">Coal India MT (Systems)</h4>
-              </div>
-            </div>
-            <p className="text-xs text-slate-500 line-clamp-2">
-              General Aptitude, Reasoning, CS Systems, DBMS, OS, Networks, Algorithms, and Mock Tests.
-            </p>
-            <div className="mt-4 flex items-center justify-between text-xs font-mono font-bold text-amber-800">
-              <span>View Technical Syllabus</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
+            );
+          })}
         </div>
       )}
 
@@ -481,12 +429,11 @@ export default function Dashboard({
           
           {/* Continue Learning */}
           {continueChapter && (
-            <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -z-10 opacity-70" />
+            <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-md text-[10px] font-bold font-mono tracking-wider uppercase">
+                    <span className="px-2.5 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-md text-[10px] font-bold tracking-wide uppercase">
                       {continueChapter.subjectName}
                     </span>
                     {continueChapter.chapter.exam && (
@@ -520,12 +467,12 @@ export default function Dashboard({
           )}
 
           {/* Weak Chapters (If any exist) */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs">
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-display text-base font-bold text-slate-800 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500" /> Focus Target Areas
+                <AlertTriangle className="w-4 h-4 text-amber-500" /> Areas to focus on
               </h3>
-              <span className="text-xs text-slate-400 font-mono">Accuracy &lt; 60%</span>
+              <span className="text-xs text-slate-400">Accuracy below 60%</span>
             </div>
 
             {weakChapters.length > 0 ? (
@@ -545,11 +492,11 @@ export default function Dashboard({
                         <span>Accuracy: <strong className="text-rose-500">{accuracy}%</strong></span>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={() => onSelectChapter(chapter.subject, chapter)}
-                      className="inline-flex items-center justify-center gap-1.5 text-xs font-bold font-mono text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-lg hover:bg-indigo-100 hover:border-indigo-200 transition-all shrink-0 self-start sm:self-center cursor-pointer"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-lg hover:bg-indigo-100 hover:border-indigo-200 transition-all shrink-0 self-start sm:self-center cursor-pointer"
                     >
-                      Re-train <ChevronRight className="w-3.5 h-3.5" />
+                      Practice <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
@@ -557,25 +504,24 @@ export default function Dashboard({
             ) : (
               <div className="text-center py-6 border border-dashed border-slate-100 rounded-xl bg-slate-50/50">
                 <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto opacity-70" />
-                <p className="text-sm text-slate-500 mt-2 font-medium">No critical weak chapters detected yet!</p>
-                <p className="text-xs text-slate-400 mt-0.5">Complete more question practices to populate focus points.</p>
+                <p className="text-sm text-slate-500 mt-2 font-medium">No weak areas yet</p>
+                <p className="text-xs text-slate-400 mt-0.5">Keep practicing and we'll flag chapters that need more work.</p>
               </div>
             )}
           </div>
 
           {/* Quick Help / Exam Guide Info */}
-          <div className="bg-slate-50 border border-slate-200/80 p-6 rounded-2xl flex items-start gap-4">
-            <span className="text-2xl mt-0.5">💡</span>
+          <div className="bg-slate-50 border border-slate-200/80 p-4 sm:p-6 rounded-2xl flex items-start gap-4">
+            <div className="p-2 bg-amber-50 border border-amber-100 rounded-lg text-amber-600 shrink-0">
+              <Lightbulb className="w-4 h-4" />
+            </div>
             <div>
               <h4 className="text-sm font-bold text-slate-800 font-display">
-                {isClaudeActive 
-                  ? "Claude CCAF Certification Strategy" 
-                  : "Exam Preparation Strategy"}
+                {currentExamConfig.strategyTip?.title || "Study tip"}
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed mt-1">
-                {isClaudeActive 
-                  ? "The Claude Certified Architect - Foundations (CCAF) exam tests practical tool schema design, error boundaries, subagent context hygiene, and prompt caching. Practice with the Mock Test Arena to master real-world diagnostic patterns."
-                  : "Exam Scholar Hub covers both technical disciplines and AI architecture certifications. Use the Revision Engine to build custom multi-topic packs and the Mistake Book to eliminate recurring errors."}
+                {currentExamConfig.strategyTip?.body ||
+                  "Exam Scholar covers both technical disciplines and AI architecture certifications. Use the Revision Engine to build custom multi-topic practice sets and the Mistakes page to eliminate recurring errors."}
               </p>
             </div>
           </div>
@@ -584,12 +530,12 @@ export default function Dashboard({
 
         {/* Right Column (4 cols): Recent Activity Feed */}
         <div className="lg:col-span-4">
-          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs h-full flex flex-col">
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs h-full flex flex-col">
             <div className="flex items-center justify-between pb-4 border-b border-slate-50 mb-4">
               <h3 className="font-display text-base font-bold text-slate-800 flex items-center gap-2">
                 <Clock className="w-4 h-4 text-slate-500" /> Recent Activity
               </h3>
-              <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">LIVE LOG</span>
+              <span className="text-[10px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">Live</span>
             </div>
 
             {progress.recentActivity.length > 0 ? (
@@ -610,7 +556,7 @@ export default function Dashboard({
                     </div>
                     <div className="pb-4 last:pb-0 space-y-1">
                       <div className="text-xs font-semibold text-slate-800 leading-none">
-                        QID #{activity.questionId} in {activity.chapterName}
+                        Question #{activity.questionId} in {activity.chapterName}
                       </div>
                       <div className="text-[10px] text-slate-400 font-mono">
                         {activity.subject} • {new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -633,8 +579,8 @@ export default function Dashboard({
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-slate-100 rounded-xl bg-slate-50/30 flex-1">
                 <Clock className="w-8 h-8 text-slate-300 stroke-1" />
-                <p className="text-sm text-slate-500 mt-2 font-medium">Log empty</p>
-                <p className="text-xs text-slate-400 mt-0.5">Activity results appear in real-time as you practice questions.</p>
+                <p className="text-sm text-slate-500 mt-2 font-medium">No activity yet</p>
+                <p className="text-xs text-slate-400 mt-0.5">Your recent answers will show up here.</p>
               </div>
             )}
           </div>

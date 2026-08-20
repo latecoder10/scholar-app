@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
 import { MobileStorageService } from './src/services/api';
 import { MobileQuestion, UserStats, AnswerRecord } from './src/types';
+import { DEFAULT_EXAM_ID } from './src/data/examRegistry';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { QuizScreen } from './src/screens/QuizScreen';
 import { FlashcardScreen } from './src/screens/FlashcardScreen';
@@ -22,7 +23,7 @@ export default function App() {
     currentStreak: 1,
     bestStreak: 1,
     accuracy: 0,
-    activeExam: 'claude-ccaf',
+    activeExam: DEFAULT_EXAM_ID,
     bookmarks: [],
     mistakeIds: []
   });
@@ -35,9 +36,9 @@ export default function App() {
       try {
         const loadedStats = await MobileStorageService.getStats();
         setStats(loadedStats);
-        // Lazily load only the chosen exam partition (defaults to claude-ccaf)
+        // Lazily load only the chosen exam partition
         const initialQuestions = await MobileStorageService.loadExamQuestions(
-          (loadedStats.activeExam as 'claude-ccaf' | 'cil-mt' | 'all') || 'claude-ccaf'
+          loadedStats.activeExam || DEFAULT_EXAM_ID
         );
         setActiveExamQuestions(initialQuestions);
       } catch (err) {
@@ -50,7 +51,7 @@ export default function App() {
   }, []);
 
   // 2. Exam Switcher: Lazily loads only the selected exam chunk on demand
-  const handleSelectExam = async (exam: 'all' | 'claude-ccaf' | 'cil-mt') => {
+  const handleSelectExam = async (exam: string) => {
     setDataLoading(true);
     const updated = { ...stats, activeExam: exam };
     setStats(updated);
@@ -71,9 +72,9 @@ export default function App() {
   const handleStartQuiz = async (examFilter?: string, subjectFilter?: string) => {
     setDataLoading(true);
     try {
-      const exam = (examFilter as any) || stats.activeExam;
+      const exam = examFilter || stats.activeExam;
       const pool = await MobileStorageService.getSessionPool({
-        exam: exam === 'all' ? 'all' : exam === 'claude-ccaf' ? 'claude-ccaf' : 'cil-mt',
+        exam,
         limit: 25,
         shuffle: true,
         subject: subjectFilter
@@ -89,7 +90,7 @@ export default function App() {
     setDataLoading(true);
     try {
       const pool = await MobileStorageService.getSessionPool({
-        exam: (stats.activeExam as any) || 'claude-ccaf',
+        exam: stats.activeExam || DEFAULT_EXAM_ID,
         mistakeOnly: true,
         limit: 30
       });

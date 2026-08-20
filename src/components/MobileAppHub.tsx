@@ -30,6 +30,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { Question } from "../types";
+import RichText from "./RichText";
 
 interface MobileAppHubProps {
   questions?: Question[];
@@ -37,7 +38,6 @@ interface MobileAppHubProps {
 
 export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [downloadingZip, setDownloadingZip] = useState(false);
   const [simulatorScreen, setSimulatorScreen] = useState<"home" | "quiz" | "flashcard" | "mock" | "analytics">("home");
   const [selectedExamTrack, setSelectedExamTrack] = useState<"ccaf" | "cil">("ccaf");
   const [selectedTab, setSelectedTab] = useState<"download" | "eas-apk" | "expo-go" | "pwa">("download");
@@ -99,24 +99,11 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  const handleDownloadMobileZip = () => {
-    setDownloadingZip(true);
-    const link = document.createElement("a");
-    link.href = "/api/download/mobile-app-zip";
-    link.download = "exam-scholar-mobile-app.zip";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setTimeout(() => setDownloadingZip(false), 2500);
-  };
-
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Top Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-3">
               <Package className="w-3.5 h-3.5" />
@@ -131,23 +118,10 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={handleDownloadMobileZip}
-              disabled={downloadingZip}
-              className="px-5 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm flex items-center gap-2.5 shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              {downloadingZip ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Generating App ZIP...
-                </>
-              ) : (
-                <>
-                  <ArrowDownToLine className="w-4 h-4" />
-                  Download Mobile App (.ZIP)
-                </>
-              )}
-            </button>
+            <div className="px-5 py-3.5 bg-slate-800/60 border border-slate-700 text-slate-200 rounded-xl font-semibold text-sm flex items-center gap-2.5">
+              <ArrowDownToLine className="w-4 h-4 text-blue-400 shrink-0" />
+              Source lives in <code className="font-mono text-sky-300">/mobile</code>
+            </div>
           </div>
         </div>
       </div>
@@ -316,7 +290,7 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
                     </div>
 
                     <div className="text-xs font-bold text-slate-100 leading-relaxed">
-                      {currentQ.question}
+                      <RichText tone="dark">{currentQ.question}</RichText>
                     </div>
 
                     <div className="space-y-2 pt-1">
@@ -346,7 +320,7 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
                             <span className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center font-bold text-[10px] shrink-0">
                               {letter}
                             </span>
-                            <span className="flex-1">{opt}</span>
+                            <span className="flex-1"><RichText inline tone="dark">{opt}</RichText></span>
                           </button>
                         );
                       })}
@@ -358,14 +332,18 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
                           {selectedOpt === currentQ.answer ? "✅ Correct" : "❌ Incorrect (Answer: " + currentQ.answer + ")"}
                         </div>
                         <div className="text-[10px] text-slate-300 leading-relaxed">
-                          {currentQ.explanation}
+                          <RichText tone="dark">{currentQ.explanation}</RichText>
                         </div>
                         <button
                           onClick={() => setShowTrick(!showTrick)}
                           className="w-full text-left p-2 bg-amber-950/40 border border-amber-500/30 rounded-lg text-[10px] text-amber-300 font-semibold"
                         >
                           💡 30-Sec Exam Trick (Tap to {showTrick ? "Hide" : "Reveal"})
-                          {showTrick && <div className="mt-1 text-amber-200 font-normal">{currentQ.examTrick}</div>}
+                          {showTrick && (
+                            <div className="mt-1 text-amber-200 font-normal">
+                              <RichText tone="dark">{currentQ.examTrick}</RichText>
+                            </div>
+                          )}
                         </button>
                         <button
                           onClick={() => {
@@ -402,9 +380,9 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
                         <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block mb-2">
                           {flashcardFlipped ? "💡 30-Sec Exam Trick & Core Principle" : "❓ Question / Concept Target"}
                         </span>
-                        <p className="text-xs font-medium leading-relaxed">
-                          {flashcardFlipped ? currentQ.examTrick : currentQ.question}
-                        </p>
+                        <div className="text-xs font-medium leading-relaxed">
+                          <RichText tone="dark">{flashcardFlipped ? currentQ.examTrick : currentQ.question}</RichText>
+                        </div>
                       </div>
                       <div className="text-center text-[10px] text-slate-500 pt-3">
                         (Tap to flip card)
@@ -535,20 +513,12 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
                 <div>
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <ArrowDownToLine className="w-5 h-5 text-blue-400" />
-                    One-Click App ZIP Package
+                    Standalone App Package
                   </h3>
                   <p className="text-xs text-slate-400 mt-1">
-                    Download the complete standalone mobile codebase containing all assets, configs, and pre-bundled 1,128+ questions.
+                    The complete standalone mobile codebase — all assets, configs, and pre-bundled 1,128+ questions — lives in the <code className="font-mono text-sky-300">mobile/</code> folder of this repository.
                   </p>
                 </div>
-                <button
-                  onClick={handleDownloadMobileZip}
-                  disabled={downloadingZip}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow shrink-0"
-                >
-                  {downloadingZip ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-                  Download .ZIP
-                </button>
               </div>
 
               <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2.5 text-xs text-slate-300">
@@ -639,7 +609,7 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
               </div>
 
               <div className="p-3.5 bg-indigo-950/40 border border-indigo-500/30 rounded-xl text-xs text-indigo-200">
-                💡 <strong>How it installs:</strong> EAS outputs a QR code and download link in your terminal. Open the link on your Android phone, tap <em>Download .apk</em>, and tap <em>Install</em>.
+                <strong>How it installs:</strong> EAS outputs a QR code and download link in your terminal. Open the link on your Android phone, tap <em>Download .apk</em>, and tap <em>Install</em>.
               </div>
             </div>
           )}

@@ -8,6 +8,7 @@ import {
   SafeAreaView
 } from 'react-native';
 import { UserStats, MobileQuestion } from '../types';
+import { EXAM_REGISTRY } from '../data/examRegistry';
 
 interface AnalyticsScreenProps {
   stats: UserStats;
@@ -24,8 +25,10 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
   const coveragePct = totalPool > 0 ? Math.min(100, Math.round((stats.totalAnswered / totalPool) * 100)) : 0;
 
   // Breakdown by exam
-  const ccafCount = questions.filter(q => q.exam === 'Claude CCAF').length;
-  const cilCount = questions.filter(q => q.exam === 'CIL MT').length;
+  const examCounts = EXAM_REGISTRY.map(exam => ({
+    exam,
+    count: questions.filter(q => q.exam === exam.matchExam).length,
+  }));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,21 +92,17 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>Question Bank Distribution</Text>
 
-          <View style={styles.distRow}>
-            <Text style={styles.distName}>Claude Certified Architect (CCAF)</Text>
-            <Text style={styles.distCount}>{ccafCount} Questions</Text>
-          </View>
-          <View style={styles.distBar}>
-            <View style={[styles.distFill, { width: `${(ccafCount / totalPool) * 100}%`, backgroundColor: '#38BDF8' }]} />
-          </View>
-
-          <View style={[styles.distRow, { marginTop: 14 }]}>
-            <Text style={styles.distName}>CIL MT Computer Science / GATE</Text>
-            <Text style={styles.distCount}>{cilCount} Questions</Text>
-          </View>
-          <View style={styles.distBar}>
-            <View style={[styles.distFill, { width: `${(cilCount / totalPool) * 100}%`, backgroundColor: '#10B981' }]} />
-          </View>
+          {examCounts.map(({ exam, count }, idx) => (
+            <React.Fragment key={exam.id}>
+              <View style={idx === 0 ? styles.distRow : [styles.distRow, { marginTop: 14 }]}>
+                <Text style={styles.distName}>{exam.name}</Text>
+                <Text style={styles.distCount}>{count} Questions</Text>
+              </View>
+              <View style={styles.distBar}>
+                <View style={[styles.distFill, { width: `${totalPool > 0 ? (count / totalPool) * 100 : 0}%`, backgroundColor: exam.color }]} />
+              </View>
+            </React.Fragment>
+          ))}
         </View>
       </ScrollView>
     </SafeAreaView>

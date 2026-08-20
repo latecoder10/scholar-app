@@ -20,7 +20,7 @@ export interface Chapter {
   id: string; // derived from file name, e.g., 'chapter-01-osi-tcpip'
   name: string; // chapter name from JSON
   subject: string; // subject name from JSON
-  exam?: string; // 'Claude CCAF' | 'CIL MT'
+  exam?: string; // matches an ExamDefinition.matchExam in shared/exams.ts
   description: string;
   questionsCount: number;
   difficultyBreakdown: {
@@ -34,23 +34,10 @@ export interface Chapter {
 
 export interface Subject {
   name: string;
-  exam?: string; // 'Claude CCAF' | 'CIL MT'
+  exam?: string; // matches an ExamDefinition.matchExam in shared/exams.ts
   chapters: Chapter[];
   totalQuestions: number;
   paper: "Paper-I" | "Paper-II" | string;
-}
-
-export interface ExamOption {
-  id: string; // 'all' | 'claude-ccaf' | 'cil-mt'
-  name: string;
-  shortName: string;
-  tagline: string;
-  category: string;
-  badge: string;
-  icon: string;
-  description: string;
-  totalQuestionsCount?: number;
-  totalChaptersCount?: number;
 }
 
 export interface UserAnswerSubmission {

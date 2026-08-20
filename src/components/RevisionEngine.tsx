@@ -17,6 +17,8 @@ import {
   Compass
 } from "lucide-react";
 import { Subject, UserProgress, Question, Chapter, parseProgressKey } from "../types";
+import { resolveExamForSubject } from "../../shared/exams";
+import RichText from "./RichText";
 
 interface RevisionEngineProps {
   subjects: Subject[];
@@ -44,10 +46,7 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
   // Filter subjects based on selectedExam track
   const filteredSubjects = subjects.filter((s) => {
     if (selectedExam === "all") return true;
-    const isClaude = s.exam === "Claude CCAF" || s.name.toLowerCase().includes("ccaf") || s.name.includes("Claude");
-    if (selectedExam === "claude-ccaf") return isClaude;
-    if (selectedExam === "cil-mt") return !isClaude;
-    return true;
+    return resolveExamForSubject(s).id === selectedExam;
   });
 
   // Retrieve subject list
@@ -213,37 +212,40 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
       assembledSet,
       'revision',
       'custom-revision-pack',
-      'Custom Assembled Revision Set',
+      'Custom Revision Set',
       subjectFilter === 'All' ? 'Multiple Subjects' : subjectFilter
     );
   };
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-linear-to-r from-indigo-950 to-indigo-900 border border-indigo-800 p-6 rounded-2xl shadow-sm text-white">
-        <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <RefreshCw className="w-7 h-7 text-indigo-300 animate-spin-slow" /> Custom Revision Engine
-          </h1>
-          <p className="text-indigo-200 text-xs mt-1 max-w-xl">
-            Compile targeted mock test batteries by compounding active mistakes, weak chapters, and low-confidence guesses.
-          </p>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-slate-150 p-4 sm:p-6 rounded-2xl shadow-xs">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-600 shrink-0">
+            <RefreshCw className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Revision</h1>
+            <p className="text-slate-500 text-xs mt-1 max-w-xl">
+              Build a custom practice set from your mistakes, weak chapters, and low-confidence answers.
+            </p>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
+
         {/* Left Grid: Configuration Sliders (5 cols) */}
-        <div className="lg:col-span-5 bg-white border border-slate-100 rounded-2xl p-6 shadow-xs space-y-6">
-          <h3 className="font-display text-sm font-bold text-slate-800 flex items-center gap-2 pb-3 border-b border-slate-50 uppercase tracking-wider font-mono">
-            <Sliders className="w-4 h-4 text-indigo-600" /> Assemble Criteria
+        <div className="lg:col-span-5 bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs space-y-6">
+          <h3 className="font-display text-sm font-bold text-slate-800 flex items-center gap-2 pb-3 border-b border-slate-50">
+            <Sliders className="w-4 h-4 text-indigo-600" /> Build your set
           </h3>
 
           <div className="space-y-4">
             {/* Subject Selector */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider block">Scope Subject</label>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Subject</label>
               <select
                 value={subjectFilter}
                 onChange={(e) => {
@@ -260,7 +262,7 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
 
             {/* Checkboxes */}
             <div className="space-y-3 pt-2">
-              <label className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider block">Target Categories</label>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wide block">Include</label>
               
               {/* Mistakes */}
               <label className="flex items-start gap-3 p-3 border border-slate-50 bg-slate-50/20 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer select-none">
@@ -338,7 +340,7 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
               onClick={handleAssemble}
               className="w-full inline-flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm py-3 rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-100"
             >
-              <Sparkles className="w-4 h-4" /> Assemble Revision Pack
+              <Sparkles className="w-4 h-4" /> Build Set
             </button>
           </div>
         </div>
@@ -346,14 +348,14 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
         {/* Right Grid: Assembled Pack Preview (7 cols) */}
         <div className="lg:col-span-7">
           {assembledSet ? (
-            <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs space-y-6 animate-slide-up">
+            <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs space-y-6 animate-slide-up">
               <div className="flex justify-between items-center pb-4 border-b border-slate-50">
                 <div>
-                  <h3 className="font-display text-base font-bold text-slate-800">Revision Pack Assembled</h3>
-                  <p className="text-slate-400 text-xs mt-0.5">Ready for flight. Review the metrics below.</p>
+                  <h3 className="font-display text-base font-bold text-slate-800">Your set is ready</h3>
+                  <p className="text-slate-400 text-xs mt-0.5">Review the breakdown below, then start practicing.</p>
                 </div>
-                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-bold font-mono rounded-md">
-                  {assembledSet.length} QUESTIONS
+                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-bold rounded-md">
+                  {assembledSet.length} questions
                 </span>
               </div>
 
@@ -362,25 +364,25 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
                   {/* Detailed summary counts */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="bg-slate-50 p-3 rounded-xl text-center">
-                      <span className="text-[9px] font-bold font-mono text-slate-400 uppercase">Mistakes</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Mistakes</span>
                       <span className="text-base font-bold text-slate-800 block mt-0.5">
                         {assembledSet.filter(q => q.source === 'Mistake Book').length}
                       </span>
                     </div>
                     <div className="bg-slate-50 p-3 rounded-xl text-center">
-                      <span className="text-[9px] font-bold font-mono text-slate-400 uppercase">Weak Chapters</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Weak Chapters</span>
                       <span className="text-base font-bold text-slate-800 block mt-0.5">
                         {assembledSet.filter(q => q.source !== 'Mistake Book' && q.difficulty === 'Hard').length}
                       </span>
                     </div>
                     <div className="bg-slate-50 p-3 rounded-xl text-center">
-                      <span className="text-[9px] font-bold font-mono text-slate-400 uppercase">Medium diff</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Medium diff</span>
                       <span className="text-base font-bold text-slate-800 block mt-0.5">
                         {assembledSet.filter(q => q.difficulty === 'Medium').length}
                       </span>
                     </div>
                     <div className="bg-slate-50 p-3 rounded-xl text-center">
-                      <span className="text-[9px] font-bold font-mono text-slate-400 uppercase">Easy diff</span>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Easy diff</span>
                       <span className="text-base font-bold text-slate-800 block mt-0.5">
                         {assembledSet.filter(q => q.difficulty === 'Easy').length}
                       </span>
@@ -395,7 +397,9 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
                           {idx + 1}
                         </span>
                         <div className="space-y-0.5">
-                          <p className="text-xs font-semibold text-slate-700 line-clamp-1">{q.question}</p>
+                          <p className="text-xs font-semibold text-slate-700 line-clamp-1">
+                            <RichText inline>{q.question}</RichText>
+                          </p>
                           <div className="text-[9px] font-mono text-slate-400">
                             {q.subject} • {q.chapterName}
                           </div>
@@ -409,13 +413,13 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
                     onClick={handleLaunchRevision}
                     className="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm py-3.5 rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-100"
                   >
-                    <Play className="w-4 h-4 fill-white text-white" /> Launch Revision Practice
+                    <Play className="w-4 h-4 fill-white text-white" /> Start Practice
                   </button>
                 </>
               ) : (
                 <div className="text-center py-10 bg-slate-50 border border-dashed border-slate-100 rounded-xl">
                   <AlertTriangle className="w-8 h-8 text-slate-300 mx-auto" />
-                  <p className="text-xs text-slate-500 font-medium mt-2">Compiled 0 items under these criteria.</p>
+                  <p className="text-xs text-slate-500 font-medium mt-2">No questions match these filters.</p>
                   <p className="text-[10px] text-slate-400 mt-0.5">Try widening filters or selecting a different subject.</p>
                 </div>
               )}
@@ -424,9 +428,9 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
             <div className="bg-slate-50 border border-dashed border-slate-100 rounded-2xl p-16 text-center flex flex-col items-center justify-center gap-4 h-full">
               <Compass className="w-12 h-12 text-indigo-200 stroke-1" />
               <div className="max-w-xs space-y-1">
-                <h3 className="font-display text-sm font-bold text-slate-800">Configure & Compile</h3>
+                <h3 className="font-display text-sm font-bold text-slate-800">Nothing built yet</h3>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Apply filters and click the <strong>'Assemble Revision Pack'</strong> button on the left panel to compile and review your custom flight preparation set.
+                  Set your filters and click <strong>Build Set</strong> to create a custom practice set.
                 </p>
               </div>
             </div>

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { UserStats, MobileQuestion } from '../types';
 import examManifest from '../data/examManifest.json';
+import { EXAM_REGISTRY } from '../data/examRegistry';
 
 interface HomeScreenProps {
   stats: UserStats;
@@ -19,8 +20,10 @@ interface HomeScreenProps {
   onStartMock: () => void;
   onOpenMistakes: () => void;
   onOpenAnalytics: () => void;
-  onSelectExam: (exam: 'all' | 'claude-ccaf' | 'cil-mt') => void;
+  onSelectExam: (exam: string) => void;
 }
+
+const manifestExams = examManifest.exams as Record<string, { count: number }>;
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   stats,
@@ -33,11 +36,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onSelectExam
 }) => {
   const activeExamName =
-    stats.activeExam === 'claude-ccaf'
-      ? 'Claude Certified Architect (CCAF)'
-      : stats.activeExam === 'cil-mt'
-      ? 'CIL MT Computer Science'
-      : 'Combined All-Syllabus';
+    EXAM_REGISTRY.find(e => e.id === stats.activeExam)?.name || 'Combined All-Syllabus';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -57,22 +56,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* Isolated Exam Chunks (Prevents Phone Freezing) */}
         <View style={styles.examTabs}>
-          <TouchableOpacity
-            style={[styles.examTab, stats.activeExam === 'claude-ccaf' && styles.examTabActive]}
-            onPress={() => onSelectExam('claude-ccaf')}
-          >
-            <Text style={[styles.examTabText, stats.activeExam === 'claude-ccaf' && styles.examTabTextActive]}>
-              Claude CCAF ({examManifest.exams.ccaf.count})
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.examTab, stats.activeExam === 'cil-mt' && styles.examTabActive]}
-            onPress={() => onSelectExam('cil-mt')}
-          >
-            <Text style={[styles.examTabText, stats.activeExam === 'cil-mt' && styles.examTabTextActive]}>
-              CIL MT ({examManifest.exams.cil.count})
-            </Text>
-          </TouchableOpacity>
+          {EXAM_REGISTRY.map((exam) => (
+            <TouchableOpacity
+              key={exam.id}
+              style={[styles.examTab, stats.activeExam === exam.id && styles.examTabActive]}
+              onPress={() => onSelectExam(exam.id)}
+            >
+              <Text style={[styles.examTabText, stats.activeExam === exam.id && styles.examTabTextActive]}>
+                {exam.shortName} ({manifestExams[exam.id]?.count ?? 0})
+              </Text>
+            </TouchableOpacity>
+          ))}
           <TouchableOpacity
             style={[styles.examTab, stats.activeExam === 'all' && styles.examTabActive]}
             onPress={() => onSelectExam('all')}

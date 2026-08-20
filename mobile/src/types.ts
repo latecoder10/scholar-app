@@ -12,13 +12,13 @@ export interface MobileQuestion {
   subject?: string;
   chapterId?: string;
   chapterName?: string;
-  exam?: 'Claude CCAF' | 'CIL MT' | string;
+  exam?: string; // matches a MobileExamDefinition.matchExam in data/examRegistry.ts
 }
 
 export interface MobileSubject {
   id: string;
   name: string;
-  exam: 'Claude CCAF' | 'CIL MT';
+  exam: string; // matches a MobileExamDefinition.matchExam in data/examRegistry.ts
   totalQuestions: number;
   iconName: string;
   color: string;
@@ -31,7 +31,7 @@ export interface UserStats {
   currentStreak: number;
   bestStreak: number;
   accuracy: number;
-  activeExam: 'all' | 'claude-ccaf' | 'cil-mt';
+  activeExam: string; // 'all' or a MobileExamDefinition.id from data/examRegistry.ts
   bookmarks: number[]; // question IDs
   mistakeIds: number[]; // question IDs
 }

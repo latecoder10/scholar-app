@@ -22,9 +22,12 @@ import { Subject } from "../types";
 interface ContentPackManagerProps {
   subjects: Subject[];
   onRefreshContent: () => Promise<void>;
+  /** Uploading writes into content/, so it is off where that is not
+   *  persistent. See shared/capabilities.ts. */
+  canUpload?: boolean;
 }
 
-export default function ContentPackManager({ subjects, onRefreshContent }: ContentPackManagerProps) {
+export default function ContentPackManager({ subjects, onRefreshContent, canUpload = false }: ContentPackManagerProps) {
   const [jsonText, setJsonText] = useState("");
   const [copied, setCopied] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<{ success: boolean; message: string } | null>(null);
@@ -32,6 +35,7 @@ export default function ContentPackManager({ subjects, onRefreshContent }: Conte
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const schemaTemplate = `{
+  "exam": "CIL MT",
   "subject": "Computer Networks",
   "chapter": "OSI Model and TCP IP",
   "description": "Fundamental concepts of networking models, layer functionalities, and standard architectures.",
@@ -137,13 +141,15 @@ export default function ContentPackManager({ subjects, onRefreshContent }: Conte
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Banner */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-slate-100 p-6 rounded-2xl shadow-xs">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-slate-100 p-4 sm:p-6 rounded-2xl shadow-xs">
         <div>
           <h1 className="font-display text-2xl md:text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-            <Upload className="w-7 h-7 text-indigo-600" /> Plug-and-Play Manager
+            <Upload className="w-7 h-7 text-indigo-600" /> Content Manager
           </h1>
           <p className="text-slate-400 text-xs mt-1 max-w-xl">
-            Drop new chapter JSON files to expand your curriculum instantly. No database migrations, code modifications, or redeployments required.
+            {canUpload
+              ? "Add new chapter files to expand the curriculum — no code changes or redeploys needed."
+              : "Browse the discovered curriculum and the content pack schema. Uploading is disabled on this deployment."}
           </p>
         </div>
       </div>
@@ -154,11 +160,34 @@ export default function ContentPackManager({ subjects, onRefreshContent }: Conte
         <div className="lg:col-span-7 space-y-6">
           
           {/* File Upload Box */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
             <h3 className="font-display text-sm font-bold text-slate-800 uppercase tracking-wider font-mono">
               Upload JSON Content Pack File
             </h3>
 
+            {!canUpload ? (
+              /* Uploading writes into content/, which does not persist on free
+                 hosting tiers — so the controls are withheld rather than left
+                 to fail silently. See shared/capabilities.ts. */
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1.5">
+                    <h4 className="text-xs font-bold text-slate-700">Uploading is disabled on this deployment</h4>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Content packs are written into the <code className="font-mono text-slate-600">content/</code> folder,
+                      which is not persistent on free hosting — an uploaded pack would disappear on the next restart.
+                    </p>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      To add content: drop the JSON into <code className="font-mono text-slate-600">content/&lt;exam&gt;/modules/&lt;subject&gt;/</code>,
+                      commit, and redeploy. To re-enable this uploader, run the app locally
+                      or set <code className="font-mono text-slate-600">ENABLE_AUTHORING=true</code>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+            <>
             {/* Drag & Drop Frame */}
             <div 
               onClick={() => fileInputRef.current?.click()}
@@ -192,7 +221,7 @@ export default function ContentPackManager({ subjects, onRefreshContent }: Conte
                 <button
                   onClick={handleTextUploadSubmit}
                   disabled={!jsonText.trim() || isValidating}
-                  className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-xs"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-11 sm:min-h-0 w-full sm:w-auto bg-slate-900 hover:bg-slate-800 active:bg-slate-950 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer shadow-xs"
                 >
                   {isValidating ? "Validating..." : "Push Content Pack"}
                 </button>
@@ -219,12 +248,14 @@ export default function ContentPackManager({ subjects, onRefreshContent }: Conte
                 </div>
               </div>
             )}
+            </>
+            )}
           </div>
 
           {/* Active Discovered Directory logs */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-xs space-y-4">
-            <h3 className="font-display text-sm font-bold text-slate-800 uppercase tracking-wider font-mono flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-indigo-600" /> Auto-Discovery Flight Log
+          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
+            <h3 className="font-display text-sm font-bold text-slate-800 flex items-center gap-2">
+              <Terminal className="w-4 h-4 text-indigo-600" /> Discovery Log
             </h3>
             
             <div className="bg-slate-950 text-emerald-400 p-4 rounded-xl font-mono text-xs space-y-2 max-h-[220px] overflow-y-auto leading-relaxed border border-slate-800">
@@ -248,7 +279,7 @@ export default function ContentPackManager({ subjects, onRefreshContent }: Conte
         </div>
 
         {/* Right column (5 cols): Schema template copy block */}
-        <div className="lg:col-span-5 bg-white border border-slate-100 rounded-2xl p-6 shadow-xs space-y-5">
+        <div className="lg:col-span-5 bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs space-y-5">
           <div className="space-y-1">
             <h3 className="font-display text-sm font-bold text-slate-800 uppercase tracking-wider font-mono">
               JSON Schema Specifications
@@ -261,7 +292,7 @@ export default function ContentPackManager({ subjects, onRefreshContent }: Conte
           <div className="relative">
             <button
               onClick={handleCopyTemplate}
-              className="absolute top-3 right-3 p-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer"
+              className="absolute top-3 right-3 inline-flex items-center justify-center min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 sm:p-2 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white rounded-xl transition-all cursor-pointer"
             >
               {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
             </button>
@@ -273,7 +304,15 @@ export default function ContentPackManager({ subjects, onRefreshContent }: Conte
           <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl flex items-start gap-3">
             <Info className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
             <p className="text-xs text-indigo-700 leading-relaxed font-medium">
-              You can copy this layout, edit the questions in any standard text editor, and either drag-upload or paste-push it right here. The chapter will appear immediately in the Dashboard and Subject screens!
+              {canUpload ? (
+                <>
+                  You can copy this layout, edit the questions in any standard text editor, and either drag-upload or paste-push it right here. The pack is filed under <code className="font-mono">content/&lt;exam&gt;/modules/&lt;subject&gt;/</code> and appears immediately in the Dashboard and Subject screens — a new <code className="font-mono">exam</code> value simply creates a new exam folder.
+                </>
+              ) : (
+                <>
+                  You can copy this layout, edit the questions in any standard text editor, and commit the file to <code className="font-mono">content/&lt;exam&gt;/modules/&lt;subject&gt;/</code>. It is picked up on the next deploy — a new <code className="font-mono">exam</code> value simply creates a new exam folder.
+                </>
+              )}
             </p>
           </div>
         </div>

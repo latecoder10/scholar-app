@@ -1,8 +1,8 @@
 {
-  "subject": "Claude CCAF: Enterprise Security & Performance",
-  "chapter": "Prompt Caching, Message Batches API & High Availability",
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.7 Prompt Caching, Message Batches API & High Availability",
   "exam": "Claude CCAF",
-  "paper": "Domain-6",
+  "paper": "Domain-3",
   "description": "Enterprise engineering: Prompt Caching prefix mechanics, Message Batches API 50% discount rules, rate limit resilience with exponential backoff & jitter.",
   "questions": [
     {

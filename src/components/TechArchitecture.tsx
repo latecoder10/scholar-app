@@ -25,13 +25,13 @@ export default function TechArchitecture() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header Banner */}
-      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-slate-900 border border-slate-800 p-4 sm:p-6 rounded-2xl shadow-sm text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Cpu className="w-7 h-7 text-indigo-400" /> System Design & Blueprint Console
+            <Cpu className="w-7 h-7 text-indigo-400" /> API Reference
           </h1>
           <p className="text-slate-400 text-xs mt-1 max-w-xl font-mono">
-            Staff Architect Specifications • Multi-Exam Architecture Engine (CIL MT, GATE, Claude CCAF)
+            Backend architecture and REST endpoints for this app
           </p>
         </div>
       </div>
@@ -62,7 +62,7 @@ export default function TechArchitecture() {
       </div>
 
       {/* Content Container */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-6 md:p-8 shadow-xs">
+      <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xs">
         
         {/* Tab 1: Core & Folder Spec */}
         {activeTab === "overview" && (
@@ -78,7 +78,7 @@ export default function TechArchitecture() {
                 The system utilizes a <strong>Stateless Core Engine</strong> that discovers directories dynamically. 
                 User progression, performance metrics, and mistake logs are handled as an isolated relational state.
               </p>
-              <div className="bg-slate-950 p-4 rounded-xl text-emerald-400 font-mono text-[11px] overflow-x-auto border border-slate-800">
+              <pre className="bg-slate-950 p-4 rounded-xl text-emerald-400 font-mono text-[11px] overflow-x-auto border border-slate-800">
                 {`[User Browser]
        │ (React Client / Dynamic HUD)
        ▼
@@ -86,7 +86,7 @@ export default function TechArchitecture() {
        │
        ▼
  [PostgreSQL DB] (Durable tracking of: answeredQuestions, recentActivity, mistakes)`}
-              </div>
+              </pre>
             </div>
 
             {/* 2. Folder Structure */}
@@ -99,13 +99,16 @@ export default function TechArchitecture() {
               </p>
               <pre className="bg-slate-50 p-4 rounded-xl text-xs font-mono text-slate-700 overflow-x-auto leading-relaxed border border-slate-100">
 {`content/
-├── Computer-Networks/
-│   ├── chapter-01-osi-tcpip.json         # OSI & TCP/IP Content Pack
-│   ├── chapter-02-routing.json           # Routing Algorithms Pack
-│   └── chapter-03-ipv4-subnetting.json   # Subnetting Pack
-└── DBMS/
-    ├── chapter-01-er-model.json          # Entity-Relationship Model
-    └── chapter-02-normalization.json     # DB Normalization & Keys Pack`}
+└── cil-mt/                                   # Exam id — the folder name IS the exam
+    └── modules/
+        ├── computer-networks/
+        │   ├── chapter-01-osi-tcpip.json     # OSI & TCP/IP Content Pack
+        │   └── chapter-02-routing.json       # Routing Algorithms Pack
+        ├── dbms/
+        │   ├── chapter-01-er-model.json      # Entity-Relationship Model
+        │   └── chapter-02-normalization.json # DB Normalization & Keys Pack
+        └── mock-tests/
+            └── mock-sheet-1.json             # Timed full-length paper`}
               </pre>
             </div>
 
@@ -117,7 +120,7 @@ export default function TechArchitecture() {
               <p className="text-xs text-slate-500">
                 Strict type schema applied to JSON documents, enabling the auto-discovery layer to catalog items without database synchronization overhead.
               </p>
-              <div className="bg-slate-950 p-4 rounded-xl text-slate-300 font-mono text-[11px] overflow-x-auto border border-slate-800 leading-relaxed">
+              <pre className="bg-slate-950 p-4 rounded-xl text-slate-300 font-mono text-[11px] overflow-x-auto border border-slate-800 leading-relaxed">
 {`{
   "subject": "Subject Title (e.g. DBMS)",
   "chapter": "Chapter Title (e.g. Normalization)",
@@ -137,7 +140,7 @@ export default function TechArchitecture() {
     }
   ]
 }`}
-              </div>
+              </pre>
             </div>
           </div>
         )}
@@ -202,13 +205,13 @@ CREATE INDEX idx_mistakes_user_subject ON mistake_book(user_id, subject);`}
                 5. API Design (Spring Boot Controller)
               </h3>
               <p className="text-xs text-slate-500">
-                A highly optimized REST architecture containing Spring Boot controller endpoints to service the flight deck.
+                REST endpoints backing the dashboard and other views.
               </p>
               <pre className="bg-slate-50 p-4 rounded-xl text-xs font-mono text-slate-700 overflow-x-auto leading-relaxed border border-slate-100">
 {`@RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
-public class MissionControlController {
+public class DashboardController {
 
     @Autowired
     private DiscoveryService discoveryService;
@@ -258,7 +261,7 @@ public class MissionControlController {
               </h3>
               <p className="text-xs text-slate-500">
                 The mechanism is completely content-driven. The backend scans the root `content/` folder recursively. 
-                Any folder found represents a **Subject**. Any `.json` file inside represents a **Chapter**. 
+                Any folder found represents a <strong>Subject</strong>. Any `.json` file inside represents a <strong>Chapter</strong>.
                 The system extracts parameters dynamically at runtime:
               </p>
               <div className="bg-slate-50 p-4 rounded-xl space-y-2 border border-slate-100 text-xs">
@@ -299,11 +302,11 @@ public class MissionControlController {
                 10. Mistake Book Purge Loop
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                The **Mistake Book** is a self-cleaning cache:
+                The <strong>Mistake Book</strong> is a self-cleaning cache:
                 <br />
-                1. If a user submits an **incorrect answer** to any question, it is saved to the `mistake_book` table.
+                1. If a user submits an <strong>incorrect answer</strong> to any question, it is saved to the `mistake_book` table.
                 <br />
-                2. During any revision session, if they attempt this question again and **solve it correctly**, the engine immediately purges the item from `mistake_book`.
+                2. During any revision session, if they attempt this question again and <strong>solve it correctly</strong>, the engine immediately purges the item from `mistake_book`.
                 <br />
                 3. This ensures that the Mistake Book represents a real, live log of un-mastered concepts that naturally shrinks to zero as competence increases.
               </p>
@@ -333,7 +336,7 @@ public class MissionControlController {
             {/* 6. Component Hierarchy */}
             <div className="space-y-2">
               <h3 className="font-display text-base font-bold text-slate-800 uppercase tracking-wider font-mono border-l-4 border-indigo-600 pl-3">
-                6. Component Hierarchy (React Flight Deck)
+                6. Component Hierarchy
               </h3>
               <p className="text-xs text-slate-500">
                 A highly modular, isolated component architecture to ensure memory stability and prevent re-render loops:
@@ -362,7 +365,7 @@ public class MissionControlController {
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs font-mono leading-relaxed space-y-4">
                 <div>
                   <h4 className="font-bold text-slate-700">Dashboard Layout (Bento Grid):</h4>
-                  <pre className="text-[10px] text-slate-500">{`+--------------------------------------------------------------+
+                  <pre className="text-[10px] text-slate-500 overflow-x-auto">{`+--------------------------------------------------------------+
 | HEADER: App Title             [STATUS: AUTO DISCOVERY ACTIVE]|
 +--------------------------------------------------------------+
 | [CARD 1: Coverage%] [CARD 2: Accuracy%] [CARD 3: Readiness%]  |
@@ -377,7 +380,7 @@ public class MissionControlController {
 
                 <div>
                   <h4 className="font-bold text-slate-700">Question Screen Layout:</h4>
-                  <pre className="text-[10px] text-slate-500">{`+--------------------------------------------------------------+
+                  <pre className="text-[10px] text-slate-500 overflow-x-auto">{`+--------------------------------------------------------------+
 | HUD: Practice Mode | Question 3 of 10           [ProgressBar]|
 +--------------------------------------------------------------+
 | [Easy]   SOURCE: GATE CS 2021           IMPORTANCE: High     |

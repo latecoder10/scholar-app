@@ -66,6 +66,17 @@ scholarApp/
 └── data/                 # Runtime-generated user progress store (gitignored)
 ```
 
+### Content Layout
+Exams are discovered from the filesystem — nothing about which exams exist is hardcoded in the UI:
+```
+content/
+└── <exam-id>/            # e.g. claude-ccaf, cil-mt — matches ExamDefinition.id in shared/exams.ts
+    └── modules/
+        └── <module>/     # e.g. prompt-engineering, mock-tests
+            └── chapter-01-*.json
+```
+Dropping a new `content/<exam-id>/modules/<module>/` folder (or uploading a pack whose `exam` field names a new exam) makes it appear on the next `/api/content` scan. Adding a matching entry to `EXAM_REGISTRY` in [shared/exams.ts](shared/exams.ts) is optional and only supplies presentation metadata — icon, colour, tagline, papers.
+
 ---
 
 ## 🚀 Local Development Workflow
@@ -94,6 +105,25 @@ This compiles the static React files to `dist/`, then bundles the backend TypeSc
 ```bash
 npm run start
 ```
+Binds to `$PORT` when a host provides one, otherwise `3000`.
+
+---
+
+## 🔐 Authoring Mode
+
+Two features write into `content/` at runtime — the Content Manager uploader and the AI mock expander. Free and serverless hosts have **ephemeral disks**, so those writes appear to succeed and then vanish on the next restart. Both therefore sit behind a capability flag resolved in [shared/capabilities.ts](shared/capabilities.ts) and enforced by the server, with the UI hiding the controls to match.
+
+| `ENABLE_AUTHORING` | Result |
+|---|---|
+| `true` | Uploader and AI expand on (AI also needs `GEMINI_API_KEY`) |
+| `false` | Both off |
+| unset | **On in development, off in production** |
+
+Nothing to configure locally — `npm run dev` has authoring on by default. A deployment is safe by default. The server prints the resolved mode on boot, and `GET /api/capabilities` reports it; gated routes answer **503** with an explanation rather than writing.
+
+To add content on a deployed instance, commit the JSON to `content/<exam>/modules/<subject>/` and redeploy — the same folder-driven flow described above.
+
+> Setting `ENABLE_AUTHORING=true` on a public host lets **anyone** who can reach the site upload content packs. There is no authentication on these routes.
 
 ---
 

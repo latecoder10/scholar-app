@@ -7,5 +7,5 @@ coverage/
 .env*
 mobile/node_modules/
 mobile/.expo/
-data/
+/data/
 !.env.example

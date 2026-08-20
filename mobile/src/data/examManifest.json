@@ -1,7 +1,7 @@
 {
   "total": 1128,
   "exams": {
-    "ccaf": {
+    "claude-ccaf": {
       "id": "claude-ccaf",
       "name": "Claude Certified Architect (CCAF)",
       "count": 425,
@@ -16,7 +16,7 @@
         "Claude CCAF: Prompt Engineering & Structured Output"
       ]
     },
-    "cil": {
+    "cil-mt": {
       "id": "cil-mt",
       "name": "CIL MT Computer Science / GATE",
       "count": 703,

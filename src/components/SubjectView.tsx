@@ -23,9 +23,10 @@ interface SubjectViewProps {
   progress: UserProgress;
   onBack: () => void;
   onSelectChapter: (subjectName: string, chapter: Chapter) => void;
+  onQuickPractice: (subjectName: string, chapter: Chapter) => void;
 }
 
-export default function SubjectView({ subject, progress, onBack, onSelectChapter }: SubjectViewProps) {
+export default function SubjectView({ subject, progress, onBack, onSelectChapter, onQuickPractice }: SubjectViewProps) {
   useEffect(() => {
     const scrollContainer = document.getElementById("main-workspace-scroll");
     if (scrollContainer) {
@@ -87,17 +88,17 @@ export default function SubjectView({ subject, progress, onBack, onSelectChapter
     <div className="space-y-8 animate-fade-in">
       {/* Subject Header */}
       <div className="space-y-4">
-        <button 
+        <button
           onClick={onBack}
-          className="inline-flex items-center text-xs font-semibold font-mono text-slate-500 hover:text-slate-800 transition-colors gap-1 hover:-translate-x-0.5 transition-transform"
+          className="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors gap-1 hover:-translate-x-0.5 transition-transform"
         >
-          <ChevronLeft className="w-4 h-4" /> BACK TO DASHBOARD
+          <ChevronLeft className="w-4 h-4" /> Back to subjects
         </button>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-slate-50 border border-slate-100 p-6 rounded-2xl">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-slate-50 border border-slate-100 p-4 sm:p-6 rounded-2xl">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-bold font-mono tracking-wider uppercase rounded">
-              Subject Overview
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-bold tracking-wide uppercase rounded">
+              Subject
             </div>
             <h1 className="font-display text-2xl md:text-3xl font-bold text-slate-800 tracking-tight mt-1.5">
               {subject.name}
@@ -109,15 +110,15 @@ export default function SubjectView({ subject, progress, onBack, onSelectChapter
 
           <div className="flex items-center gap-6 divide-x divide-slate-100 shrink-0 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
             <div className="text-left pr-6">
-              <span className="text-[10px] font-bold font-mono text-slate-400 tracking-wider uppercase block">Coverage</span>
+              <span className="text-[10px] font-bold text-slate-400 tracking-wide uppercase block">Coverage</span>
               <span className="text-2xl font-bold font-display text-slate-800 leading-none block mt-1">{subjectCoverage}%</span>
             </div>
             <div className="text-left pl-6">
-              <span className="text-[10px] font-bold font-mono text-slate-400 tracking-wider uppercase block">Accuracy</span>
+              <span className="text-[10px] font-bold text-slate-400 tracking-wide uppercase block">Accuracy</span>
               <span className="text-2xl font-bold font-display text-slate-800 leading-none block mt-1">{subjectAccuracy}%</span>
             </div>
             <div className="text-left pl-6">
-              <span className="text-[10px] font-bold font-mono text-slate-400 tracking-wider uppercase block">Solved</span>
+              <span className="text-[10px] font-bold text-slate-400 tracking-wide uppercase block">Solved</span>
               <span className="text-2xl font-bold font-display text-slate-800 leading-none block mt-1">{correctCount}</span>
             </div>
           </div>
@@ -142,15 +143,15 @@ export default function SubjectView({ subject, progress, onBack, onSelectChapter
                     {chapter.name}
                   </h4>
                   {chapter.status === "Completed" ? (
-                    <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[9px] font-bold font-mono uppercase tracking-wider rounded">
+                    <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[9px] font-bold uppercase tracking-wide rounded">
                       Completed
                     </span>
                   ) : chapter.status === "In Progress" ? (
-                    <span className="px-2 py-0.5 bg-amber-50 border border-amber-100 text-amber-700 text-[9px] font-bold font-mono uppercase tracking-wider rounded">
+                    <span className="px-2 py-0.5 bg-amber-50 border border-amber-100 text-amber-700 text-[9px] font-bold uppercase tracking-wide rounded">
                       In Progress
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold font-mono uppercase tracking-wider rounded">
+                    <span className="px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-wide rounded">
                       Not Started
                     </span>
                   )}
@@ -165,15 +166,15 @@ export default function SubjectView({ subject, progress, onBack, onSelectChapter
               <div className="mt-5 pt-4 border-t border-slate-50 space-y-4">
                 <div className="grid grid-cols-3 gap-2">
                   <div className="bg-slate-50/50 p-2 rounded-xl text-center">
-                    <span className="text-[9px] font-bold font-mono text-slate-400 block tracking-wide uppercase">Questions</span>
+                    <span className="text-[9px] font-bold text-slate-400 block tracking-wide uppercase">Questions</span>
                     <span className="text-sm font-bold text-slate-700 block mt-0.5">{chapter.questionsCount}</span>
                   </div>
                   <div className="bg-slate-50/50 p-2 rounded-xl text-center">
-                    <span className="text-[9px] font-bold font-mono text-slate-400 block tracking-wide uppercase">Attempted</span>
+                    <span className="text-[9px] font-bold text-slate-400 block tracking-wide uppercase">Attempted</span>
                     <span className="text-sm font-bold text-slate-700 block mt-0.5">{chapter.attempted}</span>
                   </div>
                   <div className="bg-slate-50/50 p-2 rounded-xl text-center">
-                    <span className="text-[9px] font-bold font-mono text-slate-400 block tracking-wide uppercase">Accuracy</span>
+                    <span className="text-[9px] font-bold text-slate-400 block tracking-wide uppercase">Accuracy</span>
                     <span className={`text-sm font-bold block mt-0.5 ${
                       chapter.attempted === 0 
                         ? "text-slate-400" 
@@ -206,12 +207,20 @@ export default function SubjectView({ subject, progress, onBack, onSelectChapter
                   </div>
                 )}
 
-                <button 
-                  onClick={() => onSelectChapter(subject.name, chapter)}
-                  className="w-full inline-flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-semibold text-xs py-2.5 rounded-xl transition-colors cursor-pointer"
-                >
-                  <Play className="w-3.5 h-3.5 fill-white text-white" /> View Flight Deck
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onQuickPractice(subject.name, chapter)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-colors cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-white text-white" /> Practice
+                  </button>
+                  <button
+                    onClick={() => onSelectChapter(subject.name, chapter)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-semibold text-xs py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Open chapter
+                  </button>
+                </div>
               </div>
             </div>
           ))}

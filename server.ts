@@ -6,11 +6,19 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { createRequire } from "module";
+import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
+import { findExamByExactMatch, getExamById, buildAiPrompt, GENERIC_AI_PROMPT_PERSONA } from "./shared/exams";
+import { recordAnswer, clearAllProgress, clearMistakes } from "./shared/progress";
+import {
+  resolveCapabilities,
+  capabilityDisabledMessage,
+  type AppCapabilities,
+} from "./shared/capabilities";
 
-const require = createRequire(import.meta.url);
-const archiver = require("archiver");
+// Without this, GEMINI_API_KEY in a .env file never reaches the AI route —
+// it only worked if the key happened to be exported in the shell.
+dotenv.config({ quiet: true });
 
 interface Question {
   id: number;
@@ -34,7 +42,30 @@ interface ChapterJSON {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  // Hosts (Render, Fly, Railway, Cloud Run…) inject the port to bind on and
+  // fail their health check if it is ignored. Falls back to 3000 locally.
+  const PORT = Number(process.env.PORT) || 3000;
+
+  // Resolved once at boot; the client reads the same answer via /api/capabilities.
+  const CAPABILITIES = resolveCapabilities(process.env);
+
+  /**
+   * Refuse a gated route with 503 rather than letting it write to a disk that
+   * will not keep the file. 503 (not 403) because this is about where the app
+   * is running, not who is calling.
+   */
+  const requireCapability =
+    (capability: keyof AppCapabilities): express.RequestHandler =>
+    (req, res, next) => {
+      if (!CAPABILITIES[capability]) {
+        return res.status(503).json({
+          error: capabilityDisabledMessage(capability),
+          capability,
+          disabled: true,
+        });
+      }
+      next();
+    };
 
   // Middleware
   app.use(express.json({ limit: "10mb" }));
@@ -69,6 +100,25 @@ async function startServer() {
       .replace(/\-\-+/g, "-") // Replace multiple - with single -
       .replace(/^-+/, "") // Trim - from start
       .replace(/-+$/, ""); // Trim - from end
+  }
+
+  // Walks content/<examId>/modules/<moduleSlug>/<chapterId>.json looking for a matching
+  // file. `subjectSlug` in the calling routes' URLs has always been decorative (derived
+  // client-side from a human-readable subject name, not the physical module folder) — the
+  // chapter id alone is the real lookup key, exactly as before this content/ restructure.
+  function findChapterFile(chapterId: string): string | null {
+    if (!fs.existsSync(CONTENT_DIR)) return null;
+    const examFolders = fs.readdirSync(CONTENT_DIR, { withFileTypes: true }).filter((f) => f.isDirectory());
+    for (const examFolder of examFolders) {
+      const modulesDir = path.join(CONTENT_DIR, examFolder.name, "modules");
+      if (!fs.existsSync(modulesDir)) continue;
+      const moduleFolders = fs.readdirSync(modulesDir, { withFileTypes: true }).filter((f) => f.isDirectory());
+      for (const moduleFolder of moduleFolders) {
+        const filePath = path.join(modulesDir, moduleFolder.name, `${chapterId}.json`);
+        if (fs.existsSync(filePath)) return filePath;
+      }
+    }
+    return null;
   }
 
   function getPaperForSubject(subjectName: string): "Paper-I" | "Paper-II" {
@@ -133,7 +183,18 @@ async function startServer() {
   // API ENDPOINTS
   // ==========================================
 
+  // 0. Which authoring features this deployment supports. The client mirrors
+  // this to decide what to render; a static deploy has no server to ask and
+  // falls back to NO_CAPABILITIES on the client side.
+  app.get("/api/capabilities", (req, res) => {
+    res.json(CAPABILITIES);
+  });
+
   // 1. Get Discovered Subjects and Chapters metadata (Auto-discovery)
+  // Content lives at content/<examId>/modules/<moduleSlug>/<chapter>.json — the top-level
+  // folder name IS the exam id (matches ExamDefinition.id in shared/exams.ts), so which
+  // exams exist is a direct filesystem fact, not something inferred from keywords. A brand
+  // new exam folder is discovered immediately, even before it has a registry entry.
   app.get("/api/content", (req, res) => {
     try {
       const subjectsMap: Record<string, any> = {};
@@ -142,106 +203,115 @@ async function startServer() {
         return res.json({ subjects: [] });
       }
 
-      // Read subject folders
-      const subjectFolders = fs.readdirSync(CONTENT_DIR, { withFileTypes: true });
+      const examFolders = fs.readdirSync(CONTENT_DIR, { withFileTypes: true }).filter((f) => f.isDirectory());
 
-      for (const folder of subjectFolders) {
-        if (folder.isDirectory()) {
-          const folderName = folder.name; // E.g., "Computer-Networks" or "Claude-CCAF-Agentic-Architecture"
-          const isClaudeExam = folderName.startsWith("Claude-CCAF-") || folderName.toLowerCase().includes("ccaf");
-          const folderPath = path.join(CONTENT_DIR, folderName);
-          const files = fs.readdirSync(folderPath);
+      for (const examFolder of examFolders) {
+        const examId = examFolder.name; // e.g. "claude-ccaf"
+        const registeredExam = getExamById(examId);
+        const examDisplayName =
+          registeredExam?.matchExam || examId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        const examPapers = registeredExam?.papers;
+
+        const modulesDir = path.join(CONTENT_DIR, examId, "modules");
+        if (!fs.existsSync(modulesDir)) continue;
+
+        const moduleFolders = fs.readdirSync(modulesDir, { withFileTypes: true }).filter((f) => f.isDirectory());
+
+        moduleFolders.forEach((moduleFolder, moduleIndex) => {
+          const moduleName = moduleFolder.name; // e.g. "computer-networks"
+          const modulePath = path.join(modulesDir, moduleName);
+          const files = fs.readdirSync(modulePath);
 
           for (const file of files) {
-            if (file.endsWith(".json")) {
-              const filePath = path.join(folderPath, file);
-              try {
-                const fileContent = fs.readFileSync(filePath, "utf8");
-                const chapterData = JSON.parse(fileContent) as any;
+            if (!file.endsWith(".json")) continue;
+            const filePath = path.join(modulePath, file);
+            try {
+              const fileContent = fs.readFileSync(filePath, "utf8");
+              const chapterData = JSON.parse(fileContent) as any;
 
-                // Determine Exam
-                const exam = chapterData.exam || (isClaudeExam ? "Claude CCAF" : "CIL MT");
+              // Determine Exam
+              const exam = chapterData.exam || examDisplayName;
 
-                // Extract subject name directly from JSON or folder name if not defined
-                let jsonSubject = chapterData.subject || folderName.replace(/-/g, " ");
-                if (isClaudeExam && jsonSubject.startsWith("Claude CCAF - ")) {
-                  jsonSubject = jsonSubject.replace("Claude CCAF - ", "");
-                }
-                const chapterName = chapterData.chapter || file.replace(".json", "").replace(/-/g, " ");
-
-                let paper = chapterData.paper;
-                if (!paper) {
-                  if (exam === "Claude CCAF") {
-                    paper = "Domain-" + (folderName.split("-")[2] || "1");
-                  } else {
-                    paper = getPaperForSubject(jsonSubject);
-                  }
-                }
-
-                // Clean Paper format
-                if (typeof paper === "string") {
-                  const cleanedPaper = paper.toLowerCase().replace(/[^a-z0-9]/g, "");
-                  if (
-                    cleanedPaper === "paperi" || 
-                    cleanedPaper === "paper1" ||
-                    cleanedPaper === "stagei" ||
-                    cleanedPaper === "stage1"
-                  ) {
-                    paper = "Paper-I";
-                  } else if (
-                    cleanedPaper === "paperii" || 
-                    cleanedPaper === "paper2" ||
-                    cleanedPaper === "stageii" ||
-                    cleanedPaper === "stage2"
-                  ) {
-                    paper = "Paper-II";
-                  }
-                }
-
-                const mapKey = `${exam}:::${jsonSubject}`;
-
-                if (!subjectsMap[mapKey]) {
-                  subjectsMap[mapKey] = {
-                    name: jsonSubject,
-                    exam: exam,
-                    chapters: [],
-                    totalQuestions: 0,
-                    paper: paper,
-                  };
-                }
-
-                const questions = chapterData.questions || [];
-                const difficultyCount = { Easy: 0, Medium: 0, Hard: 0 } as Record<string, number>;
-                questions.forEach((q: any) => {
-                  const diff = q.difficulty || "Medium";
-                  if (diff === "Easy" || diff === "Medium" || diff === "Hard") {
-                    difficultyCount[diff]++;
-                  } else {
-                    difficultyCount["Medium"]++;
-                  }
-                });
-
-                // Chapter ID is derived from file path slug
-                const chapterId = file.replace(".json", "");
-
-                subjectsMap[mapKey].chapters.push({
-                  id: chapterId,
-                  name: chapterName,
-                  subject: jsonSubject,
-                  exam: exam,
-                  description: chapterData.description || "",
-                  questionsCount: questions.length,
-                  difficultyBreakdown: difficultyCount,
-                  paper: paper,
-                });
-
-                subjectsMap[mapKey].totalQuestions += questions.length;
-              } catch (err) {
-                console.error(`Error parsing JSON file: ${filePath}`, err);
+              // Extract subject name directly from JSON or module folder name if not defined
+              let jsonSubject = chapterData.subject || moduleName.replace(/-/g, " ");
+              const examPrefix = `${examDisplayName} - `;
+              if (jsonSubject.startsWith(examPrefix)) {
+                jsonSubject = jsonSubject.slice(examPrefix.length);
               }
+              const chapterName = chapterData.chapter || file.replace(".json", "").replace(/-/g, " ");
+
+              let paper = chapterData.paper;
+              if (!paper) {
+                if (examPapers && examPapers.length > 0) {
+                  paper = getPaperForSubject(jsonSubject);
+                } else {
+                  paper = "Domain-" + (moduleIndex + 1);
+                }
+              }
+
+              // Clean Paper format
+              if (typeof paper === "string") {
+                const cleanedPaper = paper.toLowerCase().replace(/[^a-z0-9]/g, "");
+                if (
+                  cleanedPaper === "paperi" ||
+                  cleanedPaper === "paper1" ||
+                  cleanedPaper === "stagei" ||
+                  cleanedPaper === "stage1"
+                ) {
+                  paper = "Paper-I";
+                } else if (
+                  cleanedPaper === "paperii" ||
+                  cleanedPaper === "paper2" ||
+                  cleanedPaper === "stageii" ||
+                  cleanedPaper === "stage2"
+                ) {
+                  paper = "Paper-II";
+                }
+              }
+
+              const mapKey = `${exam}:::${jsonSubject}`;
+
+              if (!subjectsMap[mapKey]) {
+                subjectsMap[mapKey] = {
+                  name: jsonSubject,
+                  exam: exam,
+                  chapters: [],
+                  totalQuestions: 0,
+                  paper: paper,
+                };
+              }
+
+              const questions = chapterData.questions || [];
+              const difficultyCount = { Easy: 0, Medium: 0, Hard: 0 } as Record<string, number>;
+              questions.forEach((q: any) => {
+                const diff = q.difficulty || "Medium";
+                if (diff === "Easy" || diff === "Medium" || diff === "Hard") {
+                  difficultyCount[diff]++;
+                } else {
+                  difficultyCount["Medium"]++;
+                }
+              });
+
+              // Chapter ID is derived from file path slug
+              const chapterId = file.replace(".json", "");
+
+              subjectsMap[mapKey].chapters.push({
+                id: chapterId,
+                name: chapterName,
+                subject: jsonSubject,
+                exam: exam,
+                description: chapterData.description || "",
+                questionsCount: questions.length,
+                difficultyBreakdown: difficultyCount,
+                paper: paper,
+              });
+
+              subjectsMap[mapKey].totalQuestions += questions.length;
+            } catch (err) {
+              console.error(`Error parsing JSON file: ${filePath}`, err);
             }
           }
-        }
+        });
       }
 
       const subjectsList = Object.values(subjectsMap);
@@ -254,27 +324,8 @@ async function startServer() {
   // 2. Get questions for a specific chapter
   app.get("/api/chapter/:subjectSlug/:chapterId", (req, res) => {
     try {
-      const { subjectSlug, chapterId } = req.params;
-      
-      // We look for the file within the corresponding directory. 
-      // Because we may have subjects with varying casing and spaces, let's scan directories.
-      if (!fs.existsSync(CONTENT_DIR)) {
-        return res.status(404).json({ error: "Content folder not found" });
-      }
-
-      const folders = fs.readdirSync(CONTENT_DIR);
-      let foundFile: string | null = null;
-
-      for (const folder of folders) {
-        const folderPath = path.join(CONTENT_DIR, folder);
-        if (fs.statSync(folderPath).isDirectory()) {
-          const filePath = path.join(folderPath, `${chapterId}.json`);
-          if (fs.existsSync(filePath)) {
-            foundFile = filePath;
-            break;
-          }
-        }
-      }
+      const { chapterId } = req.params;
+      const foundFile = findChapterFile(chapterId);
 
       if (!foundFile) {
         return res.status(404).json({ error: `Chapter ${chapterId} not found.` });
@@ -291,9 +342,9 @@ async function startServer() {
   });
 
   // 2.1 Expand chapter with AI Teacher generated questions
-  app.post("/api/chapter/:subjectSlug/:chapterId/expand", async (req, res) => {
+  app.post("/api/chapter/:subjectSlug/:chapterId/expand", requireCapability("aiExpand"), async (req, res) => {
     try {
-      const { subjectSlug, chapterId } = req.params;
+      const { chapterId } = req.params;
       const { count = 15 } = req.body;
 
       const apiKey = process.env.GEMINI_API_KEY;
@@ -303,23 +354,7 @@ async function startServer() {
         });
       }
 
-      if (!fs.existsSync(CONTENT_DIR)) {
-        return res.status(404).json({ error: "Content folder not found" });
-      }
-
-      const folders = fs.readdirSync(CONTENT_DIR);
-      let foundFile: string | null = null;
-
-      for (const folder of folders) {
-        const folderPath = path.join(CONTENT_DIR, folder);
-        if (fs.statSync(folderPath).isDirectory()) {
-          const filePath = path.join(folderPath, `${chapterId}.json`);
-          if (fs.existsSync(filePath)) {
-            foundFile = filePath;
-            break;
-          }
-        }
-      }
+      const foundFile = findChapterFile(chapterId);
 
       if (!foundFile) {
         return res.status(404).json({ error: `Chapter ${chapterId} not found.` });
@@ -334,78 +369,18 @@ async function startServer() {
       const { GoogleGenAI } = await import("@google/genai");
       const ai = new GoogleGenAI({ apiKey });
 
-      const isClaude = chapterData.exam === "Claude CCAF" || 
-        (chapterData.subject && chapterData.subject.toLowerCase().includes("ccaf")) ||
-        (chapterData.chapter && chapterData.chapter.toLowerCase().includes("claude"));
+      // Strict exact match on the content's own `exam` field — an unrecognized
+      // exam gets the generic persona rather than silently inheriting whichever
+      // registered exam happens to be the classification fallback.
+      const matchedExam = findExamByExactMatch(chapterData.exam);
 
-      let prompt = "";
-      if (isClaude) {
-        prompt = `You are a Principal AI Systems Architect and Lead Instructor for the Claude Certified Architect - Foundations (CCAF) Certification Examination.
-Your task is to generate exactly ${count} new, highly realistic, scenario-based, architecturally rigorous multiple-choice questions for:
-Exam: Claude Certified Architect - Foundations (CCAF)
-Subject / Domain: ${chapterData.subject}
-Chapter: ${chapterData.chapter}
-
-Do NOT repeat or duplicate the following existing questions:
-${JSON.stringify(existingTitles)}
-
-Requirements:
-1. Academic & Industry Rigor: Address real-world Anthropic Claude API patterns, Model Context Protocol (MCP tools, resources, error categories, concurrency), Claude Code CLI (hooks, subagents, CLAUDE.md hierarchy, skills), Prompt Caching, Message Batches API, Multi-agent Orchestration, and Token Optimization.
-2. Plausible Distractors: Avoid obvious fake options. Distractors must represent common architectural anti-patterns or misconfigurations.
-3. Every single question MUST include a deep technical 'explanation' and a practical 'examTrick' (such as an architectural rule-of-thumb, CLI mnemonic, or diagnostic shortcut).
-4. Assign realistic difficulty ('Easy', 'Medium', 'Hard') and realistic source tags (e.g., "Anthropic Architect Reference Exam", "CCAF Foundations Scenario Pack").
-
-Return the response as a JSON array matching this schema:
-{
-  "questions": [
-    {
-      "question": "string",
-      "options": ["string", "string", "string", "string"],
-      "answer": "string (MUST exactly match one of the options)",
-      "difficulty": "Easy" | "Medium" | "Hard",
-      "source": "string",
-      "explanation": "string",
-      "examTrick": "string",
-      "importance": "High" | "Medium" | "Low",
-      "tags": ["string", "string"]
-    }
-  ]
-}`;
-      } else {
-        const paperType = chapterData.paper || "Paper-II";
-        prompt = `You are an elite Senior Professor and Exam Coach for PSU (Public Sector Undertaking) recruitment tests, specifically Coal India Limited Management Trainee (CIL MT) Exam.
-Your task is to generate exactly ${count} new, highly professional, conceptually deep, and mathematically/technically accurate multiple-choice questions for:
-Subject: ${chapterData.subject}
-Chapter: ${chapterData.chapter}
-Paper Category: ${paperType} (Paper-I: General Non-Technical Aptitude/Reasoning, Paper-II: Technical Computer Science and Systems)
-
-Do NOT repeat or duplicate the following existing questions:
-${JSON.stringify(existingTitles)}
-
-Requirements:
-1. Ensure absolute technical accuracy in questions, options, and explanations. Double-check all mathematical and logical equations.
-2. Options must be highly realistic, with plausible distractors. No lazy choices.
-3. Every single question must include a step-by-step 'explanation' and a unique 'examTrick' (such as an exam shortcut, quick formula, elimination strategy, or visual logic tip to solve the question in under 30 seconds).
-4. Assign appropriate difficulty levels ('Easy', 'Medium', 'Hard') distributed realistically.
-5. The 'source' should be realistic (e.g., "GATE CSE 2023", "CIL MT CS 2021", "ISRO Scientist Exam", "Standard Aptitude Model", etc.).
-
-Return the response as a JSON array of questions matching this schema:
-{
-  "questions": [
-    {
-      "question": "string",
-      "options": ["string", "string", "string", "string"],
-      "answer": "string (MUST exactly match one of the options)",
-      "difficulty": "Easy" | "Medium" | "Hard",
-      "source": "string",
-      "explanation": "string",
-      "examTrick": "string",
-      "importance": "High" | "Medium" | "Low",
-      "tags": ["string", "string"]
-    }
-  ]
-}`;
-      }
+      const prompt = buildAiPrompt(matchedExam?.aiPromptPersona || GENERIC_AI_PROMPT_PERSONA, {
+        count,
+        subject: chapterData.subject,
+        chapter: chapterData.chapter,
+        existingTitles,
+        paperType: chapterData.paper,
+      });
 
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
@@ -472,98 +447,9 @@ Return the response as a JSON array of questions matching this schema:
   // 4. Submit answered question (Supports both /api/progress/submit and /api/answer)
   const handleAnswerSubmit = (req: express.Request, res: express.Response) => {
     try {
-      const submission = req.body;
-      const {
-        subject,
-        chapterId,
-        chapterName,
-        questionId,
-        questionText,
-        options,
-        explanation,
-        examTrick,
-        correctAnswer,
-        userAnswer,
-        confidence,
-        isCorrect,
-        exam,
-      } = submission;
-
-      const progress = getProgress();
-      const progressKey = `${subject}:${chapterId}:${questionId}`;
-      const timestamp = new Date().toISOString();
-
-      // Determine Exam classification
-      const detectedExam = exam || (
-        (subject && (subject.includes("Claude") || subject.includes("CCAF") || subject.includes("MCP") || subject.includes("Agentic"))) ||
-        (chapterId && chapterId.includes("claude")) ||
-        (chapterName && chapterName.toLowerCase().includes("claude"))
-          ? "Claude CCAF" 
-          : "CIL MT"
-      );
-
-      // Update answered questions
-      progress.answeredQuestions[progressKey] = {
-        userAnswer,
-        confidence,
-        isCorrect,
-        timestamp,
-        exam: detectedExam,
-        subject,
-        chapterId,
-        chapterName,
-        questionId,
-      };
-
-      // Add to recent activity (keep last 30 entries)
-      const recentEntry = {
-        subject,
-        chapterId,
-        chapterName,
-        questionId,
-        isCorrect,
-        confidence,
-        timestamp,
-        exam: detectedExam,
-      };
-      progress.recentActivity.unshift(recentEntry);
-      if (progress.recentActivity.length > 30) {
-        progress.recentActivity.pop();
-      }
-
-      // Update mistake book (add if incorrect, remove if correct is re-attempted and solved)
-      const mistakeId = `${subject}:${chapterId}:${questionId}`;
-      if (!isCorrect) {
-        const existingIndex = progress.mistakes.findIndex((m: any) => m.id === mistakeId);
-        const mistakeEntry = {
-          id: mistakeId,
-          subject,
-          chapterId,
-          chapterName,
-          questionId,
-          questionText,
-          options,
-          userAnswer,
-          correctAnswer,
-          explanation,
-          examTrick,
-          confidence,
-          timestamp,
-          exam: detectedExam,
-        };
-
-        if (existingIndex > -1) {
-          progress.mistakes[existingIndex] = mistakeEntry; // Update existing
-        } else {
-          progress.mistakes.push(mistakeEntry); // Add new
-        }
-      } else {
-        // If correct, remove from mistake book (signifies they revised and got it right)
-        progress.mistakes = progress.mistakes.filter((m: any) => m.id !== mistakeId);
-      }
-
-      saveProgress(progress);
-      res.json(progress);
+      const updated = recordAnswer(getProgress(), req.body);
+      saveProgress(updated);
+      res.json(updated);
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -575,7 +461,7 @@ Return the response as a JSON array of questions matching this schema:
   // 5. Clear all progress
   app.post("/api/progress/clear", (req, res) => {
     try {
-      const emptyProgress = { answeredQuestions: {}, recentActivity: [], mistakes: [] };
+      const emptyProgress = clearAllProgress();
       saveProgress(emptyProgress);
       res.json(emptyProgress);
     } catch (e: any) {
@@ -587,14 +473,9 @@ Return the response as a JSON array of questions matching this schema:
   const handleClearMistakes = (req: express.Request, res: express.Response) => {
     try {
       const { exam } = req.body || {};
-      const progress = getProgress();
-      if (exam) {
-        progress.mistakes = progress.mistakes.filter((m: any) => m.exam !== exam);
-      } else {
-        progress.mistakes = [];
-      }
-      saveProgress(progress);
-      res.json(progress);
+      const updated = clearMistakes(getProgress(), exam);
+      saveProgress(updated);
+      res.json(updated);
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -604,7 +485,7 @@ Return the response as a JSON array of questions matching this schema:
   app.post("/api/mistakes/clear", handleClearMistakes);
 
   // 7. Upload new content pack (Auto-discovery validation)
-  app.post("/api/content/upload", (req, res) => {
+  app.post("/api/content/upload", requireCapability("contentUpload"), (req, res) => {
     try {
       const fileData = req.body;
       const { filename, content } = fileData;
@@ -615,80 +496,27 @@ Return the response as a JSON array of questions matching this schema:
         });
       }
 
-      // Create subject folder name (e.g. "Computer Networks" -> "Computer-Networks")
-      const subjectFolderName = content.subject.trim().replace(/\s+/g, "-");
-      const subjectPath = path.join(CONTENT_DIR, subjectFolderName);
+      // The exam name decides the top-level folder; unregistered exams still get one.
+      const examId = findExamByExactMatch(content.exam)?.id || slugify(content.exam || "unsorted");
+      const moduleFolderName = slugify(content.subject);
+      const modulePath = path.join(CONTENT_DIR, examId, "modules", moduleFolderName);
 
-      if (!fs.existsSync(subjectPath)) {
-        fs.mkdirSync(subjectPath, { recursive: true });
+      if (!fs.existsSync(modulePath)) {
+        fs.mkdirSync(modulePath, { recursive: true });
       }
 
       // Create chapter filename (e.g. "Normalization" -> "chapter-normalization.json")
       const chapterFileName = filename ? filename.toLowerCase() : `${slugify(content.chapter)}.json`;
-      const filePath = path.join(subjectPath, chapterFileName);
+      const filePath = path.join(modulePath, chapterFileName);
+      const discoveredPath = `${examId}/modules/${moduleFolderName}/${chapterFileName}`;
 
       fs.writeFileSync(filePath, JSON.stringify(content, null, 2), "utf8");
 
       res.json({
         success: true,
-        message: `Content Pack '${content.chapter}' successfully placed in '${subjectFolderName}/' folder and auto-discovered!`,
-        discoveredPath: `${subjectFolderName}/${chapterFileName}`,
+        message: `Content Pack '${content.chapter}' successfully placed in '${discoveredPath}' and auto-discovered!`,
+        discoveredPath,
       });
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  });
-
-  // ==========================================
-  // ONE-CLICK DOWNLOAD PACKAGES (.ZIP)
-  // ==========================================
-
-  // Download entire /mobile React Native & Expo app ready for install/build
-  app.get("/api/download/mobile-app-zip", (req, res) => {
-    try {
-      const mobileDir = path.join(process.cwd(), "mobile");
-      if (!fs.existsSync(mobileDir)) {
-        return res.status(404).json({ error: "Mobile directory not found" });
-      }
-
-      res.setHeader("Content-Type", "application/zip");
-      res.setHeader("Content-Disposition", 'attachment; filename="exam-scholar-mobile-app.zip"');
-
-      const archive = archiver("zip", { zlib: { level: 9 } });
-      archive.on("error", (err) => {
-        res.status(500).send({ error: err.message });
-      });
-
-      archive.pipe(res);
-
-      // Append mobile folder ignoring heavy node_modules or .expo caches
-      archive.directory(mobileDir, "mobile", (entry) => {
-        if (entry.name.includes("node_modules") || entry.name.includes(".expo") || entry.name.includes(".git")) {
-          return false;
-        }
-        return entry;
-      });
-
-      archive.finalize();
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  });
-
-  // Download entire content/ directory
-  app.get("/api/download/content-zip", (req, res) => {
-    try {
-      res.setHeader("Content-Type", "application/zip");
-      res.setHeader("Content-Disposition", 'attachment; filename="exam-scholar-content-packs.zip"');
-
-      const archive = archiver("zip", { zlib: { level: 9 } });
-      archive.on("error", (err) => {
-        res.status(500).send({ error: err.message });
-      });
-
-      archive.pipe(res);
-      archive.directory(CONTENT_DIR, "content");
-      archive.finalize();
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -714,6 +542,11 @@ Return the response as a JSON array of questions matching this schema:
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`CIL MT Server running on port ${PORT}`);
+    console.log(
+      `Authoring capabilities — content upload: ${CAPABILITIES.contentUpload ? "on" : "off"}, ` +
+        `AI expand: ${CAPABILITIES.aiExpand ? "on" : "off"}` +
+        (CAPABILITIES.contentUpload ? "" : "  (set ENABLE_AUTHORING=true to enable)"),
+    );
   });
 }
 
