@@ -1,0 +1,44 @@
+{
+  "total": 1128,
+  "exams": {
+    "ccaf": {
+      "id": "claude-ccaf",
+      "name": "Claude Certified Architect (CCAF)",
+      "count": 425,
+      "domains": [
+        "Claude CCAF: Agentic Architecture & Orchestration",
+        "Claude CCAF: Claude Code Configuration & Workflows",
+        "Claude CCAF: Context Management & Reliability",
+        "Claude CCAF: Enterprise Security & Performance",
+        "Claude CCAF: Tool Design & MCP Integration",
+        "Tool Design & Model Context Protocol (MCP)",
+        "Mock Tests",
+        "Claude CCAF: Prompt Engineering & Structured Output"
+      ]
+    },
+    "cil": {
+      "id": "cil-mt",
+      "name": "CIL MT Computer Science / GATE",
+      "count": 703,
+      "subjects": [
+        "Algorithms",
+        "Compiler Design",
+        "Computer Networks",
+        "Computer Organization",
+        "DBMS",
+        "Digital Logic",
+        "Engineering Mathematics",
+        "English",
+        "General Awareness",
+        "Mock Tests",
+        "Operating Systems",
+        "Programming and Data Structures",
+        "Quantitative Aptitude",
+        "Reasoning Ability",
+        "Software Engineering",
+        "Theory of Computation",
+        "Web Technologies"
+      ]
+    }
+  }
+}

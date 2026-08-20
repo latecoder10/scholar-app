@@ -54,6 +54,18 @@ The application runs a lightweight full-stack **Express + Vite** setup:
   - `RevisionEngine.tsx` & `AnalyticsView.tsx`: Custom-designed revision builders and charts.
 - **Data Schemas**: Standardized JSON curriculum files kept secure under server state, ensuring precise academic schema validation.
 
+### Project Layout
+```
+scholarApp/
+├── server.ts          # Express API + Vite middleware (dev) / static serving (prod)
+├── src/                # React frontend (components, entry point)
+├── content/            # Curriculum question banks, served at runtime and downloadable as a zip
+├── mobile/              # Standalone Expo/React Native app (own package.json, own bundled data)
+├── scripts/             # Small dev utilities (e.g. Gemini API key check)
+├── docs/raw-sources/    # Historical raw markdown sources the question banks were originally compiled from
+└── data/                 # Runtime-generated user progress store (gitignored)
+```
+
 ---
 
 ## 🚀 Local Development Workflow

@@ -6,4 +6,6 @@ coverage/
 *.log
 .env*
 mobile/node_modules/
+mobile/.expo/
+data/
 !.env.example
