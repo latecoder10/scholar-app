@@ -3,23 +3,46 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
-import { 
-  CheckCircle, 
-  XCircle, 
-  HelpCircle, 
-  ArrowRight, 
-  Lightbulb, 
-  Tag, 
-  ChevronRight, 
-  Award,
-  AlertTriangle,
-  Flame,
-  CornerDownRight
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  CheckCircle,
+  XCircle,
+  HelpCircle,
+  ArrowRight,
+  ArrowLeft,
+  Lightbulb,
+  Tag,
+  ChevronRight,
+  LayoutGrid,
+  RotateCcw,
+  SkipForward,
+  X
 } from "lucide-react";
-import { Question, UserAnswerSubmission } from "../types";
+import { Question, UserAnswerSubmission, UserProgress } from "../types";
 import { resolveExamForEntry } from "../../shared/exams";
 import RichText from "./RichText";
+
+type Confidence = "Guess" | "Somewhat Sure" | "Very Sure";
+
+/**
+ * Per-question state, keyed by position in the set (not question id — mixed
+ * revision/mistake packs can repeat ids across chapters). Keeping a record
+ * instead of one "current answer" is what makes going back, re-reading an
+ * earlier explanation, and jumping around the set possible.
+ */
+interface QuestionState {
+  selected: string | null;
+  confidence: Confidence;
+  answered: boolean;
+  fromEarlierSession: boolean;
+}
+
+const DEFAULT_STATE: QuestionState = {
+  selected: null,
+  confidence: "Very Sure",
+  answered: false,
+  fromEarlierSession: false
+};
 
 interface PracticeSessionProps {
   questions: Question[];
@@ -27,24 +50,47 @@ interface PracticeSessionProps {
   chapterId: string;
   chapterName: string;
   subject: string;
+  /** Where to open the set — the resume point picked on the chapter screen. */
+  startIndex?: number;
+  /** Used to pre-fill questions already answered in an earlier session. */
+  progress?: UserProgress;
   onFinish: () => void;
   onSubmitAnswer: (submission: UserAnswerSubmission) => Promise<any>;
 }
 
-export default function PracticeSession({ 
-  questions, 
-  mode, 
-  chapterId, 
-  chapterName, 
-  subject, 
-  onFinish, 
-  onSubmitAnswer 
+export default function PracticeSession({
+  questions,
+  mode,
+  chapterId,
+  chapterName,
+  subject,
+  startIndex = 0,
+  progress,
+  onFinish,
+  onSubmitAnswer
 }: PracticeSessionProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [confidence, setConfidence] = useState<'Guess' | 'Somewhat Sure' | 'Very Sure'>('Very Sure');
-  const [isAnswered, setIsAnswered] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(() =>
+    Math.min(Math.max(startIndex, 0), Math.max(questions.length - 1, 0))
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
+
+  const [states, setStates] = useState<Record<number, QuestionState>>(() => {
+    const seeded: Record<number, QuestionState> = {};
+    if (!progress) return seeded;
+    questions.forEach((q, index) => {
+      const entry = progress.answeredQuestions[`${subject}:${chapterId}:${q.id}`];
+      if (entry) {
+        seeded[index] = {
+          selected: entry.userAnswer,
+          confidence: entry.confidence,
+          answered: true,
+          fromEarlierSession: true
+        };
+      }
+    });
+    return seeded;
+  });
 
   // Auto-scroll to top on question index change
   useEffect(() => {
@@ -55,6 +101,11 @@ export default function PracticeSession({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentIndex]);
 
+  const answeredCount = useMemo(
+    () => questions.reduce((count, _q, index) => (states[index]?.answered ? count + 1 : count), 0),
+    [questions, states]
+  );
+
   if (questions.length === 0) {
     return (
       <div className="py-16 text-center space-y-4 bg-white border border-slate-100 rounded-2xl max-w-md mx-auto">
@@ -63,7 +114,7 @@ export default function PracticeSession({
           <h3 className="font-display text-base font-bold text-slate-800">No Questions Found</h3>
           <p className="text-slate-400 text-xs mt-1 px-4">This session has no questions. Make sure the content pack contains valid questions.</p>
         </div>
-        <button 
+        <button
           onClick={onFinish}
           className="text-xs font-bold font-mono text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl hover:bg-indigo-100"
         >
@@ -74,11 +125,39 @@ export default function PracticeSession({
   }
 
   const currentQuestion = questions[currentIndex];
+  const current = states[currentIndex] || DEFAULT_STATE;
+  const selectedOption = current.selected;
+  const confidence = current.confidence;
+  const isAnswered = current.answered;
   const isCorrect = selectedOption === currentQuestion.answer;
+
+  const patchCurrent = (patch: Partial<QuestionState>) =>
+    setStates((prev) => ({
+      ...prev,
+      [currentIndex]: { ...(prev[currentIndex] || DEFAULT_STATE), ...patch }
+    }));
+
+  const goTo = (index: number) => {
+    if (index < 0 || index > questions.length - 1) return;
+    setCurrentIndex(index);
+    setShowPalette(false);
+  };
+
+  // Next unattempted question, wrapping around so a skipped early question
+  // isn't stranded once you've walked past it.
+  const nextUnansweredIndex = () => {
+    for (let i = currentIndex + 1; i < questions.length; i++) {
+      if (!states[i]?.answered) return i;
+    }
+    for (let i = 0; i < currentIndex; i++) {
+      if (!states[i]?.answered) return i;
+    }
+    return -1;
+  };
 
   const handleOptionSelect = (option: string) => {
     if (isAnswered) return;
-    setSelectedOption(option);
+    patchCurrent({ selected: option });
   };
 
   const handleSubmit = async () => {
@@ -105,11 +184,11 @@ export default function PracticeSession({
       };
 
       await onSubmitAnswer(submission);
-      setIsAnswered(true);
+      patchCurrent({ answered: true, fromEarlierSession: false });
     } catch (e) {
       console.error("Error submitting answer:", e);
       // Proceed locally even if network has issue
-      setIsAnswered(true);
+      patchCurrent({ answered: true, fromEarlierSession: false });
     } finally {
       setIsSubmitting(false);
     }
@@ -117,42 +196,126 @@ export default function PracticeSession({
 
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      setSelectedOption(null);
-      setConfidence('Very Sure');
-      setIsAnswered(false);
+      goTo(currentIndex + 1);
     } else {
       onFinish();
     }
   };
 
-  const progressPercentage = Math.round(((currentIndex + 1) / questions.length) * 100);
+  /** Clear this question locally so it can be attempted again. */
+  const handleAnswerAgain = () => patchCurrent({ ...DEFAULT_STATE });
+
+  const handleRestart = () => {
+    setStates({});
+    setCurrentIndex(0);
+    setShowPalette(false);
+  };
+
+  const progressPercentage = Math.round((answeredCount / questions.length) * 100);
+  const jumpTarget = nextUnansweredIndex();
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in pb-12">
       {/* Session Status Bar */}
-      <div className="bg-white border border-slate-150 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-        <div className="space-y-0.5 min-w-0">
-          <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
-            {mode.charAt(0).toUpperCase() + mode.slice(1)} session
+      <div className="bg-white border border-slate-150 p-4 rounded-2xl space-y-3 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5 min-w-0">
+            <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+              {mode.charAt(0).toUpperCase() + mode.slice(1)} session
+            </div>
+            <div className="text-sm font-bold font-display leading-tight truncate max-w-full md:max-w-md text-slate-800">
+              {chapterName}
+            </div>
           </div>
-          <div className="text-sm font-bold font-display leading-tight truncate max-w-full md:max-w-md text-slate-800">
-            {chapterName}
+          <div className="text-left sm:text-right shrink-0">
+            <div className="text-xs text-slate-500">
+              Question <strong className="text-slate-800">{currentIndex + 1}</strong> of <strong className="text-slate-800">{questions.length}</strong>
+              <span className="text-slate-400"> · {answeredCount} done</span>
+            </div>
+            <div className="w-full sm:w-24 bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
+              <div className="bg-indigo-600 h-full rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
+            </div>
           </div>
         </div>
-        <div className="text-left sm:text-right shrink-0">
-          <div className="text-xs text-slate-500">
-            Question <strong className="text-slate-800">{currentIndex + 1}</strong> of <strong className="text-slate-800">{questions.length}</strong>
-          </div>
-          <div className="w-full sm:w-24 bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
-            <div className="bg-indigo-600 h-full rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
-          </div>
+
+        {/* Set-level controls: jump anywhere, skip ahead to what's unfinished, restart. */}
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-50">
+          <button
+            onClick={() => setShowPalette((prev) => !prev)}
+            className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-2 rounded-lg border transition-colors cursor-pointer ${
+              showPalette
+                ? "bg-indigo-600 border-indigo-600 text-white"
+                : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            {showPalette ? <X className="w-3.5 h-3.5" /> : <LayoutGrid className="w-3.5 h-3.5" />}
+            {showPalette ? "Close" : "All questions"}
+          </button>
+          <button
+            onClick={() => jumpTarget >= 0 && goTo(jumpTarget)}
+            disabled={jumpTarget < 0}
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            <SkipForward className="w-3.5 h-3.5 text-indigo-500" />
+            Next unanswered
+          </button>
+          <button
+            onClick={handleRestart}
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+            Start over
+          </button>
+          <button
+            onClick={onFinish}
+            className="ml-auto text-[11px] font-semibold text-slate-400 hover:text-slate-600 px-2.5 py-2 transition-colors cursor-pointer"
+          >
+            End session
+          </button>
         </div>
+
+        {showPalette && (
+          <div className="pt-3 border-t border-slate-50 space-y-3 animate-fade-in">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-2">
+              {questions.map((q, index) => {
+                const state = states[index];
+                const isCurrent = index === currentIndex;
+                let chip = "bg-white border-slate-200 text-slate-500 hover:bg-slate-50";
+                if (state?.answered) {
+                  chip = state.selected === q.answer
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                    : "bg-rose-50 border-rose-200 text-rose-700";
+                }
+                return (
+                  <button
+                    key={index}
+                    onClick={() => goTo(index)}
+                    title={
+                      state?.answered
+                        ? `Question ${index + 1} — ${state.selected === q.answer ? "correct" : "incorrect"}`
+                        : `Question ${index + 1} — not attempted`
+                    }
+                    className={`h-10 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer ${chip} ${
+                      isCurrent ? "ring-2 ring-indigo-600 ring-offset-1" : ""
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-400">
+              <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-100 border border-emerald-200" /> Correct</span>
+              <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-rose-100 border border-rose-200" /> Incorrect</span>
+              <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-white border border-slate-200" /> Not attempted</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Card */}
       <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xs">
-        
+
         {/* Difficulty, Source and Importance */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-5 text-[11px]">
           <span className={`px-2 py-0.5 border rounded-md font-semibold ${
@@ -251,7 +414,7 @@ export default function PracticeSession({
                   <button
                     key={item.level}
                     type="button"
-                    onClick={() => setConfidence(item.level as any)}
+                    onClick={() => patchCurrent({ confidence: item.level as Confidence })}
                     className={`p-3 rounded-xl border text-center text-xs font-semibold flex items-center justify-center cursor-pointer transition-all ${
                       isActive
                         ? `${item.color} ring-1 font-bold border-transparent`
@@ -268,20 +431,29 @@ export default function PracticeSession({
 
         {/* Submit Section (Hidden when already answered) */}
         {!isAnswered && (
-          <div className="mt-6 flex justify-between items-center gap-4">
+          <div className="mt-6 flex items-center justify-between gap-3">
             <button
-              onClick={onFinish}
-              className="px-5 py-3 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              onClick={() => goTo(currentIndex - 1)}
+              disabled={currentIndex === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-3 text-xs font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
-              End session
+              <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Previous</span>
             </button>
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedOption || isSubmitting}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all cursor-pointer shadow-xs"
-            >
-              {isSubmitting ? "Submitting…" : "Submit Answer"}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleNext}
+                className="px-3 py-3 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                Skip
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!selectedOption || isSubmitting}
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all cursor-pointer shadow-xs"
+              >
+                {isSubmitting ? "Submitting…" : "Submit Answer"}
+              </button>
+            </div>
           </div>
         )}
 
@@ -290,7 +462,7 @@ export default function PracticeSession({
       {/* Answer Screen / Explanations Panel (Appears after answer submitted) */}
       {isAnswered && (
         <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 space-y-6 animate-slide-up">
-          
+
           {/* Correction Banner */}
           <div className="flex items-start gap-4">
             {isCorrect ? (
@@ -311,7 +483,8 @@ export default function PracticeSession({
                 }
               </h3>
               <p className="text-slate-400 text-xs mt-0.5">
-                Submitted with <strong className="text-slate-600">{confidence}</strong> confidence.
+                {current.fromEarlierSession ? "Answered in an earlier session" : "Submitted"} with{" "}
+                <strong className="text-slate-600">{confidence}</strong> confidence.
               </p>
             </div>
           </div>
@@ -355,18 +528,33 @@ export default function PracticeSession({
             </div>
           )}
 
-          {/* Nav to Next Question */}
-          <div className="pt-4 border-t border-slate-200/60 flex justify-end">
+          {/* Nav between questions */}
+          <div className="pt-4 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-3">
             <button
-              onClick={handleNext}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer shadow-sm shadow-indigo-100"
+              onClick={() => goTo(currentIndex - 1)}
+              disabled={currentIndex === 0}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-40 disabled:cursor-not-allowed px-2 py-3 transition-colors cursor-pointer"
             >
-              {currentIndex < questions.length - 1 ? (
-                <>Next Question <ArrowRight className="w-4 h-4" /></>
-              ) : (
-                <>Complete Session <ChevronRight className="w-4 h-4" /></>
-              )}
+              <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Previous</span>
             </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleAnswerAgain}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 px-4 py-3 rounded-xl transition-colors cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-400" /> Answer again
+              </button>
+              <button
+                onClick={handleNext}
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer shadow-sm shadow-indigo-100"
+              >
+                {currentIndex < questions.length - 1 ? (
+                  <>Next Question <ArrowRight className="w-4 h-4" /></>
+                ) : (
+                  <>Complete Session <ChevronRight className="w-4 h-4" /></>
+                )}
+              </button>
+            </div>
           </div>
 
         </div>

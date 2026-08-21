@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   ChevronLeft, 
   Layers, 
@@ -16,18 +16,39 @@ import {
   Gauge,
   Sparkles,
   GraduationCap,
-  BookOpen
+  BookOpen,
+  ListOrdered,
+  RotateCcw,
+  Shuffle
 } from "lucide-react";
 import { Chapter, UserProgress, Question, parseProgressKey } from "../types";
 import { fetchChapter } from "../lib/contentStore";
+import { shuffled } from "../lib/shuffle";
 import { resolveExamForEntry } from "../../shared/exams";
+
+const SHUFFLE_PREF_KEY = "exam_scholar_shuffle_questions";
+
+/**
+ * Master switch for the chapter's AI question generator. Turned off for now —
+ * flip to true to bring the "Add 15 / Add 30 questions" buttons back. The
+ * server route stays untouched and still enforces its own capability check
+ * (shared/capabilities.ts); this only controls whether the UI offers it.
+ */
+const AI_EXPANSION_ENABLED = false;
 
 interface ChapterViewProps {
   subjectName: string;
   chapter: Chapter;
   progress: UserProgress;
   onBack: () => void;
-  onStartSession: (questions: Question[], mode: 'practice' | 'revision' | 'mistakes', chapterId: string, chapterName: string, subject: string) => void;
+  onStartSession: (
+    questions: Question[],
+    mode: 'practice' | 'revision' | 'mistakes',
+    chapterId: string,
+    chapterName: string,
+    subject: string,
+    startIndex?: number
+  ) => void;
 }
 
 export default function ChapterView({ subjectName, chapter, progress, onBack, onStartSession }: ChapterViewProps) {
@@ -36,10 +57,30 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
   const [questions, setQuestions] = useState<Question[]>([]);
   const [expanding, setExpanding] = useState(false);
   const [expansionStatus, setExpansionStatus] = useState<string | null>(null);
+  const [showJumpList, setShowJumpList] = useState(false);
+  const [shuffleQuestions, setShuffleQuestions] = useState(() => {
+    try {
+      const saved = localStorage.getItem(SHUFFLE_PREF_KEY);
+      return saved === null ? true : saved === "true";
+    } catch {
+      return true;
+    }
+  });
+  // Bumped by "Reshuffle" to force a fresh draw without changing the preference.
+  const [shuffleNonce, setShuffleNonce] = useState(0);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SHUFFLE_PREF_KEY, String(shuffleQuestions));
+    } catch {
+      // Private-mode storage restrictions — the toggle still works for this visit.
+    }
+  }, [shuffleQuestions]);
 
   const resolvedExam = resolveExamForEntry({ exam: chapter.exam, subject: subjectName, chapterId: chapter.id });
 
   async function handleExpandChapter(targetCount: number = 15) {
+    if (!AI_EXPANSION_ENABLED) return;
     try {
       setExpanding(true);
       setExpansionStatus("Generating new questions…");
@@ -92,6 +133,13 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [chapter.id]);
 
+  // One ordering shared by every mode on this page and by the jump grid, so a
+  // "Resume at Q7" label always points at the question the session will open.
+  const orderedQuestions = useMemo(
+    () => (shuffleQuestions ? shuffled(questions) : questions),
+    [questions, shuffleQuestions, shuffleNonce]
+  );
+
   // Determine mistakes and revision questions for this chapter
   const chapterKeys = Object.keys(progress.answeredQuestions).filter((key) => {
     const entry = progress.answeredQuestions[key];
@@ -105,7 +153,7 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
     (m) => (m.subject === subjectName || !m.subject) && m.chapterId === chapter.id
   );
 
-  const mistakesQuestions = questions.filter((q) => 
+  const mistakesQuestions = orderedQuestions.filter((q) =>
     mistakesListForChapter.some((m) => m.questionId === q.id)
   );
 
@@ -120,9 +168,20 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
       return parseProgressKey(key, entry).questionId;
     });
 
-  const revisionQuestions = questions.filter((q) => 
+  const revisionQuestions = orderedQuestions.filter((q) =>
     lowConfidenceOrWrongQIds.includes(String(q.id))
   );
+
+  // Resume support: which of this chapter's questions have already been
+  // attempted, and where an unfinished pass should pick back up.
+  const attemptedQuestionIds = new Set(
+    chapterKeys.map((key) => parseProgressKey(key, progress.answeredQuestions[key]).questionId)
+  );
+  const attemptedFlags = orderedQuestions.map((q) => attemptedQuestionIds.has(String(q.id)));
+  const attemptedInChapter = attemptedFlags.filter(Boolean).length;
+  const resumeIndex = attemptedFlags.indexOf(false); // -1 once nothing is left
+  const hasStarted = attemptedInChapter > 0;
+  const isComplete = questions.length > 0 && resumeIndex === -1;
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -225,11 +284,24 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
                   <GraduationCap className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-display text-base font-bold text-slate-800">
+                  <h4 className="font-display text-base font-bold text-slate-800 flex flex-wrap items-center gap-2">
                     Generate more questions
+                    {!AI_EXPANSION_ENABLED && (
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
+                        Off for now
+                      </span>
+                    )}
                   </h4>
                   <p className="text-slate-500 text-xs leading-relaxed">
-                    This chapter has <strong className="text-slate-800">{questions.length} questions</strong>. Use AI to generate up to <strong className="text-slate-800">100+ questions</strong> {resolvedExam.aiBlueprintHint || `for ${resolvedExam.category}`}, each with a full explanation and exam tip.
+                    {AI_EXPANSION_ENABLED ? (
+                      <>
+                        This chapter has <strong className="text-slate-800">{questions.length} questions</strong>. Use AI to generate up to <strong className="text-slate-800">100+ questions</strong> {resolvedExam.aiBlueprintHint || `for ${resolvedExam.category}`}, each with a full explanation and exam tip.
+                      </>
+                    ) : (
+                      <>
+                        This chapter has <strong className="text-slate-800">{questions.length} questions</strong>. AI generation is switched off for now — practice runs on the questions already in the pack.
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
@@ -249,7 +321,7 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <button
                   onClick={() => handleExpandChapter(15)}
-                  disabled={expanding}
+                  disabled={expanding || !AI_EXPANSION_ENABLED}
                   className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-xs px-4.5 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all shadow-xs cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
@@ -257,7 +329,7 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
                 </button>
                 <button
                   onClick={() => handleExpandChapter(30)}
-                  disabled={expanding}
+                  disabled={expanding || !AI_EXPANSION_ENABLED}
                   className="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold text-xs px-4.5 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all shadow-2xs cursor-pointer"
                 >
                   <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
@@ -266,30 +338,116 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
               </div>
             </div>
 
-            <h3 className="font-display text-sm font-bold text-slate-800 pt-2">
-              Practice Modes
-            </h3>
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <h3 className="font-display text-sm font-bold text-slate-800">
+                Practice Modes
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShuffleQuestions((prev) => !prev)}
+                  title={shuffleQuestions ? "Questions are shuffled" : "Questions follow the chapter's own order"}
+                  className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-2 rounded-lg border transition-colors cursor-pointer ${
+                    shuffleQuestions
+                      ? "bg-indigo-600 border-indigo-600 text-white"
+                      : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                  }`}
+                >
+                  <Shuffle className="w-3.5 h-3.5" />
+                  {shuffleQuestions ? "Shuffled" : "Chapter order"}
+                </button>
+                {shuffleQuestions && (
+                  <button
+                    onClick={() => setShuffleNonce((n) => n + 1)}
+                    title="Draw a new random order"
+                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Reshuffle
+                  </button>
+                )}
+              </div>
+            </div>
 
-            {/* Standard Practice Mode */}
-            <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs flex flex-col sm:flex-row items-start justify-between gap-6 hover:shadow-md hover:border-slate-200/80 transition-all">
-              <div className="space-y-1.5">
-                <h4 className="font-display text-base font-bold text-slate-800 flex items-center gap-2">
-                  <Play className="w-4 h-4 text-emerald-500 fill-emerald-500" /> Practice
-                </h4>
-                <p className="text-slate-400 text-xs leading-relaxed max-w-md">
-                  Go through all {questions.length} questions in order. Good for a first pass or a full review.
-                </p>
-                <div className="text-[10px] text-slate-400 pt-1">
-                  {questions.length - answeredQuestionsCount} questions left to attempt
+            {/* Standard Practice Mode — resume, restart, or start anywhere in the set */}
+            <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs space-y-4 hover:shadow-md hover:border-slate-200/80 transition-all">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="space-y-1.5">
+                  <h4 className="font-display text-base font-bold text-slate-800 flex items-center gap-2">
+                    <Play className="w-4 h-4 text-emerald-500 fill-emerald-500" /> Practice
+                  </h4>
+                  <p className="text-slate-400 text-xs leading-relaxed max-w-md">
+                    {isComplete
+                      ? `You've attempted all ${questions.length} questions. Run through them again whenever you want.`
+                      : hasStarted
+                        ? `${attemptedInChapter} of ${questions.length} attempted. Resume picks up at the first question you haven't answered.`
+                        : `Go through all ${questions.length} questions in order. Good for a first pass or a full review.`}
+                  </p>
+                  <div className="text-[10px] text-slate-400 pt-1">
+                    {Math.max(questions.length - attemptedInChapter, 0)} questions left to attempt
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0 self-stretch sm:self-center">
+                  {hasStarted && !isComplete && (
+                    <button
+                      onClick={() => onStartSession(orderedQuestions, 'practice', chapter.id, chapter.name, subjectName, resumeIndex)}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer shadow-sm shadow-emerald-50"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-white" /> Resume at Q{resumeIndex + 1}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => onStartSession(orderedQuestions, 'practice', chapter.id, chapter.name, subjectName, 0)}
+                    disabled={questions.length === 0}
+                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 font-semibold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer disabled:opacity-50 ${
+                      hasStarted && !isComplete
+                        ? "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                        : "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-sm shadow-emerald-50"
+                    }`}
+                  >
+                    {hasStarted ? (<><RotateCcw className="w-3.5 h-3.5" /> Start over</>) : "Start Practice"}
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => onStartSession(questions, 'practice', chapter.id, chapter.name, subjectName)}
-                disabled={questions.length === 0}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 text-white font-semibold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer shadow-sm shadow-emerald-50 shrink-0 self-stretch sm:self-center"
-              >
-                Start Practice
-              </button>
+
+              {/* Start from any question in the chapter */}
+              {questions.length > 0 && (
+                <div className="pt-4 border-t border-slate-50 space-y-3">
+                  <button
+                    onClick={() => setShowJumpList((prev) => !prev)}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer"
+                  >
+                    <ListOrdered className="w-3.5 h-3.5" />
+                    {showJumpList ? "Hide question list" : "Start from a specific question"}
+                  </button>
+
+                  {showJumpList && (
+                    <div className="space-y-2 animate-fade-in">
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-2">
+                        {orderedQuestions.map((q, index) => {
+                          const attempted = attemptedFlags[index];
+                          return (
+                            <button
+                              key={`${q.id}-${index}`}
+                              onClick={() => onStartSession(orderedQuestions, 'practice', chapter.id, chapter.name, subjectName, index)}
+                              title={`Start at question ${index + 1}${attempted ? " (already attempted)" : ""}`}
+                              className={`h-10 rounded-lg border text-xs font-mono font-bold transition-all cursor-pointer ${
+                                attempted
+                                  ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                                  : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                              }`}
+                            >
+                              {index + 1}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-[10px] text-slate-400">
+                        Green means you've already attempted it. Pick any number to open the session there — you can still move freely once inside.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Revision Mode */}
@@ -306,7 +464,7 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
                 </div>
               </div>
               <button
-                onClick={() => onStartSession(revisionQuestions, 'revision', chapter.id, chapter.name, subjectName)}
+                onClick={() => onStartSession(revisionQuestions, 'revision', chapter.id, chapter.name, subjectName, 0)}
                 disabled={revisionQuestions.length === 0}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none text-white font-semibold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer shadow-sm shadow-indigo-50 shrink-0 self-stretch sm:self-center"
               >
@@ -328,7 +486,7 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
                 </div>
               </div>
               <button 
-                onClick={() => onStartSession(mistakesQuestions, 'mistakes', chapter.id, chapter.name, subjectName)}
+                onClick={() => onStartSession(mistakesQuestions, 'mistakes', chapter.id, chapter.name, subjectName, 0)}
                 disabled={mistakesQuestions.length === 0}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 disabled:opacity-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none text-white font-semibold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer shadow-sm shadow-rose-50 shrink-0 self-stretch sm:self-center"
               >

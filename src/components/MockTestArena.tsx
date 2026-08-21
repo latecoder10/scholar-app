@@ -31,6 +31,7 @@ import { EXAM_REGISTRY, resolveExamForSubject, resolveExamForEntry } from "../..
 import { getExamColorClasses, getColorClasses } from "../lib/examTheme";
 import RichText from "./RichText";
 import { fetchChapter } from "../lib/contentStore";
+import { shuffled } from "../lib/shuffle";
 
 interface MockTestArenaProps {
   subjects: Subject[];
@@ -146,7 +147,7 @@ export default function MockTestArena({
         throw new Error(errorData.error || "Failed to expand mock exam.");
       }
       const data = await res.json();
-      setQuestions(data.questions || []);
+      setQuestions(shuffled(data.questions || []));
       
       // Update selectedMock question count in-place
       selectedMock.questionsCount = data.totalCount;
@@ -164,6 +165,12 @@ export default function MockTestArena({
       setExpanding(false);
     }
   };
+
+  // A paper/track filter chosen for one exam is meaningless in another, so
+  // switching the workspace drops back to "All" rather than showing nothing.
+  useEffect(() => {
+    setSelectedPaperFilter("All");
+  }, [selectedExam]);
 
   // Discover available mock tests from fetched subjects
   const [mockExams, setMockExams] = useState<MockExam[]>([]);
@@ -236,7 +243,7 @@ export default function MockTestArena({
     
     try {
       const data = await fetchChapter(exam.subject, exam.chapterId);
-      setQuestions((data.questions || []) as Question[]);
+      setQuestions(shuffled((data.questions || []) as Question[]));
     } catch (e) {
       console.error("Error loading mock questions:", e);
     } finally {
@@ -462,15 +469,28 @@ export default function MockTestArena({
         const resolveMockExam = (exam: MockExam) =>
           resolveExamForEntry({ exam: exam.exam, subject: exam.subject, chapterId: exam.chapterId, name: exam.name });
 
+        // Everything on this screen is scoped to the selected workspace: with a
+        // track chosen, the other exam's mocks, filters, counts, and syllabus
+        // tags must not appear at all. "all" is the only case that shows both.
+        const examsInScope = selectedExam === "all"
+          ? EXAM_REGISTRY
+          : EXAM_REGISTRY.filter(e => e.id === selectedExam);
+        const scopedMocks = selectedExam === "all"
+          ? mockExams
+          : mockExams.filter(e => resolveMockExam(e).id === selectedExam);
+        const scopeLabel = selectedExam === "all"
+          ? "All Tracks"
+          : examsInScope[0]?.shortName || "All Tracks";
+
         // One filter option per exam without paper groupings, or one per paper for exams that declare them.
         const filterOptions: { value: string; label: string; count: number; colorKey: string }[] = [];
-        EXAM_REGISTRY.forEach((exam) => {
+        examsInScope.forEach((exam) => {
           if (exam.papers && exam.papers.length > 0) {
             exam.papers.forEach((paper) => {
               filterOptions.push({
                 value: paper.id,
                 label: paper.label,
-                count: mockExams.filter(e => e.paper === paper.id).length,
+                count: scopedMocks.filter(e => e.paper === paper.id).length,
                 colorKey: paper.color || exam.color,
               });
             });
@@ -478,17 +498,15 @@ export default function MockTestArena({
             filterOptions.push({
               value: exam.id,
               label: `${exam.shortName} Mocks`,
-              count: mockExams.filter(e => resolveMockExam(e).id === exam.id).length,
+              count: scopedMocks.filter(e => resolveMockExam(e).id === exam.id).length,
               colorKey: exam.color,
             });
           }
         });
         const activeFilterOption = filterOptions.find(o => o.value === selectedPaperFilter);
 
-        const filteredExams = mockExams.filter((exam) => {
-          if (selectedPaperFilter === "All") {
-            return selectedExam === "all" || resolveMockExam(exam).id === selectedExam;
-          }
+        const filteredExams = scopedMocks.filter((exam) => {
+          if (selectedPaperFilter === "All") return true;
           const examDef = resolveMockExam(exam);
           if (examDef.papers && examDef.papers.length > 0) {
             return exam.paper === selectedPaperFilter;
@@ -505,7 +523,7 @@ export default function MockTestArena({
                   Mock Tests
                 </h1>
                 <p className="text-slate-500 text-xs">
-                  Timed practice exams for {EXAM_REGISTRY.map(e => e.shortName).join(" and ")}.
+                  Timed practice exams for {examsInScope.map(e => e.shortName).join(" and ")}.
                 </p>
               </div>
               <button
@@ -524,7 +542,7 @@ export default function MockTestArena({
                   A live countdown timer, a question palette to jump between and flag questions, instant scoring, and one-click export of missed questions to your Mistakes list.
                 </p>
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {EXAM_REGISTRY.flatMap(e => e.mockBannerTags || e.mockSyllabusTags).map((topic) => (
+                  {Array.from(new Set(examsInScope.flatMap(e => e.mockBannerTags || e.mockSyllabusTags))).map((topic) => (
                     <span key={topic} className="text-[11px] font-medium bg-white text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-md">
                       {topic}
                     </span>
@@ -554,7 +572,7 @@ export default function MockTestArena({
                       <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
                         selectedPaperFilter === "All" ? "bg-white/20 text-white" : "bg-slate-150 text-slate-500"
                       }`}>
-                        {mockExams.length}
+                        {scopedMocks.length}
                       </span>
                     </button>
 
@@ -597,12 +615,14 @@ export default function MockTestArena({
               {/* Right Mock Sheet Grid */}
               <div className="lg:col-span-3 space-y-4">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-                  Available Exams ({selectedPaperFilter === "All" ? "All Tracks" : activeFilterOption?.label || selectedPaperFilter})
+                  Available Exams ({selectedPaperFilter === "All" ? scopeLabel : activeFilterOption?.label || selectedPaperFilter})
                 </h3>
 
                 {filteredExams.length === 0 ? (
-                  <div className="bg-white border border-slate-100 rounded-2xl p-8 text-center text-slate-400">
-                    No exams match this filter.
+                  <div className="bg-white border border-slate-100 rounded-2xl p-8 text-center text-slate-400 text-sm">
+                    {scopedMocks.length === 0
+                      ? `No mock tests in the ${scopeLabel} track yet.`
+                      : "No exams match this filter."}
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

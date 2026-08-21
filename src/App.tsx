@@ -12,7 +12,6 @@ import {
   RefreshCw,
   BarChart,
   Upload,
-  Cpu,
   CheckCircle,
   HelpCircle,
   Menu,
@@ -36,7 +35,6 @@ import MistakeBook from "./components/MistakeBook";
 import RevisionEngine from "./components/RevisionEngine";
 import AnalyticsView from "./components/AnalyticsView";
 import ContentPackManager from "./components/ContentPackManager";
-import TechArchitecture from "./components/TechArchitecture";
 import MockTestArena from "./components/MockTestArena";
 import MobileAppHub from "./components/MobileAppHub";
 import ExamSelectorModal from "./components/ExamSelectorModal";
@@ -45,6 +43,7 @@ import { getExamIcon, getExamColorClasses, ExamColorClasses } from "./lib/examTh
 import { getProgressStore } from "./lib/progressStore";
 import { getCapabilities } from "./lib/capabilityStore";
 import { fetchSubjects, fetchChapter } from "./lib/contentStore";
+import { shuffled } from "./lib/shuffle";
 import { NO_CAPABILITIES, type AppCapabilities } from "../shared/capabilities";
 
 // Nav items double as the route map — each id's path is the single source of truth
@@ -58,7 +57,6 @@ const navItems = [
   { id: "analytics", name: "Analytics", icon: BarChart, path: "/analytics" },
   { id: "mobile-app", name: "Mobile App", icon: Smartphone, path: "/mobile-app" },
   { id: "content-manager", name: "Content Manager", icon: Upload, path: "/content-manager" },
-  { id: "tech-spec", name: "API Reference", icon: Cpu, path: "/api-reference" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -336,7 +334,8 @@ interface ChapterDetailPageProps {
     mode: "practice" | "revision" | "mistakes",
     chapterId: string,
     chapterName: string,
-    subject: string
+    subject: string,
+    startIndex?: number
   ) => void;
 }
 
@@ -457,6 +456,7 @@ export default function App() {
     chapterId: string;
     chapterName: string;
     subject: string;
+    startIndex: number;
   } | null>(null);
 
   // Main workspace scroll container ref
@@ -568,7 +568,8 @@ export default function App() {
     mode: "practice" | "revision" | "mistakes",
     chapterId: string,
     chapterName: string,
-    subject: string
+    subject: string,
+    startIndex: number = 0
   ) => {
     setActiveSession({
       questions,
@@ -576,6 +577,7 @@ export default function App() {
       chapterId,
       chapterName,
       subject,
+      startIndex,
     });
     navigate("/practice-session");
   };
@@ -606,11 +608,23 @@ export default function App() {
     return sub.chapters[0];
   };
 
-  // Skip the chapter-detail screen and jump straight into a practice session.
+  // Skip the chapter-detail screen and jump straight into a practice session,
+  // resuming at the first question this chapter hasn't been answered yet.
   const handleQuickPractice = async (subjectName: string, chapter: Chapter) => {
     try {
       const data = await fetchChapter(subjectName, chapter.id);
-      handleStartSession((data.questions || []) as Question[], "practice", chapter.id, chapter.name, subjectName);
+      const chapterQuestions = shuffled((data.questions || []) as Question[]);
+      const firstUnanswered = chapterQuestions.findIndex(
+        (q) => !progress.answeredQuestions[`${subjectName}:${chapter.id}:${q.id}`]
+      );
+      handleStartSession(
+        chapterQuestions,
+        "practice",
+        chapter.id,
+        chapter.name,
+        subjectName,
+        firstUnanswered < 0 ? 0 : firstUnanswered
+      );
     } catch (e) {
       console.error("Quick practice failed", e);
       showToastNotification("Couldn't start practice — please try again.");
@@ -695,9 +709,6 @@ export default function App() {
         case "mobile-app":
           subtitle = "The companion offline mobile app (Expo / React Native)";
           break;
-        case "tech-spec":
-          subtitle = "REST API reference for this app's backend";
-          break;
         default:
           subtitle = "Exam Scholar";
       }
@@ -753,12 +764,15 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Refresh lives here on phones — the desktop topbar below is hidden
+              at this width, so this is the only copy of each control. */}
           <button
-            onClick={() => setShowExamModal(true)}
-            className="inline-flex items-center justify-center min-h-11 min-w-11 bg-white border border-slate-200 rounded-xl text-indigo-600 text-xs font-mono font-bold"
-            title="Switch Exam Track"
+            onClick={handleRefreshAll}
+            disabled={refreshing}
+            className="inline-flex items-center justify-center min-h-11 min-w-11 bg-white border border-slate-200 rounded-xl text-indigo-600 disabled:opacity-50 active:bg-slate-100 transition-all cursor-pointer"
+            title={refreshing ? "Refreshing…" : "Refresh"}
           >
-            <Sparkles className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -939,8 +953,10 @@ export default function App() {
         className="flex-1 flex flex-col min-w-0 overflow-y-auto scroll-smooth"
       >
 
-        {/* Dynamic Topbar */}
-        <header className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-3 shrink-0 shadow-2xs">
+        {/* Dynamic Topbar — desktop only. On phones the mobile bar above is the
+            single header; every page already renders its own title, so showing
+            both stacked just repeated the same words twice. */}
+        <header className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 sm:py-4 hidden md:flex justify-between items-center gap-3 shrink-0 shadow-2xs">
           <div className="flex items-center gap-3.5 min-w-0">
             <div className="p-2 bg-indigo-50/80 border border-indigo-100/60 text-indigo-600 rounded-xl hidden sm:flex items-center justify-center shrink-0 shadow-3xs">
               <HeaderIcon className="w-4 h-4" />
@@ -1009,6 +1025,8 @@ export default function App() {
                       chapterId={activeSession.chapterId}
                       chapterName={activeSession.chapterName}
                       subject={activeSession.subject}
+                      startIndex={activeSession.startIndex}
+                      progress={progress}
                       onFinish={handleFinishSession}
                       onSubmitAnswer={handleSubmitAnswer}
                     />
@@ -1132,8 +1150,6 @@ export default function App() {
                   />
                 }
               />
-
-              <Route path="/api-reference" element={<TechArchitecture />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

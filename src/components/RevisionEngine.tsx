@@ -20,6 +20,7 @@ import { Subject, UserProgress, Question, Chapter, parseProgressKey } from "../t
 import { resolveExamForSubject } from "../../shared/exams";
 import RichText from "./RichText";
 import { fetchChapter } from "../lib/contentStore";
+import { shuffled } from "../lib/shuffle";
 
 interface RevisionEngineProps {
   subjects: Subject[];
@@ -201,7 +202,7 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
     }
 
     // Shuffle and slice to max count
-    const randomized = compiledQuestions.sort(() => Math.random() - 0.5).slice(0, maxCount);
+    const randomized = shuffled(compiledQuestions).slice(0, maxCount);
     setAsassembledSet(randomized);
   };
 
