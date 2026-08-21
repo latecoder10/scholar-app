@@ -1,0 +1,1033 @@
+# Claude Certified Architect — Exam Heist Sample Paper 01 (RAW-EH)
+
+<!-- Faithful transcription of claude-certified-architect-sample-paper-01.pdf, all 53 questions.
+     The source PDF's front matter claims 175 questions but the sample itself contains only 53
+     fully-formed ones followed by a promotional page.
+
+     REPAIRS: several stems in the source PDF are OCR-damaged (words dropped mid-sentence).
+     Where a verbatim-clean twin of the same question exists in qs-01-normalized.md or
+     exam-heist-live-qna-01.md, the clean stem is used and the line is marked
+     "**Repaired-from:**". Questions still carrying unrepairable damage are marked
+     "**Quality:** ocr-damaged" so the build script can flag them.
+
+     Source of truth for content/claude-ccaf/modules/mock-tests/claude-ccaf-mock-exam-3.json --
+     regenerate with: npx tsx scripts/build-mock-questions.ts -->
+
+### RAW-EH-001
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 1
+
+After the web search agent and document analysis agent complete their tasks, the coordinator invokes the synthesis agent. However, the synthesis agent responds that it cannot complete the task because no research findings were provided. What is the most likely cause of this issue?
+
+A. The synthesis agent needs tools that can fetch results directly from the other agents' conversation histories.
+B. The synthesis agent's context window is not large enough to hold the combined outputs from both previous agents.
+C. The subagents need to share a single API connection to enable automatic context sharing between invocations.
+D. The coordinator did not include the outputs from the previous agents in the synthesis agent's prompt.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Agents do not require direct access to each other's histories. Proper orchestration passes outputs explicitly via prompts.
+- B: Incorrect. If this were the issue, the agent would receive truncated data, not no data at all. The error indicates missing inputs entirely.
+- C: Incorrect. Agent communication does not depend on shared API connections. Context must be explicitly passed by the coordinator.
+- D: Correct. The synthesis agent can only act on the information provided in its prompt. If prior outputs are not passed, it will report missing research findings.
+
+
+### RAW-EH-002
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 2
+
+When researching "renewable energy adoption," the web search agent returns recent statistics (2024: 35% adoption) while the document analysis agent extracts data from internal reports (2022: 18% adoption). The synthesis agent incorrectly flags these as contradictory sources rather than recognizing the data shows growth over time. What change would best enable the synthesis agent to correctly interpret such temporal differences?
+
+A. Require subagents to include publication or data collection dates in their structured outputs.
+B. Instruct the synthesis agent to always treat the most recent data as authoritative and place older findings in a separate historical appendix.
+C. Add a conflict resolution agent that automatically discards older data when newer data exists for the same metric.
+D. Configure the web search agent to only return results from the past 6 months.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. Providing timestamps allows the synthesis agent to understand that the figures refer to different points in time, enabling it to interpret the data as a trend (growth) rather than a contradiction.
+- B: Incorrect. This approach hides useful context and does not help the agent understand relationships between data points over time.
+- C: Incorrect. Discarding older data removes valuable historical insight and prevents trend analysis.
+- D: Incorrect. Limiting recency reduces context and does not address the core issue of interpreting time-based differences.
+
+
+### RAW-EH-003
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 3
+
+Users report that final reports sometimes lack depth on specific subtopics. Investigation shows that the document analysis agent frequently identifies gaps — for instance, noting "the retrieved sources discuss API authentication but lack details on token refresh patterns" — but under the current strict pipeline, this insight isn't actionable since search has already completed. What is the most effective architectural change?
+
+A. Have the analysis agent report specific gaps to the coordinator, which triggers targeted searches and re-invokes analysis until sufficient.
+B. Add a research planning agent before the search phase that decomposes topics into specific sub-questions.
+C. Have the synthesis agent attach confidence scores to each section and flag areas with insufficient coverage for manual review.
+D. Have the coordinator review analysis output for gap indicators and re-invoke search with gap-informed queries when gaps are detected.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: This introduces a dynamic, agentic loop (or reflection pattern) into the workflow. Instead of a rigid, linear pipeline where steps cannot be retraced, the system can now adapt based on what it discovers. The analysis agent is the one actively reading the text and identifying exactly what is missing (e.g. "missing token refresh patterns"). By reporting these specific gaps back to the coordinator, the coordinator can intelligently route the workflow back to the search agent with a highly targeted query, then pass the new findings back to the analysis agent to close the loop.
+- B: (no explanation in source — the source PDF's explanation section for this question ends early)
+- C: (no explanation in source — the source PDF's explanation section for this question ends early)
+- D: (no explanation in source — the source PDF's explanation section for this question ends early)
+
+
+### RAW-EH-004
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 4
+**Repaired-from:** qs-01-normalized.md RAW-ET-003 (clean twin; source PDF stem was OCR-damaged)
+
+Your multi-agent research pipeline crashed after processing 12 of 28 documents. The web search agent had identified relevant sources, the document analyzer had partially completed extraction, and the synthesizer had begun pattern identification. You need to resume processing without repeating work or losing fidelity of prior findings. What state management approach best balances information fidelity with context efficiency when restoring agent state?
+
+A. Have each agent persist a structured export to a known location. On resume, the coordinator loads the manifest and injects relevant state into agent prompts.
+B. Persist the coordinator's conversation log containing all task delegations and responses, providing this to agents when resuming.
+C. Have each agent maintain its own persistent state file and reload it independently at the start of each session.
+D. Index all agent outputs in a shared vector store. When resuming, each agent queries the store using semantic search to retrieve relevant prior findings.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This provides high information fidelity (structured, complete outputs) while maintaining context efficiency (only relevant pieces are re-injected into prompts). The coordinator remains in control of what each agent needs, avoiding unnecessary bloat and duplication.
+- B: Incorrect. Conversation logs are often verbose and unstructured, leading to context overload and inefficient prompt usage without guaranteed clarity.
+- C: Incorrect. This decentralizes control and can lead to inconsistencies and coordination issues, especially when agents need shared or aligned context.
+- D: Incorrect. Vector stores are useful for retrieval, but they introduce probabilistic recall and may miss or distort critical structured state, reducing fidelity during recovery.
+
+
+### RAW-EH-005
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 5
+
+The synthesis agent completes its initial pass but flags that three key research questions remain unanswered because the web search and document analysis agents didn't find relevant information on those specific subtopics. The coordinator currently proceeds directly to report generation, producing reports with incomplete coverage. What change would most effectively improve research completeness?
+
+A. Have the coordinator evaluate synthesis output for gaps, then re-delegate to web search and document analysis with targeted queries before invoking synthesis again.
+B. Increase the initial breadth of queries sent to web search and document analysis to reduce the probability of missing relevant information.
+C. Have the report generation agent note which research questions couldn't be answered, so users understand the limitations of the final output.
+D. Give the synthesis agent direct access to web search tools so it can autonomously fill knowledge gaps without returning control to the coordinator.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This introduces an iterative feedback loop, where identified gaps are actively addressed. The coordinator maintains control and ensures completeness before final report generation.
+- B: Incorrect. Broader queries may help coverage but are inefficient and still won't guarantee that specific gaps discovered later are filled.
+- C: Incorrect. This improves transparency but does not solve the completeness problem.
+- D: Incorrect. This breaks separation of concerns and reduces system control. The coordinator should manage task delegation, not the synthesis agent.
+
+
+### RAW-EH-006
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 6
+
+When analyzing complex legal cases that cite multiple precedents, the document analysis subagent processes each sequentially. A landmark case citing 12 precedents takes over 3 minutes to analyze completely. What's the most effective way to reduce this latency while preserving the coordinator's ability to monitor and debug the system?
+
+A. Enable the document analysis subagent to spawn its own specialized subagents dynamically when it encounters cases with many citations.
+B. Implement a message queue where precedent analysis tasks are processed asynchronously by a pool of worker agents.
+C. Create a recursive agent hierarchy where analysis agents subdivide work among child agents until reaching single-precedent granularity.
+D. Have the coordinator spawn parallel document analysis subagents, each handling a subset of precedents, then aggregate results before synthesis.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This decentralizes orchestration and makes the system harder to monitor and debug. The coordinator loses visibility into dynamically spawned agents.
+- B: Incorrect. While this improves scalability, it introduces infrastructure complexity and reduces transparency for debugging at the coordinator level.
+- C: Incorrect. This further complicates the architecture and makes tracing execution paths difficult, reducing observability and control.
+- D: Correct. This enables parallel processing to reduce latency while keeping orchestration centralized. The coordinator retains full visibility, making monitoring and debugging easier.
+
+
+### RAW-EH-007
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 7
+
+Monitoring shows the research phase takes longer than expected. Analysis reveals the coordinator invokes the web search subagent, waits for its response, then invokes the document analysis subagent and waits again. These tasks are independent — neither requires the other's output. How should you modify the system to run these subagents concurrently?
+
+A. Switch both subagents to use a Haiku tier model to reduce their individual execution time.
+B. Create an async orchestration layer outside the agent that spawns parallel threads, each running a separate coordinator subagent pair, then aggregates results.
+C. Add detailed instructions to the coordinator's system prompt explaining the performance benefits of parallel execution and requesting it invoke both subagents at the same time.
+D. Structure the coordinator to emit both Task tool calls in a single response message rather than across separate conversation turns.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This may reduce latency per task, but it does not address the core issue of sequential execution vs. parallelism.
+- B: Incorrect. This overcomplicates the architecture and duplicates coordinators unnecessarily instead of fixing concurrency within the existing flow.
+- C: Incorrect. Instructions alone are not reliable for enforcing concurrency. Execution behavior depends on how tool calls are structured, not just prompt wording.
+- D: Correct. Issuing both tool calls in one response enables true parallel execution, since the system can run them concurrently instead of waiting for one to finish before starting the other.
+
+
+### RAW-EH-008
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 8
+**Repaired-from:** qs-01-normalized.md RAW-ET-008 (clean twin; source PDF stem was OCR-damaged)
+
+Production reviews reveal inconsistent handling of uncertainty in final reports. Sometimes conflicting subagent findings are synthesized into a single confident statement (losing nuance), while other times reports over-hedge with excessive qualifications (becoming unhelpful). When the web search agent returns "industry analysts estimate $50B market size (methodology varies)" and the document analysis agent returns "peer-reviewed study estimates $35B (±$7B, 95% CI)," the coordinator either picks one arbitrarily or produces vague statements like "the market may be $35B-$50B depending on factors." What systematic approach best addresses this?
+
+A. Configure subagents to only report findings meeting a high confidence threshold, filtering uncertain information before it reaches the coordinator.
+B. Add a verification subagent that cross-references findings across sources, only passing claims to synthesis that are corroborated by at least two independent sources.
+C. Instruct the synthesis agent to structure reports with explicit sections distinguishing well-established findings from contested ones, preserving original source characterization and methodological context.
+D. Implement a confidence calibration layer that normalizes subagent uncertainty expressions to standardized probability scores (0.0-1.0), then weight-average findings by their calculated reliability scores to produce a statistically grounded synthesis.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This suppresses potentially valuable but uncertain insights and introduces bias by hiding ambiguity rather than managing it.
+- B: Incorrect. While useful for validation, this approach still filters out uncertainty instead of representing it, and may discard novel or emerging insights.
+- C: Correct. This directly addresses inconsistent handling of uncertainty by making it explicit and structured, allowing users to understand both consensus and disagreement without losing context.
+- D: Incorrect. This introduces artificial precision and may oversimplify complex, qualitative uncertainty, potentially misleading users.
+
+
+### RAW-EH-009
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 9
+**Quality:** ocr-damaged (stem partially reconstructed; no clean twin available)
+
+A user is expanding the research system beyond its single web search agent by adding specialized data sources. They add a financial API agent that returns structured JSON with margins and growth rates; a news monitoring agent that returns prose summaries of recent developments; and a patent analysis agent that returns structured lists of technologies. A synthesis agent combines these into executive briefings. Currently, it converts everything to bullet points, causing financial comparisons to lose tabular clarity and news summaries to lose narrative flow. What change would most improve briefing quality?
+
+A. Update the synthesis agent to render each content type appropriately — financial data as tables, news as prose, and technical lists as structured points.
+B. Add a format conversion layer between subagents and synthesis that transforms all outputs to a common intermediate representation (such as Markdown) to facilitate more flexible rendering.
+C. Standardize all subagent outputs to JSON with fields for every data type to ensure programmatic consistency across the pipeline.
+D. Standardize all subagent outputs to prose summaries with a uniform character to maintain a consistent executive voice regardless of the source material.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This preserves the natural structure and strengths of each data type, improving clarity, readability, and usefulness of the final briefing.
+- B: Incorrect. While helpful for consistency, this does not guarantee appropriate presentation of different content types and may still lead to generic formatting.
+- C: Incorrect. This improves structure but shifts complexity to the synthesis stage and does not inherently improve human-readable output quality.
+- D: Incorrect. This sacrifices important structure (like tables and lists), reducing clarity and effectiveness for data-heavy content.
+
+
+### RAW-EH-010
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 10
+
+The coordinator agent has AgentDefinitions configured for all four specialized subagents, each with appropriate descriptions, prompts, and tool restrictions. During testing, you notice the coordinator correctly reasons about when to delegate — it generates messages like "I'll ask the web search agent to find sources on this topic" — but no subagent execution ever occurs. The coordinator then proceeds as if the delegation happened and continues with incomplete information. Logs show no errors. What is the most likely cause?
+
+A. Subagent context isolation means task descriptions from the coordinator don't automatically reach subagents; you need to configure explicit context forwarding in ClaudeAgentOptions.
+B. The coordinator's max_tokens setting is too low, causing the Task tool invocation to be truncated before the subagent type parameter can be specified.
+C. The coordinator's allowedTools configuration doesn't include "Task", so while it can reason about delegation, it cannot invoke the tool required to spawn subagents.
+D. The AgentDefinitions are configured correctly, but the coordinator's system prompt doesn't explicitly list the available subagent types, preventing the model from knowing they can be invoked.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Even with context isolation, subagents would still be invoked — the issue here is that no invocation happens at all, not that context is missing.
+- B: Incorrect. Token limits might truncate responses, but this would typically produce malformed outputs or errors — not silent absence of any tool calls.
+- C: Correct. The coordinator can plan and describe delegation, but without the Task tool enabled, it cannot actually execute subagent calls — resulting in no errors but no execution.
+- D: Incorrect. While listing agents can help, the model already demonstrates awareness ("I'll ask the web search agent…"). The problem is execution capability, not awareness.
+
+
+### RAW-EH-011
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 11
+
+In production, final reports frequently contain claims without proper source attribution. Investigation shows that while the web search and document analysis agents correctly attach citations to their outputs, the synthesis agent loses track of which sources support which conclusions when combining findings. What's the most effective architectural change?
+
+A. Add a verification step where the report generator uses semantic similarity matching against original sources to reconstruct which claims came from which documents.
+B. Have the coordinator inject source identifier prefixes into text before each handoff, then parse these prefixes at report generation to reconstruct citations.
+C. Maintain complete transcripts of all subagent interactions and add a citation-resolution agent to analyze logs and determine attributions before report generation.
+D. Require all subagents to output structured claim-source mappings that the synthesis agent must preserve and merge when combining findings from multiple sources.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This relies on post-hoc inference, which is error-prone and can misattribute claims due to semantic ambiguity.
+- B: Incorrect. This is a fragile, text-based workaround that can break during transformations and doesn't scale well.
+- C: Incorrect. This adds unnecessary complexity and still depends on indirect reconstruction rather than preserving attribution explicitly.
+- D: Correct. This ensures end-to-end attribution fidelity by keeping claim-to-source relationships explicit and structured throughout the pipeline, preventing loss during synthesis.
+
+
+### RAW-EH-012
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 12
+
+After the web search and document analysis subagents complete their tasks, the coordinator needs to spawn the synthesis subagent to synthesize the findings. What is the correct approach for providing the synthesis subagent with the information it needs?
+
+A. Provide the subagent with tool definitions that allow it to request outputs from other subagents via callbacks.
+B. Include the complete findings from both subagents directly in the synthesis subagent's prompt.
+C. Pass reference identifiers and configure the subagent with read access to a shared memory store where other subagents deposited their results.
+D. Spawn the subagent with only a brief task description, relying on automatic context inheritance from the coordinator.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This introduces unnecessary coupling and complexity. Subagents shouldn't need to actively fetch data from others.
+- B: Incorrect. While simple, this approach does not scale well for large outputs and can exceed context limits, reducing efficiency.
+- C: Correct. This is the most scalable and production-ready approach. It preserves information fidelity while avoiding context bloat, allowing the synthesis agent to retrieve exactly what it needs.
+- D: Incorrect. There is no automatic context inheritance — without explicit data access, the synthesis agent cannot function properly.
+
+
+### RAW-EH-013
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 13
+
+The web search agent has gathered several relevant sources for a research topic. The document analysis agent now needs to examine these sources. How does information flow between these two specialized subagents?
+
+A. The coordinator agent receives the web search agent's output and includes relevant findings in the prompt when invoking the document analysis agent.
+B. The agents communicate through an event-driven message queue, with the document analysis agent subscribing to web search completion events.
+C. The web search agent directly invokes the document analysis agent, using the discovered sources as parameters.
+D. Both agents access a shared memory store where the web search agent writes findings and the document analysis agent reads them.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This follows the standard orchestration pattern where the coordinator manages all data flow, explicitly passing outputs between subagents.
+- B: Incorrect. This introduces unnecessary infrastructure complexity and is not the typical agent orchestration model.
+- C: Incorrect. Subagents should not invoke each other directly; this breaks centralized control and observability.
+- D: Incorrect. While possible in advanced systems, this is not the standard or simplest approach; it adds complexity without clear necessity in typical pipelines.
+
+
+### RAW-EH-014
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 14
+**Repaired-from:** qs-01-normalized.md RAW-ET-002 (clean twin; option C was OCR-damaged)
+
+After the web search agent finds 25 sources (120K tokens of raw content), the document analysis agent extracts key insights (15K tokens), and the synthesis agent produces a coherent narrative draft (3K tokens), the coordinator must pass context to the report generation agent for the final output with proper source citations. What context-passing strategy provides the best balance of completeness and efficiency?
+
+A. Pass only the synthesis draft and have a separate post-processing pipeline match claims to sources and insert citations after the report is generated.
+B. Pass the full accumulated context from all prior agents.
+C. Pass the synthesis draft along with a structured source index that maps key claims to their source URLs and relevant excerpts.
+D. Pass a condensed summary of all prior stages that preserves the main findings and attributes them to sources by name only.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This relies on post-hoc reconstruction, which is error-prone and can lead to incorrect or missing citations.
+- B: Incorrect. This ensures completeness but is highly inefficient (120K+ tokens) and risks exceeding context limits.
+- C: Correct. This provides the best balance of completeness and efficiency — retaining precise attribution while keeping context size manageable.
+- D: Incorrect. This loses granularity and makes precise citation mapping difficult, reducing attribution fidelity.
+
+
+### RAW-EH-015
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 15
+
+Your search_products tool queries an external catalog API that returns paginated results (50 items per request). Production logs show queries frequently match 200+ products, and the design that auto-fetches all pages causes 15-20 second delays. How should you redesign the pagination handling?
+
+A. Create separate search_products and fetch_more_results tools for pagination.
+B. Implement server-side relevance ranking and return only the top 50 most relevant items.
+C. Add a max_pages parameter (default: 2) that controls how many pages are fetched internally.
+D. Return the first page with total match count and cursor for additional pages.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This exposes pagination mechanics to the agent, increasing complexity and coupling tool usage with control flow.
+- B: Incorrect. While this reduces latency, it removes access to the full result set, limiting flexibility when more results are actually needed.
+- C: Incorrect. This is an improvement over fetching everything, but it still hides pagination control inside the tool and may fetch unnecessary data.
+- D: Correct. This enables lazy loading and explicit control, allowing the agent to fetch more results only when needed — balancing performance and completeness.
+
+
+### RAW-EH-016
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 16
+
+Your search_flights tool calls an external airline API that occasionally returns a 503 Service Unavailable error. What is the most effective way to handle this error in your tool implementation?
+
+A. Return an empty flight list as if the search succeeded but found no matching flights.
+B. Log the error internally and return an empty response, letting the model continue without the flight data.
+C. Return an error message in the tool result explaining the service is temporarily unavailable.
+D. Automatically retry the request up to five times with exponential backoff before returning results to the agent.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This hides the failure and misleads the system into thinking no flights exist, which can lead to incorrect conclusions.
+- B: Incorrect. This still suppresses the failure signal, preventing the agent from taking corrective action.
+- C: Incorrect. While transparent, this alone doesn't attempt recovery and may degrade user experience unnecessarily.
+- D: Correct. This is the most effective approach — handles transient failures gracefully, improves reliability, and only surfaces errors if retries fail.
+
+
+### RAW-EH-017
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 17
+
+Your MCP server implements a check_availability tool that queries an external calendar API. During testing, you encounter three error conditions: (1) the tool is called with a malformed request, missing the required user_email parameter, (2) the calendar API returns a 404 because the specified user doesn't exist in the calendar system, (3) the calendar API returns a 503 because the service is temporarily unavailable. How should each error be reported according to MCP's error handling design?
+
+A. Report all three as tool results with isError: true.
+B. Report errors 1 and 2 as JSON-RPC protocol errors, report error 3 as a tool result with isError: true.
+C. Report error 1 as a JSON-RPC protocol error, report errors 2 and 3 as tool results with isError: true.
+D. Report all three as JSON-RPC protocol errors.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Malformed requests (error 1) are protocol-level issues, not tool execution results, so they should not be reported this way.
+- B: Incorrect. A 404 (error 2) is a valid tool execution outcome (the user doesn't exist), not a protocol error.
+- C: Correct. Error 1 (malformed request) → JSON-RPC protocol error (invalid input). Error 2 (user not found) → tool result with isError: true (valid execution, meaningful failure). Error 3 (service unavailable) → tool result with isError: true (transient external failure).
+- D: Incorrect. Only malformed requests should be protocol errors; external API responses are tool-level outcomes, not protocol failures.
+
+
+### RAW-EH-018
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 18
+**Quality:** ocr-damaged (stem partially reconstructed; no clean twin available)
+
+Your search_documents(query) tool returns results as "Found 3 documents: Q2 Budget Proposal, Q2 Budget Forecast, Annual Review". You want the agent to be able to act on a specific document in follow-up steps. What return format would best enable these multi-step workflows?
+
+A. URLs that users can click to open the document in their browser.
+B. Structured data containing document IDs and metadata for each result.
+C. A JSON array of document titles extracted from the search results.
+D. More detailed human-readable descriptions including the size and authors.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. URLs are useful for users, but not ideal for agents performing multi-step workflows that require reliable referencing and further operations.
+- B: Correct. This enables the agent to programmatically reference specific documents (via IDs) across multiple steps, making workflows like follow-up queries or document retrieval precise and reliable.
+- C: Incorrect. Titles alone are ambiguous and not stable identifiers, making it difficult for agents to reliably act on specific documents.
+- D: Incorrect. Helpful for users, but still unstructured and not suitable for precise multi-step agent operations.
+
+
+### RAW-EH-019
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 19
+
+Your agent has access to 50+ specialized API connectors for different external services. As the connector library grew, tool selection accuracy dropped to 58%. You design a search_connectors(description) tool that finds matching connectors, but in testing agents frequently skip searching and call connectors directly (often incorrectly), or search and select wrong connectors from the filtered results. How should you design the tool composition pattern to address both issues?
+
+A. Design connectors with built-in compatibility validation that return descriptive errors for mismatched requests.
+B. Design a find_and_execute(description, params) composite tool that searches and immediately executes the best matching connector.
+C. Enhance all connector descriptions with detailed usage samples, edge cases, and input requirements. Add few-shot examples showing the correct search-then-use workflow.
+D. Design search_connectors to dynamically add matched connectors to the agent's available tools. Connectors start unavailable and persist once discovered.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This helps with error handling after a wrong choice is made, but does not improve initial tool selection accuracy.
+- B: Incorrect. This removes transparency and control, making debugging harder and preventing the agent from reasoning about tool choice.
+- C: Incorrect. While helpful, this still relies on the agent to follow instructions and does not enforce correct behavior, especially at scale with 50+ tools.
+- D: Correct. This enforces the search-first pattern by limiting available tools initially and reducing the decision space, improving both discovery and correct selection.
+
+
+### RAW-EH-020
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 20
+
+Your publish_article tool calls an external CMS API that occasionally returns transient errors (network timeouts, 503s) and non-transient errors (403 permission denied, 422 validation failure). Currently, every error is returned directly to the agent, which leads to the agent retrying non-transient errors and wasting turns on failures that will never succeed. How should you partition error-handling responsibility between the tool implementation and the agent?
+
+A. Handle all errors inside the tool: implement retries with exponential backoff for every error type, and only surface a failure to the agent after a fixed number of retry attempts have been exhausted.
+B. Handle transient errors (timeouts, 503s) with automatic retries inside the tool implementation, and surface non-transient errors (permission denied, validation failures) to the agent with descriptive messages so it can take corrective action.
+C. Surface all errors to the agent immediately with detailed context, and let the agent decide which errors to retry and how many times — keeping the tool implementation stateless and simple.
+D. Implement a universal error handler that catches all exceptions and returns a generic "tool unavailable — try again later" message, shielding the agent from error complexity.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This wastes time retrying non-transient errors (e.g., 403, 422) that will never succeed and hides useful feedback from the agent.
+- B: Correct. This cleanly separates responsibility: the tool handles recoverable/transient issues automatically, and the agent receives actionable errors it can fix (permissions, input validation).
+- C: Incorrect. This pushes retry logic to the agent, leading to inefficient behavior and wasted turns.
+- D: Incorrect. This removes critical detail, preventing the agent from taking corrective actions when possible.
+
+
+### RAW-EH-021
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 21
+
+Your remove_team_member tool uses a dry_run: boolean parameter for previewing impacts before execution. Production monitoring shows the agent bypasses the preview step in 15% of calls by calling with dry_run=false directly. You need to ensure every removal is preceded by a preview that the user explicitly confirms. What is the most reliable approach?
+
+A. Add server-side validation that permits dry_run=false only when a dry_run=true call with identical parameters occurred within the past 60 seconds.
+B. Replace with two tools: preview_remove_member returns impact details and a single-use confirmation token; execute_remove_member requires that token, binding execution to the specific previewed action.
+C. Annotate the tool as requiring confirmation and configure the orchestration layer to prompt the user for approval before forwarding any calls to annotated tools.
+D. Add detailed instructions and few-shot examples to the tool description requiring the agent to always call with dry_run=true first and wait for user confirmation before calling with dry_run=false.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This approach is brittle because it depends on timing and does not guarantee that the user actually reviewed or confirmed the preview.
+- B: Correct. This enforces the correct workflow at the system level by requiring a valid preview step and tying execution to an explicit confirmation, making bypass impossible.
+- C: Incorrect. This depends on orchestration behavior and is not strictly enforced, so it can still be bypassed or misconfigured.
+- D: Incorrect. Instruction-based approaches are not reliable for enforcement, as demonstrated by the existing bypass rate.
+
+
+### RAW-EH-022
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 22
+**Repaired-from:** exam-heist-live-qna-01.md Q22 (clean twin; source PDF stem was OCR-damaged)
+
+Your expense reimbursement agent processes employee requests using a process_reimbursement tool. Company policy requires that reimbursements above $500 must be approved before funds are disbursed. The agent handles hundreds of requests daily, and you need the threshold enforcement to be tamper-proof regardless of how the agent is prompted. What ensures the $500 approval threshold cannot be bypassed?
+
+A. The process_reimbursement tool accepts an approved_by_manager parameter. The system prompt instructs the agent to only set this to true after confirming that a manager approved the request. A nightly audit script reviews all reimbursements where approved_by_manager was set to true.
+B. Provide two tools: auto_reimburse (hard-coded limit of $500) and manager_approval. Include detailed system prompt instructions telling the agent to check the amount and use the appropriate tool. Add a PostToolUse hook that logs which tool was called for auditing.
+C. The process_reimbursement tool accepts amount and details, and internally enforces the threshold; amounts <$500 are auto-disbursed and the tool returns a success confirmation. Amounts >$500 cause the tool to create a pending approval request and return a status indicating manager review is pending.
+D. Implement the threshold check in a PreToolUse hook that inspects the amount parameter before process_reimbursement executes. If the amount exceeds $500, the hook modifies the context to add a requires_approval: true flag, which the tool checks before disbursing.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This relies on the agent following instructions and post-hoc auditing, which is not tamper-proof and allows bypass at execution time.
+- B: Incorrect. Again depends on agent behavior and correct tool selection. Logging helps auditing but does not prevent misuse.
+- C: Correct. This enforces the rule inside the tool itself, making it impossible to bypass regardless of how the agent is prompted.
+- D: Incorrect. PreToolUse hooks can be bypassed or misconfigured and still rely on downstream logic. Enforcement should reside directly within the tool for full reliability.
+
+
+### RAW-EH-023
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 23
+**Repaired-from:** qs-01-normalized.md RAW-ET-017 (clean twin; source PDF stem was OCR-damaged)
+
+Your order management system requires tools for three distinct operations: issuing refunds (requires amount and reason), canceling orders (requires reason), and requesting reshipments (requires shipping address). Each operation shares an order_id parameter but has different additional requirements. You notice during testing that with your current unified tool design, the agent frequently omits required parameters or includes irrelevant ones. What design change will most effectively improve parameter accuracy?
+
+A. Split into three separate tools, each defining only the parameters required for that specific operation.
+B. Keep one unified tool with all parameters marked optional, but add few-shot examples in the system prompt showing correct parameter combinations for each operation.
+C. Keep one unified tool but add JSON Schema if-then-else conditionals to enforce that parameters like amount are required only when the operation type is "refund".
+D. Keep one unified tool with a nested operation object parameter whose internal structure varies by operation type, documented in the tool description.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This reduces ambiguity and ensures the agent only sees relevant parameters per operation, leading to much higher accuracy.
+- B: Incorrect. Examples help, but the schema remains ambiguous, so errors will still occur.
+- C: Incorrect. While technically valid, this increases complexity and is less reliable than simply separating tools.
+- D: Incorrect. This adds complexity and cognitive load, making it harder for the agent to consistently provide correct parameters.
+
+
+### RAW-EH-024
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 24
+
+Your portfolio_value tool returns the total value of a user's investment portfolio. You're deciding between returning a structured JSON object with explicit fields versus returning information as a formatted text string. What is the primary advantage of using structured output with defined fields?
+
+A. Structured JSON consumes significantly fewer tokens than natural language, substantially reducing API costs.
+B. The agent can reliably extract specific values without parsing free-form text, reducing errors in subsequent operations.
+C. Structured JSON is processed deterministically by the model, significantly improving accuracy when extracting values.
+D. JSON schemas automatically validate that the underlying API returned correct data before the agent processes it.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Token usage depends on the content; JSON is not inherently more compact than text and may sometimes use more tokens.
+- B: Correct. Structured output provides clear, predictable fields, making it easy for the agent to use the data accurately in downstream steps.
+- C: Incorrect. The model is still probabilistic; JSON improves structure, but not deterministic processing.
+- D: Incorrect. Schemas define structure, but they do not guarantee correctness of the actual data returned by the API.
+
+
+### RAW-EH-025
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 25
+**Repaired-from:** exam-heist-live-qna-01.md Q25 (clean twin; source PDF stem was OCR-damaged)
+
+Your scheduling agent uses get_available_slots(date, provider_id) to retrieve open appointment times, then book_appointment(provider_id, slot_time, patient_id) to reserve a slot. Metrics show that 15% of booking attempts fail with "slot no longer available" because another user booked the slot between the availability check and the booking call. How should you redesign these tools?
+
+A. Modify book_appointment to return detailed failure information including currently available alternative slots when the requested slot is unavailable, enabling the agent to retry with a different time.
+B. Keep both tools but add retry logic to the agent's system prompt, instructing it to call get_available_slots again and select a different time if booking fails.
+C. Add a hold_slot(provider_id, slot_time) tool that creates a 60 second temporary reservation, requiring the agent to call it between checking availability and booking.
+D. Combine both tools into a single find_and_book_appointment that atomically checks availability and books, returning either the confirmed booking or available alternatives.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This improves recovery but does not fix the race condition between availability check and booking.
+- B: Incorrect. This still suffers from the same race condition and relies on agent behavior rather than fixing the underlying issue.
+- C: Incorrect. This reduces the issue but introduces additional complexity and still requires multiple steps that can fail.
+- D: Correct. This eliminates the race condition by making the operation atomic, ensuring consistency and reliability.
+
+
+### RAW-EH-026
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 26
+
+Your agent has a log_workout tool that accepts exercise_type (string), value (number), and measurement (string). Production monitoring shows the agent frequently passes mismatched combinations — using measurement: "reps" for cardio exercises like running, or measurement: "miles" for strength exercises like bench press. Your exercises naturally divide into two categories: cardio (measured in time or distance) and strength (measured in reps and sets). 23% of tool calls have invalid combinations. What approach would most effectively reduce these errors?
+
+A. Implement server-side validation returning descriptive errors for invalid combinations, allowing the agent to retry with corrections.
+B. Add enum constraints on measurement limiting values to "minutes", "miles", "reps", or "sets" to prevent arbitrary measurement strings.
+C. Add explicit examples to the tool description showing valid combinations (e.g., "For running: use minutes or miles. For push-ups: use reps") with constraints for each exercise category.
+D. Split into log_cardio_workout (with duration_minutes or distance_miles parameters) and log_strength_workout (with reps and sets parameters).
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This catches errors after they occur but does not prevent them, leading to wasted turns and inefficiency.
+- B: Incorrect. This restricts values but does not prevent invalid combinations (e.g., still allows "miles" for bench press).
+- C: Incorrect. Helpful guidance, but not enforceable — agents can still make mistakes.
+- D: Correct. This enforces correctness at the schema level by eliminating invalid parameter combinations entirely, significantly reducing errors.
+
+
+### RAW-EH-027
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 27
+
+Your MCP server includes archive_file(file_id) and delete_file(file_id) tools. Production logs show the agent calls delete_file when users ask to "remove old backups," but policy requires archiving backup files. Both tools currently have minimal descriptions: "Archives a file" and "Deletes a file." Which change most directly improves tool selection?
+
+A. Add a confirmation step that requires users to type "CONFIRM DELETE" before delete_file executes.
+B. Implement server-side validation that rejects delete_file calls for files tagged as backups, returning an error message suggesting archive_file.
+C. Expand tool descriptions to clarify use cases, adding guidance like "Do not use for backup files" to delete_file.
+D. Add few-shot examples to the system prompt demonstrating that requests involving "backup" or "old" should use archive_file.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This prevents accidental execution but does not improve the agent's tool selection decision.
+- B: Incorrect. This enforces policy after the wrong choice is made but does not directly improve initial selection.
+- C: Correct. Clear, specific descriptions directly influence the agent's tool selection reasoning, making it less likely to choose the wrong tool.
+- D: Incorrect. Helpful, but less direct and less reliable than improving the tool descriptions themselves.
+
+
+### RAW-EH-028
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 28
+
+Your CRM agent's delete_contact tool handles requests like "delete the duplicate entry for Acme Corp." The database contains similarly named records (e.g., "Acme Corp," "Acme Corporation," "ACME Corp Inc."), and analytics show 8% of deletions are reversed within 24 hours due to misidentified records. Users have also complained that the current multi-step confirmation flow adds too much friction to routine cleanup tasks. Which approach most effectively reduces the error rate while maintaining workflow efficiency?
+
+A. Present matched records with differentiating fields and require single-click confirmation of the intended target before executing deletion.
+B. Require users to supply the exact record ID from the CRM interface rather than using natural language references to contact names.
+C. Deploy automated duplicate detection that identifies and merges probable duplicates, removing the need for manual deletion requests.
+D. Implement soft-delete with a 30-day recovery window so users can undo mistakes without slowing down the deletion workflow.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This directly addresses ambiguity by showing clear distinctions between similar records while keeping the workflow fast with a lightweight confirmation step.
+- B: Incorrect. This reduces errors but adds significant friction and hurts usability for routine tasks.
+- C: Incorrect. Helpful as a separate improvement, but it doesn't solve incorrect deletions during manual requests.
+- D: Incorrect. This mitigates impact after errors occur but does not reduce the error rate itself.
+
+
+### RAW-EH-029
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 29
+
+After implementing tool use with strict schema definitions, JSON syntax errors are eliminated, but 5% of extractions still have valid JSON with empty arrays or null values for required fields like citations and methodology. Spot-checking reveals that source documents contain this information, but in varied formats — inline citations vs. bibliographies, methodology sections vs. details embedded in introductions. What's the most effective way to address these failures?
+
+A. Modify your schema to make citations and methodology optional, and flag incomplete records for manual review rather than failing validation.
+B. Build a regex-based post-processing layer that scans source documents for citation patterns and methodology keywords, populating empty fields when the model fails to extract.
+C. Add few-shot examples demonstrating extractions from documents with varied structures — showing how to identify citations in different formats and locate methodology details across section types.
+D. Implement retry logic that re-sends requests when validation detects empty required fields.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This lowers data quality standards and avoids solving the extraction problem.
+- B: Incorrect. Regex approaches are brittle and unreliable across varied formats, especially for complex structures like methodology.
+- C: Correct. This directly improves the model's ability to generalize across diverse document formats, addressing the root cause of missed extractions.
+- D: Incorrect. Retries without improving guidance will likely produce the same incomplete outputs.
+
+
+### RAW-EH-030
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 30
+**Quality:** ocr-damaged (stem partially reconstructed; no clean twin available)
+
+The system processes product reviews using tool use with a defined schema: rating (integer 1-5), pros (string array), cons (string array), and overall_sentiment (enum: positive, negative). Testing reveals two issues with brief or ambiguous reviews (~20% of the dataset): (1) for reviews like "Great product!", Claude fabricates specific pros and cons rather than indicating the information isn't explicitly stated, and (2) for sarcastic reviews like "Well that was.. interesting", Claude picks sentiment arbitrarily since there's no option for ambiguous cases. Which modification best addresses both issues?
+
+A. Make pros and cons optional fields, and add "neutral" and "unclear" to the sentiment enum.
+B. Allow empty arrays for pros/cons as valid output, and add "unclear" to the sentiment enum.
+C. Add an extraction_confidence field (0.0-1.0) for each value, and filter outputs where any confidence falls below a threshold.
+D. Allow null values for pros/cons, and add "unclear" to the sentiment enum.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Making fields optional can lead to inconsistent outputs, and "neutral" doesn't solve ambiguity — it's different from "unclear".
+- B: Correct. This prevents fabrication by allowing explicitly empty outputs when no details are present, and "unclear" handles ambiguous or sarcastic sentiment appropriately.
+- C: Incorrect. This adds complexity but doesn't prevent fabrication or resolve ambiguity in outputs.
+- D: Incorrect. Nulls are less consistent than empty arrays for structured outputs and can complicate downstream processing.
+
+
+### RAW-EH-031
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 31
+
+Your extraction system implements automatic retries when validation fails. On each retry, the specific validation error is appended to the prompt. This retry-with-error-feedback approach resolves most failures within 2-3 attempts. For which failure pattern would additional retries be LEAST effective?
+
+A. The model extracts "et al." for co-authors when the full list exists only in an external document not in the input.
+B. The model extracts citation counts as locale-formatted strings ("1234") when the schema requires integers.
+C. The model extracts dates as ISO 8601 datetime strings ("2003-03-15T00:00:00Z") when the schema requires only the date portion.
+D. The model extracts keywords as a nested object organized by category when the schema requires a flat array of strings.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. Retries won't help because the required information is not present in the input context. The model cannot recover missing data through repeated attempts.
+- B: Incorrect. This is a formatting issue that can be corrected through retries with validation feedback.
+- C: Incorrect. Also a format mismatch, which retries can fix easily.
+- D: Incorrect. This is a structural mismatch that can typically be corrected with retry feedback.
+
+
+### RAW-EH-032
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 32
+**Quality:** ocr-damaged (stem partially reconstructed; no clean twin available)
+
+Your invoice extraction uses tool use with strict JSON schemas. JSON syntax errors never occur, but 12% of extractions fail semantic validation — for example, line item amounts don't sum to the extracted total, or vendor IDs don't match valid formats. These failures currently route to manual review. What's the most effective approach to reduce manual review volume while maintaining accuracy?
+
+A. Retry the extraction up to 3 times when validation fails, accepting the first result that passes validation.
+B. Implement post-processing logic that automatically corrects common errors, such as recalculating totals from line items when sums don't match.
+C. When validation fails, make a follow-up request with the document, extraction, and validation errors for model correction.
+D. Add stricter schema constraints with detailed field descriptions to prevent the model from generating invalid values initially.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Retries without targeted feedback often repeat the same mistakes and don't reliably fix semantic inconsistencies.
+- B: Incorrect. While useful for specific cases, this is narrow and brittle, and doesn't address broader validation failures like incorrect IDs.
+- C: Correct. This provides targeted feedback, enabling the model to fix specific issues, significantly reducing manual review while maintaining accuracy.
+- D: Incorrect. Schema improvements help upfront, but they cannot fully prevent semantic errors like mismatched totals.
+
+
+### RAW-EH-033
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 33
+
+Your team is extracting structured data from 50,000 legacy legal contracts under a two-week deadline. Initial testing with 500 sample documents shows 82% pass JSON schema validation on the first attempt, while the remaining 18% fail due to diverse issues — missing required fields, malformed dates, and incorrectly identified parties. Documents that fail typically need refinements targeting their specific failure modes before extraction succeeds. Which batch processing strategy is the most cost-efficient while still meeting the deadline?
+
+A. Split documents into 10 sequential batches of 5,000 each, analysing results and refining prompts between batches to improve extraction quality progressively.
+B. Submit all 50,000 documents via batch API, then submit failed extractions in successive batches — refining prompts between each batch — until all documents pass validation.
+C. Use the real-time API for all 50,000 documents since the batch API's 24-hour processing window creates unacceptable deadline risk.
+D. Process 2,000 sample documents via real-time API to identify failure patterns and refine prompts, then batch process all 50,000 with the optimized prompts.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This introduces unnecessary sequential delays and reduces throughput, risking the deadline.
+- B: Correct. This maximizes throughput and parallelism upfront, ensuring the deadline is met. Then it uses targeted iterative refinement only on failures, making it cost-efficient while handling diverse failure modes effectively.
+- C: Incorrect. This is unnecessarily expensive and not required given batch processing capabilities.
+- D: Incorrect. While proactive, this assumes failure patterns generalize well, which the scenario suggests they don't — since failures are diverse and require case-specific refinements.
+
+
+### RAW-EH-034
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 34
+
+Your extraction pipeline processes contracts that frequently include amendments. When a contract contains both original terms and later amendments (e.g., original clause specifies "30-day payment terms" while Amendment 1 changes this to "45 days"), the model inconsistently extracts one value or the other with no indication of which applies. What's the most effective approach to improve extraction accuracy for documents with amendments?
+
+A. Preprocess documents with a classifier that identifies and removes superseded sections before the main extraction step.
+B. Implement post-extraction validation using pattern matching to detect amendments and flag those extractions for manual review.
+C. Redesign the schema so amended fields capture multiple values, each with source location and effective date.
+D. Add prompt instructions to always extract the most recent amendment value and ignore superseded original terms.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This is brittle and risky — accurately identifying and removing superseded clauses is complex and may lead to loss of important context.
+- B: Incorrect. This increases manual review but does not improve extraction accuracy or resolve ambiguity.
+- C: Correct. This preserves both original and amended values with context, enabling accurate interpretation and avoiding ambiguity about which value applies.
+- D: Incorrect. This relies on model judgment, which is inconsistent, and loses traceability of how values changed over time.
+
+
+### RAW-EH-035
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 35
+
+Your system must extract event details from calendar invitations and output JSON that strictly conforms to a schema with fields for title, date, time, location, and attendees. Downstream systems reject any malformed or non-conformant JSON. What approach provides the most reliable schema compliance?
+
+A. Define a tool with your target schema as input parameters and have Claude call it with the extracted data.
+B. Pre-fill Claude's response with an opening brace to force JSON output, then complete and parse the response.
+C. Append instructions like "Output only valid JSON matching the schema exactly" and implement retry logic to re-prompt when JSON parsing fails.
+D. Include detailed JSON formatting instructions and the target schema in your prompt, then parse Claude's text response as JSON.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. Tool use enforces strict schema compliance at generation time, ensuring valid, structured JSON that downstream systems can reliably consume.
+- B: Incorrect. This is a fragile workaround and does not guarantee valid or schema-compliant JSON.
+- C: Incorrect. Helpful but not reliable — models can still produce malformed or non-conformant JSON.
+- D: Incorrect. Prompt-based formatting alone cannot guarantee strict compliance, especially in edge cases.
+
+
+### RAW-EH-036
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 36
+**Quality:** ocr-damaged (option C unreadable in source; reproduced as printed)
+
+Your schema includes a skills: string[] field. Production monitoring reveals three consistency issues: (1) compound phrases like "Python and SQL" are sometimes kept as one entry, sometimes split; (2) implied but unstated skills occasionally appear in extractions; (3) similar documents produce wildly different array lengths (5-10 vs 40+ entries). Your prompt currently says "Extract skills mentioned." What's the most effective improvement?
+
+A. Add constraints: "Extract 10-20 skills maximum, one skill per entry, only explicitly named skills."
+B. Add post-extraction normalization that maps skills to a canonical taxonomy and deduplicates similar entries.
+C. Enrich the schema to capture extraction metadata.
+D. Add few-shot examples demonstrating compound phrase handling, explicit mention criteria, and appropriate entry granularity.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This enforces limits but is arbitrary and may exclude valid skills or still leave ambiguity in how to split phrases.
+- B: Incorrect. Helpful downstream, but it does not fix inconsistent extraction behavior at the source.
+- C: Incorrect. Adds complexity but does not directly address inconsistency in skill identification and formatting.
+- D: Correct. Examples directly guide the model on how to split, what to include, and the expected level of detail, addressing all three issues effectively.
+
+
+### RAW-EH-037
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 37
+
+Your pipeline uses a tool called extract_metadata with a JSON schema for paper details. You've also defined lookup_citations and verify_doi tools for enrichment. During testing, you notice that when users include requests like "extract the metadata and tell me how cited it is," Claude sometimes calls lookup_citations first, which fails because it needs the DOI that extract_metadata would provide. What's the most effective way to ensure structured metadata extraction happens first?
+
+A. Set tool_choice to {"type": "tool", "name": "extract_metadata"} and process the enrichment requests in subsequent turns after receiving the extracted metadata.
+B. Set tool_choice to "any" so Claude must use a tool, combined with system prompt instructions prioritizing extract_metadata.
+C. Set tool_choice to {"type": "tool", "name": "extract_metadata"} for every API call in the pipeline, ensuring Claude always extracts metadata before any enrichment can occur.
+D. Set tool_choice to "auto" and reorder the tool definitions so extract_metadata appears first in the tools array, since Claude prioritizes earlier-listed tools.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This enforces the correct execution order, ensuring required data (like DOI) is available before dependent tools are called.
+- B: Incorrect. This does not guarantee ordering — Claude may still choose the wrong tool first.
+- C: Incorrect. This is too rigid and prevents legitimate use of other tools in later steps.
+- D: Incorrect. Tool ordering does not reliably control selection or execution order.
+
+
+### RAW-EH-038
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 38
+
+Your system has been operating with 100% human review for 3 months. Analysis shows that extractions with model confidence >90% have 97% accuracy overall. To reduce reviewer workload, you plan to automate high-confidence extractions. Before deploying, what validation step is most critical?
+
+A. Verify that 97% accuracy meets requirements for all downstream systems that consume the extracted data.
+B. Analyze accuracy by document type and field to verify high-confidence extractions perform consistently across all segments, not just in aggregate.
+C. Compare accuracy at different confidence thresholds (85%, 90%, 95%) to find the optimal cutoff that maximizes automation while minimizing errors.
+D. Run a two-week pilot routing 25% of high-confidence extractions directly to downstream systems and monitor error reports.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Important, but it doesn't ensure the confidence signal is reliable across different cases — it only checks overall acceptability.
+- B: Correct. Aggregate accuracy can hide weak spots. You need to ensure confidence >90% is trustworthy across all segments, otherwise automation may introduce systematic errors.
+- C: Incorrect. Useful for tuning, but only after confirming the confidence signal is consistent and reliable across segments.
+- D: Incorrect. A pilot is valuable, but deploying without validating segment-level reliability first introduces avoidable risk.
+
+
+### RAW-EH-039
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 39
+
+Your extraction system uses tool_use with a JSON schema containing 12 fields and detailed descriptions, totaling approximately 2,500 tokens for the complete tool definition. Processing documents under 150K tokens yields 98% accuracy. For documents between 175-190K tokens, accuracy drops to 71%, with information from the final third consistently missed. The model's context window is 200K tokens. What is the most likely cause?
+
+A. Tool definitions consume input context tokens. Combined with system prompts and document content, the total approaches the context limit, degrading end-of-document processing.
+B. Very long documents exceed the model's effective attention span regardless of context limits, causing accuracy degradation for content farther from the prompt instructions.
+C. The model distributes attention proportionally across input length, causing fields mentioned only once near the document's end to receive insufficient processing focus.
+D. Schemas exceeding 8-10 fields increase decision complexity during parameter generation, reducing extraction accuracy independent of document length.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. The tool schema (~2,500 tokens) plus system prompts and large documents push total input close to the 200K context limit, causing truncation or reduced attention to the final portion — hence missed information in the last third.
+- B: Incorrect. While attention can vary, the sharp drop near the context boundary strongly indicates a context limit issue, not general attention decay.
+- C: Incorrect. This is a weaker effect and does not explain the consistent failure in the final third tied to document size thresholds.
+- D: Incorrect. Schema size is constant across cases; it does not explain why accuracy drops only for longer documents.
+
+
+### RAW-EH-040
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 40
+
+Your extraction pipeline processes invoices and extracts line items, subtotals, tax amounts, and grand totals. During evaluation, you discover that in 18% of extractions, the sum of extracted line item amounts doesn't match the extracted grand total — sometimes due to OCR errors in the source document, sometimes due to extraction mistakes by the model. Downstream accounting systems reject records with mismatched totals. What's the most effective approach to improve extraction reliability?
+
+A. Add a "calculated_total" field where the model sums extracted line items alongside a "stated_total" field. Flag records for human review when values differ.
+B. Extract line items and totals independently, then use a separate validation model to reconcile discrepancies by determining which extracted values are most likely correct.
+C. Add few-shot examples demonstrating invoices where extracted line items sum correctly to the stated total, encouraging the model to produce mathematically consistent extractions.
+D. Implement post-processing that automatically adjusts line item amounts proportionally when their sum doesn't match the stated total.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This preserves both sources of truth and enables reliable validation. Discrepancies can be flagged explicitly, improving accuracy without silently altering financial data.
+- B: Incorrect. This adds complexity and uncertainty — "guessing" which value is correct can introduce errors in financial data.
+- C: Incorrect. Helpful but insufficient — does not handle OCR errors or real inconsistencies in source documents.
+- D: Incorrect. This modifies financial data artificially, which is risky and unacceptable for accounting accuracy.
+
+
+### RAW-EH-041
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 41
+
+Your extraction system processes two document types: standard monthly reports (archived after processing) and urgent exception reports (must trigger business alerts within 30 minutes of receipt). Both use the same JSON schema. You want to minimize API costs while meeting latency requirements. How should you architect the processing pipeline?
+
+A. Submit all documents to the Batch API with custom_ids for tracking. When results arrive, immediately process urgent documents and trigger delayed alerts for exceptions.
+B. Submit all documents to the real-time Messages API to ensure consistent processing latency across document types.
+C. Queue all documents and submit hourly batches, flagging urgent documents for expedited handling when batch results return.
+D. Route standard reports to the Batch API for 50% cost savings, and route urgent exception reports to the real-time Messages API.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Batch processing introduces delays that can exceed the 30-minute requirement, making it unsuitable for urgent reports.
+- B: Incorrect. This meets latency needs but is unnecessarily expensive for standard reports that don't require real-time processing.
+- C: Incorrect. Hourly batching further increases delay and cannot meet urgent processing requirements.
+- D: Correct. This balances cost efficiency and latency requirements, ensuring urgent reports are processed quickly while optimizing cost for non-urgent ones.
+
+
+### RAW-EH-042
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 42
+
+The extraction pipeline receives documents of varying types — some are invoices, others are contracts, and some are receipts. You've defined separate extraction tools, each with its own schema tailored to the document type. During testing, you observe that with tool_choice: "auto", Claude sometimes returns conversational text instead of calling an extraction tool, causing downstream parsing failures. You need guaranteed structured output without knowing the document type in advance. What's the most effective approach?
+
+A. Consolidate all document types into a single unified-schema extraction tool and force that tool.
+B. Keep tool_choice: "auto" with system prompt instructions requiring tool use.
+C. Set tool_choice: "any" with all extraction tools defined.
+D. Add a preliminary classification call, then make a second call with tool_choice forced to the identified extraction tool.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This reduces extraction accuracy and creates an overly complex schema that doesn't fit all document types well.
+- B: Incorrect. Instructions alone are not enforceable, which is exactly why the issue occurs.
+- C: Correct. This guarantees that a tool will always be called, eliminating conversational text responses. While tool selection may not always be perfect, it ensures structured output every time, which is the primary requirement.
+- D: Incorrect. While more precise, this adds extra latency and complexity. The question prioritizes guaranteed structured output, which C achieves more directly.
+
+
+### RAW-EH-043
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 43
+
+Monitoring shows 12% of extractions fail Pydantic validation with specific errors like "expected float for quantity, got '2 to 3'". Retrying these requests without modification produces the same failures. What's the most effective approach to recover from these validation failures?
+
+A. Set temperature to 0 to eliminate output variability and ensure consistent formatting.
+B. Send a follow-up request including the validation error, asking the model to correct its output.
+C. Pre-process source documents to standardize problematic formats before sending them for extraction.
+D. Implement a secondary pipeline using a larger model tier to reprocess documents that fail validation.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This reduces randomness but won't fix systematic extraction errors like misinterpreting ranges ("2 to 3").
+- B: Correct. Providing specific validation feedback allows the model to correct the exact issue (e.g., convert "2 to 3" into a valid float), making recovery highly effective.
+- C: Incorrect. Helpful in some cases, but not scalable or sufficient for diverse real-world variations.
+- D: Incorrect. More expensive and not necessary — targeted correction is more efficient and effective.
+
+
+### RAW-EH-044
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 44
+
+After three months of weekly sessions, your conversation history has grown to 85,000 tokens. When users ask "What did we conclude about the theme of isolation?", the assistant provides generic literary analysis rather than referencing the group's specific insights from earlier sessions. Discussions often build on previous meetings' conclusions, so maintaining narrative context is important. What's the most effective approach?
+
+A. Add structured XML tags to mark significant discussion conclusions throughout the conversation history.
+B. Use semantic embedding to index the full conversation history and retrieve only relevant past exchanges for each user query, replacing the linear conversation format with retrieved segments.
+C. Implement rolling window truncation to keep only the most recent 25,000 tokens.
+D. Implement progressive summarization where older conversation blocks are replaced with concise summaries that explicitly extract key conclusions, decisions, and recurring themes, keeping recent exchanges verbatim.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Tagging helps organization, but it doesn't solve the context length limitation or ensure relevant retrieval at query time.
+- B: Incorrect. Powerful for retrieval, but replacing the conversation entirely loses narrative continuity, which is important for ongoing discussions.
+- C: Incorrect. This discards earlier insights, which are critical for referencing past conclusions.
+- D: Correct. This preserves long-term context and key insights while staying within token limits, enabling the assistant to reference past conclusions effectively.
+
+
+### RAW-EH-045
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 45
+
+After a 40-minute session helping plan a dinner party, the conversation has grown to 78,000 tokens. The history includes: (1) the user mentioning a guest has a severe shellfish allergy, (2) measurements for scaling recipes to 8 servings, (3) the user's clarification that "room temperature butter" means 68°F in their kitchen, and (4) general back-and-forth about meal timing and presentation. You need to implement context management before the window limit is reached. What approach best balances information preservation with token reduction?
+
+A. Summarize the entire conversation history into a concise summary capturing main topics discussed, then append new messages going forward.
+B. Implement a sliding window retaining only the most recent 20,000 tokens, relying on users to re-state important information when relevant.
+C. Store the full conversation externally and use semantic search to retrieve relevant portions for each turn, loading only matching segments into context.
+D. Extract critical structured data (allergies, serving counts, user-defined terms) into a compact reference section, summarize general discussion, and retain recent exchanges verbatim.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This risks losing critical details like allergies and precise measurements that must remain exact.
+- B: Incorrect. This discards essential context (e.g., allergy info), which is unsafe and unreliable.
+- C: Incorrect. Helpful for retrieval, but may miss important persistent constraints (like allergies) if not explicitly retrieved every time.
+- D: Correct. This preserves high-priority facts exactly, reduces tokens efficiently, and maintains conversational continuity.
+
+
+### RAW-EH-046
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 46
+
+You're implementing a feature where users refine their playlist preferences through multiple conversation turns. After deploying, you notice Claude's responses don't reflect what users said earlier in the same conversation — for example, a user says they love jazz, but two messages later Claude asks what genres they enjoy. What is the most likely cause?
+
+A. The model's context window has been exceeded by the conversation length.
+B. The Claude API requires a session_id parameter that you haven't configured.
+C. Claude requires a vector database connection to maintain conversation memory.
+D. Your application isn't including prior messages in the messages array.
+
+**Correct (per source):** D
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This would only happen in very long conversations, and the issue appears early within just a few turns.
+- B: Incorrect. There is no required session_id — context must be explicitly managed by the application.
+- C: Incorrect. A vector database is optional for retrieval, not required for basic conversation memory.
+- D: Correct. Claude does not retain memory between calls — if previous messages aren't included, it cannot recall earlier user preferences.
+
+
+### RAW-EH-047
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 47
+**Quality:** ocr-damaged (stem partially reconstructed; no clean twin available)
+
+Your fitness coaching assistant uses a system prompt with detailed conditional logic: "If the user mentions being a beginner, provide step-by-step form instructions. If they use terms like 'progressive overload' or 'superset', respond concisely. If they ask about injury history, always recommend consulting a physician." During evaluation, you find the assistant handles explicit expertise declarations correctly but struggles when users don't clearly state their level — often defaulting to overly detailed responses regardless of contextual cues like technical terminology. Which change to the system prompt would most directly address this failure to pick up on implicit expertise signals?
+
+A. Replace most conditionals with a general principle: "Adapt explanation depth to match user expertise, mirroring their terminology." Keep only the safety-critical conditional about physician consultations.
+B. Add more conditional branches to cover additional expertise signals, such as "If user mentions specific rep ranges or asks about periodization, treat as advanced."
+C. Implement a pre-conversation intake that asks users to rate their experience level, then inject that rating into the system prompt as context for all subsequent responses.
+D. Add an explicit instruction for the model to ask a clarifying question about experience level whenever the user's expertise isn't immediately clear from their first message.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This shifts from brittle rule-based logic to a flexible heuristic, enabling the model to infer expertise from subtle cues like terminology and tone.
+- B: Incorrect. This increases complexity and brittleness — edge cases will still be missed.
+- C: Incorrect. Useful, but doesn't solve the issue of interpreting implicit signals during conversation.
+- D: Incorrect. This adds friction and interrupts flow instead of improving implicit understanding.
+
+
+### RAW-EH-048
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 48
+
+During initial testing, you notice that Claude doesn't seem to remember vocabulary words from earlier in the conversation. When a student asks "Can you quiz me on those words?", Claude responds as if no words have been discussed. What is the most likely explanation?
+
+A. Your system prompt needs explicit instructions telling Claude to remember information from earlier turns.
+B. You're not including prior messages in each API request — the stateless API doesn't retain conversation history.
+C. You need to enable conversation persistence by passing a session ID parameter with each API call.
+D. The model's context window has filled up, causing earlier conversation content to be dropped.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. Instructions alone don't give the model memory — context must be provided with each request.
+- B: Correct. Claude is stateless. If earlier messages aren't passed in the request, it has no awareness of prior vocabulary.
+- C: Incorrect. There's no required session ID — memory is handled by including past messages.
+- D: Incorrect. This would only happen in very long conversations, not typical early testing scenarios.
+
+
+### RAW-EH-049
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 49
+
+Your home renovation planning assistant uses a system prompt defining an expert contractor persona with specific guidelines: always ask about budget, suggest alternatives at multiple price points, and confirm timeline requirements. During testing, responses follow these guidelines for turns 1-4, but by turn 7, the assistant gives generic advice without asking about budget or timeline. The conversation totals only 2,500 tokens. What is the most likely cause?
+
+A. System prompts only establish initial behavior and don't persist across all turns.
+B. The system prompt is only sent with the first API request.
+C. The assistant's accumulated responses are diluting the system prompt's influence.
+D. The model's attention on system prompt instructions naturally weakens as turns accumulate.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. System prompts do persist as long as they are included in each request.
+- B: Incorrect. If this were the case, the behavior would degrade immediately after the first turn — not gradually by turn 7.
+- C: Correct. As the conversation grows, the model must balance more context. Even within a small token count, recent conversational patterns can outweigh earlier instructions, causing drift from the original system prompt.
+- D: Incorrect. This is too vague — it's not just "natural weakening," but specifically the increasing influence of conversational context relative to the system prompt.
+
+
+### RAW-EH-050
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 50
+
+Users report that during extended conversations, the AI loses track of specific topics, examples, and preferences they mentioned earlier in the session. Your current implementation uses a sliding window that keeps only the most recent 25 message pairs to stay within context limits. What's the most effective approach to maintain awareness of earlier conversation content while managing context size?
+
+A. Replace the sliding window with a hybrid approach: summarize older messages while keeping recent messages verbatim.
+B. Implement vector similarity search over the full conversation history, retrieving relevant past messages for each user query.
+C. Increase the window size to 50 message pairs to retain more conversation history before truncation.
+D. Add a separate API call each turn to summarize messages being dropped, prepending this running summary to the conversation.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This preserves long-term context in a compressed form while keeping recent interactions intact, maintaining continuity without exceeding token limits.
+- B: Incorrect. While powerful, this is more complex and better suited for large-scale or cross-session retrieval, not necessarily the most direct fix for in-session context loss.
+- C: Incorrect. This only delays the issue and increases token usage without fundamentally solving it.
+- D: Incorrect. This can lead to summary drift and compounding errors, reducing reliability over time.
+
+
+### RAW-EH-051
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 51
+**Repaired-from:** exam-heist-live-qna-01.md Q51 (clean twin; source PDF stem was OCR-damaged)
+
+Users frequently send ambiguous requests like "book a venue for the party" without specifying date, guest count, or budget. Your evaluation shows the assistant asks an average of 4 questions before taking any action, causing 35% of users to abandon mid-conversation. However, when you reduce questions, users sometimes receive recommendations that don't match preferences. What's the most effective approach to improve this trade-off?
+
+A. Implement a structured intake form that collects all required parameters (date, guest count, budget, venue type) upfront before the assistant begins providing any recommendation.
+B. Configure the assistant to proceed with reasonable defaults (medium sized venue, next weekend, moderate budget) without explicitly stating these assumptions, allowing users to correct them if results don't match expectations.
+C. Instruct the assistant to state explicit assumptions based on conversation status, proceed with recommendations while inviting corrections, and reserve clarifying questions only for irreversible actions like confirming bookings.
+D. Configure the assistant to consolidate all clarifying questions into a single compound question (e.g., "What date, guest count, and budget are you considering?") to reduce the total.
+
+**Correct (per source):** C
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This ensures completeness but adds high friction, increasing drop-off before any value is delivered.
+- B: Incorrect. Hidden assumptions can lead to misalignment and confusion, reducing trust.
+- C: Correct. This balances speed and accuracy — users get immediate value, assumptions are transparent, and friction is minimized.
+- D: Incorrect. This reduces question count but still creates front-loaded friction without delivering immediate value.
+
+
+### RAW-EH-052
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 52
+
+During QA testing, you notice that Claude follows your system prompt guidelines consistently in the first 10-15 turns, but by turn 25-30, responses begin deviating — using informal tone when formality was specified, occasionally skipping required formatting, or providing information types the guidelines restrict. Conversation length is well within context limits (typically 30,000 tokens out of 200,000 available). What's the most effective approach to maintain consistent behavior throughout extended conversations?
+
+A. Insert user-role messages that reinforce critical guidelines at natural conversation breakpoints, especially before complex requests.
+B. Implement post-response validation that regenerates each response until it conforms to the specified guidelines.
+C. Automatically start a new conversation after 20 turns, passing a summary of the prior context to maintain continuity.
+D. Move behavioral guidelines from the system prompt into the first user message.
+
+**Correct (per source):** A
+
+**Explanations (per source, verbatim):**
+- A: Correct. This combats instruction drift by periodically refreshing key constraints within the active context, keeping behavior aligned over long conversations.
+- B: Incorrect. This is costly and reactive, and can create loops without addressing the root cause of drift.
+- C: Incorrect. Summarization can lose detail and doesn't directly reinforce behavioral rules.
+- D: Incorrect. User messages carry less weight than system prompts and are more likely to be overridden during the conversation.
+
+
+### RAW-EH-053
+**Source:** claude-certified-architect-sample-paper-01.pdf (exam-heist), Question 53
+
+Performance analysis reveals your context is composed of accumulated RAG results from all previous queries, which is crowding out conversation history and causing coherence degradation after 15+ turns. Which approach best addresses this issue?
+
+A. Implement semantic deduplication to identify and remove redundant information across the accumulated RAG results and conversation turns.
+B. Implement a sliding window for RAG results from the last 2-3 queries while preserving conversation history.
+C. Shift context budget to favor RAG results while reducing conversation history allocation.
+D. Compress all RAG results into a consolidated summary document that updates incrementally after each retrieval.
+
+**Correct (per source):** B
+
+**Explanations (per source, verbatim):**
+- A: Incorrect. This reduces redundancy but doesn't solve the core issue of unbounded accumulation of RAG context.
+- B: Correct. This directly addresses context crowding by limiting RAG growth while keeping conversation continuity intact.
+- C: Incorrect. This worsens coherence by sacrificing conversation context.
+- D: Incorrect. This can introduce information loss and summary drift, especially across many turns.
