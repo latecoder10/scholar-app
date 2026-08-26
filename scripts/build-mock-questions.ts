@@ -13,9 +13,10 @@
  *
  *   npx tsx scripts/build-mock-questions.ts
  *
- * Writes:
- *   content/claude-ccaf/modules/mock-tests/claude-ccaf-mock-exam-{1,2,3}.json
- *   mobile/src/data/ccafQuestions.json   (same questions, mobile bank shape)
+ * Writes content/claude-ccaf/modules/mock-tests/claude-ccaf-mock-exam-{1,2,3}.json.
+ *
+ * The mobile app is NOT written here. It bundles the whole content/ tree via
+ * scripts/build-mobile-content.ts, so run that afterwards to propagate changes.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -23,7 +24,6 @@ import path from "node:path";
 const ROOT = path.resolve(import.meta.dirname, "..");
 const RAW_DIR = path.join(ROOT, "docs", "raw-sources");
 const MOCK_DIR = path.join(ROOT, "content", "claude-ccaf", "modules", "mock-tests");
-const MOBILE_BANK = path.join(ROOT, "mobile", "src", "data", "ccafQuestions.json");
 
 interface ParsedQuestion {
   ref: string; // e.g. RAW-CG1-001
@@ -270,27 +270,6 @@ function build(spec: BuildSpec) {
 
 const built = SPECS.map(build);
 
-// Mirror the same questions into the mobile bank, replacing its placeholder
-// entries (same templated text, same RAW- refs) and leaving its other
-// questions untouched.
-const bank: any[] = JSON.parse(fs.readFileSync(MOBILE_BANK, "utf8"));
-const isPlaceholder = (q: any) =>
-  Array.isArray(q.options) && q.options.some((o: string) => /^Option [A-D] /.test(o));
-
-const kept = bank.filter((q) => !isPlaceholder(q));
-const mobileAdditions = built.flatMap(({ pack, questions }) =>
-  questions.map((q) => ({
-    ...q,
-    subject: pack.subject,
-    chapterName: pack.chapter,
-    exam: pack.exam,
-  }))
-);
-
-const mobileBank = [...kept, ...mobileAdditions].map((q, i) => ({ ...q, id: i + 1 }));
-fs.writeFileSync(MOBILE_BANK, JSON.stringify(mobileBank, null, 2) + "\n", "utf8");
-
 console.log(
-  `ccafQuestions.json: dropped ${bank.length - kept.length} placeholders, ` +
-    `added ${mobileAdditions.length} real questions, total ${mobileBank.length}`
+  "\nNext: npx tsx scripts/build-mobile-content.ts (propagates these into the mobile bundle)."
 );

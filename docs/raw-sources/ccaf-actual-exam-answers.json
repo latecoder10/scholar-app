@@ -1,0 +1,263 @@
+{
+  "note": "Answer key and explanations authored for CCAF - Actual Exam Questions.pdf, which ships no key. Each entry records its basis so the reader can judge how firm it is. 'source-key' = the same question appears in a source document that carries its own answer key (docs/raw-sources/*.md); 'docs' = Anthropic/Claude Code documentation; 'principle' = transferred from a source-keyed question testing the same rule; 'reasoned' = argued from the options with no direct citation.",
+  "answers": {
+    "1": {
+      "letter": "C",
+      "confidence": "high",
+      "basis": "principle — RAW-CG1-027 (build-vs-use): community servers first for standard integrations, custom only where no equivalent exists",
+      "explanation": "Jira is a standard integration with well-maintained community MCP servers, and an MCP server exposes tickets and comments as discoverable tools the agent can use natively.\n\n**Why the others are wrong**\n\n- **A.** Bash plus `curl` bypasses the tool interface entirely: the agent has to hand-roll auth headers and parse JSON inline every time, with no structured tool description and no standardised error handling.\n- **B.** An export goes stale the moment a ticket is updated, and the team explicitly wants live ticket data rather than a snapshot.\n- **D.** Building custom is the right call only for a workflow with no community equivalent. Here the need is ordinary ticket data, so a custom build is unjustified maintenance."
+    },
+    "2": {
+      "letter": "B",
+      "confidence": "high",
+      "basis": "reasoned — only option that accounts for the rename",
+      "explanation": "The rename is the whole difficulty: `calculateTax` is re-exported as `computeOrderTax`, so no single search term covers every call site. Reading the library and wrapper modules first enumerates every name the function is exposed under, and Grep then finds callers of each.\n\n**Why the others are wrong**\n\n- **A.** Documentation describes intended usage, not actual call sites, and is routinely out of date — it cannot establish that removal is safe.\n- **C.** Importing a module does not mean calling this function, and this misses files that receive the function indirectly. It also inverts the cost: reading every importing file is far more expensive than grepping known names.\n- **D.** Searching only the original name misses every caller that uses a wrapper alias — exactly the callers the engineer is at risk of breaking."
+    },
+    "3": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "reasoned — content search on a distinctive literal",
+      "explanation": "The error string is a distinctive literal that must appear in the source that emits it. Grep is the content-search tool, so searching `SYNC_CONFLICT` jumps straight to the emitting service; reading the matches then supplies context.\n\n**Why the others are wrong**\n\n- **B.** Importing the error module does not identify which service emits this particular message, and every service probably imports it.\n- **C.** Glob matches paths, not contents, and assumes a directory convention the 12 services may not share.\n- **D.** Reading architecture docs and then sweeping source files is the brute-force path — enormous context cost to find a string Grep locates in one call."
+    },
+    "4": {
+      "letter": "B",
+      "confidence": "high",
+      "basis": "docs — Claude Code MCP reference: capability discovery (tools/list, prompts/list, resources/list) runs after each server connects; also stated verbatim in RAW-CG1-009's explanation",
+      "explanation": "Claude Code runs capability discovery against every configured server as it connects, and the resulting tools are merged into one list the agent sees. The source guide puts it directly: MCP server boundaries are invisible to the agent — all tools from all connected servers appear in a single list. So the agent can call the git, Jira and docs tools in one task without any switching.\n\n**Why the others are wrong**\n\n- **A.** There is no per-request server selection step; nothing loads one server's tools to the exclusion of others.\n- **C.** No per-turn server designation exists, and the agent is not limited to one server at a time — this request needs two servers in a single task.\n- **D.** Discovery happens once at connection time, not by sequentially interrogating servers per call. Name prefixes disambiguate tools; they are not a routing mechanism the agent must drive."
+    },
+    "5": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "reasoned — Grep is the content-search tool",
+      "explanation": "Finding occurrences of `eval(` is a content search across files, which is exactly Grep's job — one pass over the codebase returning the matching files and lines.\n\n**Why the others are wrong**\n\n- **B.** Glob matches file paths, not file contents. Files containing `eval()` are not named after it, so this finds the wrong set and then pays to read each one.\n- **C.** Following imports from the entry point traces reachable modules, not textual occurrences, and misses dynamically referenced or unimported code.\n- **D.** `ls -R | grep eval` filters the **file listing**, not file contents — it matches paths that contain \"eval\" and never opens a file."
+    },
+    "6": {
+      "letter": "D",
+      "confidence": "high",
+      "basis": "reasoned — content search, not filename search",
+      "explanation": "An import statement is text inside files, so this is a content search: Grep for the import pattern for `@company/auth` returns exactly the files that import it.\n\n**Why the others are wrong**\n\n- **A.** Glob matches filenames and paths. A file that imports the auth package is usually not named \"auth\", so this both misses real importers and returns irrelevant files.\n- **B.** `find . -type d` lists **directories** whose names match — it never inspects file contents, so it cannot answer the question asked.\n- **C.** `package.json` records that a workspace depends on the package, not which source files import it, and in a monorepo the dependency is often hoisted."
+    },
+    "7": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "principle — RAW-CG1-043 and RAW-CG1-040 (scratchpad files persist findings across context boundaries)",
+      "explanation": "This is context degradation: as exploration output accumulates, earlier findings get buried and the agent's answers drift toward generic patterns. A scratchpad file persists the essential findings on disk, decoupling what the agent knows from what currently fits in context — it can re-read the compact record instead of relying on a long transcript.\n\n**Why the others are wrong**\n\n- **B.** A larger context window postpones the problem without solving it; degradation is an attention-quality issue that appears well before the window is full.\n- **C.** Pre-summarising every source file is enormous upfront work, and compressing before you know what matters discards the specifics (class names, signatures) the engineers need.\n- **D.** Clearing on a timer throws away valid findings on a schedule unrelated to the work, forcing exactly the re-explaining the engineers are complaining about."
+    },
+    "8": {
+      "letter": "D",
+      "confidence": "high",
+      "basis": "source-key — RAW-CG1-038 answers this pattern with MCP resources; corroborated by the MCP resources primitive in the Claude Code docs",
+      "explanation": "The root problem is that the agent has no visibility into what each server holds, so it burns turns on exploratory calls. MCP resources exist for exactly this: they expose a content catalogue — issue summaries, documentation hierarchy, database schemas — so the agent can see what is available upfront and go straight to the right call instead of discovering by trial.\n\n**Why the others are wrong**\n\n- **A.** A `prepare_investigation` tool keeps an exploratory call on every task, which is the very overhead to be removed, and pushes retrieval logic into each server.\n- **B.** Keyword routing to a single server breaks genuinely cross-system questions — this question spans an issue tracker, a wiki and a database at once.\n- **C.** Consolidating three servers is a large refactor that does not address visibility; the merged server still exposes tools without a catalogue."
+    },
+    "9": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "source-key — RAW-CG1-001 is the same scenario and answers 'enhance the sparse description'",
+      "explanation": "When an MCP tool's description is sparse, the agent falls back to familiar general-purpose tools like Write and Bash. The description is the primary signal the model uses to choose a tool, so stating when each refactoring tool is preferable to text manipulation — and what it takes and returns — fixes the selection at its source.\n\n**Why the others are wrong**\n\n- **B.** Removing Write is a blunt instrument that breaks legitimate non-refactoring work, and it forces the tools rather than making them the better choice.\n- **C.** Accepting it forfeits the AST-level correctness the refactoring tools provide; `sed` is predictable but not safe for renaming symbols.\n- **D.** An external classifier that pre-routes requests is significant infrastructure layered over a one-line configuration fix, and it removes the agent's ability to reason about tool choice."
+    },
+    "10": {
+      "letter": "C",
+      "confidence": "medium",
+      "basis": "principle — RAW-CG1-012's explanation states the rule: a fresh start with summary injection is best when tool results are stale",
+      "explanation": "The transcript's value is the documented data flows, not the 47 raw file reads — and those reads are now stale, because a merged PR renamed two functions the transcript still refers to by their old names. The guide's rule for exactly this situation is that a fresh start with summary injection is right when tool results have gone stale: the fresh subagent carries forward the durable findings and re-reads the current code.\n\n**Why the others are wrong**\n\n- **A.** Resuming while ignoring the renames leaves the agent reasoning from stale identifiers, so it will reference functions that no longer exist.\n- **B.** Telling it about the renames patches the two functions you know about, but the resumed transcript still carries 47 files of raw, now-outdated content — expensive and still stale in ways nobody has audited.\n- **D.** Pasting the whole prior transcript into a fresh prompt reproduces the staleness and the context bloat, discarding the benefit of starting fresh."
+    },
+    "11": {
+      "letter": "D",
+      "confidence": "medium",
+      "basis": "reasoned — structure-first traversal under an explicit context constraint",
+      "explanation": "Roughly 8,000 lines cannot all be held in context, so the question is which reading order buys the most understanding per token. Following imports and class hierarchies to the base cache class gives the interface that every decorator, middleware and service implements; from there, only the specific invalidation implementations need reading. Structure first, then targeted depth.\n\n**Why the others are wrong**\n\n- **A.** Prioritising the largest files is an arbitrary proxy for importance, and Glob patterns re-discover files that Grep has already located.\n- **B.** Reading isolated line ranges around \"invalidate\" and \"expire\" yields fragments without the surrounding class and interface context needed to add a new trigger correctly.\n- **C.** Sequentially loading all 15 files is precisely what the context constraint forbids — it fills the window with implementation detail before any structure is established."
+    },
+    "12": {
+      "letter": "B",
+      "confidence": "high",
+      "basis": "docs — Anthropic's 'Building effective agents': prompt chaining fits fixed, decomposable subtasks; orchestrator-workers fits dynamically determined ones",
+      "explanation": "The decisive detail is that the workflow is identical for every PR — the same three aspects, in the same order, every time. Prompt chaining is the pattern for a task that decomposes into a fixed sequence of subtasks, and giving each aspect its own step also avoids the attention dilution that degrades a single combined pass.\n\n**Why the others are wrong**\n\n- **A.** Routing classifies an input and sends it down **different** paths. Here every PR needs all three checks, so there is nothing to route.\n- **C.** Orchestrator-workers is for work whose subtasks cannot be known in advance. These subtasks are fixed, so the dynamic planning step adds cost and variance for nothing.\n- **D.** One comprehensive prompt is what causes uneven quality across the three aspects; attention spreads thin and later aspects are handled superficially."
+    },
+    "13": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "source-key — matched to a keyed question in the built-in tools chapter",
+      "explanation": "Edit needs a unique `old_string`, and this file cannot supply one. Read plus Write sidesteps the uniqueness requirement entirely: load the current contents, place the function where it belongs, and write the file back whole.\n\n**Why the others are wrong**\n\n- **B.** `replace_all` deliberately edits **every** occurrence of a repeated pattern — in a file full of repetitive structure that corrupts many sites and duplicates the new function.\n- **C.** A 30-line `old_string` is brittle: it must match whitespace and content exactly, it is easy to get subtly wrong, and it fails again the moment the surrounding code shifts.\n- **D.** Appending to the end of the file puts the helper in the wrong place — the requirement is to insert it between two specific functions."
+    },
+    "14": {
+      "letter": "A",
+      "confidence": "medium",
+      "basis": "principle — RAW-CG1-040 (delegate exploration to subagents to isolate verbose output) and RAW-CG1-008 (parallelise independent per-service work)",
+      "explanation": "The constraint stated in the question is context limits across 800+ files and multiple services, and the goal is an architectural overview. Subagents explore in their own context windows, so the verbose file reading never lands in the main conversation; running one per service exploits the fact that the services are independent, and the coordinator synthesises the returned findings into the overview the engineer asked for.\n\n**Why the others are wrong**\n\n- **B.** Reading every file that mentions \"auth\", \"login\", \"permission\" or \"token\" across 800+ files is unbounded and would exhaust the context window without producing a structured picture.\n- **C.** Asking a brand-new engineer to name the 10-15 most important files inverts the request — identifying those files is the very thing they need help with.\n- **D.** Incremental Grep-and-follow is a sound technique, but performed serially in one context across multiple services it accumulates exactly the degradation the question flags, and it traces one flow rather than mapping the architecture."
+    },
+    "15": {
+      "letter": "D",
+      "confidence": "high",
+      "basis": "principle — RAW-CG1-033 (consolidate key findings into a structured block) plus subagent context isolation",
+      "explanation": "The symptom — generic \"typical rendering patterns\" instead of the `VulkanPipeline` and `FrameGraph` specifics it found earlier — is context degradation. The new question is about how physics **integrates with rendering**, so the rendering knowledge must survive. Summarising those findings consolidates them into a compact, recent block, and spawning a subagent for physics with that summary keeps the new exploration's verbose output out of the already-degraded main context.\n\n**Why the others are wrong**\n\n- **A.** `/clear` discards the rendering knowledge the integration question depends on, forcing a re-exploration that has already been paid for.\n- **B.** Spawning a physics subagent without passing the rendering summary means it cannot reason about the integration, and leaves you to reconcile its findings against a degraded main context.\n- **C.** Naming the classes in prompts treats the symptom. The degradation is structural — continuing in the same saturated context will keep losing specifics."
+    },
+    "16": {
+      "letter": "D",
+      "confidence": "high",
+      "basis": "principle — RAW-CG1-039 (stratified sampling allocates review effort and supports measurement)",
+      "explanation": "Two requirements are stated: catch errors that confidence scores do not predict, and **measure whether the error rate improves over time**. Only a fixed-percentage sampling regime gives an unbiased, repeatable estimate you can track across releases, and reviewing a random cross-section also surfaces novel error patterns rather than the ones you already anticipated.\n\n**Why the others are wrong**\n\n- **A.** Re-extracting from the same document tends to reproduce the same plausible-but-wrong value, so agreement is not evidence of correctness — self-consistency is not accuracy.\n- **B.** Dropping the threshold to 70% floods reviewers with the low-confidence band that was already being caught, without touching the high-confidence errors that are the actual problem, and yields no measurement.\n- **C.** Heuristics for comparison tables and appendices only catch the error sources already identified; they cannot detect new ones and provide no error-rate metric."
+    },
+    "17": {
+      "letter": "B",
+      "confidence": "medium",
+      "basis": "reasoned — unbiased measurement plus pattern discovery under a fixed review budget",
+      "explanation": "The errors are semantic and pass schema validation, so there is no structural signal that reliably flags them, and no risk stratification is given. Spending the fixed 20% budget on a random sample gives an unbiased accuracy estimate and, because corrections are recorded, surfaces the recurring error patterns that drive the next round of fixes.\n\n**Why the others are wrong**\n\n- **A.** Formatting anomalies are a proxy for difficulty, not for the semantic mix-ups described, and concentrating review there yields a biased estimate that says nothing about the rest of the corpus.\n- **C.** Empty and not-found fields are the visible failures. The errors here are **populated** fields holding the wrong value, which this filter never looks at.\n- **D.** Field-level self-reported confidence is poorly calibrated, and the calibration this depends on needs a labelled validation set that does not exist yet — random sampling is how you would build one."
+    },
+    "18": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-038), answer confirmed",
+      "explanation": "97% is an aggregate, and aggregates hide segments. If high confidence is well calibrated on invoices but poorly calibrated on one document type or one field, automating the whole band ships a systematic error into production while the overall number still looks healthy. Breaking accuracy down by document type and field is what establishes that the confidence signal is trustworthy everywhere before you rely on it.\n\n**Why the others are wrong**\n\n- **B.** Threshold tuning optimises a cutoff on a signal whose reliability has not yet been established — the right sequence is validate first, tune second.\n- **C.** Checking that 97% satisfies downstream consumers is a worthwhile requirements question, but it accepts the aggregate at face value rather than testing whether it holds per segment.\n- **D.** A pilot is useful, but deploying to 25% of live traffic before the segment analysis is exactly the avoidable risk — the analysis can be done offline on data you already have."
+    },
+    "19": {
+      "letter": "D",
+      "confidence": "high",
+      "basis": "principle — RAW-CG1-003: an enum plus an 'other' value handles edge cases without allowing free-text drift",
+      "explanation": "The open-ended tail is the real constraint: new property types keep appearing, so no fixed list stays complete. An `other` enum value with a companion `property_type_detail` string keeps the common cases constrained and analysable while giving the model a legitimate place to put the unusual ones — so validation stops failing and no information is lost.\n\n**Why the others are wrong**\n\n- **A.** A free-form string reintroduces exactly the drift enums prevent — \"studio\", \"Studio\", \"studio apartment\" — and pushes an endless normalisation-maintenance burden downstream.\n- **B.** Continuously expanding the enum is a permanent chase; the question states new types keep arriving, so the list is out of date between every release.\n- **C.** Forcing unusual types onto the nearest existing value silently records incorrect data — a converted warehouse is not a house."
+    },
+    "20": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "principle — RAW-CG1-018 and RAW-CG1-051: few-shot examples are the intervention when a well-specified schema still yields inconsistent formatting",
+      "explanation": "The schema already defines the field, so the gap is not structural — it is that \"materials\" has no agreed output convention, and omission shows the model is unsure when to populate it. Two or three complete input-output pairs demonstrate the intended granularity and format and show the field being filled from a source that mentions materials in passing, which is what teaches consistency.\n\n**Why the others are wrong**\n\n- **B.** Temperature 0 removes sampling variance, not ambiguity. With no defined convention the model will now be consistently arbitrary, and it does not explain the omissions.\n- **C.** Inconsistent formatting of an underspecified field is not a capability ceiling; a stronger model still has to guess which convention you want.\n- **D.** Making the field required forces a value even when none is present, converting omissions into fabrications — and it does nothing about the formatting inconsistency."
+    },
+    "21": {
+      "letter": "C",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-036), answer confirmed",
+      "explanation": "All three symptoms are judgement calls the prompt never makes explicit: where a compound phrase splits, what counts as \"mentioned\", and how granular an entry should be. Few-shot examples demonstrate all three at once — the model sees \"Python and SQL\" become two entries, sees an implied skill left out, and sees the expected entry count — which teaches the criteria rather than asserting them.\n\n**Why the others are wrong**\n\n- **A.** Confidence and source-quote metadata document the inconsistency without resolving it; the model still has to decide how to split and what to include.\n- **B.** \"10-20 maximum\" is an arbitrary cap that truncates genuinely skill-dense documents, and it still does not say how to handle compound phrases or implied skills.\n- **D.** Canonical-taxonomy normalisation is downstream cleanup. It cannot recover a skill that was never extracted or remove one that was inferred but never stated."
+    },
+    "22": {
+      "letter": "B",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-029), answer confirmed",
+      "explanation": "Schema enforcement guarantees shape, not recall — the JSON is valid, but the fields are empty because the model does not recognise citations rendered as a bibliography or methodology buried in an introduction. Few-shot examples drawn from documents with those varied structures teach the model to find the information wherever it lives, which is the actual failure.\n\n**Why the others are wrong**\n\n- **A.** Regex over citation patterns and methodology keywords is brittle across the varied formats described, and methodology prose in particular has no reliable lexical signature.\n- **C.** Making the fields optional lowers the standard rather than fixing extraction, and pushes the work onto manual review.\n- **D.** Retrying an unchanged request reproduces the same miss — nothing about the second attempt helps the model recognise an unfamiliar citation format."
+    },
+    "23": {
+      "letter": "A",
+      "confidence": "medium",
+      "basis": "principle — RAW-CG1-015: fabrication is driven by the absence of a legitimate 'not applicable' path; here the schema already provides one, so the instruction is what is missing",
+      "explanation": "The schema is already fully nullable, so the model has a legitimate way to say \"not present\" — it simply is not being told to use it. An explicit instruction to return null for anything not directly stated in the source closes the gap between the schema's permission and the model's behaviour, at no extra inference cost.\n\n**Why the others are wrong**\n\n- **B.** Making every field required removes the null escape hatch and **guarantees** fabrication — the model must emit a value even when the article contains none. This is the opposite of the fix.\n- **C.** A second verification call catches some fabrications after the fact, but doubles cost and latency to patch a problem the first call can be told not to create.\n- **D.** A stronger model reduces the tendency without addressing the cause; the instruction is missing regardless of tier."
+    },
+    "24": {
+      "letter": "C",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-035); corroborated by Anthropic's tool-use documentation on schema-constrained output",
+      "explanation": "Parsing JSON out of free text is fundamentally unreliable because nothing constrains what the model emits. Defining a tool whose input schema **is** your target structure moves the guarantee to generation time — the model fills the schema, so the output is valid and schema-compliant by construction rather than by inspection.\n\n**Why the others are wrong**\n\n- **A.** A retry loop is reactive: it costs an extra call on every failure and still offers no guarantee the corrected output parses.\n- **B.** Regex extraction is a workaround for the symptom. It cannot fix genuinely malformed JSON and breaks on nested structures and stray braces in string values.\n- **D.** Formatting instructions are probabilistic guidance. They reduce the failure rate but cannot eliminate it, which is why the pipeline is failing today."
+    },
+    "25": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-041); Batch API's asynchronous 50% discount is documented",
+      "explanation": "The two document types have genuinely different requirements, so they should use different APIs. Standard monthly reports are archived and latency-tolerant, which is exactly the Batch API's trade — asynchronous processing at roughly half the cost. Urgent exception reports carry a hard 30-minute alerting deadline, so they belong on the real-time Messages API.\n\n**Why the others are wrong**\n\n- **B.** Sending everything real-time meets the deadline but forfeits the batch discount on the bulk of the volume, which is the stated cost goal.\n- **C.** Hourly batching adds queueing delay on top of batch processing time and cannot guarantee a 30-minute alert.\n- **D.** The Batch API has no latency SLA, so urgent reports may return well past 30 minutes — and \"delayed alerts\" concedes the requirement is missed."
+    },
+    "45": {
+      "letter": "C",
+      "confidence": "high",
+      "basis": "principle — RAW-CG1-055 and RAW-CG1-048: replace vague hedging with explicit categorical criteria",
+      "explanation": "The dismissed findings are technically correct but out of scope for what this team wants flagged, so the problem is that scope was never defined. Explicit criteria — report bugs and security issues, skip minor style and accepted local patterns — give the model the decision boundary it is currently guessing at, and they do it in the prompt, before any infrastructure is added.\n\n**Why the others are wrong**\n\n- **A.** \"Only report findings you are highly confident about\" is exactly the vague hedge that fails. The dismissed findings **are** genuine, so confidence is not the axis that separates them.\n- **B.** A secondary classifier is the infrastructure complexity the question asks you to avoid until prompt design has been tried.\n- **D.** Self-rated 1-10 confidence is poorly calibrated and, again, filters on the wrong dimension: a correct-but-unwanted style nit can score a confident 9."
+    },
+    "46": {
+      "letter": "C",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-007); corroborated by the documented parallel tool-use contract",
+      "explanation": "Parallelism here is structural, not behavioural. A single assistant turn may contain multiple `tool_use` blocks, and the harness executes the calls that arrive together concurrently. So emitting both Task calls in one response message is what makes the two subagents run at the same time; total latency becomes the slower of the two rather than their sum.\n\n**Why the others are wrong**\n\n- **A.** An external async layer that duplicates coordinator-subagent pairs invents infrastructure to solve a problem the tool-calling loop already handles natively.\n- **B.** A faster model tier shortens each call but leaves them sequential — it optimises per-call speed, not concurrency.\n- **D.** Asking the coordinator in the system prompt to \"be parallel\" is prompt-layer guidance with no structural guarantee; it may still emit the calls across separate turns."
+    },
+    "47": {
+      "letter": "B",
+      "confidence": "high",
+      "basis": "source-key — RAW-CG1-046 answers this pattern: the coordinator should select which subagents each query needs",
+      "explanation": "Deciding which subagents a query needs is precisely the coordinator's job, and a model-driven decision adapts as the query distribution evolves — which the question says it is doing. A simple factual lookup gets routed to web search alone; a comparative study still gets the full pipeline, with no rule table to maintain.\n\n**Why the others are wrong**\n\n- **A.** A hard fast-path/full-pipeline split is a two-bucket approximation of a diverse distribution: anything mid-complexity is either under-served or over-served.\n- **C.** Pattern-based routing on query structure needs its categories maintained by hand and misclassifies phrasings the patterns never anticipated — brittle against an evolving distribution.\n- **D.** Training and periodically retraining a classifier is heavy machinery requiring labelled history, to reproduce a judgement the coordinator can already make."
+    },
+    "48": {
+      "letter": "C",
+      "confidence": "high",
+      "basis": "principle — RAW-CG1-009 and RAW-CG1-029: tool selection degrades beyond roughly 4-5 tools per agent",
+      "explanation": "Tool-selection reliability falls off as the candidate set grows; the practical guidance is roughly 4-5 tools per agent. With all 18 tools exposed to every subagent, each one is choosing from a set far beyond that threshold, so it sometimes picks a tool belonging to another specialisation. The fix is scoped tool access — give each subagent only the tools its role needs.\n\n**Why the others are wrong**\n\n- **A.** Role descriptions and tool access are not in conflict; the prompt describes the role correctly. Prompt wording is probabilistic guidance that cannot deterministically prevent a wrong pick.\n- **B.** Coordinator tracking is not the issue — the misfire happens inside a subagent that has been handed tools it should never have had.\n- **D.** 18 tool definitions do consume context, but the symptom is **wrong tool chosen**, not **ran out of room**. Context pressure would degrade the task content, not bias selection toward off-role tools."
+    },
+    "49": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "principle — RAW-CG1-007: replace hardcoded procedure with model-driven decisions when the situation demands nuance",
+      "explanation": "All three symptoms trace to the same cause: the coordinator dictates exact procedure, so the subagent has no latitude to adapt when reality does not match the plan. Specifying goals and quality criteria instead — coverage breadth, source diversity, recency — tells the subagent what a good result looks like and lets it choose the strategy, which is what lets it recover from failed searches, handle emerging topics, and follow up tangential leads.\n\n**Why the others are wrong**\n\n- **B.** A well-defined/exploratory classifier adds a step that still hands down procedural instructions in the well-defined branch, so the same rigidity resurfaces there.\n- **C.** Stripping all guidance to \"research X thoroughly\" overcorrects — the subagent loses the quality bar entirely and results become unpredictable.\n- **D.** Fallback directives patch the one failure mode you anticipated (too few results) and leave the other two untouched; it is still a procedure, just a longer one."
+    },
+    "50": {
+      "letter": "B",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-006), answer confirmed",
+      "explanation": "The precedents are independent, so they can be analysed concurrently. Having the coordinator spawn parallel subagents over subsets and aggregate their results cuts latency while keeping orchestration centralised — the coordinator still sees every delegation and every result, which is what preserves monitoring and debugging.\n\n**Why the others are wrong**\n\n- **A.** A worker-pool message queue improves throughput but adds infrastructure and moves execution out of the coordinator's view, reducing debuggability.\n- **C.** Letting the subagent spawn its own subagents dynamically decentralises orchestration; the coordinator loses visibility into agents it never created.\n- **D.** A recursive hierarchy compounds that problem — execution paths become deep and hard to trace, for no gain over one level of fan-out."
+    },
+    "55 (Set A)": {
+      "letter": "A",
+      "confidence": "medium",
+      "basis": "source-key — matched to a keyed question (RAW-EH-012), whose source answer is the shared-memory-store option; note this trades against the 'pass findings explicitly' rule elsewhere in the syllabus",
+      "explanation": "At production scale the findings from two subagents can be large, so inlining everything into the synthesis prompt risks exhausting context. Passing reference identifiers with read access to a shared store preserves full fidelity while keeping the prompt small — the synthesis agent retrieves exactly what it needs.\n\n**Why the others are wrong**\n\n- **B.** Including the complete findings inline is the simple approach and is correct at small scale, but it does not scale: large outputs from both subagents can exceed the context limit.\n- **C.** There is no automatic context inheritance between agents — a brief task description alone leaves the synthesis agent with nothing to synthesise.\n- **D.** Callback tools let subagents pull from each other, which couples them together and breaks the coordinator's role as the single point of data flow.\n\n*Note: a closely related question elsewhere in this syllabus answers 'pass the complete findings in the prompt', on the grounds that subagents share no memory. Both appear in the source material; the distinguishing factor is scale — reach for the store when the findings are too large to inline.*"
+    },
+    "56 (Set A)": {
+      "letter": "B",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-004), answer confirmed",
+      "explanation": "Structured exports give high information fidelity — each agent's completed work is preserved in a defined shape — while the coordinator loading a manifest and injecting only the relevant state keeps context efficient. The coordinator stays in control of what each agent receives on resume, so no work is repeated and no findings are blurred.\n\n**Why the others are wrong**\n\n- **A.** A vector store introduces probabilistic recall: semantic search may miss or distort critical state, which is unacceptable when the goal is fidelity during recovery.\n- **C.** Conversation logs are verbose and unstructured, so replaying them bloats context without guaranteeing the specific state each agent needs.\n- **D.** Independent per-agent state files decentralise control and drift out of sync, since no component ensures the agents resume from a consistent view."
+    },
+    "57 (Set A)": {
+      "letter": "D",
+      "confidence": "high",
+      "basis": "principle — RAW-CG2-019 and RAW-EH-023/026: split an overloaded generic tool into purpose-specific tools with defined contracts",
+      "explanation": "One tool with a free-text instruction has no output contract, so the same phrasing can yield a narrative summary or a data table. Splitting it into `extract_data_points`, `summarize_content` and `verify_claim_against_source` makes the intent structural: each tool has a defined input and output shape, so the ambiguity that drives the 35% re-request rate cannot be expressed.\n\n**Why the others are wrong**\n\n- **A.** Pre-classification by the coordinator adds a step while still funnelling everything through the same ambiguous free-text parameter.\n- **B.** An `analysis_type` enum is a real improvement and close to correct, but the single tool still returns one undifferentiated output shape — the modes share a return contract rather than each having their own.\n- **C.** Description examples are advisory guidance; they make the right mapping likelier without making the wrong one impossible."
+    },
+    "58 (Set A)": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-009), answer confirmed",
+      "explanation": "Each source has a natural shape, and flattening everything to bullets destroys it. Rendering each content type appropriately — financial figures as tables, news as prose — preserves the comparability of the numbers and the narrative flow of the reporting, which is exactly what the briefings lost.\n\n**Why the others are wrong**\n\n- **B.** Standardising on prose destroys tabular comparability for the financial data, trading one loss for another.\n- **C.** A common intermediate representation is a conversion step that still has to be rendered at the end, and it tends to converge on generic formatting — the original problem.\n- **D.** A uniform claim/evidence/source/confidence JSON improves structure for the pipeline but does not improve the human-readable briefing, which is what the question asks about."
+    },
+    "59 (Set A)": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "source-key — identical to a keyed question (RAW-EH-005), answer confirmed",
+      "explanation": "The coordinator owns iterative refinement. Evaluating the synthesis for gaps and re-delegating targeted follow-up queries closes the specific holes before the report is written, without discarding the work already done — a feedback loop rather than a one-way pipeline.\n\n**Why the others are wrong**\n\n- **B.** Noting the unanswered questions improves transparency but leaves the report incomplete; the stated goal is completeness.\n- **C.** Giving the synthesis agent its own web search tools breaks separation of concerns and bypasses the coordinator's control over delegation.\n- **D.** Broadening the initial queries is a blunt, upfront guess that costs more on every run and still cannot guarantee it covers gaps only discovered after synthesis."
+    },
+    "60 (Set A)": {
+      "letter": "C",
+      "confidence": "high",
+      "basis": "principle — RAW-EH-011 and RAW-CG1-016: preserve attribution as structured claim-to-source data, not as prose",
+      "explanation": "Attribution is lost because it lives in prose that gets rewritten at every summarisation step. Having each agent emit structured data that separates the content summary from source metadata — URLs, document names, page numbers — keeps the mapping in data fields that survive rewriting, so the report generator can still attribute each claim.\n\n**Why the others are wrong**\n\n- **A.** Passing full raw outputs may preserve the sources but is enormously inefficient and risks exceeding context limits; it also does not map specific claims to specific sources.\n- **B.** Inline citations are prose, and prose is exactly what summarisation rewrites — the references get stripped or detached from their claims.\n- **D.** Re-locating sources after the fact is post-hoc reconstruction, which is error-prone and can confidently misattribute a claim to the wrong source."
+    },
+    "55 (Set B)": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "same question as 60 (Set A) with options reordered — principle: RAW-EH-011 and RAW-CG1-016",
+      "explanation": "Attribution is lost because it lives in prose that gets rewritten at every summarisation step. Having each agent emit structured data that separates the content summary from source metadata — URLs, document names, page numbers — keeps the mapping in data fields that survive rewriting, so the report generator can still attribute each claim.\n\n**Why the others are wrong**\n\n- **B.** Passing full raw outputs may preserve the sources but is enormously inefficient and risks exceeding context limits; it also does not map specific claims to specific sources.\n- **C.** Re-locating sources after the fact is post-hoc reconstruction, which is error-prone and can confidently misattribute a claim to the wrong source.\n- **D.** Inline citations are prose, and prose is exactly what summarisation rewrites — the references get stripped or detached from their claims."
+    },
+    "56 (Set B)": {
+      "letter": "B",
+      "confidence": "high",
+      "basis": "same question as 47 with options reordered — RAW-CG1-046",
+      "explanation": "Deciding which subagents a query needs is precisely the coordinator's job, and a model-driven decision adapts as the query distribution evolves — which the question says it is doing. A simple factual lookup gets routed to web search alone; a comparative study still gets the full pipeline, with no rule table to maintain.\n\n**Why the others are wrong**\n\n- **A.** Training and periodically retraining a classifier is heavy machinery requiring labelled history, to reproduce a judgement the coordinator can already make.\n- **C.** A hard fast-path/full-pipeline split is a two-bucket approximation of a diverse distribution: anything mid-complexity is either under-served or over-served.\n- **D.** Pattern-based routing on query structure needs its categories maintained by hand and misclassifies phrasings the patterns never anticipated — brittle against an evolving distribution."
+    },
+    "57 (Set B)": {
+      "letter": "C",
+      "confidence": "high",
+      "basis": "same question as 49 with options reordered — RAW-CG1-007",
+      "explanation": "All three symptoms trace to the same cause: the coordinator dictates exact procedure, so the subagent has no latitude to adapt when reality does not match the plan. Specifying goals and quality criteria instead — coverage breadth, source diversity, recency — tells the subagent what a good result looks like and lets it choose the strategy, which is what lets it recover from failed searches, handle emerging topics, and follow up tangential leads.\n\n**Why the others are wrong**\n\n- **A.** Fallback directives patch the one failure mode you anticipated (too few results) and leave the other two untouched; it is still a procedure, just a longer one.\n- **B.** A well-defined/exploratory classifier adds a step that still hands down procedural instructions in the well-defined branch, so the same rigidity resurfaces there.\n- **D.** Stripping all guidance to \"research X thoroughly\" overcorrects — the subagent loses the quality bar entirely and results become unpredictable."
+    },
+    "58 (Set B)": {
+      "letter": "A",
+      "confidence": "high",
+      "basis": "source-key — identical to 58 (Set A) / RAW-EH-009, answer confirmed",
+      "explanation": "Each source has a natural shape, and flattening everything to bullets destroys it. Rendering each content type appropriately — financial figures as tables, news as prose — preserves the comparability of the numbers and the narrative flow of the reporting, which is exactly what the briefings lost.\n\n**Why the others are wrong**\n\n- **B.** Standardising on prose destroys tabular comparability for the financial data, trading one loss for another.\n- **C.** A common intermediate representation is a conversion step that still has to be rendered at the end, and it tends to converge on generic formatting — the original problem.\n- **D.** A uniform claim/evidence/source/confidence JSON improves structure for the pipeline but does not improve the human-readable briefing, which is what the question asks about."
+    },
+    "59 (Set B)": {
+      "letter": "D",
+      "confidence": "high",
+      "basis": "same question as 59 (Set A) with options reordered — RAW-EH-005",
+      "explanation": "The coordinator owns iterative refinement. Evaluating the synthesis for gaps and re-delegating targeted follow-up queries closes the specific holes before the report is written, without discarding the work already done — a feedback loop rather than a one-way pipeline.\n\n**Why the others are wrong**\n\n- **A.** Broadening the initial queries is a blunt, upfront guess that costs more on every run and still cannot guarantee it covers gaps only discovered after synthesis.\n- **B.** Giving the synthesis agent its own web search tools breaks separation of concerns and bypasses the coordinator's control over delegation.\n- **C.** Noting the unanswered questions improves transparency but leaves the report incomplete; the stated goal is completeness."
+    },
+    "60 (Set B)": {
+      "letter": "B",
+      "confidence": "high",
+      "basis": "source-key — identical to 50 / RAW-EH-006, answer confirmed",
+      "explanation": "The precedents are independent, so they can be analysed concurrently. Having the coordinator spawn parallel subagents over subsets and aggregate their results cuts latency while keeping orchestration centralised — the coordinator still sees every delegation and every result, which is what preserves monitoring and debugging.\n\n**Why the others are wrong**\n\n- **A.** Letting the subagent spawn its own subagents dynamically decentralises orchestration; the coordinator loses visibility into agents it never created.\n- **C.** A worker-pool message queue improves throughput but adds infrastructure and moves execution out of the coordinator's view, reducing debuggability.\n- **D.** A recursive hierarchy compounds that problem — execution paths become deep and hard to trace, for no gain over one level of fan-out."
+    }
+  }
+}
