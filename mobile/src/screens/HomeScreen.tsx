@@ -1,21 +1,27 @@
 import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  StatusBar
-} from 'react-native';
+  AlertTriangle,
+  Award,
+  BarChart,
+  ChevronRight,
+  Flame,
+  BookOpen,
+  Layers,
+  Play,
+  Sparkles,
+} from 'lucide-react-native';
 import { UserStats, MobileQuestion } from '../types';
-import examManifest from '../data/examManifest.json';
-import { EXAM_REGISTRY } from '../data/examRegistry';
+import { EXAM_REGISTRY, countForExamId, getExamById } from '../data/examRegistry';
+import { TOTAL_QUESTIONS } from '../data/content';
+import { colors, fontSize, getExamAccent, palette, radius, spacing } from '../theme';
+import { Card, Chip, PressableCard, Screen, SectionHeading, StatTile } from '../components/ui';
 
 interface HomeScreenProps {
   stats: UserStats;
   questions: MobileQuestion[];
   onStartQuiz: (examFilter?: string, subjectFilter?: string) => void;
+  onOpenSubjects: () => void;
   onStartFlashcards: () => void;
   onStartMock: () => void;
   onOpenMistakes: () => void;
@@ -23,366 +29,295 @@ interface HomeScreenProps {
   onSelectExam: (exam: string) => void;
 }
 
-const manifestExams = examManifest.exams as Record<string, { count: number }>;
-
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   stats,
   questions,
   onStartQuiz,
+  onOpenSubjects,
   onStartFlashcards,
   onStartMock,
   onOpenMistakes,
   onOpenAnalytics,
-  onSelectExam
+  onSelectExam,
 }) => {
-  const activeExamName =
-    EXAM_REGISTRY.find(e => e.id === stats.activeExam)?.name || 'Combined All-Syllabus';
+  const activeExam = getExamById(stats.activeExam);
+  const accent = getExamAccent(activeExam?.colorKey);
+  const activeExamName = activeExam?.name || 'All Examinations';
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header Bar */}
-        <View style={styles.header}>
+    <Screen>
+      {/* Brand bar — the single header the web app settled on for phones. */}
+      <View style={styles.brandRow}>
+        <View style={styles.brandLeft}>
+          <View style={[styles.brandIcon, { backgroundColor: accent.soft, borderColor: accent.softBorder }]}>
+            <Layers size={20} color={accent.solid} />
+          </View>
           <View>
-            <Text style={styles.headerSubtitle}>OFFLINE LAZY-CHUNK ENGINE</Text>
-            <Text style={styles.headerTitle}>Exam Scholar</Text>
-          </View>
-          <View style={styles.streakBadge}>
-            <Text style={styles.streakEmoji}>🔥</Text>
-            <Text style={styles.streakText}>{stats.currentStreak}d</Text>
-          </View>
-        </View>
-
-        {/* Isolated Exam Chunks (Prevents Phone Freezing) */}
-        <View style={styles.examTabs}>
-          {EXAM_REGISTRY.map((exam) => (
-            <TouchableOpacity
-              key={exam.id}
-              style={[styles.examTab, stats.activeExam === exam.id && styles.examTabActive]}
-              onPress={() => onSelectExam(exam.id)}
-            >
-              <Text style={[styles.examTabText, stats.activeExam === exam.id && styles.examTabTextActive]}>
-                {exam.shortName} ({manifestExams[exam.id]?.count ?? 0})
-              </Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            style={[styles.examTab, stats.activeExam === 'all' && styles.examTabActive]}
-            onPress={() => onSelectExam('all')}
-          >
-            <Text style={[styles.examTabText, stats.activeExam === 'all' && styles.examTabTextActive]}>
-              All ({examManifest.total})
+            <Text style={styles.brandName}>Exam Scholar</Text>
+            <Text style={[styles.brandTrack, { color: accent.softText }]}>
+              {activeExam?.shortName?.toUpperCase() || 'ALL EXAMS'}
             </Text>
-          </TouchableOpacity>
+          </View>
         </View>
+        <View style={styles.streakBadge}>
+          <Flame size={14} color={colors.warning} />
+          <Text style={styles.streakText}>{stats.currentStreak}d</Text>
+        </View>
+      </View>
 
-        {/* Active Memory Guard Indicator */}
-        <View style={styles.memoryBadge}>
-          <Text style={styles.memoryBadgeDot}>●</Text>
-          <Text style={styles.memoryBadgeText}>
-            Active Partition: <Text style={{ color: '#38BDF8', fontWeight: '700' }}>{activeExamName}</Text> ({questions.length} Qs in RAM)
+      {/* Exam track selector */}
+      <View style={styles.chipRow}>
+        {EXAM_REGISTRY.map((exam) => (
+          <Chip
+            key={exam.id}
+            label={`${exam.shortName} (${countForExamId(exam.id)})`}
+            active={stats.activeExam === exam.id}
+            onPress={() => onSelectExam(exam.id)}
+            accent={getExamAccent(exam.colorKey).solid}
+          />
+        ))}
+        <Chip
+          label={`All (${TOTAL_QUESTIONS})`}
+          active={stats.activeExam === 'all'}
+          onPress={() => onSelectExam('all')}
+        />
+      </View>
+
+      {/* Readiness summary */}
+      <Card padded={false}>
+        <View style={styles.summaryHeader}>
+          <Text style={styles.summaryTitle}>{activeExamName}</Text>
+          <Text style={styles.summarySubtitle}>
+            {questions.length} questions loaded on this device
           </Text>
         </View>
-
-        {/* Daily Stats Hero Card */}
-        <View style={styles.statsCard}>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{stats.totalAnswered}</Text>
-              <Text style={styles.statLabel}>Completed</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: '#10B981' }]}>
-                {stats.accuracy}%
-              </Text>
-              <Text style={styles.statLabel}>Accuracy</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: '#F59E0B' }]}>
-                {stats.mistakeIds.length}
-              </Text>
-              <Text style={styles.statLabel}>Mistakes</Text>
-            </View>
-          </View>
+        <View style={styles.statRow}>
+          <StatTile value={stats.totalAnswered} label="Completed" />
+          <StatTile value={`${stats.accuracy}%`} label="Accuracy" color={colors.successStrong} />
+          <StatTile value={stats.mistakeIds.length} label="Mistakes" color={colors.dangerStrong} />
         </View>
+      </Card>
 
-        {/* Quick Launch Buttons */}
-        <Text style={styles.sectionHeader}>Study & Practice Modes</Text>
+      <SectionHeading>Practice Modes</SectionHeading>
 
-        <TouchableOpacity
-          style={[styles.actionCard, { backgroundColor: '#2563EB' }]}
-          onPress={() => onStartQuiz(stats.activeExam)}
-          activeOpacity={0.85}
-        >
-          <View style={styles.actionIconContainer}>
-            <Text style={styles.actionIconText}>⚡</Text>
-          </View>
-          <View style={styles.actionTextContainer}>
-            <Text style={styles.actionTitle}>Quick Practice Session</Text>
-            <Text style={styles.actionSubtitle}>
-              25 high-yield questions with instant 30-sec Exam Tricks
-            </Text>
-          </View>
-          <Text style={styles.actionArrow}>→</Text>
-        </TouchableOpacity>
+      <LauncherRow
+        icon={Play}
+        iconColor={colors.successStrong}
+        iconBg={colors.successSoft}
+        iconBorder={colors.successSoftBorder}
+        title="Quick Practice"
+        subtitle="25 questions with instant feedback, explanations, and exam tips."
+        onPress={() => onStartQuiz(stats.activeExam)}
+      />
 
-        <TouchableOpacity
-          style={[styles.actionCard, { backgroundColor: '#4F46E5' }]}
-          onPress={onStartFlashcards}
-          activeOpacity={0.85}
-        >
-          <View style={styles.actionIconContainer}>
-            <Text style={styles.actionIconText}>📇</Text>
-          </View>
-          <View style={styles.actionTextContainer}>
-            <Text style={styles.actionTitle}>Exam Tricks & Architecture Flashcards</Text>
-            <Text style={styles.actionSubtitle}>
-              Swipe to memorize core architectural patterns and formulas
-            </Text>
-          </View>
-          <Text style={styles.actionArrow}>→</Text>
-        </TouchableOpacity>
+      <LauncherRow
+        icon={BookOpen}
+        iconColor={colors.primary}
+        iconBg={colors.primarySoft}
+        iconBorder={colors.primarySoftBorder}
+        title="Subjects"
+        subtitle="Browse the full curriculum by subject and chapter."
+        onPress={onOpenSubjects}
+      />
 
-        <TouchableOpacity
-          style={[styles.actionCard, { backgroundColor: '#0284C7' }]}
-          onPress={onStartMock}
-          activeOpacity={0.85}
-        >
-          <View style={styles.actionIconContainer}>
-            <Text style={styles.actionIconText}>⏱️</Text>
-          </View>
-          <View style={styles.actionTextContainer}>
-            <Text style={styles.actionTitle}>Full Timed Mock Arena</Text>
-            <Text style={styles.actionSubtitle}>
-              Simulate real exam timer with official negative marking
-            </Text>
-          </View>
-          <Text style={styles.actionArrow}>→</Text>
-        </TouchableOpacity>
+      <LauncherRow
+        icon={Sparkles}
+        iconColor={colors.primary}
+        iconBg={colors.primarySoft}
+        iconBorder={colors.primarySoftBorder}
+        title="Flashcards"
+        subtitle="Swipe through exam tips and core architectural patterns."
+        onPress={onStartFlashcards}
+      />
 
-        {/* Secondary Navigation Grid */}
-        <View style={styles.secondaryGrid}>
-          <TouchableOpacity
-            style={styles.gridCard}
-            onPress={onOpenMistakes}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.gridEmoji}>🎯</Text>
-            <Text style={styles.gridTitle}>Mistake Vault</Text>
-            <Text style={styles.gridCount}>{stats.mistakeIds.length} flagged</Text>
-          </TouchableOpacity>
+      <LauncherRow
+        icon={Award}
+        iconColor={palette.amber700}
+        iconBg={colors.warningSoft}
+        iconBorder={colors.warningSoftBorder}
+        title="Mock Test Arena"
+        subtitle="Timed exam simulation with a question palette and instant scoring."
+        onPress={onStartMock}
+      />
 
-          <TouchableOpacity
-            style={styles.gridCard}
-            onPress={onOpenAnalytics}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.gridEmoji}>📊</Text>
-            <Text style={styles.gridTitle}>Performance</Text>
-            <Text style={styles.gridCount}>{stats.accuracy}% mastery</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <View style={styles.pairRow}>
+        <PressableCard style={styles.pairCard} onPress={onOpenMistakes}>
+          <View style={[styles.pairIcon, { backgroundColor: colors.dangerSoft }]}>
+            <AlertTriangle size={18} color={colors.dangerStrong} />
+          </View>
+          <Text style={styles.pairTitle}>Mistakes</Text>
+          <Text style={styles.pairMeta}>{stats.mistakeIds.length} to review</Text>
+        </PressableCard>
+
+        <PressableCard style={styles.pairCard} onPress={onOpenAnalytics}>
+          <View style={[styles.pairIcon, { backgroundColor: colors.primarySoft }]}>
+            <BarChart size={18} color={colors.primary} />
+          </View>
+          <Text style={styles.pairTitle}>Analytics</Text>
+          <Text style={styles.pairMeta}>{stats.accuracy}% accuracy</Text>
+        </PressableCard>
+      </View>
+    </Screen>
   );
 };
 
+/** The web's practice-mode row: icon tile, title, one-line description, chevron. */
+function LauncherRow({
+  icon: Icon,
+  iconColor,
+  iconBg,
+  iconBorder,
+  title,
+  subtitle,
+  onPress,
+}: {
+  icon: typeof Play;
+  iconColor: string;
+  iconBg: string;
+  iconBorder: string;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+}) {
+  return (
+    <PressableCard onPress={onPress} style={styles.launcher}>
+      <View style={[styles.launcherIcon, { backgroundColor: iconBg, borderColor: iconBorder }]}>
+        <Icon size={20} color={iconColor} />
+      </View>
+      <View style={styles.launcherText}>
+        <Text style={styles.launcherTitle}>{title}</Text>
+        <Text style={styles.launcherSubtitle}>{subtitle}</Text>
+      </View>
+      <ChevronRight size={18} color={colors.textMuted} />
+    </PressableCard>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0B0F17',
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  header: {
+  brandRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'space-between',
   },
-  headerSubtitle: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    color: '#38BDF8',
-    marginBottom: 2,
+  brandLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
   },
-  headerTitle: {
-    fontSize: 24,
+  brandIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandName: {
+    fontSize: fontSize.lg,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: colors.textHeading,
+    letterSpacing: -0.2,
+  },
+  brandTrack: {
+    fontSize: fontSize['2xs'],
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginTop: 1,
   },
   streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    gap: spacing.xs,
+    backgroundColor: colors.warningSoft,
     borderWidth: 1,
-    borderColor: '#334155',
-  },
-  streakEmoji: {
-    fontSize: 16,
-    marginRight: 4,
+    borderColor: colors.warningSoftBorder,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.lg,
   },
   streakText: {
-    color: '#F8FAFC',
+    fontSize: fontSize.base,
     fontWeight: '700',
-    fontSize: 14,
+    color: colors.warningText,
   },
-  examTabs: {
+
+  chipRow: {
     flexDirection: 'row',
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 10,
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
-  examTab: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 8,
+
+  summaryHeader: {
+    padding: spacing.lg,
+    paddingBottom: spacing.md,
   },
-  examTabActive: {
-    backgroundColor: '#3B82F6',
-  },
-  examTabText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#94A3B8',
-  },
-  examTabTextActive: {
-    color: '#FFFFFF',
+  summaryTitle: {
+    fontSize: fontSize.lg,
     fontWeight: '700',
+    color: colors.textHeading,
   },
-  memoryBadge: {
+  summarySubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  statRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
+  },
+
+  launcher: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    gap: spacing.md,
+  },
+  launcherIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#1E293B',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginBottom: 18,
-  },
-  memoryBadgeDot: {
-    color: '#10B981',
-    fontSize: 10,
-    marginRight: 6,
-  },
-  memoryBadgeText: {
-    fontSize: 11,
-    color: '#94A3B8',
-  },
-  statsCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
     alignItems: 'center',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#F8FAFC',
-    marginBottom: 2,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#94A3B8',
-    fontWeight: '500',
-  },
-  statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#334155',
-  },
-  sectionHeader: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#E2E8F0',
-    marginBottom: 14,
-  },
-  actionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-  },
-  actionIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 14,
   },
-  actionIconText: {
-    fontSize: 20,
-  },
-  actionTextContainer: {
+  launcherText: {
     flex: 1,
+    gap: 2,
   },
-  actionTitle: {
-    fontSize: 15,
+  launcherTitle: {
+    fontSize: fontSize.md,
     fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 2,
+    color: colors.textPrimary,
   },
-  actionSubtitle: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.85)',
+  launcherSubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    lineHeight: 17,
   },
-  actionArrow: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginLeft: 8,
-  },
-  secondaryGrid: {
+
+  pairRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
+    gap: spacing.md,
   },
-  gridCard: {
+  pairCard: {
     flex: 1,
-    backgroundColor: '#1E293B',
-    borderRadius: 16,
-    padding: 16,
+    gap: spacing.sm,
+  },
+  pairIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#334155',
+    justifyContent: 'center',
   },
-  gridEmoji: {
-    fontSize: 24,
-    marginBottom: 8,
-  },
-  gridTitle: {
-    fontSize: 14,
+  pairTitle: {
+    fontSize: fontSize.md,
     fontWeight: '700',
-    color: '#F8FAFC',
-    marginBottom: 4,
+    color: colors.textPrimary,
   },
-  gridCount: {
-    fontSize: 12,
-    color: '#94A3B8',
+  pairMeta: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
   },
 });

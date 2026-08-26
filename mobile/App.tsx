@@ -1,21 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { colors, fontSize, spacing } from './src/theme';
 import { MobileStorageService } from './src/services/api';
 import { MobileQuestion, UserStats, AnswerRecord } from './src/types';
 import { DEFAULT_EXAM_ID } from './src/data/examRegistry';
+import { ContentChapter, ContentSubject } from './src/data/content';
 import { HomeScreen } from './src/screens/HomeScreen';
+import { SubjectsScreen } from './src/screens/SubjectsScreen';
+import { ChapterListScreen } from './src/screens/ChapterListScreen';
 import { QuizScreen } from './src/screens/QuizScreen';
 import { FlashcardScreen } from './src/screens/FlashcardScreen';
 import { MockExamScreen } from './src/screens/MockExamScreen';
 import { MistakesScreen } from './src/screens/MistakesScreen';
 import { AnalyticsScreen } from './src/screens/AnalyticsScreen';
 
-type CurrentScreen = 'home' | 'quiz' | 'flashcards' | 'mock' | 'mistakes' | 'analytics';
+type CurrentScreen =
+  | 'home'
+  | 'subjects'
+  | 'chapters'
+  | 'quiz'
+  | 'flashcards'
+  | 'mock'
+  | 'mistakes'
+  | 'analytics';
 
 export default function App() {
   const [loading, setLoading] = useState(true);
-  const [dataLoading, setDataLoading] = useState(false);
   const [currentScreen, setCurrentScreen] = useState<CurrentScreen>('home');
   const [stats, setStats] = useState<UserStats>({
     totalAnswered: 0,
@@ -25,24 +37,26 @@ export default function App() {
     accuracy: 0,
     activeExam: DEFAULT_EXAM_ID,
     bookmarks: [],
-    mistakeIds: []
+    mistakeIds: [],
   });
-  const [activeExamQuestions, setActiveExamQuestions] = useState<MobileQuestion[]>([]);
   const [activeQuizPool, setActiveQuizPool] = useState<MobileQuestion[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<ContentSubject | null>(null);
+  /** Ids answered at least once, for per-chapter and per-subject progress. */
+  const [attemptedIds, setAttemptedIds] = useState<number[]>([]);
 
-  // 1. Instant Startup: Load stats & initial lightweight exam chunk
+  /**
+   * Startup only reads stored progress. The curriculum is bundled with the app,
+   * so there is no content fetch, no chunk import and no loading state for it.
+   */
   useEffect(() => {
     async function init() {
       try {
         const loadedStats = await MobileStorageService.getStats();
         setStats(loadedStats);
-        // Lazily load only the chosen exam partition
-        const initialQuestions = await MobileStorageService.loadExamQuestions(
-          loadedStats.activeExam || DEFAULT_EXAM_ID
-        );
-        setActiveExamQuestions(initialQuestions);
+        const history = await MobileStorageService.getAnswerHistory();
+        setAttemptedIds([...new Set(history.map((h) => h.questionId))]);
       } catch (err) {
-        console.error("Init failed", err);
+        console.error('Init failed', err);
       } finally {
         setLoading(false);
       }
@@ -50,60 +64,54 @@ export default function App() {
     init();
   }, []);
 
-  // 2. Exam Switcher: Lazily loads only the selected exam chunk on demand
+  /** Switching track is now a synchronous filter over the in-memory bundle. */
+  const activeExamQuestions = useMemo(
+    () => MobileStorageService.getExamQuestions(stats.activeExam),
+    [stats.activeExam]
+  );
+
   const handleSelectExam = async (exam: string) => {
-    setDataLoading(true);
     const updated = { ...stats, activeExam: exam };
     setStats(updated);
+    setSelectedSubject(null);
     await MobileStorageService.saveStats(updated);
-
-    try {
-      // Asynchronously lazy-load the exam chunk into memory
-      const loaded = await MobileStorageService.loadExamQuestions(exam);
-      setActiveExamQuestions(loaded);
-    } catch (err) {
-      console.error("Lazy loading failed", err);
-    } finally {
-      setDataLoading(false);
-    }
   };
 
-  // 3. Quiz launcher: Generates a performant 25-question session pool to prevent UI frame drops
   const handleStartQuiz = async (examFilter?: string, subjectFilter?: string) => {
-    setDataLoading(true);
-    try {
-      const exam = examFilter || stats.activeExam;
-      const pool = await MobileStorageService.getSessionPool({
-        exam,
-        limit: 25,
-        shuffle: true,
-        subject: subjectFilter
-      });
-      setActiveQuizPool(pool);
-      setCurrentScreen('quiz');
-    } finally {
-      setDataLoading(false);
-    }
+    const pool = await MobileStorageService.getSessionPool({
+      exam: examFilter || stats.activeExam,
+      limit: 25,
+      shuffle: true,
+      subject: subjectFilter,
+    });
+    setActiveQuizPool(pool);
+    setCurrentScreen('quiz');
+  };
+
+  const handleStartChapter = async (chapter: ContentChapter) => {
+    const pool = await MobileStorageService.getSessionPool({
+      chapterId: chapter.id,
+      limit: 0, // the whole chapter, matching the web
+      shuffle: true,
+    });
+    setActiveQuizPool(pool);
+    setCurrentScreen('quiz');
   };
 
   const handlePracticeMistakes = async () => {
-    setDataLoading(true);
-    try {
-      const pool = await MobileStorageService.getSessionPool({
-        exam: stats.activeExam || DEFAULT_EXAM_ID,
-        mistakeOnly: true,
-        limit: 30
-      });
-      setActiveQuizPool(pool);
-      setCurrentScreen('quiz');
-    } finally {
-      setDataLoading(false);
-    }
+    const pool = await MobileStorageService.getSessionPool({
+      exam: stats.activeExam || DEFAULT_EXAM_ID,
+      mistakeOnly: true,
+      limit: 0,
+    });
+    setActiveQuizPool(pool);
+    setCurrentScreen('quiz');
   };
 
   const handleRecordAnswer = async (record: AnswerRecord) => {
     const updated = await MobileStorageService.recordAnswer(record);
     setStats(updated);
+    setAttemptedIds((prev) => (prev.includes(record.questionId) ? prev : [...prev, record.questionId]));
   };
 
   const handleToggleBookmark = async (qId: number) => {
@@ -123,122 +131,119 @@ export default function App() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#38BDF8" />
-        <Text style={styles.loadingText}>Initializing Exam Scholar Mobile...</Text>
-        <Text style={styles.loadingSubtext}>Zero-lag lazy-loader active</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading Exam Scholar</Text>
+        <Text style={styles.loadingSubtext}>Restoring your progress…</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        <StatusBar style="dark" />
 
-      {dataLoading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="small" color="#38BDF8" />
-          <Text style={styles.overlayText}>Loading exam chunk...</Text>
-        </View>
-      )}
+        {currentScreen === 'home' && (
+          <HomeScreen
+            stats={stats}
+            questions={activeExamQuestions}
+            onStartQuiz={handleStartQuiz}
+            onOpenSubjects={() => setCurrentScreen('subjects')}
+            onStartFlashcards={() => setCurrentScreen('flashcards')}
+            onStartMock={() => setCurrentScreen('mock')}
+            onOpenMistakes={() => setCurrentScreen('mistakes')}
+            onOpenAnalytics={() => setCurrentScreen('analytics')}
+            onSelectExam={handleSelectExam}
+          />
+        )}
 
-      {currentScreen === 'home' && (
-        <HomeScreen
-          stats={stats}
-          questions={activeExamQuestions}
-          onStartQuiz={handleStartQuiz}
-          onStartFlashcards={() => setCurrentScreen('flashcards')}
-          onStartMock={() => setCurrentScreen('mock')}
-          onOpenMistakes={() => setCurrentScreen('mistakes')}
-          onOpenAnalytics={() => setCurrentScreen('analytics')}
-          onSelectExam={handleSelectExam}
-        />
-      )}
+        {currentScreen === 'subjects' && (
+          <SubjectsScreen
+            stats={stats}
+            attemptedIds={attemptedIds}
+            onBack={() => setCurrentScreen('home')}
+            onSelectSubject={(subject) => {
+              setSelectedSubject(subject);
+              setCurrentScreen('chapters');
+            }}
+          />
+        )}
 
-      {currentScreen === 'quiz' && (
-        <QuizScreen
-          questions={activeQuizPool.length > 0 ? activeQuizPool : activeExamQuestions}
-          bookmarkedIds={stats.bookmarks}
-          onBack={() => setCurrentScreen('home')}
-          onRecordAnswer={handleRecordAnswer}
-          onToggleBookmark={handleToggleBookmark}
-        />
-      )}
+        {currentScreen === 'chapters' && selectedSubject && (
+          <ChapterListScreen
+            subject={selectedSubject}
+            attemptedIds={attemptedIds}
+            onBack={() => setCurrentScreen('subjects')}
+            onStartChapter={handleStartChapter}
+          />
+        )}
 
-      {currentScreen === 'flashcards' && (
-        <FlashcardScreen
-          questions={activeExamQuestions.slice(0, 30)}
-          onBack={() => setCurrentScreen('home')}
-        />
-      )}
+        {currentScreen === 'quiz' && (
+          <QuizScreen
+            questions={activeQuizPool.length > 0 ? activeQuizPool : activeExamQuestions}
+            bookmarkedIds={stats.bookmarks}
+            onBack={() => setCurrentScreen('home')}
+            onRecordAnswer={handleRecordAnswer}
+            onToggleBookmark={handleToggleBookmark}
+          />
+        )}
 
-      {currentScreen === 'mock' && (
-        <MockExamScreen
-          questions={activeExamQuestions.slice(0, 50)}
-          onBack={() => setCurrentScreen('home')}
-          onFinishExam={handleFinishMock}
-        />
-      )}
+        {currentScreen === 'flashcards' && (
+          <FlashcardScreen
+            questions={activeExamQuestions}
+            onBack={() => setCurrentScreen('home')}
+          />
+        )}
 
-      {currentScreen === 'mistakes' && (
-        <MistakesScreen
-          mistakeIds={stats.mistakeIds}
-          questions={activeExamQuestions}
-          onBack={() => setCurrentScreen('home')}
-          onPracticeMistakes={handlePracticeMistakes}
-        />
-      )}
+        {currentScreen === 'mock' && (
+          <MockExamScreen
+            questions={activeExamQuestions}
+            onBack={() => setCurrentScreen('home')}
+            onFinishExam={handleFinishMock}
+          />
+        )}
 
-      {currentScreen === 'analytics' && (
-        <AnalyticsScreen
-          stats={stats}
-          questions={activeExamQuestions}
-          onBack={() => setCurrentScreen('home')}
-        />
-      )}
-    </View>
+        {currentScreen === 'mistakes' && (
+          <MistakesScreen
+            mistakeIds={stats.mistakeIds}
+            questions={MobileStorageService.questionsByIds(stats.mistakeIds)}
+            onBack={() => setCurrentScreen('home')}
+            onPracticeMistakes={handlePracticeMistakes}
+          />
+        )}
+
+        {currentScreen === 'analytics' && (
+          <AnalyticsScreen
+            stats={stats}
+            questions={activeExamQuestions}
+            onBack={() => setCurrentScreen('home')}
+          />
+        )}
+      </View>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingText: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 16,
+    color: colors.textHeading,
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    marginTop: spacing.lg,
   },
   loadingSubtext: {
-    color: '#94A3B8',
-    fontSize: 12,
-    marginTop: 4,
+    color: colors.textMuted,
+    fontSize: fontSize.sm,
+    marginTop: spacing.xs,
   },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 50,
-    alignSelf: 'center',
-    zIndex: 999,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#334155',
-    gap: 8,
-  },
-  overlayText: {
-    color: '#38BDF8',
-    fontSize: 12,
-    fontWeight: '600',
-  }
 });

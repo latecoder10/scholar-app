@@ -1,13 +1,11 @@
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { AlertTriangle, CheckCircle, Lightbulb, RefreshCw } from 'lucide-react-native';
 import { MobileQuestion } from '../types';
+import { colors, fontSize, spacing, radius } from '../theme';
+import { Badge, BackLink, Button, Card, EmptyState, PageHeading } from '../components/ui';
+import RichText from '../components/RichText';
 
 interface MistakesScreenProps {
   mistakeIds: number[];
@@ -20,74 +18,71 @@ export const MistakesScreen: React.FC<MistakesScreenProps> = ({
   mistakeIds,
   questions,
   onBack,
-  onPracticeMistakes
+  onPracticeMistakes,
 }) => {
-  const mistakeQuestions = questions.filter(q => mistakeIds.includes(q.id));
+  const mistakeQuestions = questions.filter((q) => mistakeIds.includes(q.id));
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={onBack} style={styles.iconButton}>
-          <Text style={styles.iconButtonText}>✕</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Mistake Vault ({mistakeQuestions.length})</Text>
-        <View style={{ width: 36 }} />
-      </View>
+    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <BackLink label="Back to dashboard" onPress={onBack} />
 
-      {mistakeQuestions.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyEmoji}>🎯</Text>
-          <Text style={styles.emptyTitle}>No Active Mistakes!</Text>
-          <Text style={styles.emptySubtitle}>
-            Every question you answer incorrectly will automatically land here for high-yield re-testing.
-          </Text>
-          <TouchableOpacity style={styles.button} onPress={onBack}>
-            <Text style={styles.buttonText}>Return to Practice</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.banner}>
-              <Text style={styles.bannerText}>
-                Review your weak spots. Retesting mistakes until 100% mastery increases final exam retention by 3.4x.
-              </Text>
-            </View>
+        <PageHeading
+          icon={AlertTriangle}
+          title="Mistakes"
+          subtitle="Questions you've answered incorrectly. Answer one correctly and it's removed automatically."
+        />
 
+        {mistakeQuestions.length === 0 ? (
+          <EmptyState
+            icon={CheckCircle}
+            title="No mistakes yet"
+            message="Anything you answer incorrectly lands here automatically, ready to retry."
+          />
+        ) : (
+          <>
             {mistakeQuestions.map((q, idx) => (
-              <View key={q.id} style={styles.mistakeCard}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardIndex}>Flagged Item #{idx + 1}</Text>
-                  <Text style={styles.cardTag}>{q.subject || q.exam}</Text>
+              <Card key={q.id} style={styles.card}>
+                <View style={styles.cardHead}>
+                  <Text style={styles.cardIndex}>#{idx + 1}</Text>
+                  {!!(q.subject || q.exam) && <Badge label={(q.subject || q.exam) as string} />}
                 </View>
 
-                <Text style={styles.cardQuestion}>{q.question}</Text>
+                <RichText inline style={styles.question}>
+                  {q.question}
+                </RichText>
 
-                <View style={styles.keyRow}>
-                  <Text style={styles.keyText}>Correct Key: Option {q.answer}</Text>
+                <View style={styles.answerBox}>
+                  <Text style={styles.answerLabel}>Correct answer</Text>
+                  <RichText inline style={styles.answerText}>
+                    {q.answer}
+                  </RichText>
                 </View>
 
-                {q.examTrick && (
-                  <View style={styles.trickRow}>
-                    <Text style={styles.trickLabel}>⚡ Exam Shortcut:</Text>
-                    <Text style={styles.trickText}>{q.examTrick}</Text>
+                {!!q.examTrick && (
+                  <View style={styles.trickBox}>
+                    <Lightbulb size={16} color={colors.warning} />
+                    <View style={styles.flex}>
+                      <Text style={styles.trickTitle}>Exam tip</Text>
+                      <RichText style={styles.trickText}>{q.examTrick}</RichText>
+                    </View>
                   </View>
                 )}
-              </View>
+              </Card>
             ))}
-          </ScrollView>
+          </>
+        )}
+      </ScrollView>
 
-          <View style={styles.footerBar}>
-            <TouchableOpacity
-              style={styles.retestButton}
-              onPress={onPracticeMistakes}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.retestButtonText}>
-                ⚡ Re-Test All {mistakeQuestions.length} Mistakes Now
-              </Text>
-            </TouchableOpacity>
-          </View>
+      {mistakeQuestions.length > 0 && (
+        <View style={styles.footer}>
+          <Button
+            label={`Practice ${mistakeQuestions.length} mistakes`}
+            icon={RefreshCw}
+            variant="danger"
+            fullWidth
+            onPress={onPracticeMistakes}
+          />
         </View>
       )}
     </SafeAreaView>
@@ -95,159 +90,48 @@ export const MistakesScreen: React.FC<MistakesScreenProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0B0F17',
-  },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#1E293B',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconButtonText: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  title: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 20,
-  },
-  banner: {
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
-    borderLeftWidth: 3,
-    borderLeftColor: '#EF4444',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  bannerText: {
-    color: '#FCA5A5',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  mistakeCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
+  screen: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
+  scroll: { padding: spacing.lg, paddingBottom: spacing['3xl'], gap: spacing.lg },
+
+  card: { gap: spacing.md },
+  cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  cardIndex: { fontSize: fontSize.sm, fontWeight: '700', color: colors.textMuted },
+  question: { fontSize: fontSize.md, color: colors.textPrimary, lineHeight: 20, fontWeight: '600' },
+
+  answerBox: {
+    gap: spacing.xs,
+    padding: spacing.md,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: colors.successSoftBorder,
+    backgroundColor: colors.successSoft,
   },
-  cardHeader: {
+  answerLabel: {
+    fontSize: fontSize.xs,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    color: colors.successText,
+  },
+  answerText: { fontSize: fontSize.base, color: colors.successText, lineHeight: 19 },
+
+  trickBox: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.warningSoftBorder,
+    backgroundColor: colors.warningSoft,
   },
-  cardIndex: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#F87171',
-  },
-  cardTag: {
-    fontSize: 11,
-    color: '#94A3B8',
-  },
-  cardQuestion: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    lineHeight: 20,
-    marginBottom: 10,
-  },
-  keyRow: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  keyText: {
-    color: '#34D399',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  trickRow: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    padding: 8,
-    borderRadius: 6,
-  },
-  trickLabel: {
-    color: '#FBBF24',
-    fontSize: 11,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  trickText: {
-    color: '#FEF3C7',
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  footerBar: {
-    padding: 16,
+  trickTitle: { fontSize: fontSize.xs, fontWeight: '700', color: colors.warningText, marginBottom: 2 },
+  trickText: { fontSize: fontSize.sm, color: colors.warningText, lineHeight: 18 },
+
+  footer: {
+    padding: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: '#1E293B',
-  },
-  retestButton: {
-    backgroundColor: '#EF4444',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  retestButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: 15,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    color: '#94A3B8',
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    borderTopColor: colors.border,
+    backgroundColor: colors.surface,
   },
 });
