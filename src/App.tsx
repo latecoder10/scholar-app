@@ -804,9 +804,25 @@ export default function App() {
             isCollapsed ? "justify-center px-4" : "justify-between px-6"
           }`}>
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="p-2 bg-indigo-50 border border-indigo-100/60 rounded-xl shadow-xs text-indigo-600 shrink-0">
-                <ActiveExamIcon className={`w-6 h-6 ${activeExamColors.iconText}`} />
-              </div>
+              {isCollapsed ? (
+                // A collapsed rail is only 80px wide — there is no room for the
+                // chevron toggle beside the brand badge, so the badge itself is
+                // the way back out, swapping to a chevron on hover to say so.
+                <button
+                  onClick={() => setSidebarCollapsed(false)}
+                  className="relative group p-2 bg-indigo-50 border border-indigo-100/60 rounded-xl shadow-xs hover:bg-indigo-100 hover:border-indigo-200 transition-all cursor-pointer shrink-0"
+                  title="Expand Sidebar"
+                >
+                  <ActiveExamIcon
+                    className={`w-6 h-6 ${activeExamColors.iconText} transition-opacity group-hover:opacity-0`}
+                  />
+                  <ChevronRight className="w-5 h-5 text-indigo-600 absolute inset-0 m-auto opacity-0 transition-opacity group-hover:opacity-100" />
+                </button>
+              ) : (
+                <div className="p-2 bg-indigo-50 border border-indigo-100/60 rounded-xl shadow-xs text-indigo-600 shrink-0">
+                  <ActiveExamIcon className={`w-6 h-6 ${activeExamColors.iconText}`} />
+                </div>
+              )}
               {!isCollapsed && (
                 <div className="min-w-0 animate-fade-in">
                   <h2 className="font-display font-bold text-base tracking-tight leading-none text-slate-900 truncate">
@@ -823,18 +839,17 @@ export default function App() {
               )}
             </div>
 
-            {/* Collapse toggle button on desktop */}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="hidden md:flex p-1.5 hover:bg-slate-150 border border-slate-200/80 rounded-lg text-slate-400 hover:text-slate-700 transition-all cursor-pointer shadow-3xs shrink-0"
-              title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="w-4 h-4" />
-              ) : (
+            {/* Collapse toggle on desktop — expanding is handled by the brand
+                badge above, which is all that fits once the rail is collapsed. */}
+            {!isCollapsed && (
+              <button
+                onClick={() => setSidebarCollapsed(true)}
+                className="hidden md:flex p-1.5 hover:bg-slate-150 border border-slate-200/80 rounded-lg text-slate-400 hover:text-slate-700 transition-all cursor-pointer shadow-3xs shrink-0"
+                title="Collapse Sidebar"
+              >
                 <ChevronLeft className="w-4 h-4" />
-              )}
-            </button>
+              </button>
+            )}
 
             {/* Close button on mobile */}
             <button
