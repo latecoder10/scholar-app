@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.14 Plugins, Marketplaces & Distribution",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "NEW TOPIC. What a plugin bundles, the .claude-plugin/plugin.json manifest and directory layout, namespacing, local testing with --plugin-dir, migrating standalone configuration, marketplaces, and how plugin components interact with project and user definitions. Grounded in the official Claude Code plugins documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "When should you choose a plugin over standalone .claude/ configuration?",
+      "options": [
+        "For sharing with teammates, distributing to the community, versioned releases, and reuse across projects; standalone suits personal workflows, project-specific customizations, and quick experiments.",
+        "Always — standalone configuration is deprecated.",
+        "Only when you need hooks, which standalone configuration cannot provide.",
+        "Only when publishing to the official marketplace."
+      ],
+      "answer": "For sharing with teammates, distributing to the community, versioned releases, and reuse across projects; standalone suits personal workflows, project-specific customizations, and quick experiments.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: when to use plugins vs standalone",
+      "explanation": "The comparison table maps standalone (.claude/ directory, skill names like /hello) to 'Personal workflows, project-specific customizations, quick experiments', and plugins (skill names like /plugin-name:hello) to 'Sharing with teammates, distributing to the community, versioned releases, reusable across projects'. The recommended path: 'Start with standalone configuration in .claude/ for quick iteration, then convert to a plugin when you're ready to share.'\n\n**Why the others are wrong**\n\n- **B.** Standalone is the recommended starting point.\n- **C.** Hooks work fine in settings.json.\n- **D.** Private and team distribution are supported, including marketplaces in private repositories.\n\nThe decision axis is REACH: one project versus many, one person versus a team.",
+      "examTrick": "One repo, quick iteration = standalone. Many repos, versioned, shared = plugin. Start standalone, convert later.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Plugin vs Standalone", "Distribution Reach", "Conversion Path"]
+    },
+    {
+      "id": 2,
+      "question": "Which directory must plugin.json live in, and what is the common structural mistake?",
+      "options": [
+        ".claude-plugin/plugin.json at the plugin root — and the common mistake is putting commands/, agents/, skills/, or hooks/ inside .claude-plugin/ instead of at the plugin root.",
+        "plugin.json at the plugin root, with all components inside .claude-plugin/.",
+        ".claude/plugin.json, matching the standalone layout.",
+        "Anywhere in the plugin; the file is located by name."
+      ],
+      "answer": ".claude-plugin/plugin.json at the plugin root — and the common mistake is putting commands/, agents/, skills/, or hooks/ inside .claude-plugin/ instead of at the plugin root.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: plugin structure overview",
+      "explanation": "The warning states it plainly: 'Common mistake: Don't put commands/, agents/, skills/, or hooks/ inside the .claude-plugin/ directory. Only plugin.json goes inside .claude-plugin/. All other directories must be at the plugin root level.'\n\n**Why the others are wrong**\n\n- **B.** Exactly inverted.\n- **C, D.** Neither matches.\n\nThe docs also clarify what 'plugin root' means: 'the individual plugin's own directory: the one you pass to --plugin-dir or that contains .claude-plugin/plugin.json. It is never ~/.claude/. For example, Claude Code doesn't read a .mcp.json placed at ~/.claude/.mcp.json.'",
+      "examTrick": "ONLY plugin.json goes in .claude-plugin/. Everything else sits at the plugin root.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Plugin Layout", "Common Mistake", "Plugin Root"]
+    },
+    {
+      "id": 3,
+      "question": "What does the name field in plugin.json control besides identity?",
+      "options": [
+        "The skill namespace — skills are prefixed with it, so a hello skill in my-first-plugin becomes /my-first-plugin:hello.",
+        "The install directory under ~/.claude/plugins/.",
+        "The marketplace category the plugin appears in.",
+        "The order in which plugin hooks fire."
+      ],
+      "answer": "The skill namespace — skills are prefixed with it, so a hello skill in my-first-plugin becomes /my-first-plugin:hello.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: create the plugin manifest",
+      "explanation": "'name: Unique identifier and skill namespace. Skills are prefixed with this (e.g., /my-first-plugin:hello).' And: 'Plugin skills are always namespaced (like /my-first-plugin:hello) to prevent conflicts when multiple plugins have skills with the same name. To change the namespace prefix, update the name field in plugin.json.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None is a documented function of the field.\n\nNamespacing is what makes plugins composable: many plugins can each ship a deploy skill without colliding, and a plugin skill 'loads alongside a deploy skill in your project's .claude/skills/' rather than one overriding the other.",
+      "examTrick": "plugin.json name = the namespace. Namespacing is why plugin components never collide with project ones.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Namespacing", "plugin.json name", "Collision Avoidance"]
+    },
+    {
+      "id": 4,
+      "question": "What happens if the version field is omitted from plugin.json?",
+      "options": [
+        "The version comes from the next source in version management; when set, users only receive updates when you bump it, except for a command source.",
+        "The plugin fails to load.",
+        "The plugin is treated as version 0.0.0 and never updates.",
+        "Users receive updates on every push regardless."
+      ],
+      "answer": "The version comes from the next source in version management; when set, users only receive updates when you bump it, except for a command source.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Create plugins: manifest fields",
+      "explanation": "'version: Optional. If set, users only receive updates when you bump this field, except for a command source. If omitted, the version comes from the next source in version management.'\n\n**Why the others are wrong**\n\n- **B.** Only name and description are meaningful for basic operation; the manifest itself is 'optional if components use default locations'.\n- **C, D.** Neither matches the fallback behaviour.\n\nThe practical consequence for a plugin author: an explicit version gives you release control — nobody gets a change until you bump it — while omitting it delegates that to the source. Choosing between them is a documented step in sharing a plugin: 'Choose a versioning strategy.'",
+      "examTrick": "Explicit version = you control when users get updates. Omitted = the source decides.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Version Management", "Release Control", "Manifest Fields"]
+    },
+    {
+      "id": 5,
+      "question": "Which components can a plugin bundle?",
+      "options": [
+        "skills/, commands/, agents/, hooks/hooks.json, .mcp.json, .lsp.json, monitors/, bin/, and settings.json.",
+        "Only skills and commands.",
+        "Only hooks and MCP servers.",
+        "Only skills, since everything else is per-project."
+      ],
+      "answer": "skills/, commands/, agents/, hooks/hooks.json, .mcp.json, .lsp.json, monitors/, bin/, and settings.json.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: plugin structure overview",
+      "explanation": "The directory table lists all of these at the plugin root: skills/ (as <name>/SKILL.md directories), commands/ (flat markdown files, with 'Use skills/ for new plugins'), agents/, hooks/ (event handlers in hooks.json), .mcp.json, .lsp.json (LSP servers for code intelligence), monitors/ (background monitor configurations), bin/ (executables added to the Bash tool's PATH while the plugin is enabled), and settings.json (default settings applied when enabled). Workflows can also ship in a workflows/ directory.\n\n**Why the others are wrong**\n\n- **B, C, D.** Each is far narrower than the documented set.\n\nA convenience for the simplest case: 'A plugin that ships exactly one skill can place SKILL.md directly at the plugin root instead of creating a skills/ directory.'",
+      "examTrick": "Plugins bundle nearly the whole extension surface: skills, agents, hooks, MCP, LSP, monitors, bin, settings, workflows.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Plugin Components", "Directory Table", "Single-Skill Shortcut"]
+    },
+    {
+      "id": 6,
+      "question": "How do you test a plugin during development without installing it?",
+      "options": [
+        "Launch with claude --plugin-dir ./my-plugin, which also accepts a .zip archive and can be repeated for multiple plugins.",
+        "Copy it into ~/.claude/plugins/ and restart.",
+        "Publish it to a private marketplace and install from there.",
+        "Set enabledPlugins in settings.json pointing at the local path."
+      ],
+      "answer": "Launch with claude --plugin-dir ./my-plugin, which also accepts a .zip archive and can be repeated for multiple plugins.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: test your plugins locally",
+      "explanation": "'Use the --plugin-dir flag to test plugins during development. This loads your plugin directly without requiring installation.' It accepts a directory or a .zip archive, and 'You can load multiple plugins at once by specifying the flag multiple times.' There is also --plugin-url to fetch a hosted .zip for one session.\n\n**Why the others are wrong**\n\n- **B, C, D.** None is the documented development flow.\n\nA useful override rule: 'When a --plugin-dir plugin has the same name as an installed marketplace plugin, the local copy takes precedence for that session' — so you can test changes without uninstalling. 'The exception is plugins that managed settings force-enable or force-disable: --plugin-dir cannot override those.'",
+      "examTrick": "--plugin-dir for local dev (dir or .zip, repeatable). It overrides an installed copy — except managed force-enabled ones.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "--plugin-dir", "Local Testing", "Managed Override Exception"]
+    },
+    {
+      "id": 7,
+      "question": "After editing a plugin mid-session, what reloads its components?",
+      "options": [
+        "/reload-plugins, which reloads plugins, skills, agents, hooks, plugin MCP servers, and plugin LSP servers.",
+        "Nothing is needed; plugin changes are always live.",
+        "/clear, which reinitializes the session.",
+        "Restarting Claude Code is the only option."
+      ],
+      "answer": "/reload-plugins, which reloads plugins, skills, agents, hooks, plugin MCP servers, and plugin LSP servers.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: test your plugins locally",
+      "explanation": "'As you make changes to your plugin, run /reload-plugins to pick up the updates without restarting. This reloads plugins, skills, agents, hooks, plugin MCP servers, and plugin LSP servers.'\n\n**Why the others are wrong**\n\n- **B.** Live detection covers standalone skill directories (~/.claude/skills/, project .claude/skills/, and --add-dir ones); plugins need the reload command.\n- **C.** /clear resets conversation context, not configuration.\n- **D.** A restart works but is unnecessary.\n\nA quirk worth knowing from the quickstart: after /reload-plugins 'The skills count in the summary covers only commands/ directories, so it can report 0 skills even though the skill you just edited reloaded.'",
+      "examTrick": "/reload-plugins for plugin changes. Standalone skill directories live-reload on their own.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/reload-plugins", "Live Reload", "Summary Quirk"]
+    },
+    {
+      "id": 8,
+      "question": "You migrate a project agent into a plugin but the plugin version never takes effect. Why?",
+      "options": [
+        "Project and user .claude/agents/ definitions override same-named plugin agents, so the originals must be removed first.",
+        "Plugin agents require an explicit enabledPlugins entry per agent.",
+        "Plugin agents are namespaced and cannot be invoked.",
+        "Agents cannot be distributed in plugins."
+      ],
+      "answer": "Project and user .claude/agents/ definitions override same-named plugin agents, so the originals must be removed first.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Create plugins: what changes when migrating",
+      "explanation": "'After migrating, remove the original files from .claude/ to avoid duplicates. Project and user .claude/agents/ definitions override same-named plugin agents, so the plugin version only takes effect once the originals are removed.' This matches the subagent precedence chain: managed > --agents > project > user > plugin, with plugin lowest.\n\n**Why the others are wrong**\n\n- **B, C, D.** None is documented; agents/ is a supported plugin directory.\n\nThe contrast in the same note is the exam-relevant detail: 'Plugin skills are namespaced as /plugin-name:skill-name, so the original /skill-name and the plugin copy both remain available rather than one overriding the other.' Agents OVERRIDE by name; skills COEXIST via namespacing.",
+      "examTrick": "Plugin AGENTS are overridden by project/user ones. Plugin SKILLS coexist because they're namespaced. Different behaviours.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Agent Override", "Skill Coexistence", "Migration Gotcha"]
+    },
+    {
+      "id": 9,
+      "question": "Where do hooks live when migrating from standalone configuration to a plugin?",
+      "options": [
+        "In hooks/hooks.json at the plugin root — the format is the same, so you copy the hooks object from settings.json.",
+        "In .claude-plugin/hooks.json.",
+        "In settings.json at the plugin root.",
+        "Hooks cannot be bundled; they stay in settings.json."
+      ],
+      "answer": "In hooks/hooks.json at the plugin root — the format is the same, so you copy the hooks object from settings.json.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: migrate hooks",
+      "explanation": "'Create my-plugin/hooks/hooks.json with your hooks configuration. Copy the hooks object from your .claude/settings.json or settings.local.json, since the format is the same.' The migration table confirms: 'Hooks in settings.json' becomes 'Hooks in hooks/hooks.json'.\n\n**Why the others are wrong**\n\n- **B.** Only plugin.json belongs in .claude-plugin/.\n- **C.** A plugin's settings.json supports only the agent and subagentStatusLine keys.\n- **D.** hooks/ is a supported plugin directory, and plugin hooks merge with all others.\n\nRemember that hooks MERGE across sources: 'all registered hooks fire for their matching events regardless of source', so a plugin hook does not replace a project one.",
+      "examTrick": "hooks/hooks.json at the plugin root, same object format as settings.json. Plugin hooks MERGE with project ones.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Hook Migration", "hooks.json", "Merge Semantics"]
+    },
+    {
+      "id": 10,
+      "question": "Which keys does a plugin's settings.json currently support?",
+      "options": [
+        "Only agent and subagentStatusLine; unknown keys are silently ignored.",
+        "Every settings key, applied at the managed tier.",
+        "Only permissions, so a plugin can ship its own allowlist.",
+        "None; plugins cannot ship settings."
+      ],
+      "answer": "Only agent and subagentStatusLine; unknown keys are silently ignored.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Create plugins: ship default settings",
+      "explanation": "'Plugins can include a settings.json file at the plugin root to apply default configuration when the plugin is enabled. Currently, only the agent and subagentStatusLine keys are supported... Settings from settings.json take priority over settings declared in plugin.json. Unknown keys are silently ignored.'\n\n**Why the others are wrong**\n\n- **B.** A plugin cannot apply arbitrary settings, and certainly not at the managed tier.\n- **C.** Permissions are not among the supported keys — an important safety property, since a plugin that could grant itself permissions would be a serious escalation path.\n- **D.** The file is supported for those two keys.\n\nThe agent key is powerful: 'Setting agent activates one of the plugin's custom agents as the main thread, applying its system prompt, tool restrictions, and model. This lets a plugin change how Claude Code behaves by default when enabled.'",
+      "examTrick": "Plugin settings.json = agent and subagentStatusLine ONLY. A plugin cannot grant itself permissions.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Plugin settings.json", "agent Key", "Escalation Boundary"]
+    },
+    {
+      "id": 11,
+      "question": "What does the bin/ directory in a plugin do, and what is its distribution restriction?",
+      "options": [
+        "It adds executables to the Bash tool's PATH while the plugin is enabled; you cannot include it in a plugin distributed through claude.ai organization settings.",
+        "It stores compiled hook binaries and is required for hooks to run.",
+        "It holds the plugin's installer script.",
+        "It is a build output directory ignored at load time."
+      ],
+      "answer": "It adds executables to the Bash tool's PATH while the plugin is enabled; you cannot include it in a plugin distributed through claude.ai organization settings.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Create plugins: plugin structure overview",
+      "explanation": "'bin/: Executables added to the Bash tool's PATH while the plugin is enabled. You can't include this directory in a plugin you distribute through claude.ai organization settings.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None is documented; hooks reference commands by path or name.\n\nThe restriction is a sensible security boundary: a plugin distributed centrally to an organization that could place arbitrary executables on PATH would let any command name be silently shadowed. Keeping bin/ out of that channel limits what a centrally-pushed plugin can do.",
+      "examTrick": "bin/ puts executables on PATH — and is barred from claude.ai org distribution for exactly that reason.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "bin Directory", "PATH Injection", "Distribution Restriction"]
+    },
+    {
+      "id": 12,
+      "question": "What is a skills-directory plugin, and how is one created?",
+      "options": [
+        "A plugin kept inside your skills directory that loads automatically — claude plugin init my-tool scaffolds ~/.claude/skills/my-tool/ with a manifest and starter SKILL.md, loading as my-tool@skills-dir with no marketplace or install step.",
+        "A plugin that contains only skills and no other components.",
+        "A plugin installed into ~/.claude/plugins/ from a marketplace.",
+        "A plugin loaded with --plugin-dir pointing at a skills folder."
+      ],
+      "answer": "A plugin kept inside your skills directory that loads automatically — claude plugin init my-tool scaffolds ~/.claude/skills/my-tool/ with a manifest and starter SKILL.md, loading as my-tool@skills-dir with no marketplace or install step.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Create plugins: develop a plugin in your skills directory",
+      "explanation": "'Instead of passing --plugin-dir on every launch, you can keep a plugin in your skills directory and have Claude Code load it automatically. claude plugin init my-tool scaffolds one... This creates ~/.claude/skills/my-tool/ with a .claude-plugin/plugin.json manifest and a starter SKILL.md. On the next session it loads as my-tool@skills-dir with no marketplace or install step.'\n\n**Why the others are wrong**\n\n- **B.** Component mix is not what defines it; LOCATION is.\n- **C, D.** Neither matches.\n\nThe skills documentation adds the mechanism from the other side: 'Add a .claude-plugin/plugin.json to a skill folder and it loads as a plugin named <name>@skills-dir, so it can bundle agents, hooks, and MCP servers. In a project's .claude/skills/, this requires accepting the workspace trust dialog first.'",
+      "examTrick": "A manifest inside a skill folder turns it into a <name>@skills-dir plugin. In a PROJECT skills dir it needs workspace trust.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Skills-Directory Plugins", "claude plugin init", "Workspace Trust"]
+    },
+    {
+      "id": 13,
+      "question": "Which command validates a plugin before submission, and what does --strict change?",
+      "options": [
+        "claude plugin validate ./your-plugin; --strict treats warnings as errors, since warnings do not fail validation by default.",
+        "claude plugin test ./your-plugin; --strict enables verbose output.",
+        "claude plugin lint; --strict checks the marketplace manifest too.",
+        "There is no validation command; submission runs the checks."
+      ],
+      "answer": "claude plugin validate ./your-plugin; --strict treats warnings as errors, since warnings do not fail validation by default.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: submit your plugin",
+      "explanation": "'Run claude plugin validate ./your-plugin locally before you submit... The review pipeline runs the same check on every submission, along with automated safety screening. When validation passes, Claude Code prints ✔ Validation passed, or ✔ Validation passed with warnings if there are warnings. Warnings don't fail validation; add --strict to treat them as errors.'\n\n**Why the others are wrong**\n\n- **B, C.** Not documented commands.\n- **D.** Local validation exists and runs the same check as the pipeline.\n\nRunning the same check locally that CI runs is the general pattern worth noting — it is the fast feedback loop that stops you discovering a problem only after submission.",
+      "examTrick": "claude plugin validate runs the SAME check as the review pipeline. --strict makes warnings fail.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "plugin validate", "--strict", "Local CI Parity"]
+    },
+    {
+      "id": 14,
+      "question": "What are the two public Anthropic marketplaces, and how do they differ?",
+      "options": [
+        "claude-plugins-official is a curated set maintained by Anthropic and registered automatically on first interactive start; claude-community is the public community marketplace where third-party submissions land after review.",
+        "Both are community-submitted; official is simply the older name.",
+        "Only claude-plugins-official exists; community plugins are hosted individually.",
+        "Both require a Team or Enterprise plan to access."
+      ],
+      "answer": "claude-plugins-official is a curated set maintained by Anthropic and registered automatically on first interactive start; claude-community is the public community marketplace where third-party submissions land after review.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: submit your plugin to the community marketplace",
+      "explanation": "'claude-plugins-official: a curated set of plugins maintained by Anthropic. Claude Code registers it automatically the first time you start Claude Code interactively.' 'claude-community: the public community marketplace where third-party submissions land after review. Users add it with /plugin marketplace add anthropics/claude-plugins-community and install from it as @claude-community.'\n\n**Why the others are wrong**\n\n- **B, C.** Both exist with different curation models.\n- **D.** The claude.ai SUBMISSION form requires a Team or Enterprise organization, but 'Individual authors who aren't part of a Team or Enterprise organization can use the Console form instead.' Access to the marketplaces is not plan-gated.\n\nNote the official marketplace 'is curated separately. Anthropic decides which plugins to include at its discretion. There is no application process.'",
+      "examTrick": "official = curated by Anthropic, auto-registered, no application. community = submitted and reviewed, added manually.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Marketplaces", "Curation Models", "Submission Routes"]
+    },
+    {
+      "id": 15,
+      "question": "How can a team keep a plugin internal rather than public?",
+      "options": [
+        "Host the marketplace in a private repository.",
+        "Omit the version field so it is not indexed.",
+        "Distribute the plugin directory by email and load it with --plugin-dir.",
+        "It is not possible; all marketplaces are public."
+      ],
+      "answer": "Host the marketplace in a private repository.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: share your plugins",
+      "explanation": "'To keep a plugin internal to your team, host the marketplace in a private repository.' The docs also point to configuring team marketplaces at the repository level.\n\n**Why the others are wrong**\n\n- **B.** Version has nothing to do with visibility.\n- **C.** --plugin-dir is a development and testing flag requiring the flag on every launch; it is not a distribution channel.\n- **D.** Private repositories are explicitly supported.\n\nThe large-codebase guidance connects here: when per-directory CLAUDE.md files stop scaling, the recommended move is 'A plugin in an internal marketplace' owned by a platform team, so conventions are versioned and centrally maintained rather than drifting per directory.",
+      "examTrick": "Private marketplace = internal distribution. --plugin-dir is dev-only, not a distribution channel.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Private Marketplaces", "Internal Distribution", "Platform Teams"]
+    },
+    {
+      "id": 16,
+      "question": "A plugin ships an LSP server that fails to start. Where do you look?",
+      "options": [
+        "The /plugin manager's Errors tab, which shows failures such as 'Executable not found in $PATH'; an entry with invalid configuration is skipped instead, and claude --debug shows why.",
+        "The /mcp panel, which lists all server statuses.",
+        "The /context output under Custom Agents.",
+        "The session transcript, which records all startup failures."
+      ],
+      "answer": "The /plugin manager's Errors tab, which shows failures such as 'Executable not found in $PATH'; an entry with invalid configuration is skipped instead, and claude --debug shows why.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Create plugins: add LSP servers",
+      "explanation": "'To confirm the server starts, launch Claude Code with the plugin enabled and check the /plugin Errors tab: a language server that fails to start appears there, for example with Executable not found in $PATH when the binary isn't installed. An entry with an invalid configuration is skipped instead; run claude --debug to see why.' Users installing an LSP plugin 'must have the language server binary installed on their machine.'\n\n**Why the others are wrong**\n\n- **B.** /mcp covers MCP servers.\n- **C.** /context shows loaded context including Custom Agents.\n- **D.** The transcript is the conversation.\n\nThe two-tier failure handling repeats a pattern seen elsewhere: a runtime failure is REPORTED, while an invalid configuration is SKIPPED — the same distinction as MCP's mcp_server_errors versus a connection failure.",
+      "examTrick": "Runtime failure = reported in the Errors tab. Invalid config = silently skipped; use --debug. Same split as MCP.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "LSP Plugins", "Errors Tab", "Skip vs Fail"]
+    },
+    {
+      "id": 17,
+      "question": "What do background monitors in a plugin do?",
+      "options": [
+        "They watch logs, files, or external status and deliver each stdout line from their command to Claude as a notification, starting automatically when the plugin is active.",
+        "They poll the model for status updates on long-running tasks.",
+        "They track token usage and warn when limits approach.",
+        "They restart failed MCP servers."
+      ],
+      "answer": "They watch logs, files, or external status and deliver each stdout line from their command to Claude as a notification, starting automatically when the plugin is active.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Create plugins: add background monitors",
+      "explanation": "'Background monitors let your plugin watch logs, files, or external status in the background and notify Claude as events arrive. Claude Code starts each monitor automatically when the plugin is active, so you don't need to instruct Claude to start the watch.' Configuration lives in monitors/monitors.json as an array of entries with name, command, and description; 'Each stdout line from command is delivered to Claude as a notification during the session.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None is documented.\n\nMonitors are a push-based context source, complementing the pull-based tools: instead of Claude polling a log, the log pushes lines to Claude. That has a context cost, so the command should be narrow — tail -F on an error log rather than everything.",
+      "examTrick": "monitors/monitors.json pushes stdout lines to Claude as notifications. Keep the command narrow — every line costs context.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Background Monitors", "Push Context", "monitors.json"]
+    },
+    {
+      "id": 18,
+      "question": "Which statement about plugin skills and the commands/ directory is correct?",
+      "options": [
+        "skills/ holds <name>/SKILL.md directories and is recommended for new plugins; commands/ holds flat markdown files and is the older form.",
+        "commands/ is required and skills/ is optional.",
+        "Both are equivalent with no recommendation either way.",
+        "commands/ is no longer loaded at all."
+      ],
+      "answer": "skills/ holds <name>/SKILL.md directories and is recommended for new plugins; commands/ holds flat markdown files and is the older form.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Create plugins: plugin structure overview",
+      "explanation": "The directory table: 'skills/: Skills as <name>/SKILL.md directories' and 'commands/: Skills as flat Markdown files. Use skills/ for new plugins.'\n\n**Why the others are wrong**\n\n- **B.** Neither is required, and skills/ is preferred.\n- **C.** There is an explicit recommendation.\n- **D.** Command files keep working — 'Your existing .claude/commands/ files keep working.'\n\nThe skills documentation gives the reason to prefer skills/: 'Skills are recommended since they support additional features like supporting files', plus frontmatter for invocation control and automatic model invocation. Command files also ignore the name and paths frontmatter fields.",
+      "examTrick": "skills/ = directories with SKILL.md, full frontmatter. commands/ = flat files, ignores name and paths. Prefer skills/.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "skills vs commands", "Directory Forms", "Feature Differences"]
+    },
+    {
+      "id": 19,
+      "question": "Which layering rule applies to plugin components, and how does it differ across component types?",
+      "options": [
+        "Skills and subagents override by name with plugins lowest in priority, MCP servers override by name with plugins fourth in the chain, and hooks merge so plugin hooks always fire alongside others.",
+        "All plugin components merge with project ones.",
+        "All plugin components override project ones.",
+        "Plugin components load only when no project equivalent exists."
+      ],
+      "answer": "Skills and subagents override by name with plugins lowest in priority, MCP servers override by name with plugins fourth in the chain, and hooks merge so plugin hooks always fire alongside others.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Extend Claude Code: understand how features layer",
+      "explanation": "'Skills and subagents override by name: when the same name exists at multiple levels, one definition wins based on priority (managed > user > project for skills; managed > CLI flag > project > user > plugin for subagents). Plugin skills are namespaced to avoid conflicts.' 'MCP servers override by name: local > project > user', with plugin-provided servers fourth and claude.ai connectors fifth. 'Hooks merge: all registered hooks fire for their matching events regardless of source.'\n\n**Why the others are wrong**\n\n- **B, C, D.** Each applies one rule uniformly, and the whole point is that the rules DIFFER by component type.\n\nFour distinct behaviours to hold: CLAUDE.md is additive, hooks merge, skills and subagents and MCP servers override by name, and plugin skills sidestep collisions entirely through namespacing.",
+      "examTrick": "Four layering rules: CLAUDE.md additive, hooks merge, skills/agents/MCP override by name, plugin skills namespaced.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Layering Rules", "Component Differences", "Precedence"]
+    },
+    {
+      "id": 20,
+      "question": "Which trigger, per the setup-evolution table, means it is time to package your configuration as a plugin?",
+      "options": [
+        "A second repository needs the same setup.",
+        "Claude gets a convention wrong twice.",
+        "You paste the same playbook into chat for the third time.",
+        "A side task floods your conversation with output."
+      ],
+      "answer": "A second repository needs the same setup.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code: build your setup over time",
+      "explanation": "The trigger table's final row: 'A second repository needs the same setup → Package it as a plugin.'\n\n**Why the others are wrong**\n\n- **B.** 'Claude gets a convention or command wrong twice' → add it to CLAUDE.md.\n- **C.** 'You paste the same playbook or multi-step procedure into chat for the third time' → capture it as a skill.\n- **D.** 'A side task floods your conversation with output you won't reference again' → route it through a subagent.\n\nThe table is worth memorising whole, because it states each trigger as an OBSERVABLE SYMPTOM rather than an abstract principle — which is exactly how exam scenarios present them. The plugin row's symptom is specifically about crossing a REPOSITORY boundary.",
+      "examTrick": "Crossing a repo boundary is the plugin trigger. Wrong twice = CLAUDE.md. Pasted thrice = skill. Every time = hook.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Trigger Table", "Repository Boundary", "Setup Evolution"]
+    }
+  ]
+}

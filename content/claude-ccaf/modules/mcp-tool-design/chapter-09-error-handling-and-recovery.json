@@ -1,0 +1,493 @@
+{
+  "subject": "Claude CCAF: MCP & Tool Design",
+  "chapter": "4.9 Structured Error Handling, Recovery & Resilience",
+  "exam": "Claude CCAF",
+  "paper": "Domain-4",
+  "description": "NEW TOPIC. Surfacing type-specific errors with recoverability and suggested next actions, tool_result error signalling, connection status and automatic reconnection, authentication recovery, config-validation versus runtime failures, and designing agents that recover rather than stall. Grounded in the official Claude API and Claude Code documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which three pieces of information make an MCP tool error actionable for an agent?",
+      "options": [
+        "The error type, whether the condition is recoverable, and a suggested next action.",
+        "The HTTP status code, a timestamp, and a request id.",
+        "The full stack trace, the server version, and the tool schema.",
+        "A human-readable message and nothing else, so the agent can reason freely."
+      ],
+      "answer": "The error type, whether the condition is recoverable, and a suggested next action.",
+      "difficulty": "Medium",
+      "source": "NEW | CCAF MCP error-handling objective; Claude Code api_retry event as a worked example",
+      "explanation": "The objective is to surface structured, type-specific error information 'including recoverability status and suggested next actions, rather than generic failure messages'. Claude Code's own system/api_retry event models this: it carries attempt, max_retries, retry_delay_ms, error_status, and a typed error category — authentication_failed, oauth_org_not_allowed, billing_error, rate_limit, overloaded, invalid_request, model_not_found, server_error, max_output_tokens, or unknown.\n\n**Why the others are wrong**\n\n- **B.** Useful for humans debugging later, but none of it tells an agent what to DO next.\n- **C.** A stack trace is unstructured, consumes context, and may leak internals.\n- **D.** 'Reason freely' means guess. The agent must choose between retry, correct, and escalate, and a prose message makes that a coin flip.\n\nThe typed category is what lets a router branch: rate_limit retries with backoff, billing_error escalates to a human.",
+      "examTrick": "Type + recoverability + next action. Typed categories are what make branching possible without parsing prose.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Structured Errors",
+        "Recoverability",
+        "Error Categories"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "A tool fails. Which response is the most dangerous, and why?",
+      "options": [
+        "Returning an empty successful result, because it turns a recoverable failure into corrupted downstream reasoning that nothing will detect.",
+        "Returning a generic 'tool execution failed' message.",
+        "Returning a structured error with recoverability information.",
+        "Returning the raw upstream error text."
+      ],
+      "answer": "Returning an empty successful result, because it turns a recoverable failure into corrupted downstream reasoning that nothing will detect.",
+      "difficulty": "Medium",
+      "source": "NEW | CCAF MCP error-handling objective; Claude API error-handling principles",
+      "explanation": "A silent success is the worst outcome because it produces no signal at all: the agent proceeds as though it has data, downstream steps build on nothing, and no router or human ever sees a reason to look. A generic message is poor but at least visible; a raw error is noisy but honest.\n\n**Why the others are wrong**\n\n- **B.** Bad but detectable — the agent knows something failed, it just has to guess what to do.\n- **C.** The correct design.\n- **D.** Unstructured and context-hungry, but still a signal.\n\nThis is the same principle that runs through stop_reason handling (an unchecked refusal on HTTP 200 looks like success) and extraction schema design (a schema-valid fabrication looks like data). Reliability work is largely about converting silent failures into visible ones.",
+      "examTrick": "Rank by VISIBILITY: silent success is worst, generic message is poor, structured error is right. Loud beats silent.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Silent Failure",
+        "Visibility Ranking",
+        "Downstream Corruption"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "How should a tool result signal that the tool call itself failed, within the Messages API?",
+      "options": [
+        "Return a tool_result block for the matching tool_use_id whose content describes the failure and which is marked as an error, so the model can react on the next turn.",
+        "Omit the tool_result block so the model retries automatically.",
+        "Return an assistant message explaining the failure.",
+        "Abort the conversation and start a new one."
+      ],
+      "answer": "Return a tool_result block for the matching tool_use_id whose content describes the failure and which is marked as an error, so the model can react on the next turn.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Tool use: handle tool calls, result formatting and error signaling",
+      "explanation": "The tool-use round trip requires a tool_result carrying the matching tool_use_id, and the handling documentation covers 'result formatting and error signaling'. Returning the failure as a tool_result keeps the agentic loop intact: the model sees what went wrong and can retry, choose a different tool, or report the problem.\n\n**Why the others are wrong**\n\n- **B.** Omitting the result breaks the protocol. Note the related documented case: a server_tool_use or mcp_tool_use block with no matching result means 'it's still executing—wait for results', so a missing result is interpreted as IN FLIGHT, not as failure — an omission would make the agent wait forever.\n- **C.** Tool results go in a user turn as tool_result blocks; the rule is 'Must include only tool_result blocks (no additional text)'.\n- **D.** Aborting discards all accumulated context for a recoverable condition.\n\nThe design point: an error is a RESULT, not an absence.",
+      "examTrick": "An error is a tool_result, never a missing block. A missing result means 'still running', not 'failed'.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "tool_result Errors",
+        "Protocol Integrity",
+        "In-Flight vs Failed"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "Which MCP server statuses does claude mcp list show, and what does a failure status mean?",
+      "options": [
+        "Statuses such as ✔ Connected, ! Needs authentication, and ✘ Failed to connect — a failure means Claude Code could not connect to that server, not that the list command failed.",
+        "Only connected or disconnected, and a failure aborts the listing.",
+        "Only pending approval, since all servers require approval.",
+        "No statuses; the list shows configuration only."
+      ],
+      "answer": "Statuses such as ✔ Connected, ! Needs authentication, and ✘ Failed to connect — a failure means Claude Code could not connect to that server, not that the list command failed.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — MCP: server status",
+      "explanation": "'claude mcp list then shows a health status next to each server it lists, such as ✔ Connected, ! Needs authentication, or ✘ Failed to connect. A failure status means Claude Code couldn't connect to that server, not that the list command failed.' Project-scoped servers awaiting approval appear as '⏸ Pending approval (run claude to approve)', and rejected ones as '✘ Rejected (see disabledMcpjsonServers in settings)'.\n\n**Why the others are wrong**\n\n- **B, C, D.** Each understates the status set.\n\nThe three distinct failure states matter because they need different responses: 'Needs authentication' means run /mcp and sign in, 'Failed to connect' means check the endpoint or command, and 'Pending approval' means run an interactive session. A single 'broken' status would leave you guessing.",
+      "examTrick": "Distinct statuses = distinct remedies. Auth, connection, approval, and rejection are four different problems.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Server Status",
+        "Distinct Remedies",
+        "claude mcp list"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "A remote MCP server's connection drops mid-session. What happens?",
+      "options": [
+        "Claude Code reconnects to remote servers automatically, and you can disconnect servers you are not actively using.",
+        "The session ends with an error.",
+        "The server stays disconnected until you restart Claude Code.",
+        "All tool calls fail silently until reconnection is triggered manually."
+      ],
+      "answer": "Claude Code reconnects to remote servers automatically, and you can disconnect servers you are not actively using.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — MCP: automatic reconnection",
+      "explanation": "'Run /mcp to see each server's connection status... Claude Code reconnects to remote servers automatically if they drop, and you can disconnect servers you're not actively using.'\n\n**Why the others are wrong**\n\n- **B.** A dropped integration should not end a coding session.\n- **C.** Reconnection is automatic.\n- **D.** Silent failure is precisely what good error design avoids.\n\nThe related auth recovery is worth pairing: for a server using headersHelper, 'If a tool call returns 401 Unauthorized or 403 Forbidden, Claude Code automatically re-runs the helper under the same rule, reconnects with the fresh headers, and retries the call once. Claude Code marks the server as needing authentication in /mcp only if that retry also fails.' Automatic recovery first, visible status only if recovery fails.",
+      "examTrick": "Recover automatically, surface only if recovery fails. 401/403 re-runs headersHelper and retries ONCE.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Automatic Reconnection",
+        "Auth Retry",
+        "Graceful Recovery"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "An MCP tool returns 403 insufficient_scope. What does Claude Code do, and what is the fix?",
+      "options": [
+        "It re-authenticates with the same pinned scopes; the fix is to widen oauth.scopes when a tool you need requires a scope outside the pinned set.",
+        "It automatically requests the additional scope and retries.",
+        "It disables the tool for the session.",
+        "It falls back to an unauthenticated request."
+      ],
+      "answer": "It re-authenticates with the same pinned scopes; the fix is to widen oauth.scopes when a tool you need requires a scope outside the pinned set.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — MCP: restrict OAuth scopes",
+      "explanation": "'If the server later returns a 403 insufficient_scope for a tool call, Claude Code re-authenticates with the same pinned scopes. Widen oauth.scopes when a tool you need requires a scope outside the pinned set.'\n\n**Why the others are wrong**\n\n- **B.** Silently escalating privilege would defeat the purpose of pinning scopes — the pin exists 'to restrict an MCP server to a security-team-approved subset'.\n- **C, D.** Neither is documented, and an unauthenticated fallback would be a security hazard.\n\nThe design principle is important: automatic recovery is appropriate for TRANSIENT failures (a dropped connection, an expired token) but not for POLICY boundaries. Re-authenticating with the same scopes is recovery; requesting broader scopes would be escalation, and that requires a human decision.",
+      "examTrick": "Auto-recover transient failures; never auto-escalate privilege. A scope error needs a human to widen oauth.scopes.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "insufficient_scope",
+        "Recovery vs Escalation",
+        "Policy Boundaries"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "What is the difference between a config-validation skip and a runtime connection failure for an MCP server?",
+      "options": [
+        "A validation failure means the entry is skipped and absent from mcp_servers, reported in mcp_server_errors with a skip category; a runtime failure means the server was loaded but could not connect, showing a failure status.",
+        "Both produce identical errors and are handled the same way.",
+        "A validation failure aborts the run; a connection failure is silent.",
+        "A connection failure aborts the run; a validation failure is silent."
+      ],
+      "answer": "A validation failure means the entry is skipped and absent from mcp_servers, reported in mcp_server_errors with a skip category; a runtime failure means the server was loaded but could not connect, showing a failure status.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: fail CI when a plugin or MCP server doesn't load; MCP server status",
+      "explanation": "'Claude Code validates each --mcp-config entry at startup and skips entries that fail validation, for example a url entry with no type. The run continues and exits cleanly.' Skipped entries appear in mcp_server_errors with a type such as unknown_type, url_missing_type, invalid_config, or reserved_name, and are 'absent from mcp_servers'. A server that loaded but cannot connect instead shows a connection status.\n\n**Why the others are wrong**\n\n- **B.** They occupy different fields and need different fixes — one is a config typo, the other an environment problem.\n- **C, D.** Neither aborts; both allow the run to continue.\n\nThe LSP plugin documentation shows the identical split: 'a language server that fails to start appears [in the Errors tab]... An entry with an invalid configuration is skipped instead; run claude --debug to see why.' Skip-on-invalid, report-on-failure is a consistent pattern.",
+      "examTrick": "Invalid CONFIG = skipped, reported in an errors array. Valid config, failed CONNECTION = status. Different fields, different fixes.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Validation vs Runtime",
+        "mcp_server_errors",
+        "Consistent Pattern"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "Why does the documentation warn that 'Added ...' from claude mcp add does not mean the server works?",
+      "options": [
+        "The command saves the configuration without validating credentials, so a placeholder value is accepted and the server fails to connect later.",
+        "The command is asynchronous and completes before writing.",
+        "The command validates credentials but not the endpoint.",
+        "The message appears only on failure."
+      ],
+      "answer": "The command saves the configuration without validating credentials, so a placeholder value is accepted and the server fails to connect later.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — MCP: practical examples and server status",
+      "explanation": "'The claude mcp add command saves the configuration without validating credentials, so a placeholder value is accepted here but the server fails to connect later. To verify the connection, run /mcp and check that the server shows connected. A server with bad credentials shows failed, and the failure detail includes the HTTP status the server returned, such as a 401.' And separately: 'claude mcp add confirms a successful add by printing an Added ... line, which means the configuration was written.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches.\n\nThe failure detail including the HTTP status is good error design in miniature: '401' tells you it is a credential problem rather than an endpoint or network problem, which is a different fix.",
+      "examTrick": "'Added' = written, not connected. Verify with /mcp. The failure detail carries the HTTP status so you know WHICH problem it is.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Write vs Connect",
+        "Credential Validation",
+        "Failure Detail"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "A sandboxed command fails because the sandbox blocked it. What does Claude see, and why does that matter?",
+      "options": [
+        "Claude Code appends the violation details to the failed command's output, so Claude sees which file path or network host was blocked and can react specifically rather than guessing.",
+        "Claude sees only a generic non-zero exit code.",
+        "The failure is hidden from Claude and reported only to the user.",
+        "The command is retried automatically without sandboxing."
+      ],
+      "answer": "Claude Code appends the violation details to the failed command's output, so Claude sees which file path or network host was blocked and can react specifically rather than guessing.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sandboxing",
+      "explanation": "'When a command fails after the sandbox denied it access, Claude Code appends the violation details to the failed command's output, so Claude sees which file path or network host the sandbox blocked.' Only then does the escape hatch apply: 'when a command fails because of sandbox restrictions, Claude analyzes the failure and may retry the command with the dangerouslyDisableSandbox parameter.'\n\n**Why the others are wrong**\n\n- **B.** A bare exit code would leave Claude guessing between a code bug and a policy block.\n- **C.** Hiding it would make recovery impossible.\n- **D.** The retry is a considered decision, not automatic, and it can be disabled entirely with allowUnsandboxedCommands: false.\n\nThis is the objective's principle applied to the sandbox: type-specific detail (which path, which host) plus an available next action, rather than a generic failure.",
+      "examTrick": "Sandbox denials carry WHICH path or host was blocked. Specific detail is what makes a specific recovery possible.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Violation Details",
+        "Specific Recovery",
+        "Escape Hatch"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "Which error category from Claude Code's api_retry event should escalate to a human rather than being retried?",
+      "options": [
+        "billing_error or authentication_failed — no amount of retrying resolves them.",
+        "rate_limit, since retries make it worse.",
+        "overloaded, since the service is unavailable.",
+        "server_error, since the fault is upstream."
+      ],
+      "answer": "billing_error or authentication_failed — no amount of retrying resolves them.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Non-interactive mode: handle API retries",
+      "explanation": "The documented categories are authentication_failed, oauth_org_not_allowed, billing_error, rate_limit, overloaded, invalid_request, model_not_found, server_error, max_output_tokens, and unknown. Billing and authentication failures require a human action — adding credits, fixing credentials — so retrying only burns time.\n\n**Why the others are wrong**\n\n- **B.** rate_limit is the canonical retryable case; the event even supplies retry_delay_ms.\n- **C.** overloaded is transient and retryable.\n- **D.** server_error is typically transient.\n\nThis is exactly why typed categories matter: the same 'request failed' outcome splits into retry-with-backoff, correct-the-request (invalid_request, model_not_found, max_output_tokens), and escalate-to-a-human (billing, auth). A generic message collapses three different responses into one guess.",
+      "examTrick": "Three branches from one failure: retry (rate_limit, overloaded, server_error), correct (invalid_request), escalate (billing, auth).",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Category Routing",
+        "Retry vs Escalate",
+        "api_retry"
+      ]
+    },
+    {
+      "id": 11,
+      "question": "Which stop_reason requires continuation rather than retry, and what must be preserved?",
+      "options": [
+        "pause_turn — append the response as an assistant message and make a new request with the same messages, keeping the tools array or the request fails.",
+        "refusal — resend the identical request until it succeeds.",
+        "max_tokens — resend the identical request unchanged.",
+        "end_turn — continue the loop until a tool is called."
+      ],
+      "answer": "pause_turn — append the response as an assistant message and make a new request with the same messages, keeping the tools array or the request fails.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons: pause_turn",
+      "explanation": "'pause_turn: Server-tool sampling loop hit iteration limit (default 10). Continue by: appending response as assistant message, making new request with same messages + response. Keep tools array or request fails.'\n\n**Why the others are wrong**\n\n- **B.** A refusal will not change on an identical retry; read stop_details, rephrase, or use a fallback model.\n- **C.** An identical resend hits the same max_tokens limit; raise the limit or continue by appending the response.\n- **D.** end_turn is normal completion — the loop should stop.\n\nThe 'keep tools array' requirement is the statelessness principle again: every continuation request is self-contained, so nothing carries over implicitly. A handler that strips tools because 'we're only resuming' fails.",
+      "examTrick": "pause_turn = CONTINUE (append + keep tools). refusal/max_tokens = change something. Never blind-retry.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "pause_turn",
+        "Continuation vs Retry",
+        "Stateless Requests"
+      ]
+    },
+    {
+      "id": 12,
+      "question": "In a dynamic workflow, what does an agent() call resolve to on failure, and what must the script do?",
+      "options": [
+        "null if stopped mid-run or on an unrecoverable API error; pipeline() keeps that null in the results array, so the script must filter it, for example with .filter(Boolean).",
+        "It throws, aborting the whole workflow.",
+        "It retries automatically until it succeeds.",
+        "It returns an empty object, which is safe to use downstream."
+      ],
+      "answer": "null if stopped mid-run or on an unrecoverable API error; pipeline() keeps that null in the results array, so the script must filter it, for example with .filter(Boolean).",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: what the saved script looks like",
+      "explanation": "'An agent() call resolves to null if you stop it mid-run or it hits an unrecoverable API error. pipeline() keeps that null in the results array, which is why the example ends with .filter(Boolean) to drop those entries.'\n\n**Why the others are wrong**\n\n- **B.** Aborting on one failure would waste the whole fan-out — across 200 files some failures are expected.\n- **C.** No automatic retry; you can restart an individual agent with r in the progress view.\n- **D.** An empty object would be indistinguishable from a legitimate empty result, which is the silent-failure pattern.\n\nReturning null is a deliberate design choice: partial failure is normal at scale, so the result set carries an explicit, checkable marker rather than either crashing or lying. Handling it is the script author's job.",
+      "examTrick": "Partial failure is NORMAL at scale. null is an explicit marker, not a crash — but you must filter it.",
+      "importance": "Medium",
+      "tags": [
+        "NEW TOPIC",
+        "Workflow Failures",
+        "null Markers",
+        "Partial Failure"
+      ]
+    },
+    {
+      "id": 13,
+      "question": "How does a hook surface a problem to Claude after a tool has already run?",
+      "options": [
+        "Exit 2 shows stderr to Claude, or return systemMessage JSON on exit 0 — the tool already ran, so this is for warnings and feedback, not prevention.",
+        "Exit 1, which blocks the tool retroactively.",
+        "Exit 2, which reverts the tool's effect.",
+        "PostToolUse hooks cannot communicate with Claude."
+      ],
+      "answer": "Exit 2 shows stderr to Claude, or return systemMessage JSON on exit 0 — the tool already ran, so this is for warnings and feedback, not prevention.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Hooks reference: PostToolUse",
+      "explanation": "'Exit 0: Success; systemMessage in JSON is optional feedback to Claude. Exit 2: Shows stderr to Claude (tool already ran); use this for warnings.'\n\n**Why the others are wrong**\n\n- **B, C.** Nothing is blocked or reverted after the fact; PreToolUse is the only event that can prevent.\n- **D.** Communicating is the point — 'Hook output lands in context. A PostToolUse hook that runs your linter feeds results back as text Claude reads.'\n\nWatch the delivery detail: 'Output reaches Claude via additionalContext JSON. Exit code 2 surfaces stderr to Claude. Plain stdout on exit 0 goes to the debug log, not the transcript.' A hook that echoes to stdout and exits 0 will appear to work when run by hand while Claude never sees anything.",
+      "examTrick": "PostToolUse reports, PreToolUse prevents. Plain stdout on exit 0 goes to the DEBUG LOG, not to Claude.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "PostToolUse Feedback",
+        "Exit 2",
+        "Delivery Channel"
+      ]
+    },
+    {
+      "id": 14,
+      "question": "Which design makes an agent recover from a failed verification rather than stall?",
+      "options": [
+        "Give it a check it can run that produces a pass or fail it can read, so it iterates until the check passes instead of waiting for a human to notice.",
+        "Instruct it in CLAUDE.md to be careful and double-check its work.",
+        "Increase max_tokens so it can reason longer about correctness.",
+        "Run the verification manually after the session ends."
+      ],
+      "answer": "Give it a check it can run that produces a pass or fail it can read, so it iterates until the check passes instead of waiting for a human to notice.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: give Claude a way to verify its work",
+      "explanation": "'Claude stops when the work looks done. Without a check it can run, looks done is the only signal available, and you become the verification loop: every mistake waits for you to notice it. Give Claude something that produces a pass or fail, and the loop closes on its own. Claude does the work, runs the check, reads the result, and iterates until the check passes.'\n\n**Why the others are wrong**\n\n- **B.** Advisory instruction produces no signal to iterate against.\n- **C.** More reasoning without feedback does not converge on correctness.\n- **D.** Post-hoc verification puts the human back in the loop, which is the problem.\n\nRecovery requires a SIGNAL. This is the same structure as a good tool error: the agent can only act correctly on information it actually receives.",
+      "examTrick": "Recovery needs a readable signal. A runnable check closes the loop; advice does not.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Verification Loop",
+        "Self-Recovery",
+        "Signal Requirement"
+      ]
+    },
+    {
+      "id": 15,
+      "question": "Which setting keeps a project-scoped MCP server out of every session mode, including headless runs that cannot show an approval prompt?",
+      "options": [
+        "disabledMcpjsonServers, which blocks it in every mode.",
+        "Rejecting it once at the approval prompt.",
+        "Removing it from .mcp.json in your working copy.",
+        "Setting its scope to local."
+      ],
+      "answer": "disabledMcpjsonServers, which blocks it in every mode.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — MCP: project scope",
+      "explanation": "'claude -p runs, Agent SDK sessions, and cloud sessions can't show that prompt: Claude Code loads project-scoped servers there without asking. A session you start in bypassPermissions mode with skipDangerousModePermissionPrompt set skips the prompt too. To keep a server out anyway, add it to disabledMcpjsonServers, which blocks it in every mode, or exclude project settings entirely with --setting-sources or the SDK's settingSources option.'\n\n**Why the others are wrong**\n\n- **B.** An interactive rejection does not govern headless runs, and 'claude mcp reset-project-choices' can clear those choices anyway.\n- **C.** Editing your working copy is undone by the next pull.\n- **D.** Scope controls where a server loads, not whether it is blocked.\n\nThe general principle: an interactive safeguard is not a safeguard in a non-interactive context. Enforcement must be expressed in configuration.",
+      "examTrick": "Interactive approval ≠ enforcement. Headless runs load project servers unasked. Use disabledMcpjsonServers.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "disabledMcpjsonServers",
+        "Headless Gaps",
+        "Configuration Enforcement"
+      ]
+    },
+    {
+      "id": 16,
+      "question": "Why does the documentation recommend keeping tool responses small even for successful calls?",
+      "options": [
+        "Bloated responses waste context and make it harder for Claude to extract what matters — and tool_result blocks are re-sent as input tokens on every subsequent turn of the loop.",
+        "Large responses are truncated silently.",
+        "Large responses cause validation errors.",
+        "Response size affects the tool-use system prompt token count."
+      ],
+      "answer": "Bloated responses waste context and make it harder for Claude to extract what matters — and tool_result blocks are re-sent as input tokens on every subsequent turn of the loop.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Define tools: best practices; Claude Code costs",
+      "explanation": "'Design tool responses to return only high-signal information... Bloated responses waste context and make it harder for Claude to extract what matters.' The cost consequence follows from statelessness: the pricing section lists 'tool_result content blocks in API requests' among the token sources, and Claude Code's cost guidance notes 'each time Claude uses tools it sends another request carrying that batch of tool results.'\n\n**Why the others are wrong**\n\n- **B, C.** Neither is documented.\n- **D.** The tool-use system prompt is built from tool DEFINITIONS, not responses.\n\nSo a verbose tool response is paid for repeatedly, not once — and it also degrades reasoning quality as the window fills. This is why a hook that filters a 10,000-line log down to matching lines is described as reducing context 'from tens of thousands of tokens to hundreds.'",
+      "examTrick": "A bloated tool result is re-sent EVERY turn. It costs repeatedly and degrades reasoning as context fills.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Response Size",
+        "Repeated Cost",
+        "Signal Density"
+      ]
+    },
+    {
+      "id": 17,
+      "question": "What is the correct interpretation of a missing-variable warning for a .mcp.json server?",
+      "options": [
+        "The config still loads, the warning appears in claude mcp list, and the unexpanded ${VAR} text is used as-is — set the variable or add a :-default fallback.",
+        "The server entry is skipped and absent from the session.",
+        "The whole .mcp.json fails to parse.",
+        "The variable is silently replaced with an empty string."
+      ],
+      "answer": "The config still loads, the warning appears in claude mcp list, and the unexpanded ${VAR} text is used as-is — set the variable or add a :-default fallback.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — MCP: environment variable expansion",
+      "explanation": "'If a referenced environment variable isn't set and has no default value, the config still loads: Claude Code reports a missing-variable warning for that server in claude mcp list output and uses the unexpanded ${VAR} text as-is. Set the variable or add a :-default fallback so the server starts with the value you intend.'\n\n**Why the others are wrong**\n\n- **B.** That is what a validation failure produces — a skip recorded in mcp_server_errors. This is a different, softer outcome.\n- **C.** One missing variable does not break the file.\n- **D.** Silent empty substitution would produce a confusing downstream failure; the literal text plus a warning is more diagnosable.\n\nThe symptom to recognise: a server that fails to authenticate with a literal '${API_KEY}' in its header is a missing environment variable, not a bad credential.",
+      "examTrick": "Missing var = warning + LITERAL ${VAR} text, config still loads. A literal ${...} in a header is the tell.",
+      "importance": "Medium",
+      "tags": [
+        "NEW TOPIC",
+        "Missing Variables",
+        "Soft Failure",
+        "Diagnosis"
+      ]
+    },
+    {
+      "id": 18,
+      "question": "Which practice prevents an agent from repeatedly retrying an approach that cannot work?",
+      "options": [
+        "After two failed corrections, clear the context and restart with a more specific prompt incorporating what was learned, since the context is now polluted with failed approaches.",
+        "Increase the retry count so it eventually succeeds.",
+        "Lower the temperature so the retries are more consistent.",
+        "Ask the same question in a different wording each time."
+      ],
+      "answer": "After two failed corrections, clear the context and restart with a more specific prompt incorporating what was learned, since the context is now polluted with failed approaches.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: course-correct early and often",
+      "explanation": "'If you've corrected Claude more than twice on the same issue in one session, the context is cluttered with failed approaches. Run /clear and start fresh with a more specific prompt that incorporates what you learned. A clean session with a better prompt almost always outperforms a long session with accumulated corrections.' It is also listed as the failure pattern 'Correcting over and over'.\n\n**Why the others are wrong**\n\n- **B.** More retries against polluted context compound the problem.\n- **C.** Consistency is not the missing ingredient.\n- **D.** Rewording without new information is the same attempt.\n\nThe deeper point for error design: retrying is only rational when the CONDITION was transient. If the failure is informational — a wrong approach, a policy refusal, a missing capability — the correct response is to change something, not to repeat.",
+      "examTrick": "Two failed corrections = stop and restart. Retry only transient conditions; change something for informational failures.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Retry Discipline",
+        "Context Pollution",
+        "Transient vs Informational"
+      ]
+    },
+    {
+      "id": 19,
+      "question": "A CI pipeline must fail when a required plugin does not load. What should it check?",
+      "options": [
+        "The plugin_errors array in the system/init event — affected plugins are demoted and absent from plugins, and the key is omitted when there are no errors.",
+        "The process exit code, which is non-zero when a plugin fails.",
+        "stderr, where plugin failures are always printed.",
+        "Nothing; plugin load failures always abort the run."
+      ],
+      "answer": "The plugin_errors array in the system/init event — affected plugins are demoted and absent from plugins, and the key is omitted when there are no errors.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: fail CI when a plugin or MCP server doesn't load",
+      "explanation": "'plugins: plugins that loaded successfully, each with name and path. plugin_errors: plugin load-time errors, each with plugin, type, and message. Includes unsatisfied dependency versions and --plugin-dir load failures such as a missing path or invalid archive. Affected plugins are demoted and absent from plugins. The key is omitted when there are no errors.'\n\n**Why the others are wrong**\n\n- **B, D.** The run 'continues and exits cleanly', so the exit code will not catch it.\n- **C.** For MCP the equivalent stderr warning appears only in an interactive terminal: 'When you redirect stderr, or when a program such as a CI runner or an SDK host captures it, Claude Code prints no warning.'\n\nThe omitted-when-empty design is deliberately CI-friendly: a non-empty array is a clean failure condition, with no need to distinguish an empty array from a missing one.",
+      "examTrick": "Config-level failures exit CLEANLY. Gate CI on plugin_errors / mcp_server_errors in system/init, never the exit code.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "plugin_errors",
+        "CI Gating",
+        "Clean Exit Trap"
+      ]
+    },
+    {
+      "id": 20,
+      "question": "Which describes the right relationship between automatic recovery and human escalation?",
+      "options": [
+        "Recover automatically from transient, in-policy conditions; escalate anything requiring a decision the agent is not authorized to make, and make sure the unresolved case produces a visible signal.",
+        "Escalate every error so a human always decides.",
+        "Recover from everything automatically to avoid interrupting the user.",
+        "Escalate only after exhausting the maximum retry count for every error type."
+      ],
+      "answer": "Recover automatically from transient, in-policy conditions; escalate anything requiring a decision the agent is not authorized to make, and make sure the unresolved case produces a visible signal.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — MCP reconnection and OAuth scopes; CCAF escalation and orchestration objectives",
+      "explanation": "The documented behaviours show the split precisely. Transient conditions recover silently: remote servers reconnect automatically, a 401 or 403 re-runs headersHelper and retries once. Policy conditions do not: a 403 insufficient_scope re-authenticates with the SAME pinned scopes and leaves widening them to a human. And when recovery fails, the state becomes visible — 'Claude Code marks the server as needing authentication in /mcp only if that retry also fails.'\n\n**Why the others are wrong**\n\n- **B.** Escalating transient failures makes an agent useless and trains humans to ignore it.\n- **C.** Auto-recovering from a policy boundary is privilege escalation.\n- **D.** Retrying a billing or authentication failure to exhaustion wastes time and delays the human action that would actually fix it.\n\nThe orchestration objective closes it: every session ends in a completed resolution or a human escalation — and the escalation must be visible, or it did not happen.",
+      "examTrick": "Auto-recover transient + in-policy. Escalate unauthorized decisions. Make the residual VISIBLE or it isn't an escalation.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Recovery vs Escalation",
+        "Authorization Boundary",
+        "Visible Residual"
+      ]
+    },
+    {
+      "id": 21,
+      "question": "Which is the strongest reason to prefer typed error categories over free-text messages in an MCP server you build?",
+      "options": [
+        "A calling agent can branch deterministically on the category without parsing prose, and the same category can drive telemetry and review routing.",
+        "Typed categories consume fewer tokens than prose.",
+        "Free-text messages are rejected by the MCP protocol.",
+        "Typed categories are required for the server to appear in /mcp."
+      ],
+      "answer": "A calling agent can branch deterministically on the category without parsing prose, and the same category can drive telemetry and review routing.",
+      "difficulty": "Medium",
+      "source": "NEW | CCAF MCP error-handling objective; Claude Code api_retry categories",
+      "explanation": "A typed category is machine-readable, so retry, correct, and escalate become a switch rather than an inference. The same field also aggregates: counting failures by category tells you whether your problem is rate limits, credentials, or malformed inputs — which is the structured-metadata principle from the feedback-loop objective applied to errors.\n\n**Why the others are wrong**\n\n- **B.** Token savings are marginal and not the rationale.\n- **C.** Prose is permitted; typed categories are a design choice, and good errors usually carry BOTH a category and a human-readable message.\n- **D.** No such requirement.\n\nNote that the best designs pair them: api_retry carries both a typed error field and numeric fields the caller can act on, alongside identifiers a human can trace.",
+      "examTrick": "Typed category = deterministic branching AND aggregation. Best errors carry a category for machines and prose for humans.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Typed Categories",
+        "Telemetry",
+        "Machine + Human"
+      ]
+    },
+    {
+      "id": 22,
+      "question": "Which failure would a monitoring system built only on HTTP status codes miss entirely?",
+      "options": [
+        "A refusal, a truncated response, or a paused server-tool loop — all arrive as stop_reason values on HTTP 200.",
+        "A 429 rate limit.",
+        "A 500 server error.",
+        "A connection timeout."
+      ],
+      "answer": "A refusal, a truncated response, or a paused server-tool loop — all arrive as stop_reason values on HTTP 200.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Stop reasons vs errors",
+      "explanation": "'Stop reasons: Part of successful response body (HTTP 200), indicate normal generation completion. Errors: HTTP 4xx/5xx status codes, indicate request processing failure.' A monitor watching only status codes therefore sees a refusal, a max_tokens truncation, and a pause_turn as three successes.\n\n**Why the others are wrong**\n\n- **B, C, D.** All are transport-level failures that standard monitoring catches.\n\nThis is the closing idea of the whole error-handling topic: the failures worth engineering against are the ones that do not look like failures. Every technique in this material — structured tool errors, stop_reason checks, nullable schema fields, confidence routing, visible escalation — exists to convert an invisible problem into a signal something can act on.",
+      "examTrick": "Status-code monitoring misses everything on HTTP 200. Instrument stop_reason explicitly or you are blind to the real failures.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Monitoring Blind Spot",
+        "HTTP 200",
+        "Unifying Principle"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,383 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.12 Non-Interactive Mode, CI/CD & the Agent SDK CLI",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "NEW TOPIC. claude -p, output formats and structured output, bare mode, --allowedTools and permission modes in CI, session continuation from scripts, streaming events, and failing CI when a plugin or MCP server does not load. Grounded in the official Claude Code non-interactive-mode documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What are the three values of --output-format, and what does each produce?",
+      "options": [
+        "text (default, plain text), json (structured JSON with result, session ID, and metadata), and stream-json (newline-delimited JSON for real-time streaming).",
+        "plain, yaml, and json.",
+        "text, markdown, and json.",
+        "json, xml, and stream."
+      ],
+      "answer": "text (default, plain text), json (structured JSON with result, session ID, and metadata), and stream-json (newline-delimited JSON for real-time streaming).",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Non-interactive mode: get structured output",
+      "explanation": "'text (default): plain text output. json: structured JSON with result, session ID, and metadata. stream-json: newline-delimited JSON for real-time streaming.' With stream-json, 'The last line of the stream is a result message with the final response text, cost, and session metadata.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the documented set.\n\nA useful extra: with --output-format json 'the response payload includes total_cost_usd and a per-model cost breakdown, so scripted callers can track spend per invocation' — though both figures are client-side estimates that can differ from the actual bill.",
+      "examTrick": "text / json / stream-json. json carries result + session_id + usage + total_cost_usd.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "--output-format", "Structured Output", "Cost Tracking"]
+    },
+    {
+      "id": 2,
+      "question": "What does --bare do, and why is it recommended for CI?",
+      "options": [
+        "It skips auto-discovery of hooks, skills, custom commands, subagents, plugins, MCP servers, auto memory, and CLAUDE.md, so you get the same result on every machine.",
+        "It suppresses all output except the final result.",
+        "It disables all tools so only text generation runs.",
+        "It skips authentication so no API key is needed."
+      ],
+      "answer": "It skips auto-discovery of hooks, skills, custom commands, subagents, plugins, MCP servers, auto memory, and CLAUDE.md, so you get the same result on every machine.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: start faster with bare mode",
+      "explanation": "'Add --bare to reduce startup time by skipping auto-discovery of hooks, skills, custom commands, subagents, plugins, MCP servers, auto memory, and CLAUDE.md... Bare mode is useful for CI and scripts where you need the same result on every machine. A hook in a teammate's ~/.claude or an MCP server in the project's .mcp.json won't run, because bare mode never reads them.'\n\n**Why the others are wrong**\n\n- **B.** Output format controls that.\n- **C.** 'In bare mode Claude has access to the Bash, file read, and file edit tools.'\n- **D.** The opposite: 'In bare mode, Claude Code never reads OAuth credentials or the system keychain. For the Anthropic API, set ANTHROPIC_API_KEY in the environment.'\n\nThe docs note '--bare is the recommended mode for scripted and SDK calls, and will become the default for -p in a future release.'",
+      "examTrick": "--bare = reproducibility. It skips repo and user configuration entirely, and requires ANTHROPIC_API_KEY rather than OAuth.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "--bare", "CI Reproducibility", "Auto-Discovery"]
+    },
+    {
+      "id": 3,
+      "question": "Without --bare, what does a claude -p session do with repository content in an untrusted folder?",
+      "options": [
+        "It runs the hooks in the project's .claude/settings.json and connects the servers in its .mcp.json, showing no workspace trust dialog and no per-server approval prompt.",
+        "It refuses to start until the folder is trusted interactively.",
+        "It loads settings but skips all hooks and MCP servers.",
+        "It prompts on stdin for trust approval."
+      ],
+      "answer": "It runs the hooks in the project's .claude/settings.json and connects the servers in its .mcp.json, showing no workspace trust dialog and no per-server approval prompt.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: start faster with bare mode",
+      "explanation": "'Without --bare, a -p session runs the hooks in a project's .claude/settings.json and connects the servers in its .mcp.json, even in a folder you've never trusted. A -p session shows no workspace trust dialog and no per-server approval prompt.'\n\n**Why the others are wrong**\n\n- **B, D.** A headless run cannot show a prompt, which is exactly why this behaviour exists and why it matters.\n- **C.** They do run.\n\nThis is a genuine security consideration for CI on untrusted code: the safe pattern is --bare plus explicitly-passed configuration, so nothing from the checkout executes implicitly. It also connects to the MCP docs, which note that '-p runs, Agent SDK sessions, and cloud sessions can't show that prompt: Claude Code loads project-scoped servers there without asking.'",
+      "examTrick": "-p without --bare EXECUTES repo hooks and MCP servers with no trust prompt. Use --bare on untrusted checkouts.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Workspace Trust", "CI Security", "Untrusted Repos"]
+    },
+    {
+      "id": 4,
+      "question": "Which permission mode does the documentation recommend for a locked-down CI run, and what does it do?",
+      "options": [
+        "dontAsk — Claude Code denies anything not in your permissions.allow rules or the read-only command set.",
+        "acceptEdits — it approves file writes and common filesystem commands.",
+        "auto — a classifier reviews each action.",
+        "bypassPermissions — CI runners are already isolated."
+      ],
+      "answer": "dontAsk — Claude Code denies anything not in your permissions.allow rules or the read-only command set.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: auto-approve tools",
+      "explanation": "'dontAsk: Claude Code denies anything not in your permissions.allow rules or the read-only command set, which is useful for locked-down CI runs. AskUserQuestion, connector tools your organization set to ask, and MCP tools marked requiresUserInteraction are denied even when an allow rule matches.'\n\n**Why the others are wrong**\n\n- **B.** acceptEdits writes files without prompting, but 'Apart from the read-only command set, other shell commands and network requests still need an --allowedTools entry or a permissions.allow rule.' It is a baseline, not a lockdown.\n- **C.** auto is hands-off with a classifier — useful, but it is permissive by design rather than locked down.\n- **D.** bypassPermissions requires container isolation and skips checks entirely.\n\nAlso note: 'For -p, the built-in starting permission mode is Manual on every plan, so pass the permission mode you want.'",
+      "examTrick": "Locked-down CI = dontAsk + an explicit allow list. -p always STARTS in Manual, on every plan.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "dontAsk", "CI Lockdown", "Starting Mode"]
+    },
+    {
+      "id": 5,
+      "question": "How do you get output conforming to a specific JSON Schema from a headless run?",
+      "options": [
+        "Use --output-format json with --json-schema; the structured output appears in the structured_output field.",
+        "Use --output-format schema-json with a schema file path.",
+        "Pass the schema in --append-system-prompt and parse the result field.",
+        "It is not supported; only free-form text and metadata are available."
+      ],
+      "answer": "Use --output-format json with --json-schema; the structured output appears in the structured_output field.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Non-interactive mode: get structured output",
+      "explanation": "'To get output conforming to a specific schema, use --output-format json with --json-schema and a JSON Schema definition. The response includes metadata about the request (session ID, usage, etc.) with the structured output in the structured_output field.'\n\n**Why the others are wrong**\n\n- **B.** No such format value.\n- **C.** Prompt-based schema instruction is the weakest structured-output method and lands in result, not structured_output.\n- **D.** It is supported.\n\nTwo behavioural details: an invalid schema now fails loudly — 'Error: --json-schema is not a valid JSON Schema' — where 'Before v2.1.205, Claude Code silently ignored an invalid schema and returned unstructured text.' And 'Claude Code accepts schemas that use the format keyword... but treats format as an annotation and doesn't enforce it.'",
+      "examTrick": "--json-schema puts results in structured_output (not result). format is accepted but NOT enforced.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "--json-schema", "structured_output", "Schema Validation"]
+    },
+    {
+      "id": 6,
+      "question": "Which flags are needed to stream tokens as they are generated?",
+      "options": [
+        "--output-format stream-json together with --verbose and --include-partial-messages.",
+        "--output-format stream-json alone.",
+        "--stream with --verbose.",
+        "--output-format json with --follow."
+      ],
+      "answer": "--output-format stream-json together with --verbose and --include-partial-messages.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Non-interactive mode: stream responses",
+      "explanation": "'Use --output-format stream-json with --verbose and --include-partial-messages to receive tokens as they're generated. Each line is a JSON object representing an event.' The documented jq filter selects .type == \"stream_event\" and .event.delta.type? == \"text_delta\".\n\n**Why the others are wrong**\n\n- **B.** Without --include-partial-messages you get message-level events, not token deltas.\n- **C, D.** Not documented flags.\n\nA robustness note: 'If your consumer reads the stream slowly, Claude Code waits for the queued output to drain before exiting, scaling the wait with how much is still queued, capped at 30 seconds.'",
+      "examTrick": "Token streaming needs all three: stream-json + --verbose + --include-partial-messages.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Streaming", "--include-partial-messages", "stream_event"]
+    },
+    {
+      "id": 7,
+      "question": "In a stream-json output, how do you tell a subagent's messages from the main conversation's?",
+      "options": [
+        "Subagent messages carry the spawning tool call's ID in parent_tool_use_id; main-conversation messages carry null.",
+        "Subagent messages have type \"subagent\".",
+        "Subagent messages appear only after the main conversation ends.",
+        "There is no way to distinguish them."
+      ],
+      "answer": "Subagent messages carry the spawning tool call's ID in parent_tool_use_id; main-conversation messages carry null.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: follow subagent messages",
+      "explanation": "'Messages from subagents appear in the stream as assistant and user messages whose parent_tool_use_id field is the ID of the tool call that spawned the subagent. Messages from the main conversation carry null in that field.' By default only subagent tool_use and tool_result blocks are emitted; pass --forward-subagent-text or set CLAUDE_CODE_FORWARD_SUBAGENT_TEXT to also emit subagent text and thinking blocks.\n\n**Why the others are wrong**\n\n- **B, C, D.** None is the documented mechanism.\n\nFor nested agents: 'when a subagent spawns its own subagent, the nested subagent's messages carry the ID of the Agent tool call that spawned it in parent_tool_use_id, so you can rebuild the full nesting tree by following those IDs.'",
+      "examTrick": "parent_tool_use_id identifies the spawning call; null = main conversation. Follow the IDs to rebuild the nesting tree.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "parent_tool_use_id", "Subagent Streaming", "Observability"]
+    },
+    {
+      "id": 8,
+      "question": "How can a CI gate fail when an MCP server named in --mcp-config never loaded?",
+      "options": [
+        "Check the mcp_server_errors array in the system/init event; the key is omitted when there are no errors, so a non-empty array can fail the build.",
+        "Check the process exit code, which is non-zero when a server fails validation.",
+        "Parse stderr for the startup warning, which is always printed.",
+        "There is no way to detect it; validation failures are silent."
+      ],
+      "answer": "Check the mcp_server_errors array in the system/init event; the key is omitted when there are no errors, so a non-empty array can fail the build.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: fail CI when a plugin or MCP server doesn't load",
+      "explanation": "'Claude Code validates each --mcp-config entry at startup and skips entries that fail validation... The run continues and exits cleanly, so check these fields to catch a server that never loaded.' mcp_server_errors carries name, type, and message per skipped entry, with skip categories like unknown_type, url_missing_type, invalid_config, or reserved_name. 'The key is omitted when there are no errors, so a CI gate can fail on a non-empty array.'\n\n**Why the others are wrong**\n\n- **B.** 'The run continues and exits cleanly' — the exit code will not catch it.\n- **C.** The stderr warning appears only for interactive terminal use: 'When you redirect stderr, or when a program such as a CI runner or an SDK host captures it, Claude Code prints no warning.'\n- **D.** It is detectable through the init event.\n\nThe same pattern applies to plugins via plugins and plugin_errors.",
+      "examTrick": "Silent skips + clean exit. Gate CI on mcp_server_errors / plugin_errors in system/init, never on the exit code.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "system/init", "CI Gating", "Silent Failures"]
+    },
+    {
+      "id": 9,
+      "question": "How do you capture a session ID from one headless run and continue that specific conversation later?",
+      "options": [
+        "session_id=$(claude -p \"...\" --output-format json | jq -r '.session_id') then claude -p \"...\" --resume \"$session_id\".",
+        "Use --continue, which always targets the correct session even with several running.",
+        "Read the newest file in ~/.claude/projects/ and parse its name.",
+        "Session IDs are not exposed to scripts."
+      ],
+      "answer": "session_id=$(claude -p \"...\" --output-format json | jq -r '.session_id') then claude -p \"...\" --resume \"$session_id\".",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Non-interactive mode: continue conversations",
+      "explanation": "The documented pattern exactly: 'If you're running multiple conversations, capture the session ID to resume a specific one.' And: 'You can run the two commands from different directories: Claude Code finds the session by its ID in any project on this machine.'\n\n**Why the others are wrong**\n\n- **B.** --continue resumes the MOST RECENT conversation, which is ambiguous when several run in parallel — that is precisely why the docs show the capture pattern.\n- **C.** Filesystem scraping depends on an internal layout the docs warn against relying on.\n- **D.** session_id is a documented field of the json output.\n\nWorth remembering: '--continue skips background sessions', and -p/SDK sessions are excluded from the interactive picker but resumable by ID.",
+      "examTrick": "Parallel headless conversations = capture session_id from json and --resume it. --continue is only safe when there is one.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "session_id", "--resume", "Parallel Runs"]
+    },
+    {
+      "id": 10,
+      "question": "Which flag adds instructions while keeping Claude Code's default system prompt, and which replaces it entirely?",
+      "options": [
+        "--append-system-prompt appends; --system-prompt fully replaces the default prompt.",
+        "--system-prompt appends; --append-system-prompt replaces.",
+        "Both append; there is no replacement flag.",
+        "--append-system-prompt appends only in interactive mode."
+      ],
+      "answer": "--append-system-prompt appends; --system-prompt fully replaces the default prompt.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Non-interactive mode: customize the system prompt",
+      "explanation": "'Use --append-system-prompt to add instructions while keeping Claude Code's default behavior... See system prompt flags for more options including --system-prompt to fully replace the default prompt.' There is also --append-system-prompt-file for loading from a file.\n\n**Why the others are wrong**\n\n- **B.** Reversed.\n- **C.** A replacement flag exists.\n- **D.** It works in both modes.\n\nThe memory docs give the relevant use case: 'For instructions you want at the system prompt level, use --append-system-prompt. This must be passed every invocation, so it's better suited to scripts and automation than interactive use.' That is the key contrast with CLAUDE.md, which is delivered as a user message AFTER the system prompt.",
+      "examTrick": "--append-system-prompt = system-prompt-level instructions, must be passed every run. CLAUDE.md is a user message after the system prompt.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "--append-system-prompt", "--system-prompt", "Instruction Placement"]
+    },
+    {
+      "id": 11,
+      "question": "What is the documented cap on piped stdin, and what should you do for larger inputs?",
+      "options": [
+        "10MB; write the content to a file and reference the file path in your prompt instead of piping it.",
+        "1MB; split the input into chunks and run several invocations.",
+        "100MB; no alternative is needed.",
+        "There is no cap; stdin is streamed."
+      ],
+      "answer": "10MB; write the content to a file and reference the file path in your prompt instead of piping it.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Non-interactive mode: pipe data through Claude",
+      "explanation": "'Piped stdin is capped at 10MB. If you exceed the cap, Claude Code exits with a clear error and a non-zero status. To work with larger inputs, write the content to a file and reference the file path in your prompt instead of piping it.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the documented cap or remedy.\n\nThe file-reference approach is also better practice generally: Claude can read selectively rather than having the whole payload injected into context — the targeted-reading principle applied to headless input.",
+      "examTrick": "10MB stdin cap. Beyond that, pass a FILE PATH so Claude reads selectively instead of ingesting everything.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "stdin Cap", "Large Inputs", "Targeted Reading"]
+    },
+    {
+      "id": 12,
+      "question": "Do user-invoked skills and custom commands work in -p mode?",
+      "options": [
+        "Yes — include /skill-name in the prompt string and Claude Code expands it before running; but terminal-only built-ins such as /login are unavailable.",
+        "No — slash commands require an interactive terminal.",
+        "Yes, all commands including /login work identically.",
+        "Only bundled skills work; custom ones are skipped."
+      ],
+      "answer": "Yes — include /skill-name in the prompt string and Claude Code expands it before running; but terminal-only built-ins such as /login are unavailable.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Non-interactive mode",
+      "explanation": "'User-invoked skills and custom commands work in -p mode: include /skill-name in the prompt string and Claude Code expands it before running. Built-in commands that only run in the terminal interface, such as /login, aren't available in -p mode.' Some accept arguments: '/model, /effort, /fast, /color, and /rename accept the value as an argument, for example /model sonnet', and '/config' takes key=value, for example '/config thinking=false'.\n\n**Why the others are wrong**\n\n- **B, D.** Both understate support.\n- **C.** Terminal-only built-ins are explicitly excluded.\n\nNote the interaction with --bare: bare mode skips custom command discovery entirely, so a /my-command in a bare run will not resolve.",
+      "examTrick": "/skill-name works inside a -p prompt string. But --bare skips command discovery, so they won't resolve there.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Skills in -p", "Slash Commands", "--bare Interaction"]
+    },
+    {
+      "id": 13,
+      "question": "What happens to a background Bash task when a claude -p run finishes?",
+      "options": [
+        "The shell is terminated about five seconds after Claude returns its final result and stdin has closed; background subagents and workflows are exempt and are waited for, capped at ten minutes by default.",
+        "Background tasks keep running indefinitely after the process exits.",
+        "Background tasks are killed immediately with no grace period.",
+        "The run refuses to exit until every background task completes, with no cap."
+      ],
+      "answer": "The shell is terminated about five seconds after Claude returns its final result and stdin has closed; background subagents and workflows are exempt and are waited for, capped at ten minutes by default.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: background tasks at exit",
+      "explanation": "'That shell is terminated about five seconds after Claude has returned its final result and stdin has closed. The grace period lets a task that finishes right after the result still deliver its output.' And: 'Background subagents and workflows are exempt from the five-second grace because their result is part of the final output, so claude -p waits for them to complete. From v2.1.182, that wait is capped at ten minutes by default so a stuck background agent cannot hold the process open indefinitely. Adjust the cap with CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS, or set it to 0 to wait without a limit.'\n\n**Why the others are wrong**\n\n- **B.** 'Before v2.1.163, a never-exiting background process would hold the claude -p invocation open indefinitely' — that was the old behaviour.\n- **C.** There is a five-second grace.\n- **D.** The wait is capped.\n\nThe design principle: results that are part of the output are waited for; side-effect processes are not.",
+      "examTrick": "Background Bash: 5s grace then killed. Background subagents: waited for, 10-minute cap by default.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Background Tasks", "Exit Behaviour", "Timeout Caps"]
+    },
+    {
+      "id": 14,
+      "question": "A process supervisor sends SIGTERM to a claude -p run. What happens?",
+      "options": [
+        "Claude Code exits with code 143, leaves the in-progress turn unfinished with no result recorded, terminates running Bash process trees, and runs SessionEnd hooks.",
+        "It exits 0 after finishing the current turn.",
+        "It ignores SIGTERM and must be killed with SIGKILL.",
+        "It finishes the turn and records the result before exiting."
+      ],
+      "answer": "Claude Code exits with code 143, leaves the in-progress turn unfinished with no result recorded, terminates running Bash process trees, and runs SessionEnd hooks.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: stop a run with SIGTERM",
+      "explanation": "'If you stop a claude -p run with SIGTERM... Claude Code exits with code 143. Claude Code leaves the turn that was in progress unfinished and records no result for it. To end the turn instead, send SIGINT, or call the Agent SDK's interrupt(), before you stop the process. On SIGTERM, Claude Code terminates the process tree of any Bash command that is still running. Claude Code then runs SessionEnd hooks and exits.' While exiting it 'starts no new tool call, sends no new model request, and runs no hook other than SessionEnd.'\n\n**Why the others are wrong**\n\n- **B, D.** The turn is left unfinished with no result.\n- **C.** SIGTERM is handled.\n\nThe recovery path matters: 'When you resume the session, Claude Code continues the turn that SIGTERM left unfinished.' So an interrupted CI run is resumable rather than lost.",
+      "examTrick": "SIGTERM = exit 143, turn unfinished but RESUMABLE, SessionEnd still runs. SIGINT ends the turn cleanly instead.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "SIGTERM", "Exit 143", "Graceful Shutdown"]
+    },
+    {
+      "id": 15,
+      "question": "Which --allowedTools entry correctly permits any command starting with 'git diff' and nothing broader?",
+      "options": [
+        "Bash(git diff *) — the space before * enforces a word boundary, so it does not match git diff-index.",
+        "Bash(git diff*) — the tightest possible form.",
+        "Bash(git *) — scoped to git, which is equivalent.",
+        "Bash(command:git diff *) — the explicit field form."
+      ],
+      "answer": "Bash(git diff *) — the space before * enforces a word boundary, so it does not match git diff-index.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: create a commit",
+      "explanation": "'The --allowedTools flag uses permission rule syntax. The trailing \" *\" enables prefix matching, so Bash(git diff *) allows any command starting with git diff. The space before * is important: without it, Bash(git diff*) would also match git diff-index.'\n\n**Why the others are wrong**\n\n- **B.** Without the space it matches more, not less — the opposite of 'tightest'.\n- **C.** Bash(git *) permits every git command including git push.\n- **D.** Primary content fields cannot be matched this way; the rule would be ignored with a startup warning.\n\nThe documented commit example allows exactly four scoped git commands, which is the right shape for CI: enumerate what the task needs and nothing else.",
+      "examTrick": "The SPACE before * is a word boundary. 'git diff *' ≠ 'git diff*'. --allowedTools uses full permission-rule syntax.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "--allowedTools", "Word Boundary", "Least Privilege"]
+    },
+    {
+      "id": 16,
+      "question": "Which system event lets a script implement custom backoff around retryable API failures?",
+      "options": [
+        "system/api_retry, carrying attempt, max_retries, retry_delay_ms, error_status, and an error category.",
+        "system/init, which reports the retry policy at startup.",
+        "system/error, emitted once per failed request.",
+        "There is no retry event; retries are invisible to consumers."
+      ],
+      "answer": "system/api_retry, carrying attempt, max_retries, retry_delay_ms, error_status, and an error category.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: handle API retries",
+      "explanation": "'When an API request fails with a retryable error, Claude Code emits a system/api_retry event before retrying. You can use this to surface retry progress or implement custom backoff logic.' The error field is a category: authentication_failed, oauth_org_not_allowed, billing_error, rate_limit, overloaded, invalid_request, model_not_found, server_error, max_output_tokens, or unknown.\n\n**Why the others are wrong**\n\n- **B.** system/init reports session metadata — model, tools, MCP servers, plugins, and an optional capabilities array.\n- **C, D.** Not documented.\n\nThe error categories are worth noting as an example of good structured error design: a consumer can distinguish rate_limit (retry with backoff) from billing_error (stop and alert a human) without parsing prose.",
+      "examTrick": "system/api_retry gives attempt, max_retries, retry_delay_ms, and a typed error category — structured errors in practice.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "api_retry", "Structured Errors", "Backoff"]
+    },
+    {
+      "id": 17,
+      "question": "How should a script feature-detect Claude Code protocol behaviours rather than comparing version strings?",
+      "options": [
+        "Read the optional capabilities array in the system/init event and ignore values it does not recognize.",
+        "Parse the output of claude --version.",
+        "Attempt each behaviour and catch the failure.",
+        "Check the CLAUDE_CODE_VERSION environment variable."
+      ],
+      "answer": "Read the optional capabilities array in the system/init event and ignore values it does not recognize.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: read session metadata",
+      "explanation": "'The event also carries an optional capabilities array of strings naming the protocol behaviors this Claude Code version implements, such as interrupt_receipt_v1 or interrupt_cancel_queued_v1. Check it to feature-detect instead of comparing version strings, and ignore values you don't recognize. The field requires Claude Code v2.1.205 or later and is absent from earlier versions.'\n\n**Why the others are wrong**\n\n- **B.** Version comparison is explicitly what the capabilities array replaces.\n- **C.** Trial-and-error is unreliable and has side effects.\n- **D.** Not a documented variable for this.\n\n'Ignore values you don't recognize' plus 'absent from earlier versions' is a well-designed capability protocol: forward-compatible and degrading gracefully.",
+      "examTrick": "Feature-detect via the capabilities array in system/init. Never branch on version strings.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "capabilities Array", "Feature Detection", "Forward Compatibility"]
+    },
+    {
+      "id": 18,
+      "question": "Which statement about exit codes from claude -p is correct?",
+      "options": [
+        "Exit 0 on success and non-zero on failure; an invalid flag is reported to stderr before the run starts, while a failure inside the run is printed as the result on stdout.",
+        "Always exit 0; failures are only visible in the JSON payload.",
+        "Exit code equals the number of tool errors encountered.",
+        "Exit 1 whenever any tool call is denied."
+      ],
+      "answer": "Exit 0 on success and non-zero on failure; an invalid flag is reported to stderr before the run starts, while a failure inside the run is printed as the result on stdout.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Non-interactive mode: basic usage",
+      "explanation": "'Claude Code exits with code 0 on success and a non-zero code when the run fails, so your scripts can branch on the exit status. If you pass an invalid flag, Claude Code reports the error to stderr before the run starts. When a failure happens inside the run, such as missing authentication, Claude Code prints the failure as the result on stdout.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches.\n\nBut note the important limit established earlier: config-level skips like an invalid --mcp-config entry or a failed plugin 'continue and exit cleanly'. So exit codes catch RUN failures, not CONFIGURATION problems — for those you must inspect system/init.",
+      "examTrick": "Exit code catches run failures. Config skips (MCP, plugins) exit CLEANLY — gate on system/init fields instead.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Exit Codes", "Failure Surfaces", "CI Gating"]
+    },
+    {
+      "id": 19,
+      "question": "Which flags does --bare require you to pass explicitly to restore context it would otherwise auto-discover?",
+      "options": [
+        "--append-system-prompt or --append-system-prompt-file, --settings, --mcp-config, --agents, and --plugin-dir or --plugin-url.",
+        "Only --settings; everything else is still discovered.",
+        "--allowedTools and --permission-mode only.",
+        "None; --bare cannot load any additional context."
+      ],
+      "answer": "--append-system-prompt or --append-system-prompt-file, --settings, --mcp-config, --agents, and --plugin-dir or --plugin-url.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: start faster with bare mode",
+      "explanation": "The 'To load / Use' table: system prompt additions via --append-system-prompt or --append-system-prompt-file; settings via --settings <file-or-json>; MCP servers via --mcp-config <file-or-json>; custom agents via --agents <json>; a plugin via --plugin-dir <path> or --plugin-url <url>.\n\n**Why the others are wrong**\n\n- **B, C.** Bare mode skips all auto-discovery, so each piece must be passed.\n- **D.** The whole point of the table is that context can be supplied explicitly.\n\nOne documented partial exception: 'A directory you name with --add-dir is a partial exception: bare mode loads skills from its .claude/skills/ folder, but still skips its .claude/commands/ and .claude/agents/ folders.'\n\nThe philosophy: bare mode makes configuration EXPLICIT rather than ambient, which is what reproducible CI requires.",
+      "examTrick": "--bare = nothing ambient. Pass settings, MCP, agents, plugins, system prompt explicitly. --add-dir still loads its skills.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Bare Mode Flags", "Explicit Configuration", "Reproducibility"]
+    },
+    {
+      "id": 20,
+      "question": "Which pattern turns Claude Code into a project-specific linter inside a build script?",
+      "options": [
+        "Pipe the diff into claude -p with a narrow instruction, for example: git diff main | claude -p \"you are a typo linter...\" as an npm script.",
+        "Run claude interactively from a pre-commit hook and parse the terminal output.",
+        "Install Claude Code as a PostToolUse hook in CI.",
+        "Use --output-format stream-json and grep for warnings."
+      ],
+      "answer": "Pipe the diff into claude -p with a narrow instruction, for example: git diff main | claude -p \"you are a typo linter...\" as an npm script.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Non-interactive mode: add Claude to a build script",
+      "explanation": "The documented example wraps exactly this in package.json: 'git diff main | claude -p \"you are a typo linter. for each typo in this diff, report filename:line on one line and the issue on the next. return nothing else.\"' The docs note two design choices: 'Piping the diff means Claude doesn't need Bash permission to read it, and the escaped double quotes keep the script portable to Windows.'\n\n**Why the others are wrong**\n\n- **B.** Interactive mode cannot run unattended.\n- **C.** Hooks run inside a Claude Code session; they are not a CI installation mechanism.\n- **D.** Streaming is a transport choice, not a linting pattern.\n\nNote how the prompt itself does the work: a precise output format ('filename:line', 'return nothing else') makes the output parseable without a schema.",
+      "examTrick": "Pipe the input so no Bash permission is needed, and specify the output format precisely in the prompt.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Build Script Integration", "Piping", "Least Privilege"]
+    },
+    {
+      "id": 21,
+      "question": "Which flags does claude -p reject or handle specially?",
+      "options": [
+        "It rejects --bg, and rejects --cloud with a task description; --cloud with a session ID plus -p queues a message into that cloud session and exits.",
+        "It rejects --allowedTools, which is interactive-only.",
+        "It rejects --resume, which requires an interactive picker.",
+        "It accepts every CLI flag without exception."
+      ],
+      "answer": "It rejects --bg, and rejects --cloud with a task description; --cloud with a session ID plus -p queues a message into that cloud session and exits.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: basic usage",
+      "explanation": "'Not every CLI option combines with -p. Claude Code rejects --bg, and rejects --cloud with a task description, with an error naming the conflict; --cloud with a session ID and -p instead queues a message into that cloud session and exits.'\n\n**Why the others are wrong**\n\n- **B, C.** Both are among the flags most commonly used WITH -p; the docs list --continue, --allowedTools, and --output-format as the frequent combinations.\n- **D.** Some flags conflict.\n\nThe useful part is that conflicts are reported by name rather than silently ignored — consistent with the --json-schema validation change, where silent acceptance of bad input was replaced by a clear error.",
+      "examTrick": "-p rejects --bg and --cloud-with-a-task. --cloud + session ID + -p queues a follow-up into that cloud session.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Flag Conflicts", "--cloud", "Error Reporting"]
+    },
+    {
+      "id": 22,
+      "question": "What is the relationship between claude -p and the Agent SDK?",
+      "options": [
+        "The Agent SDK gives the same tools, agent loop, and context management that power Claude Code, available as a CLI for scripts and CI/CD or as Python and TypeScript packages for full programmatic control.",
+        "The Agent SDK is a separate product that does not share Claude Code's agent loop.",
+        "claude -p is a thin wrapper around the Messages API with no tools.",
+        "The Agent SDK replaces claude -p, which is deprecated."
+      ],
+      "answer": "The Agent SDK gives the same tools, agent loop, and context management that power Claude Code, available as a CLI for scripts and CI/CD or as Python and TypeScript packages for full programmatic control.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Run Claude Code programmatically",
+      "explanation": "'The Agent SDK gives you the same tools, agent loop, and context management that power Claude Code. It's available as a CLI for scripts and CI/CD, or as Python and TypeScript packages for full programmatic control.' The page frames claude -p as 'using the Agent SDK via the CLI'. The packages add 'structured outputs, tool approval callbacks, and native message objects'.\n\n**Why the others are wrong**\n\n- **B.** They share the loop by design.\n- **C.** -p has the full tool set and agent loop, not raw API access.\n- **D.** Neither is deprecated.\n\nThe architectural point worth carrying into the exam: the agentic loop is one concept expressed at three levels — the raw Messages API round trip, the SDK, and the Claude Code CLI. Understanding stop_reason explains all three.",
+      "examTrick": "-p IS the Agent SDK via the CLI. Same tools, same loop, same context management. Packages add callbacks and typed objects.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Agent SDK", "Shared Agent Loop", "Programmatic Control"]
+    }
+  ]
+}

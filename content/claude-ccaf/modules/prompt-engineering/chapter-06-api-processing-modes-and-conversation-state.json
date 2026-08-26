@@ -1,0 +1,405 @@
+{
+  "subject": "Claude CCAF: Prompt Engineering & Extraction",
+  "chapter": "2.6 API Processing Modes & Stateless Conversation State",
+  "exam": "Claude CCAF",
+  "paper": "Domain-2",
+  "description": "NEW TOPIC. Choosing the synchronous Messages API versus the asynchronous Message Batches API on latency, blocking behaviour and processing windows; plus why the Messages API is stateless and how multi-turn and tool-use state is maintained. Grounded in the official Claude API documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A nightly job classifies 40,000 support tickets. Results are consumed by a report generated the next morning, and nothing blocks on them. Which processing mode is appropriate and why?",
+      "options": [
+        "The Message Batches API — the work is high volume, immediate responses are not required, and batch usage is charged at 50% of standard prices.",
+        "The synchronous Messages API with high concurrency, since batches add latency the report cannot absorb.",
+        "The Messages API with streaming, so partial results are available as they arrive.",
+        "The Message Batches API, but only if every request completes within 60 seconds."
+      ],
+      "answer": "The Message Batches API — the work is high volume, immediate responses are not required, and batch usage is charged at 50% of standard prices.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Batch processing",
+      "explanation": "The documented decision criteria for batch are: you need to process large volumes of data, immediate responses are not required, you want to optimize for cost efficiency, or you are running large-scale evaluations. This scenario matches all of them. 'All usage is charged at 50% of the standard API prices.'\n\n**Why the others are wrong**\n\n- **B.** Synchronous processing forfeits the 50% discount and the higher throughput for no benefit, since nothing is waiting on the result.\n- **C.** Streaming reduces time-to-first-token for an interactive consumer. There is no interactive consumer here.\n- **D.** A per-request 60-second guarantee is not what batch offers, and the premise is wrong — most batches complete within 1 hour, with a 24-hour expiration ceiling.",
+      "examTrick": "Batch = high volume + no immediate response needed + cost sensitivity. Sync = anything a user or a request is blocking on.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Batches API",
+        "Mode Selection",
+        "Cost Optimization"
+      ]
+    },
+    {
+      "id": 2,
+      "question": "What is the size limit of a single Message Batch?",
+      "options": [
+        "100,000 Message requests or 256 MB in size, whichever is reached first.",
+        "10,000 Message requests or 32 MB, whichever is reached first.",
+        "100,000 Message requests with no total size limit.",
+        "256 MB with no limit on the number of requests."
+      ],
+      "answer": "100,000 Message requests or 256 MB in size, whichever is reached first.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Batch processing: batch limitations",
+      "explanation": "'A Message Batch is limited to either 100,000 Message requests or 256 MB in size, whichever is reached first.' Both ceilings apply simultaneously, so a batch of large multimodal requests can hit 256 MB well before 100,000 requests.\n\n**Why the others are wrong**\n\n- **B.** Wrong on both numbers.\n- **C, D.** Each drops one of the two limits. The 'whichever is reached first' phrasing is exactly what the exam tests.",
+      "examTrick": "Two ceilings, whichever hits first: 100,000 requests / 256 MB.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Batch Limits",
+        "100000 Requests",
+        "256 MB"
+      ]
+    },
+    {
+      "id": 3,
+      "question": "What is the processing window for a Message Batch, and what happens if it is not met?",
+      "options": [
+        "Most batches complete within 1 hour; results are accessible when all messages complete or after 24 hours, whichever comes first, and batches expire if processing does not complete within 24 hours.",
+        "Batches are guaranteed to complete within 1 hour; anything incomplete is automatically retried.",
+        "Batches have a 12-hour window, after which incomplete requests are billed but discarded.",
+        "There is no time limit; batches process until every request succeeds."
+      ],
+      "answer": "Most batches complete within 1 hour; results are accessible when all messages complete or after 24 hours, whichever comes first, and batches expire if processing does not complete within 24 hours.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Batch processing: batch limitations",
+      "explanation": "'The system processes each batch as fast as possible, with most batches completing within 1 hour. You can access batch results when all messages have completed or after 24 hours, whichever comes first. Batches expire if processing does not complete within 24 hours.' The docs also note that under heavy demand 'you may see more requests expiring after 24 hours.'\n\n**Why the others are wrong**\n\n- **B.** 1 hour is a typical outcome, not a guarantee, and there is no automatic retry of an expired batch.\n- **C.** The window is 24 hours, and expired requests are explicitly NOT billed.\n- **D.** The 24-hour expiration is a hard ceiling.",
+      "examTrick": "1 hour typical, 24 hours hard expiry. Expired and canceled requests are not billed.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Processing Window",
+        "24 Hour Expiry",
+        "SLA"
+      ]
+    },
+    {
+      "id": 4,
+      "question": "How long do batch results remain available for download?",
+      "options": [
+        "29 days after creation; after that you can still view the Batch, but its results are no longer downloadable.",
+        "24 hours after the batch ends, matching the processing window.",
+        "7 days after creation.",
+        "Indefinitely, since results are stored with the batch record."
+      ],
+      "answer": "29 days after creation; after that you can still view the Batch, but its results are no longer downloadable.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Batch processing: batch limitations",
+      "explanation": "'Batch results are available for 29 days after creation. After that, you may still view the Batch, but its results will no longer be available for download.'\n\n**Why the others are wrong**\n\n- **B.** 24 hours is the PROCESSING expiration, a different clock. Conflating the two is the trap here.\n- **C, D.** Neither figure is documented.",
+      "examTrick": "Three different numbers, keep them apart: ~1h typical completion, 24h processing expiry, 29 days result retention.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Result Retention",
+        "29 Days",
+        "Batch Lifecycle"
+      ]
+    },
+    {
+      "id": 5,
+      "question": "A batch has just been created. What is its processing_status, and what value indicates results are ready?",
+      "options": [
+        "It starts as in_progress and updates to ended once all requests have finished processing.",
+        "It starts as pending and updates to succeeded once all requests have finished.",
+        "It starts as queued and updates to complete.",
+        "It starts as in_progress and updates to succeeded, errored, or canceled depending on the outcome."
+      ],
+      "answer": "It starts as in_progress and updates to ended once all requests have finished processing.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Batch processing: tracking your batch",
+      "explanation": "'The Message Batch's processing_status field indicates the stage of processing the batch is in. It starts as in_progress, then updates to ended once all the requests in the batch have finished processing, and results are ready.' A polling loop checks until processing_status is 'ended'.\n\n**Why the others are wrong**\n\n- **B, C.** Invented status values.\n- **D.** This confuses the BATCH-level processing_status with the per-request RESULT types. Those are two different fields: the batch has in_progress / ended, while each request's result is succeeded, errored, canceled, or expired. This is the single most testable distinction in the batch API.",
+      "examTrick": "Batch-level: in_progress → ended. Request-level result types: succeeded / errored / canceled / expired. Do not mix them.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "processing_status",
+        "ended",
+        "Polling"
+      ]
+    },
+    {
+      "id": 6,
+      "question": "Which set lists the four per-request result types in a completed batch?",
+      "options": [
+        "succeeded, errored, canceled, expired.",
+        "succeeded, failed, timeout, skipped.",
+        "in_progress, ended, canceled, expired.",
+        "ok, error, retry, dropped."
+      ],
+      "answer": "succeeded, errored, canceled, expired.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Batch processing: retrieving batch results",
+      "explanation": "'Once batch processing has ended, each Messages request in the batch has a result. There are four result types': succeeded (includes the message result), errored, canceled (user canceled before the request was sent to the model — not billed), and expired (batch reached its 24-hour expiration before the request was sent — not billed).\n\n**Why the others are wrong**\n\n- **B, D.** Invented vocabularies.\n- **C.** Mixes the batch-level processing_status values into the request-level list.\n\nBilling detail worth memorising: canceled and expired requests are explicitly NOT billed.",
+      "examTrick": "Four result types. canceled and expired = never sent to the model = not billed.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "result_type",
+        "Billing",
+        "Batch Results"
+      ]
+    },
+    {
+      "id": 7,
+      "question": "Your batch processing code assumes results come back in the same order the requests were submitted. What is the documented behaviour, and what should you rely on instead?",
+      "options": [
+        "Results may not be in the submission order; match each result to its request using the custom_id you supplied.",
+        "Results are guaranteed to be returned in submission order, so index position is safe.",
+        "Results are returned sorted by result type, with all succeeded entries first.",
+        "Results are returned in completion order, and custom_id is only for logging."
+      ],
+      "answer": "Results may not be in the submission order; match each result to its request using the custom_id you supplied.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Batch processing: retrieving batch results",
+      "explanation": "Each request in a batch carries a custom_id you assign, and every result line carries that custom_id back — the sample output line is {\"custom_id\":\"test-1\",\"type\":\"succeeded\",…}. Requests are processed independently and asynchronously, so correlating by position is unsafe; correlate by custom_id. Because results can be large, the docs recommend streaming them from results_url rather than downloading all at once.\n\n**Why the others are wrong**\n\n- **B.** Positional matching is the classic bug this API design guards against.\n- **C.** No sorting by result type occurs.\n- **D.** custom_id is the correlation key, not a logging convenience.",
+      "examTrick": "Always correlate batch results by custom_id, never by index. And stream from results_url for large batches.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "custom_id",
+        "Result Ordering",
+        "results_url"
+      ]
+    },
+    {
+      "id": 8,
+      "question": "When are validation errors for a batched request's params surfaced?",
+      "options": [
+        "Asynchronously — validation errors are returned when processing of the entire batch has ended, so verify request shape with the Messages API first.",
+        "Synchronously at batch creation, which rejects the whole batch if any request is malformed.",
+        "Synchronously at batch creation, which accepts the batch but strips the malformed requests.",
+        "Never — malformed requests are silently returned as expired."
+      ],
+      "answer": "Asynchronously — validation errors are returned when processing of the entire batch has ended, so verify request shape with the Messages API first.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Batch processing: creating a batch",
+      "explanation": "'Validation of the params object for each message request is performed asynchronously, and validation errors are returned when processing of the entire batch has ended. You can ensure that you are building your input correctly by verifying your request shape with the Messages API first.'\n\n**Why the others are wrong**\n\n- **B, C.** Neither happens at creation time; that is precisely why the docs recommend a single synchronous test request first.\n- **D.** Malformed requests surface as errored results, not expired.\n\nOperationally this is why you prototype one request synchronously before submitting 100,000 of them: a schema mistake otherwise costs you a full processing window before you learn about it.",
+      "examTrick": "Batch validation is ASYNC — a typo costs you the whole window. Validate one request on the sync Messages API first.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Async Validation",
+        "Batch Errors",
+        "Prototyping"
+      ]
+    },
+    {
+      "id": 9,
+      "question": "Which constraint applies to max_tokens inside a batched request?",
+      "options": [
+        "Each batched request must have max_tokens of at least 1; max_tokens: 0 for cache pre-warming is not supported in a batch.",
+        "max_tokens must be identical across every request in the batch.",
+        "max_tokens is ignored in batches; the model always runs to a natural stop.",
+        "max_tokens must be at least 1024 so results justify the batch overhead."
+      ],
+      "answer": "Each batched request must have max_tokens of at least 1; max_tokens: 0 for cache pre-warming is not supported in a batch.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Batch processing: batch limitations",
+      "explanation": "'Each batched request must have max_tokens of at least 1. max_tokens: 0 (cache pre-warming) is not supported inside a batch, because an ephemeral cache entry written during batch processing would likely expire before the follow-up request runs.' The reasoning is worth retaining: batch timing and ephemeral cache lifetimes do not line up.\n\n**Why the others are wrong**\n\n- **B.** Requests in a batch are independent and may differ in every parameter.\n- **C.** max_tokens is honoured normally.\n- **D.** Invented threshold.",
+      "examTrick": "max_tokens >= 1 in batches. Cache pre-warming (max_tokens: 0) is a sync-only technique.",
+      "importance": "Medium",
+      "tags": [
+        "NEW TOPIC",
+        "max_tokens",
+        "Prompt Caching",
+        "Batch Constraints"
+      ]
+    },
+    {
+      "id": 10,
+      "question": "A customer-facing chat widget needs a reply while the user waits. Which mode, and what is the deciding factor?",
+      "options": [
+        "The synchronous Messages API — a human is blocked on the response, so latency, not cost, is the binding constraint.",
+        "The Message Batches API with a single request, to get the 50% discount on every conversation.",
+        "The Message Batches API with aggressive polling every 200 ms.",
+        "Either mode; the choice is purely a cost decision at this volume."
+      ],
+      "answer": "The synchronous Messages API — a human is blocked on the response, so latency, not cost, is the binding constraint.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Batch processing: when to use each",
+      "explanation": "Batch is documented as 'well-suited to tasks that do not require immediate responses.' Its whole value proposition — 50% cost reduction and higher throughput — is purchased with an asynchronous processing window measured in minutes to hours. A blocking interactive request cannot spend that.\n\n**Why the others are wrong**\n\n- **B.** A one-request batch still enters the asynchronous queue; the discount does not buy back the latency.\n- **C.** Polling frequency cannot make an asynchronous queue synchronous.\n- **D.** The docs frame the choice on latency requirements and workflow blocking behaviour first; cost is the tiebreaker once latency permits.",
+      "examTrick": "Ask one question: is anything blocking on the answer? Yes = sync. No = batch. Cost decides only after that.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Mode Selection",
+        "Latency",
+        "Blocking Behaviour"
+      ]
+    },
+    {
+      "id": 11,
+      "question": "Why must conversation history be explicitly included in every Messages API request?",
+      "options": [
+        "The Messages API is stateless — it maintains no conversation history between requests, so each call must carry the complete context the model needs.",
+        "History is retained server-side for 24 hours but must be re-sent to refresh the retention window.",
+        "History is retained per API key, and re-sending is only required when switching models.",
+        "History is stored in the conversation_id field, and the messages array is only for the newest turn."
+      ],
+      "answer": "The Messages API is stateless — it maintains no conversation history between requests, so each call must carry the complete context the model needs.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Messages API",
+      "explanation": "The API is stateless: it does not maintain conversation history between requests. Each API call is independent and must include the complete conversation context. Multi-turn state is maintained by resending the full messages array, appending the latest turn each time. As the docs put it: 'The Messages API can be used for either single queries or stateless multi-turn conversations.'\n\n**Why the others are wrong**\n\n- **B, C.** There is no server-side conversation retention to refresh or scope to a key.\n- **D.** There is no conversation_id parameter on the Messages API. The messages array IS the state.",
+      "examTrick": "Stateless. The messages array is the entire conversation state, rebuilt and re-sent on every request.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "Stateless API",
+        "Conversation History",
+        "messages Array"
+      ]
+    },
+    {
+      "id": 12,
+      "question": "What happens if you send two consecutive messages with the same role in the messages array?",
+      "options": [
+        "They are combined into a single turn, because the models are trained on alternating user and assistant turns.",
+        "The request is rejected with a validation error.",
+        "The second message overwrites the first.",
+        "The second message is dropped silently and never reaches the model."
+      ],
+      "answer": "They are combined into a single turn, because the models are trained on alternating user and assistant turns.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Messages API",
+      "explanation": "'Our models are trained to operate on alternating user and assistant conversational turns.' And: 'Consecutive user or assistant turns in your request will be combined into a single turn.' So the content is preserved, merged into one turn, rather than rejected or lost.\n\n**Why the others are wrong**\n\n- **B.** Merging is the documented behaviour, not rejection.\n- **C, D.** No content is discarded.\n\nRelated structural facts: the first message should typically be the user role, the system prompt uses the top-level system parameter rather than a message role, and the final message may be either role.",
+      "examTrick": "Consecutive same-role messages MERGE, they do not error. System prompt is a top-level parameter, not a role.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Alternating Roles",
+        "Turn Merging",
+        "system Parameter"
+      ]
+    },
+    {
+      "id": 13,
+      "question": "The model returns a tool_use block. How must the conversation be extended for the next request?",
+      "options": [
+        "Append the assistant turn containing the tool_use block, then a user turn whose content is a tool_result block carrying the matching tool_use_id.",
+        "Append a user turn with the tool's plain-text output; no id is needed since only one tool ran.",
+        "Append an assistant turn containing the tool_result, since the tool acted on the assistant's behalf.",
+        "Replace the assistant's tool_use block with the tool's output to keep the history compact."
+      ],
+      "answer": "Append the assistant turn containing the tool_use block, then a user turn whose content is a tool_result block carrying the matching tool_use_id.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Messages API: tool results",
+      "explanation": "The documented shape is: an assistant message containing {\"type\": \"tool_use\", \"id\": \"toolu_...\", \"name\": ..., \"input\": ...}, followed by a user message containing {\"type\": \"tool_result\", \"tool_use_id\": \"toolu_...\", \"content\": ...}. The tool_use_id must match the original tool_use id. Tool results are carried in the USER role — this is the detail most often missed.\n\n**Why the others are wrong**\n\n- **B.** Omitting tool_use_id breaks correlation, which matters as soon as the model emits parallel tool calls in one turn.\n- **C.** tool_result blocks go in a user turn, not an assistant turn.\n- **D.** Removing the tool_use block destroys the record of what the model asked for and breaks the id pairing.",
+      "examTrick": "tool_use = assistant turn. tool_result = USER turn, with the matching tool_use_id. Both stay in history.",
+      "importance": "Critical",
+      "tags": [
+        "NEW TOPIC",
+        "tool_use",
+        "tool_result",
+        "Agentic Loop State"
+      ]
+    },
+    {
+      "id": 14,
+      "question": "Your code prefills a partial assistant message on the last turn to force a JSON format. It works on an older model but returns a 400 error on Claude Opus 5. Why, and what is the documented migration?",
+      "options": [
+        "Prefilled responses on the last assistant turn are no longer supported from Claude 4.6 models onward; migrate to structured outputs, tool calling, or direct instructions in the system prompt.",
+        "The prefill exceeded max_tokens; shorten it and retry.",
+        "Prefill requires tool_choice to be set to none; add that parameter.",
+        "Prefill only works when streaming is disabled; turn off streaming."
+      ],
+      "answer": "Prefilled responses on the last assistant turn are no longer supported from Claude 4.6 models onward; migrate to structured outputs, tool calling, or direct instructions in the system prompt.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Prompting best practices: migrating away from prefilled responses",
+      "explanation": "'Starting with Claude 4.6 models and Claude Mythos Preview, prefilled responses (providing a partial assistant message for Claude to continue from) on the last assistant turn are no longer supported. Requests with prefilled assistant messages to these models return a 400 error. Model intelligence and instruction following have advanced such that most use cases of prefill no longer require it. Earlier models continue to support prefills, and adding assistant messages elsewhere in the conversation is not affected.'\n\nThe documented migrations by scenario: for forcing a format, 'use structured outputs, or use tool calling'; for skipping preamble, use a direct system-prompt instruction such as 'Respond directly without preamble' or output within XML tags, stripping any stray preamble in post-processing; for refusal steering, clear prompting in the user message now suffices; for context hydration in long conversations, inject reminders into the USER turn or hydrate through tools or during context compaction.\n\n**Why the others are wrong**\n\n- **B.** max_tokens governs generated length, not the validity of an input message.\n- **C.** tool_choice is unrelated to prefill support.\n- **D.** Streaming has no bearing on it.\n\nNote the precise scope: it is the LAST assistant turn that is rejected. Assistant messages elsewhere in the conversation — the ones carrying tool_use blocks in an agentic loop — are unaffected.",
+      "examTrick": "Prefill is dead on 4.6+ (400 error) but only on the LAST assistant turn. Replace it with structured outputs or tool calling.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Prefill Deprecation",
+        "400 Error",
+        "Structured Outputs Migration"
+      ]
+    },
+    {
+      "id": 15,
+      "question": "A multi-turn agent's requests grow slower and more expensive with every turn. Which explanation is correct, and what is the standard mitigation?",
+      "options": [
+        "Each request re-sends the entire history because the API is stateless; prompt caching lets the unchanged prefix be reused instead of reprocessed.",
+        "The model slows as its internal session state grows; start a new session periodically.",
+        "Token costs increase per turn by design; there is no mitigation.",
+        "The messages array is compressed server-side after ten turns, and decompression adds latency."
+      ],
+      "answer": "Each request re-sends the entire history because the API is stateless; prompt caching lets the unchanged prefix be reused instead of reprocessed.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Messages API; prompt caching",
+      "explanation": "Statelessness has a direct cost consequence: every turn re-sends everything before it, so input tokens grow with conversation length. Prompt caching addresses exactly this by letting a stable prefix — system prompt, tool definitions, and earlier turns — be reused across requests rather than reprocessed each time.\n\n**Why the others are wrong**\n\n- **B.** There is no server-side session state to grow; that is what stateless means.\n- **C.** Growth is inherent, but caching is the documented mitigation, so 'no mitigation' is wrong.\n- **D.** No server-side compression of the messages array exists.",
+      "examTrick": "Statelessness → history re-sent every turn → input tokens grow → prompt caching is the answer.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Prompt Caching",
+        "Stateless Cost",
+        "Multi-Turn"
+      ]
+    },
+    {
+      "id": 16,
+      "question": "Which pairing of endpoint to purpose is correct for the Message Batches API?",
+      "options": [
+        "POST /v1/messages/batches creates a batch; GET /v1/messages/batches/{id} retrieves its status; results are downloaded from the batch's results_url.",
+        "POST /v1/batches creates a batch; results are returned inline in the creation response.",
+        "POST /v1/messages with a batch:true flag creates a batch; results arrive by webhook only.",
+        "POST /v1/messages/batches creates a batch, and the same endpoint polled with GET returns the results directly."
+      ],
+      "answer": "POST /v1/messages/batches creates a batch; GET /v1/messages/batches/{id} retrieves its status; results are downloaded from the batch's results_url.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Batch processing",
+      "explanation": "The documented calls are POST to https://api.anthropic.com/v1/messages/batches to create, GET https://api.anthropic.com/v1/messages/batches/$MESSAGE_BATCH_ID to poll processing_status, GET .../v1/messages/batches?limit=20 to list, and results at the results_url property on the Message Batch. The docs recommend streaming results back rather than downloading them all at once.\n\n**Why the others are wrong**\n\n- **B.** Wrong path, and results are never inline — the batch is asynchronous by definition.\n- **C.** There is no batch flag on the Messages endpoint.\n- **D.** The GET on the batch returns the batch object with its status and results_url, not the result payload itself.",
+      "examTrick": "Create and poll at /v1/messages/batches; fetch results from results_url on the batch object, streamed.",
+      "importance": "Medium",
+      "tags": [
+        "NEW TOPIC",
+        "Batch Endpoints",
+        "results_url",
+        "Polling"
+      ]
+    },
+    {
+      "id": 17,
+      "question": "A team runs a 20,000-document evaluation harness and needs it done before a review meeting in three days. Cost matters; the exact finish time within the next day does not. Which mode and why?",
+      "options": [
+        "Batches API — large-scale evaluations are a documented batch use case, the 24-hour ceiling fits comfortably inside the three-day deadline, and cost halves.",
+        "Synchronous Messages API, because a deadline of any kind means latency is a requirement.",
+        "Synchronous Messages API, because evaluations must be reproducible and batch results are non-deterministic.",
+        "Split evenly across both modes to hedge against batch expiration."
+      ],
+      "answer": "Batches API — large-scale evaluations are a documented batch use case, the 24-hour ceiling fits comfortably inside the three-day deadline, and cost halves.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Batch processing: when to use",
+      "explanation": "The docs list 'running large-scale evaluations or analyses' as a batch use case, and the deciding question is whether an immediate response is required. A three-day deadline against a 24-hour worst case leaves ample margin, so the 50% saving is free.\n\n**Why the others are wrong**\n\n- **B.** Conflates a deadline with a latency requirement. Latency matters when something is BLOCKED on the response; nothing here is.\n- **C.** Determinism is unrelated to processing mode; batch runs the same Messages requests.\n- **D.** Splitting forfeits half the discount and adds two code paths for a risk the deadline already absorbs.",
+      "examTrick": "A deadline is not a latency requirement. Ask what is blocked, and compare the deadline against the 24-hour ceiling.",
+      "importance": "High",
+      "tags": [
+        "NEW TOPIC",
+        "Evaluation Workloads",
+        "Deadline vs Latency",
+        "Mode Selection"
+      ]
+    },
+    {
+      "id": 18,
+      "question": "Which statement about Message Batches API rate limits is correct?",
+      "options": [
+        "Rate limits apply to both the Batches API HTTP requests and the number of requests within a batch waiting to be processed.",
+        "Batches bypass rate limits entirely, which is the main reason to use them.",
+        "Rate limits apply only to the HTTP calls that create and poll batches, never to the contents.",
+        "Rate limits apply only to the requests inside a batch, never to the HTTP calls themselves."
+      ],
+      "answer": "Rate limits apply to both the Batches API HTTP requests and the number of requests within a batch waiting to be processed.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Batch processing: batch limitations",
+      "explanation": "'Rate limits apply to both Batches API HTTP requests and the number of requests within a batch waiting to be processed. Additionally, processing may be slowed down based on current demand and your request volume. In that case, you may see more requests expiring after 24 hours.'\n\n**Why the others are wrong**\n\n- **B.** Batch increases throughput and halves cost, but it is not a rate-limit bypass.\n- **C, D.** Each covers only one of the two limits that actually apply.\n\nThe practical consequence is the one the docs draw: under load, expiration at the 24-hour mark becomes more likely, so build your pipeline to handle expired results rather than assuming completion.",
+      "importance": "Medium",
+      "examTrick": "Two rate limits: on the HTTP calls AND on queued in-batch requests. Under demand, more requests expire at 24h.",
+      "tags": [
+        "NEW TOPIC",
+        "Rate Limits",
+        "Throughput",
+        "Expiration Risk"
+      ]
+    }
+  ]
+}

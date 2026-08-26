@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.11 stop_reason Values & Agentic Loop Control",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "NEW TOPIC. Every stop_reason value and its correct handling, distinguishing stop reasons from errors, the pause_turn server-tool loop limit, truncation handling, and how stop_reason drives continuation or termination of the agentic loop. Grounded in the official Claude API stop-reason documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which stop_reason indicates Claude finished its response naturally?",
+      "options": [
+        "end_turn",
+        "stop_sequence",
+        "max_tokens",
+        "end_of_message"
+      ],
+      "answer": "end_turn",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Handling stop reasons",
+      "explanation": "'end_turn: Claude finished response naturally. Handling: Use the response as-is.' It is the most common stop reason and the terminal state of an agentic loop.\n\n**Why the others are wrong**\n\n- **B.** stop_sequence means Claude emitted one of your custom stop_sequences; check the stop_sequence field to identify which.\n- **C.** max_tokens means the response hit your limit and was cut off.\n- **D.** Not a documented value.\n\nThe loop reading: end_turn means terminate and return the final response; tool_use means continue.",
+      "examTrick": "end_turn = natural completion = loop terminates. Contrast with tool_use = loop continues.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "end_turn", "Loop Termination", "stop_reason"]
+    },
+    {
+      "id": 2,
+      "question": "How should max_tokens be handled?",
+      "options": [
+        "Treat the response as cut off — either raise max_tokens, or continue by appending the response to messages and requesting again; if the last block is an incomplete tool_use, retry with a higher max_tokens.",
+        "Treat it as an error and abort the request.",
+        "Ignore it; the response is complete despite the flag.",
+        "Retry the identical request unchanged until it succeeds."
+      ],
+      "answer": "Treat the response as cut off — either raise max_tokens, or continue by appending the response to messages and requesting again; if the last block is an incomplete tool_use, retry with a higher max_tokens.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Handling stop reasons: max_tokens",
+      "explanation": "'Response was cut off at token limit. Either: Raise max_tokens for more capacity, continue by appending response to messages and requesting again. Note: If last block is incomplete tool_use, retry with higher max_tokens.'\n\n**Why the others are wrong**\n\n- **B.** It is a normal stop reason on an HTTP 200 response, not an error.\n- **C.** The response IS truncated; treating it as complete corrupts downstream logic.\n- **D.** An identical retry hits the same limit.\n\nThe incomplete-tool_use case is the dangerous one: a partially-generated tool call cannot be executed, and continuation would not repair it — you must retry with more room.",
+      "examTrick": "max_tokens = truncated. Incomplete tool_use block = RETRY with a higher limit, not continue.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "max_tokens", "Truncation", "Incomplete tool_use"]
+    },
+    {
+      "id": 3,
+      "question": "What does pause_turn mean, and how do you continue?",
+      "options": [
+        "A server-tool loop reached its iteration limit (default 10); append the response as an assistant message and make a new request with the same messages and the tools array still present.",
+        "The user paused the conversation; wait for input.",
+        "A rate limit was hit; back off and retry the identical request.",
+        "The model requested human approval; escalate."
+      ],
+      "answer": "A server-tool loop reached its iteration limit (default 10); append the response as an assistant message and make a new request with the same messages and the tools array still present.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons: pause_turn",
+      "explanation": "'pause_turn: Server-tool sampling loop hit iteration limit (default 10). Continue by: appending response as assistant message, making new request with same messages + response. Keep tools array or request fails.'\n\n**Why the others are wrong**\n\n- **B, D.** Nothing about a human is involved.\n- **C.** Rate limiting surfaces as an HTTP error, not a stop_reason.\n\nThe 'Keep tools array or request fails' detail is the trap: a continuation handler that strips tools because 'we're just resuming' breaks. And note this is a SERVER-tool loop limit — it applies to tools Anthropic executes, like web search, not to your own client tools.",
+      "examTrick": "pause_turn = server-tool iteration cap (default 10). Append the assistant message AND keep the tools array.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "pause_turn", "Server Tool Loop", "Continuation"]
+    },
+    {
+      "id": 4,
+      "question": "What is the correct handling for stop_reason refusal?",
+      "options": [
+        "Read stop_details for the policy reason; you may rephrase, or retry on a fallback model — fallback credit exists so you do not pay twice.",
+        "Retry the identical request immediately; refusals are transient.",
+        "Treat it as an HTTP error and surface a 4xx to the caller.",
+        "Strip the tools array and resend."
+      ],
+      "answer": "Read stop_details for the policy reason; you may rephrase, or retry on a fallback model — fallback credit exists so you do not pay twice.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons: refusal",
+      "explanation": "'refusal: Claude declined to respond. Read stop_details for policy reason; retry on fallback model.' The documented options are to read stop_details to understand the reason, rephrase the request differently, retry on a fallback model such as Haiku 4.5, and use fallback credit to avoid paying twice.\n\n**Why the others are wrong**\n\n- **B.** An identical retry is unlikely to change a policy outcome.\n- **C.** 'Stop reasons: Part of successful response body (HTTP 200)... Errors: HTTP 4xx/5xx status codes.' A refusal is a successful response.\n- **D.** Tools are unrelated.\n\nThe HTTP 200 point is the one production code gets wrong: a refusal will not be caught by error-handling middleware, so you must check stop_reason explicitly.",
+      "examTrick": "refusal arrives on HTTP 200 with stop_details. Error middleware will NOT catch it — check stop_reason.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "refusal", "stop_details", "HTTP 200"]
+    },
+    {
+      "id": 5,
+      "question": "What does model_context_window_exceeded mean?",
+      "options": [
+        "The response filled the model's context window before reaching max_tokens; treat it as truncated, since the request already consumed the full context.",
+        "The request was rejected before processing because it was too large.",
+        "The conversation must be compacted before any further request.",
+        "The model's output exceeded max_tokens."
+      ],
+      "answer": "The response filled the model's context window before reaching max_tokens; treat it as truncated, since the request already consumed the full context.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons",
+      "explanation": "'model_context_window_exceeded: Response filled model's context window. Treat as truncated; request already consumed full context.' It is distinguished from max_tokens because the limit hit was the model's window rather than your configured output cap.\n\n**Why the others are wrong**\n\n- **B.** It arrives as a stop_reason on a successful response, meaning the request WAS processed.\n- **C.** Compaction is a Claude Code concept, not an API-level requirement — though shortening the input is the practical remedy.\n- **D.** That is max_tokens.\n\nThe distinction matters for remediation: max_tokens is fixed by raising your limit; model_context_window_exceeded is fixed by sending less input.",
+      "examTrick": "max_tokens = YOUR cap, raise it. model_context_window_exceeded = the MODEL's window, send less input.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Context Window Exceeded", "Truncation", "Remediation"]
+    },
+    {
+      "id": 6,
+      "question": "What is the fundamental difference between a stop_reason and an API error?",
+      "options": [
+        "Stop reasons are part of a successful response body (HTTP 200) and say why generation stopped normally; errors are HTTP 4xx/5xx and mean the request failed to process.",
+        "Stop reasons are returned only when streaming; errors only when not streaming.",
+        "Stop reasons appear in the usage object; errors appear in the content array.",
+        "They are the same mechanism with different names."
+      ],
+      "answer": "Stop reasons are part of a successful response body (HTTP 200) and say why generation stopped normally; errors are HTTP 4xx/5xx and mean the request failed to process.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Stop reasons vs errors",
+      "explanation": "'Stop reasons: Part of successful response body (HTTP 200), indicate normal generation completion. Errors: HTTP 4xx/5xx status codes, indicate request processing failure. Stop reasons tell you why generation stopped normally; errors indicate the request failed to process.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches.\n\nThe documented best practice follows: 'Always check stop_reason in production code.' A handler that only inspects HTTP status will silently treat a refusal or a truncation as a complete, correct answer — which is exactly the class of failure the exam's reliability objectives are about.",
+      "examTrick": "stop_reason lives on HTTP 200. Checking status codes alone misses refusals and truncations entirely.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Stop Reasons vs Errors", "HTTP 200", "Production Handling"]
+    },
+    {
+      "id": 7,
+      "question": "When returning tool results, what content rule does the documentation state?",
+      "options": [
+        "The user message must include only tool_result blocks — no additional text after them.",
+        "You must add a text block explaining the tool result.",
+        "Tool results must be returned in an assistant message.",
+        "Each tool result must be sent as its own separate request."
+      ],
+      "answer": "The user message must include only tool_result blocks — no additional text after them.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons: tool_use",
+      "explanation": "The documented workflow: extract tool_use blocks, execute each with its input, return results as tool_result blocks in a user message, 'Must include only tool_result blocks (no additional text)', and continue the conversation with the same tools array. The best-practices list restates it: 'Tool use rules: Never add text after tool_result blocks; just return results.'\n\n**Why the others are wrong**\n\n- **B.** Explicitly disallowed.\n- **C.** tool_result goes in a USER message.\n- **D.** Multiple tool_result blocks belong in one user message, which is what makes parallel tool calls workable.\n\nThe reason to care: appending a chatty note alongside results is a natural instinct and it breaks the protocol.",
+      "examTrick": "tool_result blocks ONLY, in a user message, same tools array. No accompanying text.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "tool_result Rules", "Protocol Compliance", "Parallel Results"]
+    },
+    {
+      "id": 8,
+      "question": "A response contains a server_tool_use or mcp_tool_use block with no matching result block. What does that mean?",
+      "options": [
+        "It is still executing — wait for results.",
+        "The tool failed silently; treat it as an error.",
+        "The block is malformed and should be discarded.",
+        "You must execute it yourself and return a tool_result."
+      ],
+      "answer": "It is still executing — wait for results.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons: tool_use",
+      "explanation": "'If a server_tool_use or mcp_tool_use block lacks a matching result block, it's still executing—wait for results.'\n\n**Why the others are wrong**\n\n- **B, C.** Neither is the documented interpretation, and treating an in-flight call as a failure would produce spurious retries.\n- **D.** These are SERVER-executed tools; your application does not run them. That is the difference from a client tool_use block, which you must execute.\n\nThe practical skill: distinguish client tool_use (you execute) from server_tool_use and mcp_tool_use (Anthropic executes) before deciding what your handler should do. Getting this wrong produces either a hang or a duplicate execution.",
+      "examTrick": "Missing result on a server_tool_use / mcp_tool_use = still running. Only CLIENT tool_use blocks are yours to execute.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "server_tool_use", "In-Flight Execution", "Client vs Server"]
+    },
+    {
+      "id": 9,
+      "question": "Where does stop_reason appear when streaming?",
+      "options": [
+        "Only in the message_delta event, not in the initial message_start.",
+        "In message_start, so it is known before generation.",
+        "In every content_block_delta event.",
+        "It is not available when streaming."
+      ],
+      "answer": "Only in the message_delta event, not in the initial message_start.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons: best practices",
+      "explanation": "'Streaming: stop_reason appears only in message_delta event, not initial message_start.' This is logically necessary — the reason generation stopped cannot be known before it stops.\n\n**Why the others are wrong**\n\n- **B.** Impossible in principle and contradicted by the docs.\n- **C.** Content deltas carry text, not the terminal reason.\n- **D.** It is available, just later in the stream.\n\nThe consequence for a streaming agentic loop: you cannot decide whether to continue the loop until the message_delta arrives, so continuation logic belongs at stream completion, not at stream start.",
+      "examTrick": "Streaming: stop_reason arrives in message_delta at the END. Loop-continuation logic must wait for it.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Streaming", "message_delta", "Loop Timing"]
+    },
+    {
+      "id": 10,
+      "question": "Which stop_reason requires reading a separate response field to know what actually happened?",
+      "options": [
+        "stop_sequence — read response.stop_sequence to identify which of your custom sequences fired.",
+        "end_turn — read response.end_details.",
+        "max_tokens — read response.truncated_at.",
+        "tool_use — read response.tool_count."
+      ],
+      "answer": "stop_sequence — read response.stop_sequence to identify which of your custom sequences fired.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Handling stop reasons: stop_sequence",
+      "explanation": "'stop_sequence: Claude emitted one of your custom stop_sequences. Handling: Read stop_sequence field to identify which one.' With several configured sequences, the stop_reason alone does not tell you which triggered.\n\n**Why the others are wrong**\n\n- **B, C, D.** None of those fields is documented.\n\nThe other field-reading case is refusal, which carries stop_details with the policy category. So two stop reasons come with companion fields: stop_sequence → stop_sequence, and refusal → stop_details.",
+      "examTrick": "Two stop reasons carry extra fields: stop_sequence → stop_sequence, refusal → stop_details.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "stop_sequence", "Companion Fields", "stop_details"]
+    },
+    {
+      "id": 11,
+      "question": "How should a production handler treat a truncated response gracefully?",
+      "options": [
+        "Append a note such as '[Response truncated]' or continue with a follow-up request, rather than presenting it as complete.",
+        "Silently discard it and retry.",
+        "Present it as-is with no indication, to avoid confusing the user.",
+        "Convert it to an exception and fail the request."
+      ],
+      "answer": "Append a note such as '[Response truncated]' or continue with a follow-up request, rather than presenting it as complete.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Handling stop reasons: best practices",
+      "explanation": "'Handle truncation gracefully: Append \"[Response truncated]\" note or continue with a follow-up request.' This applies to both max_tokens and model_context_window_exceeded.\n\n**Why the others are wrong**\n\n- **B.** Discarding loses work that is often mostly usable.\n- **C.** Presenting truncated content as complete is the failure the guidance exists to prevent — downstream consumers and humans both act on it as if it were whole.\n- **D.** A truncation is a normal outcome on HTTP 200, not an exception.\n\nThis connects to the extraction-reliability theme: an incomplete result that LOOKS complete is more dangerous than an obvious failure, because nothing routes it for review.",
+      "examTrick": "Never present truncated output as complete. Mark it or continue it. Silent incompleteness is the worst outcome.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Truncation Handling", "Graceful Degradation", "Silent Incompleteness"]
+    },
+    {
+      "id": 12,
+      "question": "Which sequence correctly describes the agentic loop in terms of stop_reason?",
+      "options": [
+        "Request → response with stop_reason tool_use → execute tools → append tool_result → request again → repeat until a terminal stop_reason such as end_turn.",
+        "Request → response → always terminate; loops require a separate agent framework.",
+        "Request → the model executes its own tools internally → single response with end_turn always.",
+        "Request → response → the client decides arbitrarily whether to loop, independent of stop_reason."
+      ],
+      "answer": "Request → response with stop_reason tool_use → execute tools → append tool_result → request again → repeat until a terminal stop_reason such as end_turn.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use; handling stop reasons",
+      "explanation": "This is the exam objective in one line: the agentic loop uses model responses and stop_reason signals to decide whether to continue tool execution or terminate and return a final response. tool_use continues the loop; end_turn ends it.\n\n**Why the others are wrong**\n\n- **B.** The loop is intrinsic to the API's tool-use design; frameworks like Tool Runner or Claude Code automate it but do not create it.\n- **C.** That is true only for SERVER tools; client tools require the round trip.\n- **D.** The MODEL signals continuation. A client may impose additional bounds — maxTurns on a subagent, a turn cap in your own code — but it does not invent the loop condition.\n\nThe same structure appears at every level: raw API, Agent SDK, and Claude Code.",
+      "examTrick": "The loop condition is stop_reason, produced by the model. Client-side caps bound it; they do not define it.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Agentic Loop", "Loop Condition", "Termination"]
+    },
+    {
+      "id": 13,
+      "question": "An orchestration layer must guarantee every agent session ends with a resolution or a human escalation, whatever stop_reason arrives. Which design satisfies that?",
+      "options": [
+        "Handle every stop_reason explicitly with a defined outcome — including refusal, truncation, and pause_turn — and route anything unresolved to a human rather than falling through silently.",
+        "Handle end_turn and tool_use, and let anything else fall through as a success.",
+        "Retry every non-end_turn stop_reason until it becomes end_turn.",
+        "Convert all non-end_turn stop reasons into exceptions and terminate the session."
+      ],
+      "answer": "Handle every stop_reason explicitly with a defined outcome — including refusal, truncation, and pause_turn — and route anything unresolved to a human rather than falling through silently.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons: best practices; CCAF objective wording",
+      "explanation": "The objective is to design orchestration-layer safeguards ensuring every agent session ends with a completed resolution or human escalation, regardless of how the agentic loop terminates. Since stop reasons arrive on HTTP 200, an unhandled one is indistinguishable from success unless you check for it — hence 'Always check stop_reason in production code.'\n\n**Why the others are wrong**\n\n- **B.** The silent fall-through is exactly the gap the objective targets: a refusal treated as success produces a confidently wrong outcome.\n- **C.** refusal will not become end_turn on retry, and pause_turn needs continuation rather than retry — each reason has a DIFFERENT correct handling.\n- **D.** Terminating on max_tokens discards a usable partial result, and terminating without escalation leaves the work unresolved.\n\nThe safeguard is exhaustive handling plus a defined escalation path for the residual.",
+      "examTrick": "Exhaustive stop_reason handling + an escalation path for the residual. Unhandled reasons look exactly like success.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Orchestration Safeguards", "Exhaustive Handling", "Escalation"]
+    },
+    {
+      "id": 14,
+      "question": "Which stop_reason is produced by a limit YOU configured, as opposed to a model or platform limit?",
+      "options": [
+        "max_tokens and stop_sequence.",
+        "refusal and pause_turn.",
+        "model_context_window_exceeded and end_turn.",
+        "tool_use and end_turn."
+      ],
+      "answer": "max_tokens and stop_sequence.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Handling stop reasons",
+      "explanation": "max_tokens fires at 'your max_tokens limit' and stop_sequence fires on 'one of your custom stop_sequences' — both are caller-configured. By contrast model_context_window_exceeded is the model's window, pause_turn is the server-tool iteration limit (default 10), refusal is a policy outcome, and end_turn and tool_use are model decisions.\n\n**Why the others are wrong**\n\n- **B, C, D.** Each mixes caller-configured with platform or model-driven reasons.\n\nThe distinction is practically useful: caller-configured reasons are the ones you can eliminate by changing your own request parameters, while the rest require handling logic.",
+      "examTrick": "Caller-configured: max_tokens, stop_sequence. Platform/model: end_turn, tool_use, pause_turn, refusal, context_window_exceeded.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Limit Ownership", "Configuration vs Policy", "Diagnosis"]
+    },
+    {
+      "id": 15,
+      "question": "A continuation handler for pause_turn strips the tools array 'because we are just resuming'. What happens?",
+      "options": [
+        "The request fails — the documentation says to keep the tools array or the request fails.",
+        "It succeeds but the model cannot call further tools.",
+        "It succeeds and tools are re-attached automatically from the prior turn.",
+        "It succeeds; the tools array is only needed on the first request."
+      ],
+      "answer": "The request fails — the documentation says to keep the tools array or the request fails.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons: pause_turn",
+      "explanation": "'Keep tools array or request fails.' The continuation is a new request against a stateless API, so it must be self-describing: the same messages plus the appended assistant response, with tools still present.\n\n**Why the others are wrong**\n\n- **B, C, D.** All assume some server-side memory of the prior request. There is none — the API is stateless, so nothing carries over implicitly.\n\nThis is the statelessness principle biting in a specific place. The same reasoning explains why the tool-use round trip must resend the full messages array and the same tools every time.",
+      "examTrick": "Every continuation request is self-contained. Stateless means tools and full history are resent, always.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Stateless Continuation", "tools Array", "pause_turn"]
+    },
+    {
+      "id": 16,
+      "question": "Which handling correctly distinguishes a refusal from a rate limit?",
+      "options": [
+        "A refusal arrives as stop_reason on an HTTP 200 response with stop_details; a rate limit arrives as an HTTP error status and, in Claude Code's stream, as a system/api_retry event with error category rate_limit.",
+        "Both arrive as stop_reason values and are handled identically.",
+        "Both arrive as HTTP 429 responses.",
+        "A refusal is an HTTP 403 and a rate limit is a stop_reason."
+      ],
+      "answer": "A refusal arrives as stop_reason on an HTTP 200 response with stop_details; a rate limit arrives as an HTTP error status and, in Claude Code's stream, as a system/api_retry event with error category rate_limit.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Stop reasons vs errors; Claude Code non-interactive mode",
+      "explanation": "Stop reasons are 'Part of successful response body (HTTP 200)'; errors are 'HTTP 4xx/5xx status codes'. A refusal is the former. Rate limiting is the latter, and Claude Code surfaces retryable API failures as a system/api_retry event whose error field carries a category including rate_limit.\n\n**Why the others are wrong**\n\n- **B.** They require different responses: a refusal may need rephrasing or a fallback model; a rate limit needs backoff.\n- **C, D.** Both misplace the transport.\n\nThis is the recoverability distinction that the MCP error-design objective is about: transient conditions get retried, policy outcomes do not.",
+      "examTrick": "Refusal = HTTP 200 + stop_details, not retryable as-is. Rate limit = HTTP error, retryable with backoff.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Refusal vs Rate Limit", "Recoverability", "Error Categories"]
+    },
+    {
+      "id": 17,
+      "question": "Which best practice does the documentation state first for stop reasons?",
+      "options": [
+        "Always check stop_reason in production code.",
+        "Always set max_tokens to the model maximum.",
+        "Always use streaming so stop reasons arrive earlier.",
+        "Always retry on any non-end_turn stop reason."
+      ],
+      "answer": "Always check stop_reason in production code.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Handling stop reasons: best practices",
+      "explanation": "The best-practices list opens with 'Always check stop_reason in production code', followed by distinguishing stop reasons from errors, handling truncation gracefully, the tool-use content rules, and the streaming placement of stop_reason.\n\n**Why the others are wrong**\n\n- **B.** Maximising max_tokens wastes budget and does not address the other reasons.\n- **C.** Streaming does not deliver stop_reason earlier — it arrives in message_delta at the end.\n- **D.** Blanket retry is wrong for refusal and wrong for pause_turn, which needs continuation.\n\nThe reason it is first: on HTTP 200 with no check, every abnormal outcome looks like a normal one.",
+      "examTrick": "Rule one: check stop_reason. Everything else in reliability engineering for the API follows from it.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Best Practices", "Production Reliability", "stop_reason"]
+    },
+    {
+      "id": 18,
+      "question": "A pipeline consumes only response.content[0].text and ignores stop_reason. Which failures pass through undetected?",
+      "options": [
+        "Truncated responses (max_tokens or model_context_window_exceeded), refusals, and unfinished server-tool loops (pause_turn) — all arrive on HTTP 200.",
+        "Only network failures.",
+        "Only malformed JSON in the response body.",
+        "None; content is always complete when HTTP 200 is returned."
+      ],
+      "answer": "Truncated responses (max_tokens or model_context_window_exceeded), refusals, and unfinished server-tool loops (pause_turn) — all arrive on HTTP 200.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Stop reasons vs errors",
+      "explanation": "Every stop_reason accompanies a successful HTTP 200 response. A consumer that reads only content text will treat a half-finished answer, a policy refusal, and a paused server-tool loop as complete results.\n\n**Why the others are wrong**\n\n- **B, C.** Both are transport-level concerns that standard error handling already catches.\n- **D.** HTTP 200 guarantees the request was PROCESSED, not that generation completed normally.\n\nThis is the single most consequential idea in the topic: correctness failures here are silent, and silent failures are the ones that reach production. It is the same shape as a schema-valid-but-fabricated extraction and a confidently misclassified enum.",
+      "examTrick": "HTTP 200 ≠ complete answer. Truncation, refusal, and pause_turn all arrive looking like success.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Silent Failures", "Consumer Design", "HTTP 200"]
+    },
+    {
+      "id": 19,
+      "question": "Which stop_reason should trigger a fallback-model retry rather than a parameter change?",
+      "options": [
+        "refusal — the docs suggest retrying on a fallback model such as Haiku 4.5, with fallback credit avoiding double payment.",
+        "max_tokens — a different model has a larger output limit.",
+        "tool_use — a different model may avoid calling tools.",
+        "end_turn — a fallback model may produce a longer answer."
+      ],
+      "answer": "refusal — the docs suggest retrying on a fallback model such as Haiku 4.5, with fallback credit avoiding double payment.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Handling stop reasons: refusal",
+      "explanation": "For refusal the documented options are: read stop_details to understand the reason, rephrase the request differently, retry on a fallback model (for example Haiku 4.5), and use fallback credit to avoid paying twice.\n\n**Why the others are wrong**\n\n- **B.** max_tokens is your own parameter — raise it or continue the response.\n- **C.** tool_use is normal loop behaviour, not a failure.\n- **D.** end_turn is a successful completion.\n\nThe fallback-credit detail is a nice operational fact: the documented recovery path is designed so the failed attempt does not cost you.",
+      "examTrick": "Fallback-model retry is the documented remedy for REFUSAL specifically. Fallback credit prevents double payment.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Fallback Model", "Refusal Recovery", "Fallback Credit"]
+    },
+    {
+      "id": 20,
+      "question": "Which describes the correct relationship between client-side turn caps and stop_reason?",
+      "options": [
+        "stop_reason decides whether the model wants to continue; client-side caps such as a subagent's maxTurns bound how long you are willing to let it, and both must be handled for the session to terminate reliably.",
+        "Client-side caps replace stop_reason handling entirely.",
+        "stop_reason makes client caps unnecessary, since the model always terminates.",
+        "Client caps produce their own stop_reason value."
+      ],
+      "answer": "stop_reason decides whether the model wants to continue; client-side caps such as a subagent's maxTurns bound how long you are willing to let it, and both must be handled for the session to terminate reliably.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons; Claude Code subagents",
+      "explanation": "Two independent termination mechanisms exist. The model signals intent through stop_reason — tool_use to continue, end_turn to stop. The orchestration layer imposes its own bounds: a subagent's maxTurns, Claude Code's cap of 8 consecutive Stop-hook blocks, and the ten-minute default wait for background subagents in a -p run. Reliable termination requires both.\n\n**Why the others are wrong**\n\n- **B.** A cap tells you nothing about why the model stopped, so refusals and truncations would still slip through.\n- **C.** A loop can continue longer than you want to pay for, and a genuinely stuck loop is exactly what caps exist to bound.\n- **D.** Caps are enforced client-side; they do not appear as stop_reason values.\n\nThis is the orchestration-safeguard objective in full: the loop must end, and every way it can end must have a defined outcome.",
+      "examTrick": "Two termination layers: the model's stop_reason and your own caps. Safeguards need both, plus a defined outcome for each.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Termination Guarantees", "maxTurns", "Orchestration Design"]
+    }
+  ]
+}

@@ -1,0 +1,315 @@
+{
+  "subject": "Claude CCAF: Prompt Engineering & Extraction",
+  "chapter": "2.10 Success Criteria, Evaluations & Grading Methods",
+  "exam": "Claude CCAF",
+  "paper": "Domain-2",
+  "description": "NEW TOPIC. Writing SMART success criteria, the categories of evaluation metrics, eval design principles including volume over individual quality and edge-case coverage, and choosing between exact match, similarity metrics, and LLM-based grading. Grounded in the official Claude API guidance on defining success criteria and building evaluations.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which rewrite turns 'the classifier should perform well' into a usable success criterion?",
+      "options": [
+        "'Accurate sentiment classification with an F1 score of at least 0.85.'",
+        "'Sentiment classification that users find satisfactory.'",
+        "'Sentiment classification better than the previous prompt.'",
+        "'Sentiment classification with high accuracy on most inputs.'"
+      ],
+      "answer": "'Accurate sentiment classification with an F1 score of at least 0.85.'",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Define success criteria",
+      "explanation": "Effective criteria follow SMART: Specific ('Instead of \"good performance,\" specify \"accurate sentiment classification with F1 score of at least 0.85\"'), Measurable, Achievable ('Base targets on industry benchmarks, prior experiments, and current frontier model capabilities'), and Relevant.\n\n**Why the others are wrong**\n\n- **B.** 'Satisfactory' is unmeasurable without a defined scale.\n- **C.** Relative to an unspecified baseline, and it gives no target to stop at.\n- **D.** 'High' and 'most' are not thresholds.\n\nThe docs note even subjective qualities can be quantified: 'less than 0.1% of outputs flagged for toxicity'. Subjectivity is not an excuse for a vague criterion.",
+      "examTrick": "SMART criteria with a NUMBER and a threshold. Even safety and tone get quantified.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "SMART Criteria", "Measurability", "Thresholds"]
+    },
+    {
+      "id": 2,
+      "question": "Which principle does the documentation state about eval volume versus individual test quality?",
+      "options": [
+        "Prioritize volume: more test cases with slightly lower-signal automated grading beats fewer hand-graded evaluations.",
+        "Prioritize quality: a small set of carefully hand-graded cases is more reliable.",
+        "Volume and quality matter equally; split effort evenly.",
+        "Neither matters as much as choosing the right model."
+      ],
+      "answer": "Prioritize volume: more test cases with slightly lower-signal automated grading beats fewer hand-graded evaluations.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: evaluation design principles",
+      "explanation": "'Prioritize Volume Over Individual Quality: More test cases with slightly lower-signal automated grading beats fewer hand-graded evaluations. This approach scales better and provides more representative results.'\n\n**Why the others are wrong**\n\n- **B.** This is the intuitive answer and the documented guidance is the opposite. A handful of perfect judgements cannot represent a real input distribution.\n- **C, D.** Neither is the stated principle.\n\nThe reasoning connects to the feedback-loop material: you need enough cases to see a DISTRIBUTION — which field, which format, which category fails — and a small hand-graded set cannot show you that.",
+      "examTrick": "Volume beats per-case quality. You need enough cases to see a distribution, not a few perfect judgements.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Eval Volume", "Automated Grading", "Distribution"]
+    },
+    {
+      "id": 3,
+      "question": "Which edge cases does the documentation say a task-specific eval should include?",
+      "options": [
+        "Irrelevant or nonexistent input data, overly long inputs, poor or harmful or irrelevant user input, and ambiguous cases where humans struggle to reach consensus.",
+        "Only the most common inputs, since those dominate production traffic.",
+        "Only inputs that previously caused failures.",
+        "Randomly sampled production traffic with no deliberate edge cases."
+      ],
+      "answer": "Irrelevant or nonexistent input data, overly long inputs, poor or harmful or irrelevant user input, and ambiguous cases where humans struggle to reach consensus.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: be task-specific",
+      "explanation": "'Design evaluations that mirror real-world task distribution, including edge cases: irrelevant or nonexistent input data, overly long inputs, poor, harmful, or irrelevant user input (chat applications), ambiguous cases where humans struggle to reach consensus.'\n\n**Why the others are wrong**\n\n- **B.** Common inputs are where systems already work; edge cases are where they break.\n- **C.** Regression cases are necessary but not sufficient; they only cover failures you already found.\n- **D.** Random sampling under-represents rare-but-costly cases by construction.\n\nThe last category is the most interesting for extraction work: 'ambiguous cases where humans struggle to reach consensus' are exactly the ones that need a nullable field, an 'other' enum member, or a route to human review — not a confident answer.",
+      "examTrick": "Four edge-case classes, including 'ambiguous even for humans'. Those are the ones needing nullable fields and review routing.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Edge Cases", "Task-Specific Evals", "Ambiguity"]
+    },
+    {
+      "id": 4,
+      "question": "Which grading method suits a categorical task with clear-cut answers?",
+      "options": [
+        "Exact match evaluation, comparing model output to predefined correct answers after normalization.",
+        "LLM-based Likert grading on a 1-5 scale.",
+        "Cosine similarity with sentence embeddings.",
+        "Human review of every case."
+      ],
+      "answer": "Exact match evaluation, comparing model output to predefined correct answers after normalization.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Develop tests: grading methods",
+      "explanation": "'Exact Match Evaluation. Use for: Categorical tasks with clear-cut answers (sentiment classification, classification tasks). How it works: Compares model output directly to predefined correct answers after normalization.' The example normalizes with .strip().lower() before comparing.\n\n**Why the others are wrong**\n\n- **B.** LLM grading is for subjective dimensions like tone, empathy, professionalism, safety, and coherence — overkill and less reliable for a categorical answer.\n- **C.** Similarity metrics are for consistency and summarization 'where exact matches aren't expected.'\n- **D.** Human review does not scale and contradicts the volume principle.\n\nThe normalization step matters more than it looks: without it, whitespace and casing differences produce false failures that mask real signal.",
+      "examTrick": "Categorical + clear-cut = exact match WITH normalization. Save LLM grading for genuinely subjective dimensions.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Exact Match", "Normalization", "Method Selection"]
+    },
+    {
+      "id": 5,
+      "question": "Which method suits evaluating whether responses to similar inputs stay semantically consistent?",
+      "options": [
+        "Cosine similarity with sentence embeddings, such as SBERT.",
+        "Exact match against a reference answer.",
+        "Binary LLM classification for policy violations.",
+        "F1 score against labelled categories."
+      ],
+      "answer": "Cosine similarity with sentence embeddings, such as SBERT.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: similarity-based metrics",
+      "explanation": "'Similarity-Based Metrics. Use for: Evaluating consistency and semantic similarity across multiple responses. Common approaches: Cosine similarity with sentence embeddings (SBERT) for consistency evaluation; ROUGE-L for summarization and relevance (measures longest common subsequence). When to use: FAQ bots, consistency checks, summarization tasks where exact matches aren't expected.'\n\n**Why the others are wrong**\n\n- **B.** Two correct answers can be worded differently, so exact match produces false failures.\n- **C.** Binary classification detects presence or absence of an attribute, not similarity.\n- **D.** F1 applies to categorical prediction against labels.\n\nConsistency is one of the documented success-criteria categories in its own right: 'Consistency: Semantic similarity of responses to similar inputs.'",
+      "examTrick": "Consistency = cosine similarity (SBERT). Summarization overlap = ROUGE-L. Neither is exact match.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Similarity Metrics", "SBERT", "ROUGE-L"]
+    },
+    {
+      "id": 6,
+      "question": "What is the documented best practice when using LLM-based grading?",
+      "options": [
+        "Use a different model for evaluation than the model being evaluated.",
+        "Use the same model so grading matches the generation distribution.",
+        "Grade with the highest-capability model regardless of which produced the output.",
+        "Have the model grade its own output within the same request."
+      ],
+      "answer": "Use a different model for evaluation than the model being evaluated.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: LLM-based grading",
+      "explanation": "'Best practice: Use a different model for evaluation than the model being evaluated.' The reasoning is the same as the adversarial-review guidance in Claude Code: 'A fresh context improves code review since Claude won't be biased toward code it just wrote.'\n\n**Why the others are wrong**\n\n- **B.** Matching distributions is precisely the problem — a model tends to rate its own output favourably.\n- **C.** Capability is not the axis; independence is.\n- **D.** Same-request self-grading has neither independence nor a fresh context.\n\nThe general principle across the exam: the thing doing the work should not be the thing grading it.",
+      "examTrick": "Grade with a DIFFERENT model. Independence, not capability, is what makes the grade meaningful.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "LLM Grading", "Grader Independence", "Bias"]
+    },
+    {
+      "id": 7,
+      "question": "Which LLM-grading approach fits detecting whether a medical response contains Personal Health Information?",
+      "options": [
+        "Binary classification — determine presence or absence of a specific attribute, outputting only 'yes' or 'no'.",
+        "A Likert 1-5 scale for how much PHI is present.",
+        "Cosine similarity against a PHI reference corpus.",
+        "ROUGE-L against the source record."
+      ],
+      "answer": "Binary classification — determine presence or absence of a specific attribute, outputting only 'yes' or 'no'.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: LLM-based grading",
+      "explanation": "The documented approaches are Likert scale (1-5 for subjective qualities like empathy or professionalism), Binary Classification ('Determine presence/absence of specific attributes (PHI in medical responses, policy violations)'), and Ordinal Scale (fixed ordered scales for graded qualities like context utilization). The example prompt ends 'Output only \"yes\" or \"no\".'\n\n**Why the others are wrong**\n\n- **B.** PHI presence is a threshold question, not a degree — any PHI is a violation.\n- **C, D.** Similarity metrics do not detect a categorical attribute.\n\nThe 'Output only the number' / 'Output only yes or no' instruction in both example prompts is doing real work: it makes the grader's output machine-parseable, which is what allows automation at volume.",
+      "examTrick": "Likert = subjective degree. Binary = presence/absence. Ordinal = graded quality. Constrain the grader's output format.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Binary Grading", "Likert Scale", "Parseable Output"]
+    },
+    {
+      "id": 8,
+      "question": "Which is a documented success-criteria CATEGORY rather than a grading method?",
+      "options": [
+        "Context utilization — how effectively the model uses provided context and conversation history.",
+        "Cosine similarity.",
+        "Exact match.",
+        "Likert scale."
+      ],
+      "answer": "Context utilization — how effectively the model uses provided context and conversation history.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: common success criteria categories",
+      "explanation": "The documented categories are task fidelity, consistency, relevance and coherence, tone and style, privacy preservation, context utilization, latency, and price. 'Most applications require multidimensional evaluation across several criteria simultaneously.'\n\n**Why the others are wrong**\n\n- **B, C, D.** All three are grading METHODS — the how, not the what.\n\nThe distinction matters because the exam can ask either way: a category is a dimension you care about, and a method is how you measure it. Note that latency and price appear as first-class criteria alongside quality, which is why processing-mode selection (sync versus batch) is an evaluation question, not just an engineering one.",
+      "examTrick": "Categories (what you measure) vs methods (how). Latency and PRICE are first-class criteria, not afterthoughts.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Criteria Categories", "Multidimensional", "Latency and Price"]
+    },
+    {
+      "id": 9,
+      "question": "What does 'achievable' mean when setting a success criterion?",
+      "options": [
+        "Base targets on industry benchmarks, prior experiments, and current frontier model capabilities, avoiding unrealistic goals.",
+        "Set the target at 100% and iterate until reached.",
+        "Set whatever target the business requests.",
+        "Set the target slightly below current performance so it always passes."
+      ],
+      "answer": "Base targets on industry benchmarks, prior experiments, and current frontier model capabilities, avoiding unrealistic goals.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Define success criteria",
+      "explanation": "'Achievable: Base targets on industry benchmarks, prior experiments, and current frontier model capabilities. Avoid unrealistic goals.'\n\n**Why the others are wrong**\n\n- **B.** An unreachable target gives no signal about whether a change helped — everything fails equally.\n- **C.** A business ask that ignores what is technically attainable produces a criterion that can never be met.\n- **D.** A target below current performance provides no pressure and no information.\n\nA practical consequence: an unachievable criterion often means the failure is not addressable by prompt engineering at all. The docs note this directly: 'Not every success criteria or failing eval is best solved by prompt engineering. For example, you can sometimes improve latency and cost more easily by selecting a different model.'",
+      "examTrick": "Achievable = benchmarked. And not every failing eval is a PROMPT problem — sometimes it is a model or architecture choice.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Achievable Targets", "Benchmarking", "Problem Attribution"]
+    },
+    {
+      "id": 10,
+      "question": "Why does the documentation recommend structuring eval questions for automated grading?",
+      "options": [
+        "Automation enables scalability and consistency — multiple-choice, string matching, code-based, and LLM-based grading all support it.",
+        "Automated grading is more accurate than human grading in every case.",
+        "It removes the need for edge cases.",
+        "It eliminates the need for a held-out test set."
+      ],
+      "answer": "Automation enables scalability and consistency — multiple-choice, string matching, code-based, and LLM-based grading all support it.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: automate when possible",
+      "explanation": "'Automate When Possible. Structure questions for automated grading: multiple-choice questions, string matching, code-based evaluation, LLM-based grading. Automation enables scalability and consistency.'\n\n**Why the others are wrong**\n\n- **B.** Automated grading is 'slightly lower-signal' per the volume principle; its advantage is scale and consistency, not per-case accuracy.\n- **C.** Edge cases remain essential.\n- **D.** The pipeline explicitly ends with 'Validate with held-out test sets before deployment.'\n\nConsistency is the underrated half: a human grader's standard drifts across a long session, so two identical outputs can receive different verdicts — which makes before-and-after comparison unreliable.",
+      "examTrick": "Automation buys SCALE and CONSISTENCY, not per-case accuracy. Human drift is why consistency matters for A/B comparison.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Automation", "Consistency", "Grader Drift"]
+    },
+    {
+      "id": 11,
+      "question": "What is the documented order of the prompt engineering and evaluation cycle?",
+      "options": [
+        "Define criteria → design task-specific evals with edge cases → automate grading → test the prompt → iterate on results → validate with held-out test sets before deployment.",
+        "Write the prompt → deploy → collect user complaints → fix.",
+        "Design evals → define criteria → deploy → iterate.",
+        "Test the prompt → define criteria retroactively → deploy."
+      ],
+      "answer": "Define criteria → design task-specific evals with edge cases → automate grading → test the prompt → iterate on results → validate with held-out test sets before deployment.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: building your evaluation pipeline",
+      "explanation": "The six documented steps in order: define specific measurable success criteria aligned with the application's purpose; design task-specific evaluations with representative test cases and edge cases; automate grading where possible; test the prompt against the evaluation suite; iterate based on results; validate with held-out test sets before deployment.\n\n**Why the others are wrong**\n\n- **B.** Production users as your eval suite is the failure this process prevents.\n- **C.** Criteria come first — you cannot design an eval for an undefined target.\n- **D.** Retroactive criteria are shaped by what the prompt already does, which guarantees a pass.\n\nThe held-out set is the step most often skipped: iterating against your eval set until it passes risks fitting the prompt to those specific cases.",
+      "examTrick": "Criteria FIRST, held-out validation LAST. Iterating on your eval set until it passes is overfitting the prompt.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Eval Pipeline", "Held-Out Set", "Overfitting"]
+    },
+    {
+      "id": 12,
+      "question": "The prompt engineering overview assumes three things are already in place. Which are they?",
+      "options": [
+        "A clear definition of success criteria, some way to empirically test against them, and a first draft prompt to improve.",
+        "A fine-tuned model, a labelled dataset, and a deployment pipeline.",
+        "A production traffic sample, an A/B testing framework, and a rollback plan.",
+        "A system prompt, a tool schema, and a retry loop."
+      ],
+      "answer": "A clear definition of success criteria, some way to empirically test against them, and a first draft prompt to improve.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Prompt engineering overview: before prompt engineering",
+      "explanation": "'This guide assumes that you have: 1. A clear definition of the success criteria for your use case, 2. Some ways to empirically test against those criteria, 3. A first draft prompt you want to improve. If not, spend time establishing that first.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None is the documented prerequisite set.\n\nThe implication is strong and exam-relevant: prompt engineering without measurement is not engineering. If you cannot tell whether a change helped, iterating is guesswork — which is the same reason the feedback-loop objective insists on structured error metadata and same-granularity re-measurement.",
+      "examTrick": "Prerequisites: criteria, a way to test, a draft prompt. Without measurement, iteration is guesswork.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Prerequisites", "Measurement First", "Iteration Discipline"]
+    },
+    {
+      "id": 13,
+      "question": "Which quantitative metrics does the documentation list for evaluation?",
+      "options": [
+        "Task-specific ones like F1, BLEU, and perplexity; generic ones like accuracy, precision, and recall; operational ones like response time and uptime; plus A/B testing, user feedback, and edge-case analysis.",
+        "Only accuracy and F1.",
+        "Only latency and cost.",
+        "Only human satisfaction scores."
+      ],
+      "answer": "Task-specific ones like F1, BLEU, and perplexity; generic ones like accuracy, precision, and recall; operational ones like response time and uptime; plus A/B testing, user feedback, and edge-case analysis.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: quantitative metrics",
+      "explanation": "The documented list: task-specific (F1 score, BLEU score, perplexity); generic (accuracy, precision, recall); operational (response time in ms, uptime %); A/B testing against a baseline or previous version; user feedback via task completion rates and implicit satisfaction signals; and edge-case analysis as the percentage of edge cases handled without errors.\n\n**Why the others are wrong**\n\n- **B, C, D.** Each covers only one slice.\n\n'Percentage of edge cases handled without errors' is worth singling out — it turns edge-case coverage from a qualitative aspiration into a tracked number, which is what makes it survive a deadline.",
+      "examTrick": "Four metric families: task-specific, generic, operational, and comparative. Edge-case handling gets its own percentage.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Quantitative Metrics", "Edge Case Percentage", "A/B Testing"]
+    },
+    {
+      "id": 14,
+      "question": "An extraction system must be evaluated for both accuracy and cost. What does the documentation imply about the criteria?",
+      "options": [
+        "Most applications require multidimensional evaluation across several criteria simultaneously, and price and latency are documented criteria alongside quality.",
+        "Cost is an engineering concern and does not belong in success criteria.",
+        "Only one criterion should be optimized at a time to avoid confounding.",
+        "Accuracy always takes precedence, so cost should be evaluated only after accuracy targets are met."
+      ],
+      "answer": "Most applications require multidimensional evaluation across several criteria simultaneously, and price and latency are documented criteria alongside quality.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: common success criteria categories",
+      "explanation": "The category list includes 'Latency: Acceptable response time for real-time requirements' and 'Price: Budget constraints for API calls and model execution', and the docs state that 'Most applications require multidimensional evaluation across several criteria simultaneously.'\n\n**Why the others are wrong**\n\n- **B.** Price is explicitly a documented criterion.\n- **C.** Multidimensional evaluation is the norm, not a confound to avoid.\n- **D.** Sequencing them hides real tradeoffs: a design that wins on accuracy at ten times the cost may be unshippable.\n\nThis is why the batch-versus-sync decision, prompt caching, and model selection all belong in an evaluation discussion — they move the latency and price dimensions directly.",
+      "examTrick": "Evaluate several dimensions at once. Price and latency are criteria, which is why caching and batch selection are eval decisions.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Multidimensional Evaluation", "Cost as Criterion", "Tradeoffs"]
+    },
+    {
+      "id": 15,
+      "question": "Which grading approach fits rating how well a response used the provided context, on a fixed ordered scale?",
+      "options": [
+        "Ordinal scale LLM grading, on a fixed ordered 1-5 scale for graded qualities like context utilization.",
+        "Exact match against an ideal answer.",
+        "Binary yes/no classification.",
+        "ROUGE-L against the provided context."
+      ],
+      "answer": "Ordinal scale LLM grading, on a fixed ordered 1-5 scale for graded qualities like context utilization.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Develop tests: LLM-based grading",
+      "explanation": "'Ordinal Scale: Rate on fixed, ordered scales (1-5) for graded qualities like context utilization.' Context utilization is a matter of degree — a response can use some, most, or all of the relevant context — which is what an ordinal scale captures.\n\n**Why the others are wrong**\n\n- **B.** There is no single correct string for good context use.\n- **C.** Binary collapses a genuine gradient into a threshold and loses the signal you want.\n- **D.** Lexical overlap with the context measures copying, not appropriate use — a response that quotes heavily but reasons badly would score well.\n\nThe selection heuristic across all three LLM approaches: is the quality categorical (binary), subjective-and-graded (Likert), or graded-on-a-defined-dimension (ordinal)?",
+      "examTrick": "Degree of a defined quality = ordinal. Presence/absence = binary. Subjective impression = Likert.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Ordinal Grading", "Context Utilization", "Method Selection"]
+    },
+    {
+      "id": 16,
+      "question": "An eval suite passes consistently but production quality is poor. Which design flaw does the documentation's guidance point to?",
+      "options": [
+        "The evals do not mirror the real-world task distribution — they likely omit the documented edge cases, or the suite was iterated on until it passed without held-out validation.",
+        "The grading method was too strict.",
+        "The success criteria were set too high.",
+        "Too many test cases diluted the signal."
+      ],
+      "answer": "The evals do not mirror the real-world task distribution — they likely omit the documented edge cases, or the suite was iterated on until it passed without held-out validation.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Develop tests: be task-specific; building your evaluation pipeline",
+      "explanation": "'Design evaluations that mirror real-world task distribution, including edge cases.' A suite that passes while production fails is by definition unrepresentative. The other documented safeguard is the final pipeline step: 'Validate with held-out test sets before deployment' — without it, iterating until the suite passes fits the prompt to those specific cases.\n\n**Why the others are wrong**\n\n- **B.** Over-strict grading produces false FAILURES, the opposite symptom.\n- **C.** Criteria set too high also produce failures, not passes.\n- **D.** The documented guidance is that more cases give 'more representative results'.\n\nThe fix pairs with the feedback-loop material: mine production corrections for structured metadata, find the categories your suite lacks, and add them as cases.",
+      "examTrick": "Evals pass, production fails = unrepresentative suite or no held-out set. Feed production errors back in as new cases.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Eval Representativeness", "Overfitting", "Feedback Loop"]
+    },
+    {
+      "id": 17,
+      "question": "Which statement about quantifying subjective criteria is correct?",
+      "options": [
+        "Even subjective topics like safety can be quantified — for example, 'less than 0.1% of outputs flagged for toxicity'.",
+        "Subjective criteria cannot be measured and should be assessed by human judgement alone.",
+        "Subjective criteria should be excluded from success criteria entirely.",
+        "Subjective criteria only become measurable after deployment."
+      ],
+      "answer": "Even subjective topics like safety can be quantified — for example, 'less than 0.1% of outputs flagged for toxicity'.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Define success criteria: measurable",
+      "explanation": "'Measurable: Use quantitative metrics or well-defined qualitative scales. Even subjective topics like safety can be quantified—for example, \"less than 0.1% of outputs flagged for toxicity.\"'\n\n**Why the others are wrong**\n\n- **B.** Human-only assessment does not scale and drifts, contradicting the volume and consistency principles.\n- **C.** Excluding them means the qualities that matter most to users go unmeasured.\n- **D.** They are measurable before deployment via a defined scale and a grader.\n\nThe mechanism that makes it work is LLM-based grading with a clear rubric: 'For subjective criteria like tone or safety, use LLM-based grading with clear rubrics.' The rubric is what converts a subjective judgement into a repeatable number.",
+      "examTrick": "Subjective ≠ unmeasurable. A clear rubric + an independent LLM grader turns judgement into a repeatable number.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Quantifying Subjectivity", "Rubrics", "Safety Metrics"]
+    },
+    {
+      "id": 18,
+      "question": "Which situation is NOT best solved by prompt engineering, per the documentation?",
+      "options": [
+        "Latency and cost problems, which can sometimes be improved more easily by selecting a different model.",
+        "Inconsistent output format across runs.",
+        "The model omitting required fields from an extraction.",
+        "Responses that are too verbose for the target audience."
+      ],
+      "answer": "Latency and cost problems, which can sometimes be improved more easily by selecting a different model.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Prompt engineering overview: when to prompt engineer",
+      "explanation": "'Not every success criteria or failing eval is best solved by prompt engineering. For example, you can sometimes improve latency and cost more easily by selecting a different model.'\n\n**Why the others are wrong**\n\n- **B.** Format inconsistency is a classic prompt-and-schema problem: few-shot examples steer format, and structured outputs guarantee it.\n- **C.** Missing fields is a schema-design problem addressed by required and nullable fields — arguably not prompt engineering either, but it is a prompt-layer concern rather than an infrastructure one.\n- **D.** Verbosity is directly steerable through instructions and the documented output-and-formatting guidance.\n\nThe skill being tested is attributing a failure to the right LAYER: prompt, schema, model choice, or architecture. Spending weeks on prompt iteration for a latency target is the documented anti-pattern.",
+      "examTrick": "Attribute the failure to a layer first. Latency and cost are usually MODEL or ARCHITECTURE decisions, not prompt problems.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Layer Attribution", "Model Selection", "Anti-Pattern"]
+    }
+  ]
+}

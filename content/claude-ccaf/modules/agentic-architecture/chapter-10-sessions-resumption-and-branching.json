@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.10 Session Resumption, Branching & State Restoration",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "NEW TOPIC. --continue versus --resume, exactly what a resumed session restores and what it does not, resume-from-summary, branching and forking, session naming and the picker, and transcript storage. Grounded in the official Claude Code sessions documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the difference between claude --continue and claude --resume?",
+      "options": [
+        "--continue resumes the most recent interactive session in the current directory; --resume opens the session picker, or resumes a named session directly when given a name.",
+        "--continue reopens the last session on the machine; --resume only works with a session ID.",
+        "--continue creates a branch; --resume reuses the original transcript.",
+        "They are aliases; --resume is the newer spelling."
+      ],
+      "answer": "--continue resumes the most recent interactive session in the current directory; --resume opens the session picker, or resumes a named session directly when given a name.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Sessions: resume a session",
+      "explanation": "The entry-point table: claude --continue resumes the most recent interactive session in the current directory; claude --resume opens the session picker; claude --resume <name> resumes the named session directly; claude --from-pr <number> filters the picker to sessions linked to that pull request; and /resume switches conversations from inside an active session.\n\n**Why the others are wrong**\n\n- **B.** --continue is scoped to the current directory, and --resume accepts a name as well as an ID.\n- **C.** Branching requires /branch or --fork-session.\n- **D.** They are distinct commands.\n\nOne important exclusion: 'Claude Code leaves sessions created with claude -p or the Agent SDK out of the session picker and out of claude --continue. You can still resume one by passing its session ID to claude --resume <session-id>.'",
+      "examTrick": "--continue = most recent, this directory, interactive only. --resume = picker, or by name/ID. -p and SDK sessions need the ID.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "--continue", "--resume", "Session Entry Points"]
+    },
+    {
+      "id": 2,
+      "question": "Which permission modes are NEVER restored when a session is resumed?",
+      "options": [
+        "plan and bypassPermissions — a session in either resumes in the mode a new session would start in.",
+        "acceptEdits and auto.",
+        "default and manual.",
+        "All modes are always restored exactly."
+      ],
+      "answer": "plan and bypassPermissions — a session in either resumes in the mode a new session would start in.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: what a resumed session restores",
+      "explanation": "'plan and bypassPermissions are never restored; a session that was in one of them resumes in the mode a new session would start in. To bypass permissions again, enable it at launch with one of its launch flags or permissions.defaultMode: \"bypassPermissions\" in settings.' Meanwhile 'auto is restored only when your account still meets the auto mode requirements.'\n\n**Why the others are wrong**\n\n- **B.** auto is restored conditionally, and acceptEdits restores normally.\n- **C.** Manual is restored as Manual when a new session would start in auto mode from the built-in default.\n- **D.** The exceptions are documented explicitly.\n\nThe logic is a safety property: bypassPermissions must be a deliberate act at launch, never something you inherit by resuming, and plan mode is a transient working state rather than a durable configuration.",
+      "examTrick": "plan and bypassPermissions never restore. Dangerous or transient modes must be re-chosen deliberately.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Mode Restoration", "bypassPermissions", "Safety Property"]
+    },
+    {
+      "id": 3,
+      "question": "Which launch configuration is NOT restored on resume and must be passed again?",
+      "options": [
+        "--mcp-config, --settings, --plugin-dir, --fallback-model, and directories added with --add-dir.",
+        "settings.json and settings.local.json contents.",
+        "The conversation history including tool calls and results.",
+        "The model the session was using."
+      ],
+      "answer": "--mcp-config, --settings, --plugin-dir, --fallback-model, and directories added with --add-dir.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: what a resumed session restores",
+      "explanation": "'Not every configuration flag from the original launch is restored. If the session depended on --mcp-config, --settings, --plugin-dir, --fallback-model, or directories added with --add-dir, pass them again when you resume; directories added mid-session with /add-dir aren't restored either... The standard settings files, such as settings.json and settings.local.json, are re-read at launch, so configuration that lives in them doesn't need to be passed again.'\n\n**Why the others are wrong**\n\n- **B.** Settings files are re-read automatically.\n- **C.** 'Conversation history: the full history, including tool calls and results' is restored.\n- **D.** The model is restored, with documented exceptions (retirement, availableModels, a --model flag, or provider-specific deployment IDs).\n\nThe rule of thumb: configuration that lives in a FILE comes back; configuration that lived only on the COMMAND LINE does not.",
+      "examTrick": "Flags don't survive resume; settings FILES do. Re-pass --mcp-config, --settings, --plugin-dir, --fallback-model, --add-dir.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Flag Restoration", "Settings Files", "Resume Gotchas"]
+    },
+    {
+      "id": 4,
+      "question": "You resume a session that has been inactive for over an hour and is above 100,000 tokens on a Pro or Max plan. What does Claude Code offer, and why?",
+      "options": [
+        "A dialog with resume-from-summary, resume-full-as-is, or don't-ask-again — because the prompt cache has expired, so the next request reprocesses the full history once regardless.",
+        "It resumes silently; no dialog exists.",
+        "It refuses to resume and requires /clear.",
+        "It automatically truncates the conversation to 100,000 tokens."
+      ],
+      "answer": "A dialog with resume-from-summary, resume-full-as-is, or don't-ask-again — because the prompt cache has expired, so the next request reprocesses the full history once regardless.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: resume from a summary",
+      "explanation": "'The session's prompt cache has expired by then, so the next request processes the full history once no matter which of the dialog's options you pick.' Resume from summary 'runs /compact immediately... then replaces the history with the summary, your most recent exchanges, and up to five recently read files. Later requests carry the summary instead of the full history.' Resume full as-is 'reprocesses and re-caches the full history, then re-reads it from the cache on later requests while the cache stays warm.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the documented behaviour.\n\nThe tradeoff is stated plainly: as-is 'keeps every detail available, at a per-request cost that scales with the conversation's size', while from-summary 'costs less on each later request... but whatever the summary leaves out is no longer in Claude's context.'",
+      "examTrick": "Cache expiry (1h) + big session = the resume dialog. Summary = cheaper later requests, lossy. As-is = full detail, costlier per request.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Resume From Summary", "Cache Expiry", "Cost Tradeoff"]
+    },
+    {
+      "id": 5,
+      "question": "What does /branch do, and how does it differ from --fork-session?",
+      "options": [
+        "/branch copies the conversation and switches the running process into it, carrying over 'Allow for this session' grants; --fork-session forks into a separate process that starts without those grants.",
+        "They are identical; --fork-session is the CLI form of /branch.",
+        "/branch discards the original session; --fork-session preserves it.",
+        "/branch creates a git branch; --fork-session copies the transcript."
+      ],
+      "answer": "/branch copies the conversation and switches the running process into it, carrying over 'Allow for this session' grants; --fork-session forks into a separate process that starts without those grants.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: branch a session",
+      "explanation": "'/branch copies the transcript and switches the running Claude Code process to write to it.' The state table: permission grants are 'Carried over; the branch runs in the same process, so your existing grants still apply. If you fork into a separate process with --fork-session, the new process starts without them and you re-approve there.'\n\n**Why the others are wrong**\n\n- **B.** The process distinction produces real behavioural differences.\n- **C.** 'The original is unchanged on disk and remains in the session picker.'\n- **D.** Neither touches git; --worktree does that.\n\nOther inherited state: in-flight background subagents and background Bash commands 'Keep running. Their output appears in the new branch you switched into, not in the original session', and a Remote Control connection follows you into the branch.",
+      "examTrick": "/branch = same process (grants carry, background work follows). --fork-session = new process (re-approve everything).",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/branch", "--fork-session", "Process Boundary"]
+    },
+    {
+      "id": 6,
+      "question": "Where are session transcripts stored by default, and in what format?",
+      "options": [
+        "As JSONL at ~/.claude/projects/<project>/<session-id>.jsonl, where <project> is the working directory path with non-alphanumeric characters replaced by -.",
+        "As Markdown at ~/.claude/sessions/<name>.md.",
+        "In a SQLite database at ~/.claude/history.db.",
+        "In the project's .claude/sessions/ directory, committed with the repository."
+      ],
+      "answer": "As JSONL at ~/.claude/projects/<project>/<session-id>.jsonl, where <project> is the working directory path with non-alphanumeric characters replaced by -.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sessions: where transcripts are stored",
+      "explanation": "'By default, Claude Code stores transcripts as JSONL at ~/.claude/projects/<project>/<session-id>.jsonl, where <project> is your working directory path with non-alphanumeric characters replaced by -.' Each line is a JSON object for a message, tool use, or metadata entry.\n\n**Why the others are wrong**\n\n- **B, C, D.** None is the documented location or format. Note transcripts are machine-local, not committed.\n\nA warning worth carrying: 'The entry format is internal to Claude Code and changes between versions, so scripts that parse these files directly can break on any release. To build on session data, use /export or the script interfaces instead.' The same directory also holds auto memory under memory/.",
+      "examTrick": "~/.claude/projects/<project>/<session-id>.jsonl. Don't parse it directly — the format is internal and changes.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Transcript Storage", "JSONL", "Format Stability"]
+    },
+    {
+      "id": 7,
+      "question": "Which setting changes the default transcript retention period, and what is that default?",
+      "options": [
+        "cleanupPeriodDays in settings.json; the default is 30 days.",
+        "transcriptRetention in settings.json; the default is 90 days.",
+        "CLAUDE_CODE_RETENTION as an environment variable; the default is 7 days.",
+        "There is no retention; transcripts are kept forever."
+      ],
+      "answer": "cleanupPeriodDays in settings.json; the default is 30 days.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sessions: where transcripts are stored",
+      "explanation": "The configuration table lists 'Change the 30-day retention → cleanupPeriodDays → settings.json'. Critically, the memory docs note an exclusion: 'Claude Code deletes old session transcripts after the cleanupPeriodDays retention period, but excludes the files in the memory directory from that retention sweep. MEMORY.md and topic files stay until you or Claude edits or deletes them.'\n\n**Why the others are wrong**\n\n- **B, C.** Not documented names or defaults.\n- **D.** There is a retention sweep.\n\nThe other configurable knobs in that table: CLAUDE_CONFIG_DIR moves storage off ~/.claude, CLAUDE_CODE_PROJECT_DIR_NAME names the project directory, CLAUDE_CODE_SKIP_PROMPT_HISTORY suppresses transcript writes in all modes, and --no-session-persistence suppresses them for one non-interactive run.",
+      "examTrick": "cleanupPeriodDays, default 30 days, sweeps transcripts but NEVER the auto-memory directory.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "cleanupPeriodDays", "Retention", "Memory Exclusion"]
+    },
+    {
+      "id": 8,
+      "question": "A script needs to ask an existing session a follow-up question and capture the structured answer. Which interface does the documentation give?",
+      "options": [
+        "claude -p --resume <session-id> --output-format json \"summarize what we changed\" | jq -r '.result'",
+        "/export with a filename, then parse the text file.",
+        "Read the JSONL transcript directly and extract the last assistant message.",
+        "A SessionEnd hook, which is the only programmatic access path."
+      ],
+      "answer": "claude -p --resume <session-id> --output-format json \"summarize what we changed\" | jq -r '.result'",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: access conversations from scripts",
+      "explanation": "The docs list four script interfaces by trigger: run Claude once and capture the result (claude -p with --output-format json or stream-json), ask an existing session a question (claude -p --resume <session-id>), react to session events (the transcript_path field hooks and status line commands receive), and embed Claude in an app (the Agent SDK). The example given is exactly this command.\n\n**Why the others are wrong**\n\n- **B.** '/export produces a rendered transcript for a person to read', not structured data.\n- **C.** Explicitly discouraged — the format is internal and changes between versions.\n- **D.** A SessionEnd hook is one of the four interfaces, useful for archiving, but not for asking a question.\n\nNote --output-format json 'returns a single JSON object with a result field', while stream-json 'prints one JSON object per line, starting with an init event.'",
+      "examTrick": "Four script interfaces: -p json / -p --resume / transcript_path from hooks / Agent SDK. Never parse JSONL yourself.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Script Interfaces", "--output-format json", "-p --resume"]
+    },
+    {
+      "id": 9,
+      "question": "How do you name a session, and which of the automatic labels can be used as a resume handle?",
+      "options": [
+        "Name it with claude -n <name>, /rename, or Ctrl+R in the picker; the generated title works as a resume handle but the default display name does not.",
+        "Only claude -n works; generated titles and display names are both resume handles.",
+        "Sessions cannot be named; only IDs resolve.",
+        "The default display name is the resume handle; generated titles are cosmetic."
+      ],
+      "answer": "Name it with claude -n <name>, /rename, or Ctrl+R in the picker; the generated title works as a resume handle but the default display name does not.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: name your sessions",
+      "explanation": "'Sessions you don't name still get two labels that Claude Code assigns. Only the generated title works as a resume handle.' The default display name 'combines the working directory's name with a two-character suffix, for example my-app-3f... The default isn't a resume handle. If you pass it to claude --resume or /resume, Claude Code doesn't find the session.' The generated title is 'a short summary of your first prompt, written by a background request to the small/fast model' and 'You can pass either title to claude --resume or /resume.'\n\n**Why the others are wrong**\n\n- **B, D.** Both invert which label resolves.\n- **C.** Naming is supported through several routes, including at startup, /rename, the picker, plan acceptance, claude.ai, and the desktop app.\n\nAlso: accepting a plan in plan mode 'gives the session a generated title based on the plan unless you've already named it.'",
+      "examTrick": "Generated title = resumable. Default display name (my-app-3f) = NOT resumable. Only one of the two labels resolves.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Session Naming", "Generated Title", "Resume Handles"]
+    },
+    {
+      "id": 10,
+      "question": "You start a session with a name another live session on the machine already uses. What happens?",
+      "options": [
+        "Claude Code leaves the name with the existing session, renames yours to a variant with a two-word suffix such as auth-refactor-graceful-unicorn, and tells you.",
+        "The new session takes the name and the old one loses it.",
+        "Claude Code refuses to start until you pick a different name.",
+        "Both sessions keep the name and the picker shows duplicates."
+      ],
+      "answer": "Claude Code leaves the name with the existing session, renames yours to a variant with a two-word suffix such as auth-refactor-graceful-unicorn, and tells you.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: name your sessions",
+      "explanation": "Documented behaviour: the incumbent keeps the name, yours gets a two-word suffix, and you are told. 'Run /rename with a new name if you'd rather pick one yourself. Before v2.1.232, both sessions kept the name.'\n\n**Why the others are wrong**\n\n- **B, C.** Neither is the documented resolution.\n- **D.** That was the OLD behaviour before v2.1.232 — and there remain three cases where the duplicate is not renamed: AI-generated titles and default display names are not checked, the --name of a background or -p session is not checked at startup, and a session on an earlier Claude Code version cannot be renamed.\n\nThis matters for parallel work: names are resume handles, so a collision would otherwise make one session unreachable by name.",
+      "examTrick": "Incumbent keeps the name; yours gets a two-word suffix. Three exceptions where duplicates survive.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Name Collisions", "Parallel Sessions", "Rename Behaviour"]
+    },
+    {
+      "id": 11,
+      "question": "Which session-picker shortcut widens the list to every project on the machine?",
+      "options": [
+        "Ctrl+A",
+        "Ctrl+W",
+        "Ctrl+B",
+        "Ctrl+R"
+      ],
+      "answer": "Ctrl+A",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sessions: use the session picker",
+      "explanation": "'Ctrl+A: Show sessions from all projects on this machine. Press again to return to the current repository.'\n\n**Why the others are wrong**\n\n- **B.** Ctrl+W widens to all worktrees of the current repository, and is 'Only shown in multi-worktree repositories'.\n- **C.** Ctrl+B filters to sessions from the current git branch.\n- **D.** Ctrl+R renames the highlighted session.\n\nOther picker controls worth knowing: Space previews session content, / or any printable character enters search mode — and you can 'Paste a GitHub, GitHub Enterprise, GitLab, or Bitbucket pull or merge request URL to find the session that created it.'",
+      "examTrick": "Ctrl+A = all projects. Ctrl+W = all worktrees. Ctrl+B = current branch. Ctrl+R = rename.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Session Picker", "Keyboard Shortcuts", "Scope Widening"]
+    },
+    {
+      "id": 12,
+      "question": "You resume the same session in two terminals without forking. What happens?",
+      "options": [
+        "Messages from both interleave into one transcript.",
+        "The second terminal is refused with a lock error.",
+        "Each terminal gets its own copy automatically.",
+        "The first terminal is disconnected."
+      ],
+      "answer": "Messages from both interleave into one transcript.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sessions: branch a session",
+      "explanation": "'If you resume the same session in two terminals without forking, messages from both interleave into one transcript.' This is why /branch and --fork-session exist — parallel work on the same starting point needs separate transcripts.\n\n**Why the others are wrong**\n\n- **B, C, D.** None is the documented behaviour; there is no lock, no auto-copy, and no disconnection.\n\nThe practical guidance follows: for parallel exploration from a common point, branch first. For parallel work on separate branches of code, use worktrees — 'run isolated parallel sessions on separate branches'.",
+      "examTrick": "Same session, two terminals = interleaved transcript. Branch or fork BEFORE going parallel.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Concurrent Resume", "Transcript Interleaving", "Parallel Work"]
+    },
+    {
+      "id": 13,
+      "question": "A session was started with --agent code-reviewer. What does resuming restore about that agent, and where does Claude Code look for it?",
+      "options": [
+        "The session continues as that agent with its system prompt, tool restrictions, and model; Claude Code looks in the session's original directory (if you trusted that workspace) and then the directory you resume from.",
+        "The agent is never restored; resumed sessions always use default tools.",
+        "The agent is restored only if it lives in ~/.claude/agents/.",
+        "The agent is restored but its tool restrictions are dropped."
+      ],
+      "answer": "The session continues as that agent with its system prompt, tool restrictions, and model; Claude Code looks in the session's original directory (if you trusted that workspace) and then the directory you resume from.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: what a resumed session restores",
+      "explanation": "'A session started with --agent or the agent setting continues as that agent, keeping its system prompt, tool restrictions, and model. Pass --agent when resuming to pick a different one. Claude Code looks for the agent in two places: the session's original directory, provided you have trusted that workspace, and then the directory you resume from, so a project-scoped agent still loads when you resume from another directory. If Claude Code doesn't find the agent in either place, the session resumes with the default tools and system prompt and shows a warning naming the agent.'\n\n**Why the others are wrong**\n\n- **B.** It is restored when found.\n- **C.** Project-scoped agents resolve too, via the two-directory lookup.\n- **D.** Tool restrictions are explicitly part of what carries over.\n\nThe failure mode is the exam-relevant part: a silent downgrade to default tools would be dangerous, so it warns.",
+      "examTrick": "Agent restores with prompt + tools + model. Two-directory lookup, trust-gated. Missing agent = default tools + a warning.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Agent Restoration", "Trust Gate", "Warning Behaviour"]
+    },
+    {
+      "id": 14,
+      "question": "Which of these carries over into a resumed session?",
+      "options": [
+        "An active /goal, with its turn count, timer, and token-spend baseline reset.",
+        "Background Bash and monitor tasks.",
+        "Directories added mid-session with /add-dir.",
+        "The prompt cache from the original session."
+      ],
+      "answer": "An active /goal, with its turn count, timer, and token-spend baseline reset.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: what a resumed session restores",
+      "explanation": "'Active goal: a goal that was still active when the session ended carries over; its turn count, timer, and token-spend baseline reset.' And 'Scheduled tasks: tasks that haven't expired are restored. Background Bash and monitor tasks aren't.'\n\n**Why the others are wrong**\n\n- **B.** Explicitly not restored.\n- **C.** 'directories added mid-session with /add-dir aren't restored either, though the session picker still uses them to locate the session.'\n- **D.** The cache expires; the resume dialog exists precisely because it has.\n\nThe pattern: durable INTENT (a goal, a scheduled task) survives; live PROCESSES (background commands, monitors) and ephemeral state (the cache) do not.",
+      "examTrick": "Intent survives resume (goals, scheduled tasks). Live processes and caches do not.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Goal Restoration", "Background Tasks", "State Categories"]
+    },
+    {
+      "id": 15,
+      "question": "Which sessions are excluded from claude --continue?",
+      "options": [
+        "Sessions created with claude -p or the Agent SDK, background sessions, and sessions whose first prompt was /loop.",
+        "Only sessions older than the cleanupPeriodDays retention.",
+        "Only sessions from other git worktrees.",
+        "None; --continue considers every session."
+      ],
+      "answer": "Sessions created with claude -p or the Agent SDK, background sessions, and sessions whose first prompt was /loop.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: resume a session",
+      "explanation": "'Claude Code leaves sessions created with claude -p or the Agent SDK out of the session picker and out of claude --continue... With claude --continue, Claude Code also skips background sessions and sessions whose first prompt was /loop. When you run claude -p --continue, Claude Code includes -p, SDK, and /loop sessions and still skips background sessions.'\n\n**Why the others are wrong**\n\n- **B, C.** Neither is the exclusion rule.\n- **D.** Several categories are excluded.\n\nNote the asymmetry: interactive --continue skips automated sessions, while -p --continue includes them — each mode continues its own kind of work. Running /loop LATER in a conversation does not hide the session; only a /loop first prompt does.",
+      "examTrick": "Interactive --continue skips -p/SDK/background//loop. -p --continue includes -p, SDK, and /loop but still skips background.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "--continue Exclusions", "Headless Sessions", "/loop"]
+    },
+    {
+      "id": 16,
+      "question": "Can claude --resume <session-id> be run from a different directory than the one the session started in?",
+      "options": [
+        "Yes — Claude Code searches the current project and its worktrees first, then every other project on the machine, resolving only when exactly one other project holds a transcript for that ID.",
+        "No — you must cd to the original directory first.",
+        "Yes, but only within the same git repository.",
+        "Yes, and if several projects hold copies it resumes the most recent one."
+      ],
+      "answer": "Yes — Claude Code searches the current project and its worktrees first, then every other project on the machine, resolving only when exactly one other project holds a transcript for that ID.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: resume a session",
+      "explanation": "'You can run claude --resume <session-id> from any directory: Claude Code looks for the ID in the current project directory and its git worktrees first, then in every other project on this machine... The cross-project search resolves the ID only when exactly one other project holds a transcript with messages for it, so a hand-copied duplicate makes Claude Code report not-found rather than resume an arbitrary copy.'\n\n**Why the others are wrong**\n\n- **B, C.** Cross-project resolution is supported (from v2.1.223).\n- **D.** Ambiguity produces not-found rather than a guess — a deliberate choice, since resuming the wrong copy silently would be worse than failing.\n\nIf nothing matches: 'No conversation found with session ID: <session-id>'.",
+      "examTrick": "Cross-project resume works, but ambiguity = not-found, never a guess.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Cross-Project Resume", "Ambiguity Handling", "Session ID"]
+    },
+    {
+      "id": 17,
+      "question": "Which describes the recommended pattern for a task spanning multiple sittings?",
+      "options": [
+        "Name the session descriptively with /rename and treat sessions like branches — each workstream gets its own persistent context, resumed with --continue or --resume.",
+        "Keep one long session for everything so no context is lost.",
+        "Start fresh each sitting and re-explain the context.",
+        "Export the transcript each time and paste it back in."
+      ],
+      "answer": "Name the session descriptively with /rename and treat sessions like branches — each workstream gets its own persistent context, resumed with --continue or --resume.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: resume conversations",
+      "explanation": "'Name sessions with /rename and treat them like branches: each workstream gets its own persistent context... Claude Code saves conversations locally, so when a task spans multiple sittings you don't have to re-explain the context. Give sessions descriptive names like oauth-migration so you can find them later.'\n\n**Why the others are wrong**\n\n- **B.** One long session mixing workstreams is the 'kitchen sink session' failure pattern.\n- **C.** Re-explaining is exactly the toil resumption removes.\n- **D.** Pasting a transcript back in is redundant and expensive.\n\nThis is the exam objective on session resumption in practice: restore accumulated state accurately rather than repeating prior work.",
+      "examTrick": "Sessions as branches: one named session per workstream. Resumption restores state; it does not repeat work.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Session Strategy", "Naming Convention", "Multi-Sitting Work"]
+    },
+    {
+      "id": 18,
+      "question": "What does /export produce, and how does it differ from the script interfaces?",
+      "options": [
+        "A rendered transcript for a person to read — copied to the clipboard or written to a file, with messages and tool outputs as readable text; the script interfaces produce structured data instead.",
+        "A JSON object with result, session ID, usage, and cost.",
+        "A copy of the raw JSONL transcript file.",
+        "A compacted summary of the conversation."
+      ],
+      "answer": "A rendered transcript for a person to read — copied to the clipboard or written to a file, with messages and tool outputs as readable text; the script interfaces produce structured data instead.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sessions: export and locate session data",
+      "explanation": "'Run /export to open a menu that lets you copy the current conversation to your clipboard or save it as a plain-text file, with messages and tool outputs rendered as readable text. Pass a filename to skip the menu and write directly to that file.' And: '/export produces a rendered transcript for a person to read. The interfaces below produce structured data for a script to parse.'\n\n**Why the others are wrong**\n\n- **B.** That is claude -p --output-format json.\n- **C.** The raw JSONL is the internal storage format, not what /export emits.\n- **D.** That is /compact.\n\nThe distinction matters for building on session data: human-readable export for review and sharing, structured interfaces for automation.",
+      "examTrick": "/export = human-readable. --output-format json = machine-readable. Raw JSONL = internal, don't parse.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/export", "Human vs Machine", "Session Data"]
+    },
+    {
+      "id": 19,
+      "question": "Which environment variable lets a host that embeds Claude Code give each tenant its own transcript and auto-memory directory?",
+      "options": [
+        "CLAUDE_CODE_PROJECT_DIR_NAME, set alongside CLAUDE_CONFIG_DIR.",
+        "CLAUDE_CODE_TENANT_ID on its own.",
+        "CLAUDE_CODE_SKIP_PROMPT_HISTORY.",
+        "CLAUDE_CONFIG_DIR on its own."
+      ],
+      "answer": "CLAUDE_CODE_PROJECT_DIR_NAME, set alongside CLAUDE_CONFIG_DIR.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: name the project directory yourself",
+      "explanation": "'To choose the name yourself, set CLAUDE_CODE_PROJECT_DIR_NAME alongside CLAUDE_CONFIG_DIR... This suits a host that embeds Claude Code and gives each session its own config directory.' Three rules apply: you must set CLAUDE_CONFIG_DIR too ('Claude Code ignores CLAUDE_CODE_PROJECT_DIR_NAME when CLAUDE_CONFIG_DIR is unset'), use 1-64 letters/digits/hyphens/underscores and avoid Windows device names like con, and set it in the shell environment that starts claude because 'an env block in a settings file can't set it.'\n\n**Why the others are wrong**\n\n- **B.** Not a documented variable.\n- **C.** That suppresses transcript writes entirely.\n- **D.** CLAUDE_CONFIG_DIR alone moves storage off ~/.claude but still derives the project name from the working directory.\n\nAuto memory follows the same path, so tenant isolation covers both.",
+      "examTrick": "CLAUDE_CODE_PROJECT_DIR_NAME requires CLAUDE_CONFIG_DIR, must be in the launching shell, and cannot come from a settings env block.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Multi-Tenant", "CLAUDE_CONFIG_DIR", "Environment Variables"]
+    },
+    {
+      "id": 20,
+      "question": "How do checkpoints relate to session resumption, and what is their documented limitation?",
+      "options": [
+        "Every prompt creates a checkpoint you can rewind to, and checkpoints are saved with the conversation so they survive closing the terminal — but they only track changes made through Claude's file editing tools, not Bash or external processes.",
+        "Checkpoints capture every filesystem change including those made by Bash commands.",
+        "Checkpoints are lost when the terminal closes.",
+        "Checkpoints replace git and can be used as version control."
+      ],
+      "answer": "Every prompt creates a checkpoint you can rewind to, and checkpoints are saved with the conversation so they survive closing the terminal — but they only track changes made through Claude's file editing tools, not Bash or external processes.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: rewind with checkpoints",
+      "explanation": "'Every prompt you send creates a checkpoint. You can restore conversation, code, or both to any previous checkpoint... Checkpoints are saved with the conversation, so you can close your terminal, resume the session later, and still rewind.' The warning: 'Checkpoints only track changes made through Claude's file editing tools. Changes made through Bash commands or external processes are not captured. This isn't a replacement for git.'\n\n**Why the others are wrong**\n\n- **B, D.** Both are contradicted by the explicit warning.\n- **C.** They persist with the conversation.\n\nThe practical value the docs draw out: 'Instead of carefully planning every move, you can tell Claude to try something risky. If it doesn't work, rewind and try a different approach.'",
+      "examTrick": "Checkpoints: per prompt, persist with the session, but track ONLY Claude's file edit tools. Not a git replacement.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Checkpointing", "Rewind", "Coverage Limits"]
+    }
+  ]
+}

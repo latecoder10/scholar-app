@@ -1,0 +1,383 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.9 Hook Events, Control Flow & Enforcement",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "NEW TOPIC. The full hook event catalogue, PreToolUse blocking semantics and exit codes, PostToolUse feedback, matcher syntax including MCP patterns, hook handler types, and where hooks are configured. Grounded in the official Claude Code hooks reference.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which hook event can block a tool call before it executes?",
+      "options": [
+        "PreToolUse",
+        "PostToolUse",
+        "PermissionDenied",
+        "UserPromptSubmit"
+      ],
+      "answer": "PreToolUse",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Hooks reference: hook events",
+      "explanation": "PreToolUse fires 'Before tool call executes (can block)'. It is the only tool-lifecycle event positioned to prevent an action, which is why every 'must never happen' requirement maps to it.\n\n**Why the others are wrong**\n\n- **B.** PostToolUse fires 'After tool call succeeds' — the action already ran, so it can warn but not prevent.\n- **C.** PermissionDenied fires when auto mode denies a tool call; it is a notification of a decision already made.\n- **D.** UserPromptSubmit fires when you submit a prompt, before any tool selection has happened.\n\nThe design rule that follows: enforcement goes in PreToolUse, quality automation goes in PostToolUse.",
+      "examTrick": "Only PreToolUse can prevent. PostToolUse can only react. Any 'block this' requirement is PreToolUse.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "PreToolUse", "Blocking", "Hook Events"]
+    },
+    {
+      "id": 2,
+      "question": "Which JSON output from a PreToolUse hook denies a tool call?",
+      "options": [
+        "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"...\"}}",
+        "{\"decision\": \"block\", \"reason\": \"...\"}",
+        "{\"allow\": false, \"message\": \"...\"}",
+        "{\"status\": \"denied\"}"
+      ],
+      "answer": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"...\"}}",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Hooks reference: PreToolUse",
+      "explanation": "The documented shape nests the decision under hookSpecificOutput with hookEventName, permissionDecision (allow, deny, or ask), and permissionDecisionReason. Exit 0 with this JSON is the structured path.\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the schema; a hook emitting them would not be honoured as a decision.\n\nThe three permissionDecision values matter: 'deny' blocks, 'allow' approves without prompting, and 'ask' forces a prompt even where a rule would have auto-approved. So a hook can tighten as well as loosen.",
+      "examTrick": "hookSpecificOutput → permissionDecision: allow | deny | ask, plus permissionDecisionReason. Memorise the nesting.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "permissionDecision", "Hook JSON", "PreToolUse"]
+    },
+    {
+      "id": 3,
+      "question": "What does exit code 2 mean from a PreToolUse hook versus a PostToolUse hook?",
+      "options": [
+        "PreToolUse: blocks the tool call regardless of JSON, using stderr as the reason. PostToolUse: shows stderr to Claude, but the tool already ran.",
+        "It means a script error in both cases and is ignored.",
+        "PreToolUse: prompts the user. PostToolUse: reverts the tool's effect.",
+        "It blocks in both cases; PostToolUse rolls back the file change."
+      ],
+      "answer": "PreToolUse: blocks the tool call regardless of JSON, using stderr as the reason. PostToolUse: shows stderr to Claude, but the tool already ran.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Hooks reference: exit code behavior",
+      "explanation": "For PreToolUse: 'Exit 0: Success; JSON permissionDecision honored. Exit 2: Blocks tool call regardless of JSON; use stderr as blocking reason.' For PostToolUse: 'Exit 0: Success; systemMessage in JSON is optional feedback to Claude. Exit 2: Shows stderr to Claude (tool already ran); use this for warnings.'\n\n**Why the others are wrong**\n\n- **B.** Exit 2 is a defined control signal, not an ignored error. Other non-zero codes are a non-blocking error if the JSON is invalid.\n- **C, D.** Nothing is rolled back — PostToolUse fires after the tool succeeded, so the only remedy is telling Claude about the problem so it can fix it forward.\n\nThe asymmetry is the point: exit 2 means 'stop' before, and 'here is a problem' after.",
+      "examTrick": "Exit 2 = block (Pre) or surface stderr to Claude (Post). It never undoes anything.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Exit Codes", "stderr", "PostToolUse"]
+    },
+    {
+      "id": 4,
+      "question": "Which matcher fires a hook for every write-style tool from any MCP server?",
+      "options": [
+        "\"mcp__.*__write.*\"",
+        "\"mcp__write\"",
+        "\"*write*\"",
+        "\"mcp__*__write\""
+      ],
+      "answer": "\"mcp__.*__write.*\"",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Hooks reference: matcher syntax",
+      "explanation": "Matchers containing characters beyond letters, digits, underscore, hyphen, space, pipe, and comma are treated as REGEX. The docs give '\"mcp__.*__write.*\" - any write tool from any server' as the example. Exact strings like \"Bash\" or \"Edit|Write\" are matched literally; \"*\", \"\" or an omitted matcher fires on every event.\n\n**Why the others are wrong**\n\n- **B.** Matches a literal tool name that does not exist.\n- **C.** Glob-style asterisks are not the syntax; matchers are exact strings or regex.\n- **D.** Mixes glob syntax into a regex context — in regex, * means 'zero or more of the previous character', so this would not match as intended.\n\nA critical caveat from the MCP docs: 'A hook matcher written against the bare server key, such as mcp__database-tools__.*, never fires for a plugin-bundled server', because those register as plugin:<plugin>:<server>.",
+      "examTrick": "Matchers are exact strings OR regex — never globs. Use .* not *. Plugin-bundled servers need a different matcher.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Matcher Syntax", "Regex", "MCP Tools"]
+    },
+    {
+      "id": 5,
+      "question": "Which hook events do NOT support a matcher?",
+      "options": [
+        "UserPromptSubmit, PostToolBatch, Stop, and CwdChanged.",
+        "PreToolUse and PostToolUse.",
+        "SessionStart and SessionEnd.",
+        "SubagentStart and SubagentStop."
+      ],
+      "answer": "UserPromptSubmit, PostToolBatch, Stop, and CwdChanged.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Hooks reference: matcher syntax",
+      "explanation": "The docs list matcher targets by event family: tool events match the tool name; session events (SessionStart, SessionEnd) match the session type or reason — 'startup', 'resume', 'clear', 'compact'; agent events (SubagentStart, SubagentStop) match the agent type such as 'general-purpose' or 'Explore'. 'Other events (UserPromptSubmit, PostToolBatch, Stop, CwdChanged): No matcher support.'\n\n**Why the others are wrong**\n\n- **B, C, D.** All three families have documented matcher targets.\n\nThis matters when writing a hook: if the event has no matcher, your filtering has to happen inside the script from the hook's stdin payload.",
+      "examTrick": "Matcher targets: tool name / session reason / agent type. No matcher on UserPromptSubmit, PostToolBatch, Stop, CwdChanged.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Matcher Support", "Event Families", "Hook Filtering"]
+    },
+    {
+      "id": 6,
+      "question": "What does the 'if' field add to a tool-event hook?",
+      "options": [
+        "Additional filtering using permission-rule syntax, such as \"Bash(git *)\" or \"Edit(*.ts)\".",
+        "A conditional expression evaluated by the model.",
+        "A dependency on another hook completing first.",
+        "A time window during which the hook is active."
+      ],
+      "answer": "Additional filtering using permission-rule syntax, such as \"Bash(git *)\" or \"Edit(*.ts)\".",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Hooks reference: matcher syntax",
+      "explanation": "The docs show an 'if' field alongside type and command: '{\"if\": \"Bash(git *)\", \"type\": \"command\", \"command\": \"./hooks/validate-git.sh\"}' and state that the 'Syntax mirrors permission rules: \"Bash(rm *)\", \"Edit(*.ts)\".' It applies to tool events only.\n\n**Why the others are wrong**\n\n- **B.** It is a declarative pattern, not a model-evaluated expression.\n- **C, D.** Neither ordering nor scheduling is expressed here.\n\nThe practical value: the matcher selects the TOOL, while 'if' narrows to the specific INVOCATION — so one hook can fire for git commands without firing for every Bash call.",
+      "examTrick": "matcher picks the tool; 'if' narrows by permission-rule pattern. Tool events only.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "if Field", "Permission Rule Syntax", "Hook Precision"]
+    },
+    {
+      "id": 7,
+      "question": "Which hook handler types are available besides a shell command?",
+      "options": [
+        "http, mcp_tool, prompt, and agent.",
+        "python, node, and shell only.",
+        "webhook and email.",
+        "Only command; other types are configured through plugins."
+      ],
+      "answer": "http, mcp_tool, prompt, and agent.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Hooks reference: hook handler types",
+      "explanation": "The five types are: command (shell script; JSON via stdin, exit code and stdout for control), http (POST request; JSON body; response body contains decisions), mcp_tool (call an MCP server tool), prompt (send to a Claude model for evaluation), and agent (spawn a subagent for verification, experimental).\n\n**Why the others are wrong**\n\n- **B.** Language runtimes are not handler types; a command hook can invoke any interpreter.\n- **C.** Not documented types.\n- **D.** All five are configured in ordinary settings files.\n\nThe prompt and agent types are notable: they reintroduce model judgement into what is otherwise the deterministic layer, which is useful when a rule is real but not expressible as a pattern.",
+      "examTrick": "Five handler types: command, http, mcp_tool, prompt, agent. The last two use a model inside the deterministic layer.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Handler Types", "http Hooks", "prompt Hooks"]
+    },
+    {
+      "id": 8,
+      "question": "How do hooks from different configuration sources combine?",
+      "options": [
+        "They merge — all registered hooks fire for their matching events regardless of source.",
+        "The highest-precedence source wins and the others are ignored.",
+        "Only project hooks fire when a project settings file exists.",
+        "Plugin hooks are ignored when user hooks are configured."
+      ],
+      "answer": "They merge — all registered hooks fire for their matching events regardless of source.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code: understand how features layer",
+      "explanation": "'Hooks merge: all registered hooks fire for their matching events regardless of source.' Contrast the other layering rules: CLAUDE.md files are additive, skills and subagents override by name, and MCP servers override by name with local > project > user.\n\n**Why the others are wrong**\n\n- **B, C, D.** All describe override semantics, which apply to skills, subagents, and MCP servers — not to hooks.\n\nThe consequence for design: you cannot disable an organization's hook by defining your own, which is exactly what makes hooks a viable enforcement mechanism at the managed tier.",
+      "examTrick": "Layering rules: CLAUDE.md additive, hooks MERGE, skills/subagents/MCP override by name. Four different behaviours.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Hook Merging", "Layering Rules", "Enforcement"]
+    },
+    {
+      "id": 9,
+      "question": "Where can hooks be configured, beyond settings files?",
+      "options": [
+        "In a plugin's hooks/hooks.json, and in skill or subagent frontmatter.",
+        "In CLAUDE.md under a hooks heading.",
+        "In .mcp.json alongside server definitions.",
+        "Only in settings files; nothing else registers hooks."
+      ],
+      "answer": "In a plugin's hooks/hooks.json, and in skill or subagent frontmatter.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Hooks reference: configuration locations",
+      "explanation": "The locations table lists ~/.claude/settings.json (all projects), .claude/settings.json (single project, committable), .claude/settings.local.json (single project, gitignored), managed policy settings (organization-wide), a plugin's hooks/hooks.json (when the plugin is enabled), and skill or subagent frontmatter (scoped to that skill or subagent).\n\n**Why the others are wrong**\n\n- **B.** CLAUDE.md is prose context and cannot hold executable configuration — this is the central enforcement-versus-guidance distinction.\n- **C.** .mcp.json holds MCP server definitions only.\n- **D.** Six documented locations, not one.\n\nThe subagent frontmatter case is worth noting: a subagent can carry its own PreToolUse hooks, so a delegated worker can be constrained independently of the main session.",
+      "examTrick": "Hooks live in 4 settings tiers + plugin hooks.json + skill/subagent frontmatter. Never in CLAUDE.md.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Hook Locations", "Plugin Hooks", "Frontmatter Hooks"]
+    },
+    {
+      "id": 10,
+      "question": "Which event fires when a CLAUDE.md or .claude/rules/*.md file is loaded, and what is it useful for?",
+      "options": [
+        "InstructionsLoaded — logging exactly which instruction files load, when, and why, which helps debug path-specific rules and lazy-loaded files.",
+        "SessionStart — it fires once per session with the loaded file list.",
+        "ConfigChange — it fires whenever any configuration file is read.",
+        "PreCompact — instruction files are re-read before compaction."
+      ],
+      "answer": "InstructionsLoaded — logging exactly which instruction files load, when, and why, which helps debug path-specific rules and lazy-loaded files.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Hooks reference; Memory troubleshooting",
+      "explanation": "The event list includes 'InstructionsLoaded - CLAUDE.md or .claude/rules/*.md loaded'. The memory docs recommend it: 'Use the InstructionsLoaded hook to log exactly which instruction files are loaded, when they load, and why. This is useful for debugging path-specific rules or lazy-loaded files in subdirectories.'\n\n**Why the others are wrong**\n\n- **B.** SessionStart fires at session begin or resume, but instruction files also load LATER — nested CLAUDE.md and path-scoped rules load on demand, which is precisely the case InstructionsLoaded exists to expose.\n- **C.** ConfigChange fires when a configuration file changes on disk.\n- **D.** PreCompact fires before context compaction.\n\nFor a one-off check of what loaded, /context is the simpler tool; InstructionsLoaded is for continuous logging.",
+      "examTrick": "InstructionsLoaded is the debugging hook for lazy-loaded rules. /context is the one-off check.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "InstructionsLoaded", "Rule Debugging", "Lazy Loading"]
+    },
+    {
+      "id": 11,
+      "question": "Which event fires after a tool call FAILS, as distinct from the event that fires after one succeeds?",
+      "options": [
+        "PostToolUseFailure, as distinct from PostToolUse.",
+        "PostToolUse handles both; the payload carries a success flag.",
+        "PreToolUse re-fires with an error field.",
+        "StopFailure."
+      ],
+      "answer": "PostToolUseFailure, as distinct from PostToolUse.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Hooks reference: tool execution events",
+      "explanation": "The tool-execution family is PreToolUse (before, can block), PostToolUse (after tool call SUCCEEDS), PostToolUseFailure (after tool call FAILS), PostToolBatch (after a parallel tool batch resolves), PermissionRequest (tool needs a permission decision), and PermissionDenied (auto mode denies a tool call).\n\n**Why the others are wrong**\n\n- **B.** They are separate events precisely so success and failure automation can differ.\n- **C.** PreToolUse fires once, before execution.\n- **D.** StopFailure fires when a turn ends due to an API error, which is a turn-level event, not a tool-level one.\n\nThe separation is useful: a formatter belongs on PostToolUse (only format what actually wrote), while error telemetry belongs on PostToolUseFailure.",
+      "examTrick": "PostToolUse = success only. PostToolUseFailure = failure. PostToolBatch = after a parallel batch resolves.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "PostToolUseFailure", "Tool Events", "Event Granularity"]
+    },
+    {
+      "id": 12,
+      "question": "A Stop hook runs a check and blocks the turn from ending until it passes. What is the documented limit?",
+      "options": [
+        "Claude Code overrides the hook and ends the turn after 8 consecutive blocks.",
+        "There is no limit; the turn blocks until the check passes.",
+        "The hook may block at most once per turn.",
+        "The limit is 3 consecutive blocks."
+      ],
+      "answer": "Claude Code overrides the hook and ends the turn after 8 consecutive blocks.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Best practices: as a deterministic gate",
+      "explanation": "'A Stop hook runs your check as a script and blocks the turn from ending until it passes. Claude Code overrides the hook and ends the turn after 8 consecutive blocks.' The cap exists so a check that can never pass cannot trap the session in an infinite loop.\n\n**Why the others are wrong**\n\n- **B.** An unbounded block is exactly the failure mode the cap prevents.\n- **C, D.** Neither number is documented.\n\nThis is an orchestration-safeguard fact in the exam's sense: the loop is guaranteed to terminate even when the gate never opens, so the session always returns control to the human rather than spinning.",
+      "examTrick": "Stop hook gives up after 8 consecutive blocks. Even the deterministic gate has a termination guarantee.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Stop Hook", "8 Blocks", "Loop Termination"]
+    },
+    {
+      "id": 13,
+      "question": "How does a command-type hook receive its input and return its decision?",
+      "options": [
+        "JSON arrives on stdin; the exit code plus stdout control the outcome.",
+        "Input arrives as command-line arguments; the return is written to a temp file.",
+        "Input arrives in environment variables; the decision is the process name.",
+        "Input arrives on stdin; the decision must be written to stderr in all cases."
+      ],
+      "answer": "JSON arrives on stdin; the exit code plus stdout control the outcome.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Hooks reference: hook handler types",
+      "explanation": "'type: \"command\" - Shell script; JSON via stdin, exit code + stdout for control.' The documented example reads the payload with jq: COMMAND=$(jq -r '.tool_input.command') and then emits the permissionDecision JSON on stdout with exit 0.\n\n**Why the others are wrong**\n\n- **B, C.** Neither matches the contract.\n- **D.** stderr carries the reason when you use exit 2; the structured JSON decision goes to stdout with exit 0.\n\nTwo paths, then: structured JSON on stdout with exit 0, or a blunt block with exit 2 and a stderr reason.",
+      "examTrick": "stdin = JSON payload. stdout + exit 0 = structured decision. exit 2 + stderr = blunt block/warn.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Command Hooks", "stdin/stdout", "Hook Contract"]
+    },
+    {
+      "id": 14,
+      "question": "A PostToolUse hook runs ESLint after every edit. How do its results reach Claude?",
+      "options": [
+        "Hook output lands in context as text Claude reads, so it can act on the lint results.",
+        "Results are written to a log file Claude must be told to read.",
+        "Results are discarded; PostToolUse output is for the user only.",
+        "Results trigger an automatic re-edit without entering context."
+      ],
+      "answer": "Hook output lands in context as text Claude reads, so it can act on the lint results.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code: Hook vs Skill",
+      "explanation": "'Hook output lands in context. A PostToolUse hook that runs your linter feeds results back as text Claude reads; a /fix-lint skill tells Claude how to resolve them.' The context-cost table adds the nuance: hooks cost 'Zero, unless the hook returns output that gets added as messages to your conversation.'\n\n**Why the others are wrong**\n\n- **B.** No manual step is needed; the output is fed back automatically.\n- **C.** Discarding it would make the hook useless for closing the loop.\n- **D.** Claude decides what to do with the feedback; the hook does not force an edit.\n\nThe design pattern this enables is the automated verification loop: the hook produces a pass/fail signal deterministically, and Claude reads it and iterates.",
+      "examTrick": "Hooks cost ZERO context unless they return output. A linting PostToolUse hook deliberately returns output to close the loop.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "PostToolUse Feedback", "Context Cost", "Verification Loop"]
+    },
+    {
+      "id": 15,
+      "question": "Which event family fires around context compaction?",
+      "options": [
+        "PreCompact and PostCompact.",
+        "PreToolUse and PostToolUse with a compact matcher.",
+        "SessionStart with matcher 'compact' only.",
+        "ContextFull and ContextTrimmed."
+      ],
+      "answer": "PreCompact and PostCompact.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Hooks reference: configuration/context events",
+      "explanation": "The configuration and context family includes ConfigChange, InstructionsLoaded, PreCompact (before context compaction), and PostCompact (after context compaction).\n\n**Why the others are wrong**\n\n- **B.** Compaction is not a tool call.\n- **C.** SessionStart does accept 'compact' as a matcher value — a genuine near-miss, since a session can start from a compaction — but the events that bracket a compaction itself are PreCompact and PostCompact.\n- **D.** Not documented event names.\n\nA PreCompact hook is a natural place to persist anything that must outlive the summary, which complements the documented mechanisms that survive compaction: the root CLAUDE.md and the plan file.",
+      "examTrick": "PreCompact/PostCompact bracket compaction. SessionStart's matcher values are startup, resume, clear, compact.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "PreCompact", "PostCompact", "Session Matchers"]
+    },
+    {
+      "id": 16,
+      "question": "Which hook event lets a script inject text into Claude's context before the first prompt?",
+      "options": [
+        "SessionStart — plain text the hook prints to stdout is added to Claude's context before the first prompt.",
+        "UserPromptSubmit — it replaces the user's prompt entirely.",
+        "InstructionsLoaded — it appends to the loaded CLAUDE.md.",
+        "Setup — it runs only with --init-only and cannot write context."
+      ],
+      "answer": "SessionStart — plain text the hook prints to stdout is added to Claude's context before the first prompt.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: recommend the right plugin at session start",
+      "explanation": "'A SessionStart hook can close that gap, since Claude Code adds plain text the hook prints to stdout to Claude's context before the first prompt.' The documented example reads the launch directory from the hook input, looks it up in a path-to-plugin map committed to the repository, and prints a recommendation for Claude to relay.\n\n**Why the others are wrong**\n\n- **B.** UserPromptSubmit fires per prompt, not once before the session's first prompt, and it does not exist to replace prompts wholesale.\n- **C.** InstructionsLoaded is an observation event for logging which files loaded.\n- **D.** Setup runs with --init-only, --init, or --maintenance — an initialization event, not a per-session context injector.\n\nThis is the mechanism for dynamic, computed context that a static CLAUDE.md cannot express.",
+      "examTrick": "SessionStart stdout → Claude's context before the first prompt. That is how you inject COMPUTED context.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "SessionStart", "Context Injection", "Dynamic Context"]
+    },
+    {
+      "id": 17,
+      "question": "Which requirement is best served by a hook rather than a skill?",
+      "options": [
+        "Rejecting any command matching rm -rf, every time, without model judgement.",
+        "A release checklist you want Claude to reason through.",
+        "Your team's API style guide.",
+        "A debugging playbook applied when relevant."
+      ],
+      "answer": "Rejecting any command matching rm -rf, every time, without model judgement.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code: Hook vs Skill",
+      "explanation": "'Use a hook when the action must happen the same way every time and doesn't need Claude to think. For example: format on save, reject rm -rf /, post a Slack message when a session ends.' The determinism row states hooks 'Always fire on its event; the trigger is guaranteed', while a skill's outcome 'can vary'.\n\n**Why the others are wrong**\n\n- **B, C, D.** All three are the documented skill cases: 'Use a skill when Claude should decide how to apply the steps, or when the content is knowledge rather than a script. For example: a /release checklist, your API style guide, a debugging playbook.'\n\nThe discriminating question is whether the task needs JUDGEMENT. If it does, a hook is the wrong shape; if it does not, a skill is an unreliable one.",
+      "examTrick": "Needs judgement → skill. Needs a guarantee → hook. Ask which one the requirement is really asking for.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Hook vs Skill", "Determinism", "Mechanism Selection"]
+    },
+    {
+      "id": 18,
+      "question": "Which events fire around subagent execution and task tracking?",
+      "options": [
+        "SubagentStart, SubagentStop, TaskCreated, TaskCompleted, and TeammateIdle.",
+        "AgentSpawn and AgentReturn only.",
+        "PreToolUse with matcher 'Agent' only.",
+        "WorkflowStart and WorkflowEnd."
+      ],
+      "answer": "SubagentStart, SubagentStop, TaskCreated, TaskCompleted, and TeammateIdle.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Hooks reference: agent/task events",
+      "explanation": "The agent and task family is: SubagentStart (subagent spawned), SubagentStop (subagent finishes), TaskCreated (task created via TaskCreate), TaskCompleted (task marked complete), and TeammateIdle (an agent team teammate going idle). SubagentStart and SubagentStop accept the agent type as a matcher, such as 'general-purpose' or 'Explore'.\n\n**Why the others are wrong**\n\n- **B, D.** Not documented event names.\n- **C.** Spawning does go through a tool, but the dedicated lifecycle events carry agent-specific payloads and matchers.\n\nThese are the events an orchestration layer uses to guarantee that every delegated task reaches a resolution — SubagentStop is where you verify a worker actually returned something usable.",
+      "examTrick": "Agent lifecycle: SubagentStart/Stop (matcher = agent type), TaskCreated/TaskCompleted, TeammateIdle.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Subagent Events", "Task Events", "Orchestration Monitoring"]
+    },
+    {
+      "id": 19,
+      "question": "What is the JSON structure for registering a PreToolUse hook on the Bash tool with a 30-second timeout?",
+      "options": [
+        "{\"hooks\": {\"PreToolUse\": [{\"matcher\": \"Bash\", \"hooks\": [{\"type\": \"command\", \"command\": \"/path/to/hook.sh\", \"timeout\": 30}]}]}}",
+        "{\"PreToolUse\": {\"Bash\": \"/path/to/hook.sh\"}}",
+        "{\"hooks\": [{\"event\": \"PreToolUse\", \"tool\": \"Bash\", \"run\": \"/path/to/hook.sh\"}]}",
+        "{\"hooks\": {\"Bash\": {\"pre\": \"/path/to/hook.sh\"}}}"
+      ],
+      "answer": "{\"hooks\": {\"PreToolUse\": [{\"matcher\": \"Bash\", \"hooks\": [{\"type\": \"command\", \"command\": \"/path/to/hook.sh\", \"timeout\": 30}]}]}}",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Hooks reference: JSON structure",
+      "explanation": "The documented shape is a top-level hooks object keyed by event name, whose value is an array of matcher groups, each with a matcher and its own nested hooks array of handler objects carrying type, command, and optional timeout.\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the schema. The doubly-nested 'hooks' key — event → matcher group → hooks array — is the part people get wrong, and it exists so several handlers can share one matcher.\n\nRemember settings files are strict JSON, so a trailing comma here produces a Settings Error at the next start rather than a working hook.",
+      "examTrick": "hooks → EventName → [ { matcher, hooks: [ {type, command, timeout} ] } ]. Nested hooks key is required.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Hook JSON Structure", "timeout", "Configuration"]
+    },
+    {
+      "id": 20,
+      "question": "Which is true of the PermissionRequest and PermissionDenied events?",
+      "options": [
+        "PermissionRequest fires when a tool needs a permission decision; PermissionDenied fires when auto mode denies a tool call.",
+        "Both fire only in Manual mode.",
+        "PermissionDenied fires whenever any deny rule matches, in every mode.",
+        "They are aliases for PreToolUse with different payloads."
+      ],
+      "answer": "PermissionRequest fires when a tool needs a permission decision; PermissionDenied fires when auto mode denies a tool call.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Hooks reference: tool execution events",
+      "explanation": "The event list defines them as 'PermissionRequest - Tool needs permission decision' and 'PermissionDenied - Auto mode denies tool call'. Both belong to the tool-execution family and both accept a tool-name matcher.\n\n**Why the others are wrong**\n\n- **B.** PermissionDenied is specifically tied to auto mode's classifier.\n- **C.** The documented trigger is the auto-mode denial, not any deny-rule match.\n- **D.** They are distinct events with distinct trigger conditions; PreToolUse fires before every tool call regardless of whether a decision is needed.\n\nPermissionDenied is useful for observability on unattended auto-mode runs: it tells you what the classifier is stopping, which is otherwise invisible.",
+      "examTrick": "PermissionRequest = a decision is needed. PermissionDenied = auto mode's classifier said no. Both tool-family, both matchable.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "PermissionRequest", "PermissionDenied", "Auto Mode Observability"]
+    },
+    {
+      "id": 21,
+      "question": "Which hook event receives the path to the session transcript when Claude finishes responding?",
+      "options": [
+        "Stop",
+        "SessionEnd",
+        "PostCompact",
+        "MessageDisplay"
+      ],
+      "answer": "Stop",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: add a Stop hook that proposes updates",
+      "explanation": "'A Stop hook receives the path to the session transcript when Claude finishes responding, so a script can review the session and propose CLAUDE.md updates while the gap it exposed is fresh.' Stop fires when Claude finishes responding — per turn, not per session.\n\n**Why the others are wrong**\n\n- **B.** SessionEnd fires when the session terminates, which is too late for per-turn retrospection.\n- **C.** PostCompact fires after compaction.\n- **D.** MessageDisplay fires when assistant message text is displayed.\n\nStop is doing double duty in the exam material: it is both the deterministic verification gate (blocking the turn until a check passes, up to 8 times) and the retrospection hook (transcript access for config feedback loops).",
+      "examTrick": "Stop = end of TURN, gets the transcript path, can block up to 8 times. SessionEnd = end of SESSION.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Stop Hook", "Transcript Path", "Turn vs Session"]
+    },
+    {
+      "id": 22,
+      "question": "A rule must apply to every session in an organization and cannot be removed by a developer defining their own hooks. Which combination achieves that?",
+      "options": [
+        "A PreToolUse hook in managed policy settings — managed settings cannot be overridden, and hooks from all sources merge rather than override.",
+        "A PreToolUse hook in the committed .claude/settings.json, since the repository is authoritative.",
+        "A CLAUDE.md rule at the managed policy location.",
+        "A plugin hooks.json distributed through an internal marketplace."
+      ],
+      "answer": "A PreToolUse hook in managed policy settings — managed settings cannot be overridden, and hooks from all sources merge rather than override.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Hooks reference; Settings precedence; Extend Claude Code",
+      "explanation": "Two documented properties combine here. Managed settings sit at the top of the precedence stack and 'Nothing you set overrides them'. And hooks 'merge: all registered hooks fire for their matching events regardless of source', so a developer cannot suppress the managed hook by defining their own.\n\n**Why the others are wrong**\n\n- **B.** A committed project file can be overridden locally, and its allow rules even wait for workspace trust.\n- **C.** A managed CLAUDE.md is unexcludable but still advisory — it shapes behaviour without enforcing it. This is the enforcement-versus-guidance distinction at the managed tier.\n- **D.** A plugin is a distribution mechanism; a developer can disable a plugin, so it is not an enforcement guarantee.\n\nThe general rule the exam wants: guarantee = managed tier + a mechanism that merges or blocks, never one that merely informs.",
+      "examTrick": "Unremovable enforcement = managed tier + hooks/permissions. Managed CLAUDE.md is unexcludable but still only guidance.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Managed Hooks", "Enforcement Guarantee", "Merge Semantics"]
+    }
+  ]
+}

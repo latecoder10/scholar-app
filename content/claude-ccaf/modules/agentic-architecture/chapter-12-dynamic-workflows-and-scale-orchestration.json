@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.12 Dynamic Workflows & Scale Orchestration",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "NEW TOPIC. Dynamic workflows as scripts that orchestrate subagents at scale, choosing between subagents, skills, agent teams and workflows, approval and permission behaviour, resume semantics, agent caps, size guidelines, and cost control. Grounded in the official Claude Code workflows documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What fundamentally distinguishes a dynamic workflow from subagents, skills, and agent teams?",
+      "options": [
+        "Who holds the plan — in a workflow a script decides what runs next and intermediate results live in script variables, so Claude's context holds only the final answer.",
+        "Workflows use a different model than the session.",
+        "Workflows run without any subagents.",
+        "Workflows are the only mechanism that can run tasks in parallel."
+      ],
+      "answer": "Who holds the plan — in a workflow a script decides what runs next and intermediate results live in script variables, so Claude's context holds only the final answer.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: when to use a workflow",
+      "explanation": "'The difference is who holds the plan.' The comparison table: subagents and skills have Claude deciding turn by turn with results in Claude's context window; agent teams have a lead agent deciding with results in a shared task list; a workflow is 'A script the runtime executes' where 'The script' decides and results live in 'Script variables'. 'A workflow script holds the loop, the branching, and the intermediate results itself, so Claude's context holds only the final answer.'\n\n**Why the others are wrong**\n\n- **B.** 'Every agent in a workflow uses your session's model unless the script routes a stage to a different one.'\n- **C.** A workflow orchestrates subagents — it is built on them.\n- **D.** Subagents and agent teams also run in parallel.\n\nThe scale column makes the practical difference concrete: subagents handle 'A few delegated tasks per turn', workflows 'Dozens to hundreds of agents per run'.",
+      "examTrick": "The axis is WHO HOLDS THE PLAN. Script = workflow. Claude turn-by-turn = subagents. Lead agent = teams.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Workflow vs Subagent", "Plan Ownership", "Script Variables"]
+    },
+    {
+      "id": 2,
+      "question": "Beyond running more agents, what quality pattern does moving the plan into code enable?",
+      "options": [
+        "Independent agents can adversarially review each other's findings before they are reported, or draft a plan from several angles and weigh them against each other.",
+        "The script can retry failed agents indefinitely until they agree.",
+        "The script can edit files directly without an agent.",
+        "The script can bypass permission checks for speed."
+      ],
+      "answer": "Independent agents can adversarially review each other's findings before they are reported, or draft a plan from several angles and weigh them against each other.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: when to use a workflow",
+      "explanation": "'Moving the plan into code also lets a workflow apply a repeatable quality pattern, not just run more agents: it can have independent agents adversarially review each other's findings before they're reported, or draft a plan from several angles and weigh them against each other, so you get a more trustworthy result than a single pass.'\n\n**Why the others are wrong**\n\n- **B.** Retry loops are possible but the caps bound them, and agreement is not the goal.\n- **C.** A documented constraint says the opposite: 'No direct filesystem or shell access from the workflow itself. Agents read, write, and run commands. The script coordinates the agents.'\n- **D.** 'its agents' tool calls receive the same permission checks and sandboxing as any other tool call in the session.'\n\nThis is the adversarial-review principle from best practices, made repeatable in code rather than depending on you remembering to ask.",
+      "examTrick": "Workflows codify the QUALITY pattern (cross-checking, multi-angle drafting), not just the fan-out.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Adversarial Cross-Check", "Repeatable Quality", "Trustworthiness"]
+    },
+    {
+      "id": 3,
+      "question": "How do you run a single task as a workflow without changing the session's effort level?",
+      "options": [
+        "Include the keyword ultracode in your prompt, or ask in your own words such as 'use a workflow'.",
+        "Run /workflow followed by the task.",
+        "Set /effort ultracode for the session.",
+        "Pass --workflow when launching Claude Code."
+      ],
+      "answer": "Include the keyword ultracode in your prompt, or ask in your own words such as 'use a workflow'.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: ask for a workflow in your prompt",
+      "explanation": "'To run a single task as a workflow without changing the session's effort level, include the keyword ultracode in your prompt. Asking in your own words, for example \"use a workflow\" or \"run a workflow\", also works: Claude treats a direct request as the same opt-in. Before v2.1.160 the literal trigger keyword was workflow.'\n\n**Why the others are wrong**\n\n- **B.** /workflows lists and manages runs; it does not start one from a task description.\n- **C.** /effort ultracode changes the SESSION so 'Claude plans a workflow for every substantive task', which is exactly what the question excludes.\n- **D.** Not a documented flag.\n\nNote the keyword 'only chooses how Claude structures the work: a workflow started this way runs inside the session's existing permission mode.'",
+      "examTrick": "ultracode in a prompt = one workflow. /effort ultracode = every substantive task in the session.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "ultracode Keyword", "Opt-In", "Effort Level"]
+    },
+    {
+      "id": 4,
+      "question": "Which routes does the ultracode keyword NOT trigger a workflow from?",
+      "options": [
+        "A prompt passed with -p, a prompt an Agent SDK application sends without stamping it as human input, a scheduled task prompt, and a webhook payload or pull request comment relayed into the conversation.",
+        "The interactive prompt and IDE extension panels.",
+        "Remote Control clients.",
+        "Any route — the keyword always triggers a workflow."
+      ],
+      "answer": "A prompt passed with -p, a prompt an Agent SDK application sends without stamping it as human input, a scheduled task prompt, and a webhook payload or pull request comment relayed into the conversation.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: where the keyword works",
+      "explanation": "'The keyword is an opt-in only in a prompt you type yourself: at the interactive prompt, in an IDE extension panel, in a Remote Control client, or in an Agent SDK application that stamps your keyboard input's origin as { kind: \"human\" }.' The excluded routes are listed exactly as in the answer. 'Before v2.1.210, the keyword started a workflow from any of these routes too, including a webhook payload or pull request comment relayed into the conversation.'\n\n**Why the others are wrong**\n\n- **B, C.** Both are documented as working routes.\n- **D.** The restriction is deliberate.\n\nThe security reasoning is worth seeing: a webhook payload or PR comment is untrusted external text. If a keyword inside it could launch a hundred-agent run, that would be a resource-exhaustion vector triggered by anyone who can comment on a PR.",
+      "examTrick": "ultracode only works from HUMAN-typed input. Untrusted relayed text (webhooks, PR comments) cannot launch a workflow.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Human Origin", "Untrusted Input", "Resource Exhaustion"]
+    },
+    {
+      "id": 5,
+      "question": "In which permission mode do workflow subagents run, regardless of your session's mode?",
+      "options": [
+        "acceptEdits — they always run in acceptEdits and inherit your tool allowlist, so file edits are auto-approved.",
+        "The same mode as the session.",
+        "plan mode, so nothing is written until you approve.",
+        "bypassPermissions, since the runtime is isolated."
+      ],
+      "answer": "acceptEdits — they always run in acceptEdits and inherit your tool allowlist, so file edits are auto-approved.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: approve the plan before it runs",
+      "explanation": "'Your permission mode controls only the launch prompt above. The subagents the workflow spawns always run in acceptEdits mode and inherit your tool allowlist, regardless of your session's mode. File edits are auto-approved. Shell commands, web fetches, and MCP tools that aren't in your allowlist can still prompt you mid-run. To avoid this on a long run, add the commands the agents need to your allowlist before starting.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches; the session mode governs only the LAUNCH prompt.\n\nThe practical consequence is important: launching a workflow from Manual mode does not mean its agents will ask before editing files. Prepare the allowlist before a long run, and remember deny rules still apply in every mode.",
+      "examTrick": "Session mode gates only the LAUNCH. Workflow agents always run acceptEdits — file edits auto-approved.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "acceptEdits", "Allowlist Preparation", "Mode Scope"]
+    },
+    {
+      "id": 6,
+      "question": "Which permission modes never show the workflow launch prompt?",
+      "options": [
+        "Bypass permissions, claude -p, and the Agent SDK — the run starts immediately.",
+        "Manual and accept edits.",
+        "Auto, which always prompts.",
+        "All modes prompt every run."
+      ],
+      "answer": "Bypass permissions, claude -p, and the Agent SDK — the run starts immediately.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: approve the plan before it runs",
+      "explanation": "The table: Auto prompts on 'First launch only. Any Yes records consent in your user settings, and later launches start without prompting. Skipped entirely when ultracode is on.' Manual and accept edits prompt 'Every run, unless you've selected Yes, and don't ask again for that workflow in this project.' Bypass permissions, claude -p, and the Agent SDK: 'Never. The run starts immediately.'\n\n**Why the others are wrong**\n\n- **B.** Those prompt every run by default.\n- **C.** Auto prompts on first launch only.\n- **D.** Three contexts never prompt.\n\nThe launch prompt itself offers: Yes run it; Yes and don't ask again for this workflow in this project; View raw script; No. Ctrl+G opens the script in your editor and Tab lets you adjust the prompt before the run starts.",
+      "examTrick": "Never prompted: bypass, -p, SDK. First launch only: auto. Every run: manual and acceptEdits.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Launch Approval", "Per-Mode Prompting", "Ctrl+G"]
+    },
+    {
+      "id": 7,
+      "question": "What are the documented runtime caps on a single workflow run?",
+      "options": [
+        "Up to 16 concurrent agents (fewer with fewer CPUs available) and 1,000 agents total per run.",
+        "Up to 20 concurrent agents and no total cap.",
+        "Up to 100 concurrent agents and 10,000 total.",
+        "No caps; the script controls everything."
+      ],
+      "answer": "Up to 16 concurrent agents (fewer with fewer CPUs available) and 1,000 agents total per run.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: behavior and limits",
+      "explanation": "'Up to 16 concurrent agents, fewer when Claude Code has fewer CPUs available, including inside a CPU-limited container' — to bound local resource use. And '1,000 agents total per run' — to prevent runaway loops.\n\n**Why the others are wrong**\n\n- **B.** 20 is the CONCURRENT SUBAGENT limit in ordinary sessions (CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS), a different mechanism.\n- **C, D.** Neither matches.\n\nOther documented constraints: no mid-run user input ('Only agent permission prompts can pause a run. For sign-off between stages, run each stage as its own workflow'); no direct filesystem or shell access from the script itself; and no module loading, since 'a script that contains import() fails before the run starts'.\n\nThe caps double as a cost bound: 'The runtime's agent caps limit how many agents a single run can spawn, which bounds the cost of a runaway script.'",
+      "examTrick": "16 concurrent / 1,000 total per workflow run. Ordinary subagents: 20 concurrent, 3 levels deep. Different caps.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Agent Caps", "Runaway Protection", "Runtime Limits"]
+    },
+    {
+      "id": 8,
+      "question": "You stop a run of four agents A, B, C, D (started in that order) while B is still running. Which re-run on resume?",
+      "options": [
+        "B, C, and D — cached results stop at the first agent that did not finish, and every agent that started after it runs again even if it completed.",
+        "Only B, since only unfinished agents restart.",
+        "All four, since resume always restarts from the beginning.",
+        "None; the run cannot be resumed after stopping."
+      ],
+      "answer": "B, C, and D — cached results stop at the first agent that did not finish, and every agent that started after it runs again even if it completed.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: resume after a pause",
+      "explanation": "'An agent that was still running when you stopped isn't saved, so it starts over on resume. Replay follows the order agents started. Cached results stop at the first agent that didn't finish, and every agent that started after that one runs again, even if it completed.' The docs walk through this exact A/B/C/D example.\n\n**Why the others are wrong**\n\n- **B.** Replay order means C and D are redone too.\n- **C.** A returns from cache.\n- **D.** Runs are resumable within the same session.\n\nThe design lesson the docs draw: 'A workflow that fans work out across many small agents therefore preserves more progress than one long agent.' Also note 'Resume works within the same Claude Code session. If you exit Claude Code while a workflow is running, the next session starts the workflow fresh.'",
+      "examTrick": "Replay stops at the first unfinished agent; everything after it re-runs. Many small agents preserve more progress.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Resume Semantics", "Replay Order", "Granularity"]
+    },
+    {
+      "id": 9,
+      "question": "What are the four size-guideline values and their agent targets?",
+      "options": [
+        "unrestricted (no guideline), small (fewer than 5), medium (fewer than 15, the default), large (fewer than 50).",
+        "small (5), medium (25), large (100), unlimited.",
+        "low, medium, high, max, matching effort levels.",
+        "There is no size guideline; only the runtime caps apply."
+      ],
+      "answer": "unrestricted (no guideline), small (fewer than 5), medium (fewer than 15, the default), large (fewer than 50).",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: set a size guideline",
+      "explanation": "The value table maps unrestricted to 'No guideline: Claude sizes the workflow to the task', small to 'Fewer than 5 agents', medium to 'Fewer than 15 agents', and large to 'Fewer than 50 agents'. 'The default is medium.' Set it with the Dynamic workflow size setting in /config, /config workflowSizeGuideline=small, or the workflowSizeGuideline settings key, which 'takes precedence over /config'.\n\n**Why the others are wrong**\n\n- **B, C.** Wrong values.\n- **D.** The guideline exists alongside the caps.\n\nCrucially it is advice, not enforcement: 'Claude Code sends the guideline to Claude as advice, not a cap, so a prompt that calls for a different scale still overrides it' and 'The runtime agent caps still apply regardless of the setting.' Guidance versus enforcement again — the guideline steers, the caps enforce.",
+      "examTrick": "small<5, medium<15 (default), large<50, unrestricted. It is ADVICE; only the runtime caps enforce.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Size Guideline", "Advice vs Cap", "workflowSizeGuideline"]
+    },
+    {
+      "id": 10,
+      "question": "When does Claude Code show a 'Large workflow' warning, and what does it do?",
+      "options": [
+        "When a run schedules more than 25 agents or its projected token total passes 1.5 million — it is advisory and does not pause or limit the run.",
+        "At 16 concurrent agents, and it pauses the run for confirmation.",
+        "At 1,000 agents, and it stops the run.",
+        "Whenever ultracode is on, and it requires re-approval."
+      ],
+      "answer": "When a run schedules more than 25 agents or its projected token total passes 1.5 million — it is advisory and does not pause or limit the run.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: cost",
+      "explanation": "'When a workflow schedules more than 25 agents, or its projected token total passes 1.5 million, its progress line in the task panel below the input box shows a Large workflow warning. The warning points you to /workflows, where you can stop the run. The warning is advisory: it doesn't pause or limit the run.'\n\n**Why the others are wrong**\n\n- **B, C.** Those are the runtime caps, which bound rather than warn.\n- **D.** 'Sessions with ultracode on don't show the warning, because turning ultracode on already opts you in to large runs.'\n\nOne more modifier: 'If you choose a size guideline yourself, its agent count replaces the 25-agent threshold. The built-in default guideline leaves the threshold at 25.'",
+      "examTrick": ">25 agents or >1.5M projected tokens = advisory warning. Your size guideline replaces the 25 threshold; ultracode suppresses it.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Large Workflow Warning", "Advisory", "Cost Signals"]
+    },
+    {
+      "id": 11,
+      "question": "How does prompt caching work across agents in a fan-out?",
+      "options": [
+        "Agents sharing the same model, effort level, agent type, tools, output schema, and working directory build the same prefix, so later ones read the first agent's cache; Claude Code holds matching agents until the first response begins, capped at 5000ms by default.",
+        "Each agent has its own isolated cache with no sharing.",
+        "All agents share the main conversation's cache and TTL bucket.",
+        "Caching is disabled inside workflows."
+      ],
+      "answer": "Agents sharing the same model, effort level, agent type, tools, output schema, and working directory build the same prefix, so later ones read the first agent's cache; Claude Code holds matching agents until the first response begins, capped at 5000ms by default.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: prompt caching in a fan-out",
+      "explanation": "'Two agents that run with the same model, effort level, agent type, tools, output schema, and working directory build the same tools-and-system-prompt prefix, so an agent that starts after a matching sibling's response has begun reads that sibling's cache on its first request.' And: 'Claude Code holds all but the first until the first agent's response begins, then releases the held agents together... capped at CLAUDE_CODE_WORKFLOW_PREFIX_STAGGER_MS milliseconds, 5000 by default. Set it to 0 to disable the hold.'\n\n**Why the others are wrong**\n\n- **B.** Sharing is the documented behaviour.\n- **C.** 'A workflow agent's requests fall outside the main conversation's cache TTL bucket, so its cache holds for five minutes by default, including on a Claude subscription. To keep it for an hour, set subagentPromptCacheTtl to 1h.'\n- **D.** Caching is central to fan-out economics.\n\nThis is the prefix-matching rule applied at scale: identical prefixes are the precondition, which is why any per-agent difference in tools or schema breaks the sharing.",
+      "examTrick": "Fan-out cache sharing needs IDENTICAL prefixes. Workflow agents default to a 5-minute TTL even on subscriptions.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Fan-Out Caching", "Prefix Stagger", "subagentPromptCacheTtl"]
+    },
+    {
+      "id": 12,
+      "question": "Where can a saved workflow live, and which wins on a name collision?",
+      "options": [
+        ".claude/workflows/ in the project (shared via the repo) or ~/.claude/workflows/ (personal, all projects); if both define the same name, the project one runs.",
+        "Only ~/.claude/workflows/; project storage is not supported.",
+        "Only .claude/workflows/; personal workflows are not supported.",
+        "Either location, with the personal one winning as with skills."
+      ],
+      "answer": ".claude/workflows/ in the project (shared via the repo) or ~/.claude/workflows/ (personal, all projects); if both define the same name, the project one runs.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: save the workflow for reuse",
+      "explanation": "The two save locations are documented exactly so, and: 'If a project workflow and a personal workflow share a name, the project one runs.'\n\n**Why the others are wrong**\n\n- **B, C.** Both locations exist.\n- **D.** This is the trap. SKILLS resolve managed > user > project, so a personal skill beats a project one. WORKFLOWS resolve the other way — project wins. Do not generalise one precedence rule across mechanisms.\n\nIn a monorepo, 'saving to the project location writes to the closest .claude/workflows/ directory that already exists between your working directory and the repository root', workflows load from every such directory along that path, and 'when more than one defines the same name Claude Code runs the one closest to the working directory.'",
+      "examTrick": "Workflows: PROJECT beats personal. Skills: USER beats project. Opposite rules — memorise both.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Workflow Precedence", "Save Locations", "Monorepo Resolution"]
+    },
+    {
+      "id": 13,
+      "question": "What does the bundled /deep-research workflow do with claims it cannot verify?",
+      "options": [
+        "It lists them as unverified rather than counting them as refuted, for example after a rate limit or API error.",
+        "It removes them silently along with refuted claims.",
+        "It retries verification until it succeeds.",
+        "It fails the entire run."
+      ],
+      "answer": "It lists them as unverified rather than counting them as refuted, for example after a rate limit or API error.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: run a bundled workflow",
+      "explanation": "'When the verifier agents can't check a claim, such as after a rate limit or API error, the report lists that claim as unverified instead of counting it as refuted.' The report otherwise 'cites the sources each claim came from, with claims that didn't survive cross-checking already filtered out.'\n\n**Why the others are wrong**\n\n- **B.** Conflating 'could not check' with 'checked and refuted' would be a provenance error — it destroys the distinction between absence of evidence and evidence of absence.\n- **C, D.** Neither is the documented behaviour.\n\nThis is exactly the uncertainty-representation principle from extraction schema design: three states (verified, refuted, unverifiable) need three distinguishable representations, not two.",
+      "examTrick": "Unverifiable ≠ refuted. Distinct states get distinct representations — the same rule as nullable versus 'not present'.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/deep-research", "Unverified Claims", "Uncertainty Representation"]
+    },
+    {
+      "id": 14,
+      "question": "Which constraint means a workflow cannot pause for your sign-off between stages?",
+      "options": [
+        "No mid-run user input — only agent permission prompts can pause a run; for sign-off between stages, run each stage as its own workflow.",
+        "Workflows always run in bypassPermissions mode.",
+        "The runtime has no way to display output until the run ends.",
+        "Workflows cannot be stopped once started."
+      ],
+      "answer": "No mid-run user input — only agent permission prompts can pause a run; for sign-off between stages, run each stage as its own workflow.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: behavior and limits",
+      "explanation": "The constraint table: 'No mid-run user input. Why: Only agent permission prompts can pause a run. For sign-off between stages, run each stage as its own workflow.'\n\n**Why the others are wrong**\n\n- **B.** Agents run in acceptEdits and inherit your allowlist.\n- **C.** Progress is visible live in /workflows and the task panel.\n- **D.** You can stop the whole workflow with x, or pause and resume with p.\n\nThis matters for the human-escalation objective: if a process genuinely needs a human decision partway, a single workflow is the wrong shape. Decompose it into stages so the sign-off happens between runs — a structural answer rather than a prompting one.",
+      "examTrick": "Need human sign-off mid-process? Split into separate workflows. A single run cannot ask you anything.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "No Mid-Run Input", "Human Sign-Off", "Stage Decomposition"]
+    },
+    {
+      "id": 15,
+      "question": "How does a saved workflow receive input at invocation time?",
+      "options": [
+        "Through the args parameter, read as a global named args; Claude passes structured data so the script can call array and object methods directly, and it is undefined if omitted.",
+        "By editing the script before each run.",
+        "Through environment variables set before launch.",
+        "Through $ARGUMENTS, like a skill."
+      ],
+      "answer": "Through the args parameter, read as a global named args; Claude passes structured data so the script can call array and object methods directly, and it is undefined if omitted.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: pass input to a saved workflow",
+      "explanation": "'A saved workflow can accept input through the args parameter. The script reads it as a global named args... Claude passes the list as structured data, so the script can call array and object methods on args directly without parsing it first. If args is omitted, the global is undefined inside the script.' The example invocation: 'Run /triage-issues on issues 1024, 1025, and 1030'.\n\n**Why the others are wrong**\n\n- **B.** Passing args is what avoids editing per run.\n- **C.** Not the documented mechanism.\n- **D.** $ARGUMENTS is skill and command frontmatter substitution, a different feature.\n\nNote that args arrives already structured, so a workflow script does not do string parsing — Claude does that conversion when invoking.",
+      "examTrick": "Workflows take a structured `args` global. Skills use $ARGUMENTS string substitution. Different mechanisms.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "args Parameter", "Structured Input", "Reusability"]
+    },
+    {
+      "id": 16,
+      "question": "In a saved workflow script, what do agent() and pipeline() do?",
+      "options": [
+        "agent() spawns one subagent and pipeline() runs one per item in a list; agent() resolves to null if stopped or on an unrecoverable API error, and pipeline() keeps that null in the results array.",
+        "agent() defines a reusable agent type and pipeline() chains prompts within one agent.",
+        "agent() runs a shell command and pipeline() pipes its output.",
+        "Both are aliases for spawning a subagent; pipeline() is deprecated."
+      ],
+      "answer": "agent() spawns one subagent and pipeline() runs one per item in a list; agent() resolves to null if stopped or on an unrecoverable API error, and pipeline() keeps that null in the results array.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: what the saved script looks like",
+      "explanation": "'The body is plain JavaScript with top-level await. agent() spawns one subagent and pipeline() runs one per item in a list. An agent() call resolves to null if you stop it mid-run or it hits an unrecoverable API error. pipeline() keeps that null in the results array, which is why the example ends with .filter(Boolean) to drop those entries.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the documented semantics.\n\nThe null-handling detail is real engineering guidance: a fan-out over 200 files will have failures, and a script that does not filter them will pass nulls downstream. It is the same defensive principle as checking stop_reason — partial failure is normal at scale and must be handled explicitly.",
+      "examTrick": "agent() → one subagent, null on failure. pipeline() → one per item, KEEPS nulls. .filter(Boolean) is not optional at scale.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "agent() and pipeline()", "Null Handling", "Partial Failure"]
+    },
+    {
+      "id": 17,
+      "question": "How can a workflow be distributed across teams and repositories?",
+      "options": [
+        "Include it in a plugin — place the script in a workflows/ directory at the plugin root; plugin workflows are namespaced, so acme-tools with release-audit runs as /acme-tools:release-audit.",
+        "Commit it to .claude/workflows/ and ask each team to copy the file.",
+        "Publish it to ~/.claude/workflows/ on a shared network drive.",
+        "Workflows cannot be shared beyond one repository."
+      ],
+      "answer": "Include it in a plugin — place the script in a workflows/ directory at the plugin root; plugin workflows are namespaced, so acme-tools with release-audit runs as /acme-tools:release-audit.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: distribute a workflow in a plugin",
+      "explanation": "'To share a workflow across teams or repositories, include it in a plugin. Place the script in a workflows/ directory at the plugin root, or point to a different location with the workflows manifest field. Plugin workflows are namespaced by the plugin name.'\n\n**Why the others are wrong**\n\n- **B.** Copying is the drift problem plugins solve; a project file covers one repository.\n- **C.** Not a documented distribution mechanism.\n- **D.** Plugins exist for exactly this.\n\nThe pattern generalises across the whole configuration surface: project files share within one repository, and plugins share across repositories — with namespacing preventing collisions, exactly as with plugin skills (/my-plugin:deploy).",
+      "examTrick": "One repo = project file. Many repos = plugin, namespaced as /plugin:name. Same rule for skills, agents, and workflows.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Plugin Distribution", "Namespacing", "Cross-Repo Sharing"]
+    },
+    {
+      "id": 18,
+      "question": "How do you gauge the cost of a large workflow before committing to it?",
+      "options": [
+        "Run it on a small slice first — one directory instead of the whole repo, or a narrow question — and watch per-agent token usage in /workflows, stopping at any time.",
+        "There is no way to estimate; you must run the full task.",
+        "Set the size guideline to small, which caps total spend.",
+        "Run it with -p, which is billed at a lower rate."
+      ],
+      "answer": "Run it on a small slice first — one directory instead of the whole repo, or a narrow question — and watch per-agent token usage in /workflows, stopping at any time.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: cost",
+      "explanation": "'To gauge the spend before committing to a large task, run the workflow on a small slice first: one directory instead of the whole repo, or a narrow question instead of a broad one. The /workflows view shows each agent's token usage as the run progresses, and you can stop the run there at any time, usually without losing completed work.'\n\n**Why the others are wrong**\n\n- **B.** The slice approach is documented.\n- **C.** The size guideline is advice to Claude about agent COUNT, not a spend cap — 'not a cap, so a prompt that calls for a different scale still overrides it.'\n- **D.** Headless runs are billed identically.\n\nThe model lever is separate: 'Check /model before a large run if you usually switch to a smaller model for routine work', and ask Claude to use a smaller model for stages that do not need the strongest one.",
+      "examTrick": "Pilot on a slice, watch per-agent tokens, stop freely. Size guideline ≠ spend cap.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Cost Estimation", "Pilot Slice", "Model Routing"]
+    },
+    {
+      "id": 19,
+      "question": "How can workflows be turned off for an entire organization?",
+      "options": [
+        "Set \"disableWorkflows\": true in managed settings, or use the toggle on the Claude Code admin settings page.",
+        "Set CLAUDE_CODE_DISABLE_WORKFLOWS=1 on each developer's machine.",
+        "Toggle Dynamic workflows off in /config for each user.",
+        "Remove the .claude/workflows/ directory from every repository."
+      ],
+      "answer": "Set \"disableWorkflows\": true in managed settings, or use the toggle on the Claude Code admin settings page.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: turn workflows off",
+      "explanation": "'To turn workflows off for your whole organization, set \"disableWorkflows\": true in managed settings, or use the toggle on the Claude Code admin settings page.' The per-user options are the /config toggle, \"disableWorkflows\": true in ~/.claude/settings.json, or CLAUDE_CODE_DISABLE_WORKFLOWS=1.\n\n**Why the others are wrong**\n\n- **B, C.** Both are per-user and individually reversible, so neither is an organizational control.\n- **D.** Deleting saved scripts does not prevent Claude writing new workflows on demand.\n\nWhen disabled: 'the bundled workflow commands are unavailable, the ultracode keyword no longer triggers a run, and ultracode is removed from the /effort menu.' The pattern is consistent — organizational enforcement always lives at the managed tier.",
+      "examTrick": "Org-wide = managed settings. Per-user toggles and env vars are not enforcement. Same rule as disableAutoMode.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "disableWorkflows", "Managed Settings", "Org Control"]
+    },
+    {
+      "id": 20,
+      "question": "Which task is the clearest fit for a dynamic workflow rather than a few subagents?",
+      "options": [
+        "Migrating 500 files, working on each in an isolated copy and verifying each result.",
+        "Researching how token refresh works in one auth module.",
+        "Reviewing a single file for security issues.",
+        "Asking a question whose answer should not enter conversation history."
+      ],
+      "answer": "Migrating 500 files, working on each in an isolated copy and verifying each result.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: when to use a workflow",
+      "explanation": "'Reach for a workflow when a task needs more agents than one conversation can coordinate, or when you want the orchestration codified as a script you can read and rerun. Examples include a codebase-wide bug sweep, a 500-file migration, a research question that needs sources cross-checked against each other, and a hard plan worth drafting from several angles.'\n\n**Why the others are wrong**\n\n- **B, C.** Both are the documented subagent case: 'a quick, focused worker: research a question, verify a claim, review a file.'\n- **D.** That is /btw, which keeps an answer out of conversation history entirely.\n\nThe decision ladder across the whole domain: inline for small scoped work; a subagent for one isolated investigation; an agent team for a handful of long-running peers; a workflow for dozens to hundreds of agents with the orchestration codified.",
+      "examTrick": "Ladder: inline → subagent → agent team → workflow. Scale AND repeatability both push you rightward.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Orchestration Ladder", "Scale Threshold", "Repeatability"]
+    }
+  ]
+}

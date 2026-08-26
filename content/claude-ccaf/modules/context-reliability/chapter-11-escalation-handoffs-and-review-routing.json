@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.11 Escalation, Structured Handoffs & Human Review Routing",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "NEW TOPIC. When an agent must honour a human escalation request, what a structured handoff package carries, routing extractions to reviewers by confidence and ambiguity rather than random sampling, and orchestration safeguards guaranteeing every session ends in resolution or escalation. Grounded in official Claude documentation on permissions, subagents, verification, and hallucination reduction.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A user has explicitly asked to be consulted before any irreversible action. Mid-task the agent hits an ambiguity it believes it could resolve. What should it do?",
+      "options": [
+        "Honour the escalation request immediately rather than attempting autonomous resolution.",
+        "Resolve it autonomously and report the assumption afterwards.",
+        "Resolve it autonomously and escalate only if the resolution fails.",
+        "Abandon the task to avoid acting without authorization."
+      ],
+      "answer": "Honour the escalation request immediately rather than attempting autonomous resolution.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permissions and confirmation guidance; CCAF escalation objective",
+      "explanation": "An explicit human escalation request is a standing instruction that outranks the agent's own confidence. The general rule is that actions which are hard to reverse or outward-facing need confirmation unless there is durable authorization — and here authorization has been specifically withheld.\n\n**Why the others are wrong**\n\n- **B.** Documenting an assumption after the fact suits reversible work, not an action the user gated.\n- **C.** By the time an attempt fails, the irreversible action may already have happened.\n- **D.** Abandoning discards accumulated context and leaves the work unresolved. Escalation means handing off WITH state, not stopping.\n\nThe distinguishing question is not 'could I resolve this?' but 'was I authorized to?'",
+      "examTrick": "An explicit escalation request is honoured IMMEDIATELY. Capability is not authorization.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Escalation Criteria", "Authorization vs Capability", "Irreversible Actions"]
+    },
+    {
+      "id": 2,
+      "question": "Which contents make a handoff package useful when transferring control to a human or another agent?",
+      "options": [
+        "The accumulated context, the findings so far, the authorization state (what has and has not been approved), and the specific decision needed.",
+        "A transcript of every tool call in full.",
+        "A one-line status such as 'blocked, please advise'.",
+        "The final answer only, with the reasoning omitted."
+      ],
+      "answer": "The accumulated context, the findings so far, the authorization state (what has and has not been approved), and the specific decision needed.",
+      "difficulty": "Medium",
+      "source": "NEW | CCAF handoff objective; Claude Code subagent and verification guidance",
+      "explanation": "The objective names three elements — accumulated context, findings, and authorization state — and a usable handoff adds the fourth: what decision the recipient must actually make. Authorization state is the one most often dropped, and it is what prevents the recipient from re-approving something already approved or assuming approval that never happened.\n\n**Why the others are wrong**\n\n- **B.** A raw transcript transfers volume rather than understanding, and the compaction guidance shows what survives summarization is intent, findings, errors, and pending tasks — not verbatim tool output.\n- **C.** A bare status forces the recipient to reconstruct everything.\n- **D.** Omitting reasoning makes the conclusion unverifiable.\n\nThe same principle governs subagent delegation: a subagent 'cannot see the conversation', so the prompt must carry context, task, and required output explicitly.",
+      "examTrick": "Handoff = context + findings + AUTHORIZATION STATE + the decision needed. Authorization state is the one people forget.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Handoff Package", "Authorization State", "Structured Transfer"]
+    },
+    {
+      "id": 3,
+      "question": "Why is routing extractions to human reviewers by confidence and field-level ambiguity better than random sampling?",
+      "options": [
+        "Random sampling spends reviewer time in proportion to volume rather than risk, so most reviewed items are already correct while genuinely uncertain ones go unseen.",
+        "Random sampling is statistically invalid.",
+        "Confidence routing eliminates the need for reviewers entirely.",
+        "Random sampling costs more to implement."
+      ],
+      "answer": "Random sampling spends reviewer time in proportion to volume rather than risk, so most reviewed items are already correct while genuinely uncertain ones go unseen.",
+      "difficulty": "Medium",
+      "source": "NEW | CCAF review routing objective; Claude API structured outputs and hallucination guidance",
+      "explanation": "The reviewer budget is fixed; the question is where to spend it. Targeted routing concentrates attention where error probability is highest — low confidence scores, unusual document characteristics, field-level ambiguity. Random sampling is a MEASUREMENT strategy (it estimates an error rate without bias) but a poor QUALITY-CONTROL strategy.\n\n**Why the others are wrong**\n\n- **B.** It is statistically sound for estimating rates; it is just misapplied as a control.\n- **C.** Routing directs review, it does not remove the need for it — and the hallucination guidance is explicit that techniques 'don't eliminate them entirely. Always validate critical information.'\n- **D.** Random sampling is trivially cheap to implement; that is part of its appeal.\n\nThe precondition: you can only route on a signal you captured, which is why confidence and ambiguity flags must be declared in the extraction schema.",
+      "examTrick": "Random sampling measures the rate; targeted routing controls quality. You can only route on signals your SCHEMA captured.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Review Routing", "Risk Targeting", "Schema Prerequisites"]
+    },
+    {
+      "id": 4,
+      "question": "Which schema design makes confidence-based routing possible?",
+      "options": [
+        "Declaring an explicit confidence field per extracted value, since a closed schema with additionalProperties false returns only declared keys.",
+        "Reading per-field confidence metadata from the API response.",
+        "Inferring confidence from whether the field is null.",
+        "Asking for confidence in the prompt alongside the JSON."
+      ],
+      "answer": "Declaring an explicit confidence field per extracted value, since a closed schema with additionalProperties false returns only declared keys.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs; CCAF review routing objective",
+      "explanation": "Strict schemas require additionalProperties: false on objects, so the output contains exactly the declared keys. Anything you want to route on — confidence, the source span, an ambiguity flag — has to be part of the schema, commonly as { value, confidence, source_span } per field.\n\n**Why the others are wrong**\n\n- **B.** The Messages API returns no per-field confidence metadata.\n- **C.** Null tells you a value was ABSENT, not that a present value is uncertain. Those route differently: an absence may be correct and need no action, while low confidence on a present value is exactly what a human should see.\n- **D.** Under structured outputs the response is the schema-conforming JSON; extra prose alongside it is not available.\n\nRouting design and schema design are the same decision made once.",
+      "examTrick": "Closed schemas return only declared keys. Confidence, evidence spans, and ambiguity flags are DESIGN decisions, not free metadata.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Confidence Fields", "Closed Schemas", "Routing Signals"]
+    },
+    {
+      "id": 5,
+      "question": "Why is relying on schema-validation failures to catch bad extractions ineffective under structured outputs?",
+      "options": [
+        "Grammar-constrained sampling means schema violations essentially do not occur, so the dangerous errors are schema-VALID and wrong.",
+        "Validation errors are suppressed by the SDK.",
+        "Validation runs only in batch mode.",
+        "Schema violations are common but not reported to the caller."
+      ],
+      "answer": "Grammar-constrained sampling means schema violations essentially do not occur, so the dangerous errors are schema-VALID and wrong.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs",
+      "explanation": "Structured outputs guarantee valid, parseable output matching the schema — 'Parsing errors: Never'. That guarantee is about SHAPE only. A required non-nullable string that the document does not contain will be populated with something plausible, and that fabrication is perfectly schema-valid.\n\n**Why the others are wrong**\n\n- **B.** SDKs validate responses locally; they do not hide failures.\n- **C.** Batch validation timing is a separate concern about request params.\n- **D.** Violations do not occur in the first place.\n\nThe consequence for routing: a validation-failure trigger fires almost never, so your review queue stays empty while errors flow through. Routing must key on modelled uncertainty instead.",
+      "examTrick": "Under structured outputs the queue of validation failures is EMPTY. Route on modelled confidence, not on parse errors.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Schema-Valid Errors", "Empty Queue Trap", "Routing Triggers"]
+    },
+    {
+      "id": 6,
+      "question": "An extraction field can be absent, present but illegible, or present and readable. What does collapsing these into one null cost you?",
+      "options": [
+        "The routing signal — 'not present' may be normal and need no action, while 'illegible' should go to a human with the source image.",
+        "Nothing; both cases need review equally.",
+        "Only storage efficiency.",
+        "The ability to parse the response."
+      ],
+      "answer": "The routing signal — 'not present' may be normal and need no action, while 'illegible' should go to a human with the source image.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs: nullable and enum design",
+      "explanation": "Three states that require different handling need three distinguishable representations, typically a nullable value plus a status enum such as [\"extracted\", \"not_present\", \"illegible\"]. Collapsing them destroys the information a router needs.\n\n**Why the others are wrong**\n\n- **B.** They differ in whether human attention is warranted at all.\n- **C.** The cost is operational, not storage.\n- **D.** Parsing is unaffected.\n\nThe same principle appears in the /deep-research workflow, where a claim the verifiers could not check 'is listed as unverified instead of counting it as refuted' — absence of evidence and evidence of absence are different states, and merging them loses the ability to act correctly on either.",
+      "examTrick": "Count the states you must ACT on differently, then represent each distinctly. Merging destroys routing signal.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "State Distinctions", "Status Enums", "Actionability"]
+    },
+    {
+      "id": 7,
+      "question": "What must an orchestration layer do to guarantee every agent session ends in a completed resolution or a human escalation?",
+      "options": [
+        "Handle every stop_reason explicitly with a defined outcome, bound the loop with client-side caps, and route anything unresolved to a human rather than letting it fall through.",
+        "Handle end_turn and tool_use and treat anything else as success.",
+        "Retry any non-end_turn stop_reason until it becomes end_turn.",
+        "Set a global timeout and terminate silently when it expires."
+      ],
+      "answer": "Handle every stop_reason explicitly with a defined outcome, bound the loop with client-side caps, and route anything unresolved to a human rather than letting it fall through.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons; CCAF orchestration objective",
+      "explanation": "Stop reasons arrive on HTTP 200, so an unhandled one is indistinguishable from success — hence 'Always check stop_reason in production code.' Two termination layers must both be covered: the model's signal (tool_use continues; end_turn, refusal, max_tokens and the rest end) and your own bounds (a subagent's maxTurns, the Stop hook's 8-block override, the 10-minute background-agent wait in -p runs).\n\n**Why the others are wrong**\n\n- **B.** The silent fall-through is the exact gap: a refusal treated as success is a confidently wrong outcome.\n- **C.** Each reason needs different handling — refusal will not become end_turn on retry, and pause_turn needs continuation, not retry.\n- **D.** Silent termination leaves the work unresolved with nobody informed, which fails the objective by definition.\n\nThe residual after exhaustive handling is exactly what escalation exists for.",
+      "examTrick": "Exhaustive stop_reason handling + client caps + an escalation path for the residual. Unhandled reasons LOOK like success.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Orchestration Safeguards", "Exhaustive Handling", "Termination Guarantee"]
+    },
+    {
+      "id": 8,
+      "question": "Which mechanism guarantees a delegated subagent returns control rather than looping indefinitely?",
+      "options": [
+        "The maxTurns frontmatter field, which caps the subagent's agentic turns.",
+        "The description field, which tells it when to stop.",
+        "The permissionMode field set to plan.",
+        "Nothing; subagents always terminate on their own."
+      ],
+      "answer": "The maxTurns frontmatter field, which caps the subagent's agentic turns.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: frontmatter fields",
+      "explanation": "The subagent frontmatter includes 'maxTurns: 10  # Optional: agentic turn limit'. It is a structural guarantee that the delegated loop ends, so the coordinator always gets control back.\n\n**Why the others are wrong**\n\n- **B.** The description drives delegation decisions and is advisory.\n- **C.** permissionMode governs approvals, not loop length.\n- **D.** A loop with a failing check can continue indefinitely without a bound — which is precisely why several caps exist across the product: 3 spawn levels, 20 concurrent subagents, 16 concurrent and 1,000 total workflow agents, and the Stop hook's 8-block override.\n\nEvery one of those caps exists to make termination structural rather than hopeful.",
+      "examTrick": "Termination should be STRUCTURAL. maxTurns, spawn depth, agent caps, the 8-block Stop override — all the same idea.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "maxTurns", "Structural Termination", "Loop Bounds"]
+    },
+    {
+      "id": 9,
+      "question": "A process needs human sign-off between two stages of a large multi-agent run. What does the documentation say about doing that inside one dynamic workflow?",
+      "options": [
+        "It is not possible — there is no mid-run user input, and only agent permission prompts can pause a run; run each stage as its own workflow instead.",
+        "Add an AskUserQuestion call in the script.",
+        "Set a size guideline of small so the run pauses between phases.",
+        "Use the p key to pause, which prompts the user for approval."
+      ],
+      "answer": "It is not possible — there is no mid-run user input, and only agent permission prompts can pause a run; run each stage as its own workflow instead.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Workflows: behavior and limits",
+      "explanation": "'No mid-run user input. Only agent permission prompts can pause a run. For sign-off between stages, run each stage as its own workflow.'\n\n**Why the others are wrong**\n\n- **B.** The script coordinates agents and has no direct user channel; 'No direct filesystem or shell access from the workflow itself.'\n- **C.** The size guideline advises Claude on agent count.\n- **D.** p pauses and resumes the run manually; it is not a sign-off gate the process can require.\n\nThe lesson generalises: when a human decision is required partway through, express it in the STRUCTURE of the work rather than hoping to interrupt. Decomposition into stages is the architectural answer to a human-in-the-loop requirement.",
+      "examTrick": "Human-in-the-loop mid-process = decompose into stages. You cannot bolt a sign-off onto an autonomous run.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Human-in-the-Loop", "Stage Decomposition", "Architectural Answer"]
+    },
+    {
+      "id": 10,
+      "question": "Which actions does Claude Code never auto-approve, in any permission mode?",
+      "options": [
+        "A documented set that includes cross-session messaging safeguards — and in a headless bypassPermissions run, those calls are denied rather than prompted.",
+        "None; bypassPermissions approves everything without exception.",
+        "Only file writes outside the working directory.",
+        "Only network requests."
+      ],
+      "answer": "A documented set that includes cross-session messaging safeguards — and in a headless bypassPermissions run, those calls are denied rather than prompted.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permission modes: actions no mode auto-approves",
+      "explanation": "'Claude Code doesn't auto-approve the following in any mode, including bypassPermissions', and the cross-session messaging safeguards are among them. In a -p run with --dangerously-skip-permissions, 'the few calls that would still prompt are denied instead.'\n\n**Why the others are wrong**\n\n- **B.** Even the broadest mode has a floor, and deny rules also 'block in every mode, including bypassPermissions'.\n- **C, D.** Both are narrower than the documented set.\n\nThe design principle for escalation: when a decision cannot be surfaced to a human, the safe default is REFUSAL rather than assumption. An unattended agent that cannot ask must not proceed as if it had asked and been told yes.",
+      "examTrick": "Every mode has a floor. When a human cannot be asked, the safe default is deny — never assume approval.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Auto-Approval Floor", "Headless Denial", "Safe Default"]
+    },
+    {
+      "id": 11,
+      "question": "Why does a reviewer subagent evaluating a diff produce better findings than asking the implementing session to self-review?",
+      "options": [
+        "It sees only the diff and the criteria you give it, not the reasoning that produced the change, so it evaluates the result on its own terms.",
+        "It runs on a more capable model by default.",
+        "It has access to more of the codebase.",
+        "It is given more turns to investigate."
+      ],
+      "answer": "It sees only the diff and the criteria you give it, not the reasoning that produced the change, so it evaluates the result on its own terms.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: add an adversarial review step",
+      "explanation": "'A reviewer running in a fresh subagent context sees only the diff and the criteria you give it, not the reasoning that produced the change, so it evaluates the result on its own terms.' The parallel session guidance says the same: 'A fresh context improves code review since Claude won't be biased toward code it just wrote.' And the eval guidance: 'Use a different model for evaluation than the model being evaluated.'\n\n**Why the others are wrong**\n\n- **B.** Model is configurable and inherits by default; independence is the mechanism.\n- **C, D.** Neither is the documented reason.\n\nThe calibration caveat matters for routing too: 'A reviewer prompted to find gaps will usually report some, even when the work is sound... Tell the reviewer to flag only gaps that affect correctness or the stated requirements.' An uncalibrated reviewer floods your queue exactly as random sampling does.",
+      "examTrick": "Independence, not capability, makes review meaningful. And calibrate it, or it floods the queue with non-findings.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Independent Review", "Fresh Context", "Reviewer Calibration"]
+    },
+    {
+      "id": 12,
+      "question": "An MCP tool fails because an upstream API rate-limited the request. What should the error carry so the agent can decide correctly?",
+      "options": [
+        "Structured, type-specific information including recoverability status and a suggested next action, such as retry after a delay.",
+        "A generic failure message so the agent decides freely.",
+        "An empty successful result so the agent continues.",
+        "The raw upstream stack trace."
+      ],
+      "answer": "Structured, type-specific information including recoverability status and a suggested next action, such as retry after a delay.",
+      "difficulty": "Medium",
+      "source": "NEW | CCAF MCP error handling objective; Claude Code api_retry event as an example",
+      "explanation": "Recoverability is the decisive bit: a rate limit is transient and should be retried with backoff, a malformed-argument error should be corrected, and a permission error should be escalated. Claude Code's own system/api_retry event models this well, carrying attempt, max_retries, retry_delay_ms, error_status, and a typed error category such as rate_limit, billing_error, or authentication_failed.\n\n**Why the others are wrong**\n\n- **B.** A generic failure forces guessing between retry, correct, and escalate — commonly producing retries of permanent failures.\n- **C.** Silently reporting success turns a recoverable failure into corrupted downstream reasoning: the worst option, because it becomes invisible.\n- **D.** A stack trace is unstructured, consumes context, may leak internals, and still requires inferring recoverability from prose.\n\nNote how the typed category enables different routing: rate_limit retries, billing_error escalates to a human.",
+      "examTrick": "Good errors carry TYPE + RECOVERABILITY + NEXT ACTION. Typed categories are what let a router branch correctly.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Structured Errors", "Recoverability", "Error Categories"]
+    },
+    {
+      "id": 13,
+      "question": "Which failure mode makes escalation impossible, and why is it the most dangerous?",
+      "options": [
+        "A silent failure that looks like success — a schema-valid fabrication, an unhandled refusal, or a truncated response presented as complete — because nothing triggers a route to a human.",
+        "A loud crash that terminates the session.",
+        "A permission prompt that blocks progress.",
+        "A tool returning an explicit error the agent cannot recover from."
+      ],
+      "answer": "A silent failure that looks like success — a schema-valid fabrication, an unhandled refusal, or a truncated response presented as complete — because nothing triggers a route to a human.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Handling stop reasons; structured outputs; reduce hallucinations",
+      "explanation": "Escalation requires a signal. A crash, a prompt, or an explicit error all produce one. A schema-valid fabrication, a refusal on HTTP 200, and a truncated response all present as normal completions, so no router fires and no human ever looks.\n\n**Why the others are wrong**\n\n- **B, C, D.** All three are visible and therefore routable. A crash is noisy but honest.\n\nThis is the thread running through the whole domain: over-constrained schemas manufacture silent failures, unchecked stop_reason hides them, generic tool errors obscure them, and validation-failure-based routing never sees them. Every reliability technique in this material is ultimately about converting silent failures into visible ones.",
+      "examTrick": "The worst outcome is always the one that LOOKS fine. Reliability work converts silent failures into visible signals.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Silent Failure", "Escalation Prerequisite", "Unifying Principle"]
+    },
+    {
+      "id": 14,
+      "question": "What makes a written spec a good handoff artifact, per the documentation?",
+      "options": [
+        "It is self-contained: it names the files and interfaces involved, states what is out of scope, and ends with an end-to-end verification step that proves the feature works.",
+        "It is exhaustive, reproducing every detail of the discussion that produced it.",
+        "It is brief enough to fit in a single prompt.",
+        "It records the conversation chronologically."
+      ],
+      "answer": "It is self-contained: it names the files and interfaces involved, states what is out of scope, and ends with an end-to-end verification step that proves the feature works.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: let Claude interview you",
+      "explanation": "'The most useful specs are self-contained: they name the files and interfaces involved, state what is out of scope, and end with an end-to-end verification step that proves the feature works. Time spent making the spec precise pays off more than time spent watching the implementation.' The handoff pattern: write the spec to a file, then 'start a fresh session to execute it.'\n\n**Why the others are wrong**\n\n- **B.** Exhaustiveness reproduces the context the fresh session was meant to escape.\n- **C.** Length is not the criterion; self-containment is.\n- **D.** Chronology is transcript structure, not spec structure.\n\nNote the two elements people omit: what is OUT of scope, and how success is verified. Both are what let a recipient act without asking follow-up questions.",
+      "examTrick": "Good handoff artifact: files and interfaces, OUT-of-scope statement, and an end-to-end verification step.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Spec as Handoff", "Out of Scope", "Verification Step"]
+    },
+    {
+      "id": 15,
+      "question": "Which state does a resumed Claude Code session carry over, supporting continuity of intent across an interruption?",
+      "options": [
+        "An active goal that was still running when the session ended, with its turn count, timer, and token-spend baseline reset.",
+        "Background Bash and monitor tasks.",
+        "The prompt cache from the original session.",
+        "Directories added mid-session with /add-dir."
+      ],
+      "answer": "An active goal that was still running when the session ended, with its turn count, timer, and token-spend baseline reset.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sessions: what a resumed session restores",
+      "explanation": "'Active goal: a goal that was still active when the session ended carries over; its turn count, timer, and token-spend baseline reset. Scheduled tasks: tasks that haven't expired are restored. Background Bash and monitor tasks aren't.'\n\n**Why the others are wrong**\n\n- **B.** Explicitly not restored.\n- **C.** The cache expires, which is why the resume-from-summary dialog exists.\n- **D.** Not restored either, 'though the session picker still uses them to locate the session.'\n\nThe pattern is worth generalising for handoff design: durable INTENT survives a transfer, live PROCESSES do not. A handoff should therefore carry goals and pending decisions, and explicitly state what was running and did not survive.",
+      "examTrick": "Intent survives a transfer (goals, scheduled tasks); live processes do not. Say what was killed, in the handoff.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "State Continuity", "Goals", "Process vs Intent"]
+    },
+    {
+      "id": 16,
+      "question": "A verification check keeps failing and a Stop hook keeps blocking the turn. What does Claude Code eventually do, and why does that matter for escalation design?",
+      "options": [
+        "It overrides the hook and ends the turn after 8 consecutive blocks — so the gate cannot trap the session, and your design must handle the case where work ends with the check still failing.",
+        "It blocks indefinitely until the check passes.",
+        "It disables the hook permanently for the session.",
+        "It escalates to a human automatically."
+      ],
+      "answer": "It overrides the hook and ends the turn after 8 consecutive blocks — so the gate cannot trap the session, and your design must handle the case where work ends with the check still failing.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Best practices: as a deterministic gate",
+      "explanation": "'A Stop hook runs your check as a script and blocks the turn from ending until it passes. Claude Code overrides the hook and ends the turn after 8 consecutive blocks.' The cap prevents an unpassable check from trapping the session in an infinite loop.\n\n**Why the others are wrong**\n\n- **B.** That is exactly what the cap prevents.\n- **C.** The hook remains registered.\n- **D.** No automatic escalation happens — which is the whole point of the question.\n\nThe design implication is the exam-relevant part: the strongest available gate still yields after 8 attempts, so a turn CAN end with the check failing. If that outcome matters, your orchestration must detect it and escalate; the hook alone does not guarantee resolution.",
+      "examTrick": "Even the deterministic gate yields after 8 blocks. Detect 'ended with check still failing' yourself and escalate.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Stop Hook Override", "Gate Limits", "Escalation Gap"]
+    },
+    {
+      "id": 17,
+      "question": "Which technique makes an agent's factual claims reviewable by a human auditor months later?",
+      "options": [
+        "Claim-level provenance — <source> metadata per document, verbatim extracted quotes, and numbered references binding each conclusion to a specific span.",
+        "A high self-reported confidence score on the final answer.",
+        "A low temperature setting so results are reproducible.",
+        "A summary of sources listed at the end of the report."
+      ],
+      "answer": "Claim-level provenance — <source> metadata per document, verbatim extracted quotes, and numbered references binding each conclusion to a specific span.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Reduce hallucinations; long context prompting",
+      "explanation": "The documented techniques compose: wrap each document in <document> tags with <source> and <document_content> subtags; extract word-for-word quotes before analysing; reference the quotes by number; and verify each claim afterwards, retracting any without a supporting quote and marking the removal.\n\n**Why the others are wrong**\n\n- **B.** A self-reported score is not evidence and cannot be audited.\n- **C.** Reproducing the same unsupported claim proves nothing — reproducibility is not provenance.\n- **D.** A trailing source list cannot answer 'which sentence supports this specific conclusion'.\n\nFor routing, an unreferenced conclusion is the highest-priority review item: it is a claim the system itself could not ground.",
+      "examTrick": "Provenance = source metadata + verbatim quote + numbered reference. An UNREFERENCED claim is a top routing priority.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Claim-Level Provenance", "Auditability", "Routing Priority"]
+    },
+    {
+      "id": 18,
+      "question": "Which handoff detail is unique to transferring work to a SUBAGENT rather than a human?",
+      "options": [
+        "The subagent receives CLAUDE.md, git status, and preloaded skills automatically, but never the conversation — so context a human would infer must be stated explicitly in the delegation prompt.",
+        "The subagent inherits the full conversation, so less needs stating.",
+        "The subagent can ask clarifying questions mid-task.",
+        "The subagent shares the parent's auto memory."
+      ],
+      "answer": "The subagent receives CLAUDE.md, git status, and preloaded skills automatically, but never the conversation — so context a human would infer must be stated explicitly in the delegation prompt.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: what loads at startup",
+      "explanation": "A non-fork subagent starts with its own system prompt, the delegation message, CLAUDE.md files, a git status snapshot, preloaded skills, and the sibling roster. What never reaches it: output style settings, the main conversation's auto memory, and conversation history — 'except forks'.\n\n**Why the others are wrong**\n\n- **B.** Only a FORK inherits the parent conversation.\n- **C.** It works autonomously and returns a summary; it cannot interview you mid-task.\n- **D.** Auto memory is explicitly excluded, and a subagent's own memory field creates a separate directory.\n\nThe asymmetry with a human handoff is instructive: a human colleague can ask you a follow-up question, so an imperfect handoff is recoverable. A subagent cannot, so its handoff must be complete on the first attempt — including what to report back.",
+      "examTrick": "A human can ask a follow-up; a subagent cannot. Its delegation prompt must be complete on the first try.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Subagent Handoff", "One-Shot Completeness", "Startup Context"]
+    },
+    {
+      "id": 19,
+      "question": "Which combination best expresses 'complete the work or escalate' for an extraction pipeline?",
+      "options": [
+        "Nullable fields and status enums so uncertainty is expressible, per-field confidence in the schema, confidence-based routing to reviewers, and structured capture of every correction to feed the next iteration.",
+        "An all-required schema with a retry loop until validation passes.",
+        "Random sampling of 5% of outputs for human review.",
+        "A high confidence threshold that rejects any output below it."
+      ],
+      "answer": "Nullable fields and status enums so uncertainty is expressible, per-field confidence in the schema, confidence-based routing to reviewers, and structured capture of every correction to feed the next iteration.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs, review routing, feedback loop patterns",
+      "explanation": "Four pieces must all be present. Expressible uncertainty prevents silent fabrication; modelled confidence creates the routing signal; routing spends reviewer attention where risk is; and structured capture turns each correction into data that improves prompts, schemas, or few-shot examples.\n\n**Why the others are wrong**\n\n- **B.** An all-required schema manufactures fabrications, and retrying until valid validates shape rather than truth.\n- **C.** Random sampling spends attention by volume, not risk.\n- **D.** Rejecting low-confidence output resolves nothing — the item is neither completed nor escalated, which is the failure the objective names.\n\nOption D is the subtle wrong answer: rejection feels safe but leaves work in limbo. Escalation means handing it to someone, not dropping it.",
+      "examTrick": "Rejecting low-confidence output is NOT escalation. Escalation routes to a human; rejection just leaves work unresolved.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "End-to-End Design", "Rejection vs Escalation", "Feedback Capture"]
+    },
+    {
+      "id": 20,
+      "question": "What should an agent do when it determines it can resolve an ambiguity autonomously and no escalation was requested?",
+      "options": [
+        "Proceed, but state the assumption explicitly so a reader can check it — reserving blocking questions for cases where proceeding under any assumption would be unsafe or make the work useless if wrong.",
+        "Always stop and ask, since ambiguity means the requirements were unclear.",
+        "Proceed silently, since stating assumptions adds noise.",
+        "Pick the interpretation that requires the least work."
+      ],
+      "answer": "Proceed, but state the assumption explicitly so a reader can check it — reserving blocking questions for cases where proceeding under any assumption would be unsafe or make the work useless if wrong.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices; CCAF escalation objective",
+      "explanation": "The escalation objective is about determining WHEN to honour a request versus attempt autonomous resolution. Where no escalation was requested and the action is reversible, an explicit stated assumption keeps the work moving while remaining checkable. Blocking is reserved for cases where proceeding would be unsafe or would make the work useless if the assumption were wrong.\n\n**Why the others are wrong**\n\n- **B.** Stopping on every ambiguity makes an agent useless; most ambiguities have a sensible default.\n- **C.** An unstated assumption is a silent failure in waiting — nobody can check what they were never told.\n- **D.** Least-work is not a correctness criterion.\n\nThe symmetry with question 1 is the point: an explicit escalation request removes the agent's discretion, while its absence returns discretion — exercised transparently.",
+      "examTrick": "No escalation requested + reversible = proceed with a STATED assumption. Block only if any assumption would be unsafe or useless.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Autonomous Resolution", "Stated Assumptions", "Blocking Threshold"]
+    }
+  ]
+}

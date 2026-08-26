@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.10 Cost Management, Token Efficiency & Model Selection",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "NEW TOPIC. Why usage climbs in long sessions, the documented strategies to reduce token usage, hooks and skills as preprocessing, model and effort selection, agent team costs, and tracking spend with /usage and /insights. Grounded in the official Claude Code cost documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Why does a one-line question in a session that has been open all day still draw significant usage?",
+      "options": [
+        "Claude Code sends the full conversation with every request, and each tool use sends another request carrying that batch of tool results — with prompt caching it is re-read at the cached rate, but it is still re-sent.",
+        "Idle sessions consume tokens continuously in the background.",
+        "The model reprocesses the codebase on each message.",
+        "Long sessions are billed at a higher per-token rate."
+      ],
+      "answer": "Claude Code sends the full conversation with every request, and each tool use sends another request carrying that batch of tool results — with prompt caching it is re-read at the cached rate, but it is still re-sent.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: why usage climbs in a long session",
+      "explanation": "'Long context: Claude Code sends your full conversation with every request, and each time Claude uses tools it sends another request carrying that batch of tool results. With prompt caching, Claude Code re-reads that history at the cached token rate, so a one-line question in a session that has been open all day still draws usage for the whole conversation.'\n\n**Why the others are wrong**\n\n- **B.** Background usage exists but is small — 'typically under $0.04 per session'.\n- **C.** Only files Claude actually reads enter context.\n- **D.** Rates do not change with session age.\n\nThis is the statelessness principle showing up in your bill: the API keeps no conversation state, so the client must resend everything, every turn.",
+      "examTrick": "Full history on EVERY request, plus one request per tool batch. Caching lowers the rate, not the volume.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Long Context Cost", "Statelessness", "Tool Result Requests"]
+    },
+    {
+      "id": 2,
+      "question": "Why does the first message after a long break cost more?",
+      "options": [
+        "A cache miss — the cache lifetime elapsed, so the full context is reprocessed rather than read at the cached rate.",
+        "The session is re-authenticated, which reprocesses the system prompt.",
+        "Claude re-reads all project files at session wake.",
+        "The model is cold-started, which is billed separately."
+      ],
+      "answer": "A cache miss — the cache lifetime elapsed, so the full context is reprocessed rather than read at the cached rate.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: why usage climbs in a long session",
+      "explanation": "'Cache misses: your first message after a break longer than the cache lifetime misses the cache and reprocesses your full context. The lifetime is an hour on a subscription and drops to five minutes once you're drawing on usage credits; on an API key or cloud provider, it's five minutes by default. To keep the one-hour lifetime while drawing on usage credits, choose the TTL yourself.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None is documented.\n\nThe lifetime differences are worth memorising: one hour on a subscription, five minutes on usage credits or an API key by default. That is also why the resume-from-summary dialog appears for sessions inactive over about an hour and above 100,000 tokens — the cache has certainly expired by then.",
+      "examTrick": "Cache lifetime: 1h on subscription, 5 min on usage credits or API key by default. Breaks longer than that cost a full reprocess.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Cache Miss", "Cache Lifetime", "Break Cost"]
+    },
+    {
+      "id": 3,
+      "question": "Which idle-session activities can still consume tokens by sending the full context?",
+      "options": [
+        "Scheduled tasks firing on their interval, cross-session messages delivered as a new turn, goal check-ins on background work, and active agent teammates.",
+        "None — an idle session consumes nothing.",
+        "Only the status line refresh.",
+        "Only auto-compaction, which runs on a timer."
+      ],
+      "answer": "Scheduled tasks firing on their interval, cross-session messages delivered as a new turn, goal check-ins on background work, and active agent teammates.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Costs: why usage climbs in a long session",
+      "explanation": "The documented idle-usage sources: 'Scheduled tasks: a scheduled task fires on its interval even while the session is idle, sending your full context each time.' 'Cross-session messages: Claude Code delivers a message from another of your sessions as a new turn when this session sits idle, sending your full context each time.' 'Goal check-ins: while background work keeps an active goal waiting, Claude Code asks Claude to check on that work even when the session sits idle.' 'Agent teammates: each active teammate keeps consuming tokens until it exits.'\n\n**Why the others are wrong**\n\n- **B, C, D.** Each understates the sources.\n\nThe controls are documented too: set crossSessionInbound to hold to queue inbound messages, and set CLAUDE_CODE_GOAL_CHECKIN_MINUTES to 0 to turn check-ins off. Each of these sends the FULL context, which is why an idle session with a 5-minute loop can be expensive.",
+      "examTrick": "Idle ≠ free. Scheduled tasks, cross-session messages, goal check-ins, and teammates each resend the FULL context.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Idle Usage", "Scheduled Tasks", "crossSessionInbound"]
+    },
+    {
+      "id": 4,
+      "question": "Which is cheaper when you want a fresh start: /compact or /clear?",
+      "options": [
+        "/clear costs nothing, while /compact reads the conversation it summarizes, so compacting a large context is itself a large request.",
+        "/compact is cheaper because it preserves context and avoids re-reading files.",
+        "They cost the same; both are local operations.",
+        "/clear is more expensive because it re-initializes the session."
+      ],
+      "answer": "/clear costs nothing, while /compact reads the conversation it summarizes, so compacting a large context is itself a large request.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Costs: why usage climbs in a long session",
+      "explanation": "'Compaction: /compact reads the conversation it summarizes, so compacting a large context is itself a large request. When you want a fresh start instead of continuity, /clear costs nothing.'\n\n**Why the others are wrong**\n\n- **B.** Compaction requires a summarization request over the whole history.\n- **C.** Compaction makes an API call; clearing does not.\n- **D.** Clearing is local.\n\nThe decision rule stays the same as the context-management guidance — /clear between unrelated tasks, /compact when continuing the same work — but now with a cost reason attached: if you do not need the continuity, do not pay for the summary.",
+      "examTrick": "/clear is FREE. /compact costs a full-history summarization request. Don't pay for continuity you don't need.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/clear vs /compact", "Compaction Cost", "Session Hygiene"]
+    },
+    {
+      "id": 5,
+      "question": "How can a hook reduce token usage before Claude ever sees data?",
+      "options": [
+        "A PreToolUse hook can rewrite the command or filter output — for example grepping a log for ERROR so Claude receives hundreds of tokens instead of tens of thousands.",
+        "Hooks cannot affect what Claude sees; they only run side effects.",
+        "A PostToolUse hook can retroactively remove content from context.",
+        "A SessionEnd hook compresses the transcript for the next session."
+      ],
+      "answer": "A PreToolUse hook can rewrite the command or filter output — for example grepping a log for ERROR so Claude receives hundreds of tokens instead of tens of thousands.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Costs: offload processing to hooks and skills",
+      "explanation": "'Custom hooks can preprocess data before Claude sees it. Instead of Claude reading a 10,000-line log file to find errors, a hook can grep for ERROR and return only matching lines, reducing context from tens of thousands of tokens to hundreds.' The documented example is a PreToolUse hook on Bash that returns permissionDecision allow together with an updatedInput rewriting the command to filter test output to failures only.\n\n**Why the others are wrong**\n\n- **B.** Hook output does land in context, and PreToolUse can modify tool input.\n- **C.** PostToolUse fires after the tool ran; it cannot un-send content.\n- **D.** Not a documented mechanism.\n\nThe updatedInput capability is the notable part: a PreToolUse hook is not only a gate, it can REWRITE the call. You verify it with claude --debug, which logs 'modified tool input keys: [command]'.",
+      "examTrick": "PreToolUse can rewrite tool input via updatedInput — a gate AND a preprocessor. Verify with claude --debug.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "PreToolUse Preprocessing", "updatedInput", "Log Filtering"]
+    },
+    {
+      "id": 6,
+      "question": "What model guidance does the cost documentation give?",
+      "options": [
+        "Sonnet handles most coding tasks well and costs less than Opus; reserve Opus for complex architectural decisions or multi-step reasoning, and use model: haiku for simple subagent tasks.",
+        "Always use Opus, since rework from a weaker model costs more.",
+        "Always use Haiku and escalate only on failure.",
+        "Model choice has little cost impact compared to context size."
+      ],
+      "answer": "Sonnet handles most coding tasks well and costs less than Opus; reserve Opus for complex architectural decisions or multi-step reasoning, and use model: haiku for simple subagent tasks.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: choose the right model",
+      "explanation": "'Sonnet handles most coding tasks well and costs less than Opus. Reserve Opus for complex architectural decisions or multi-step reasoning. Use /model to switch models mid-session, or set a default in /config. For simple subagent tasks, specify model: haiku in your subagent configuration.'\n\n**Why the others are wrong**\n\n- **B, C.** Both are absolute rules where the guidance is task-matched.\n- **D.** The docs name 'Opus left as the default model' as one of the two usual causes of unexpectedly high spend, alongside long sessions that were never cleared.\n\nThe agent-teams guidance applies the same principle: 'Use Sonnet for teammates. It balances capability and cost for coordination tasks.'",
+      "examTrick": "Match the model to the job. The two named causes of surprise spend: uncleared long sessions and Opus left as the default.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Model Selection", "Cost Drivers", "Subagent Models"]
+    },
+    {
+      "id": 7,
+      "question": "How can extended thinking costs be reduced for simpler tasks?",
+      "options": [
+        "Lower the effort level with /effort or /model, disable thinking in /config, or on fixed-budget models set MAX_THINKING_TOKENS — noting adaptive-reasoning models ignore nonzero budgets and Fable 5 always uses extended thinking.",
+        "Thinking tokens are free, so no reduction is needed.",
+        "Set max_tokens lower, which caps thinking tokens too.",
+        "Thinking cannot be adjusted from Claude Code."
+      ],
+      "answer": "Lower the effort level with /effort or /model, disable thinking in /config, or on fixed-budget models set MAX_THINKING_TOKENS — noting adaptive-reasoning models ignore nonzero budgets and Fable 5 always uses extended thinking.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Costs: adjust extended thinking",
+      "explanation": "'Extended thinking is enabled by default because it significantly improves performance on complex planning and reasoning tasks. Thinking tokens are billed as output tokens, and the default budget can be tens of thousands of tokens per request depending on the model. For simpler tasks... lowering the effort level with /effort or in /model, disabling thinking in /config, or, on models with a fixed thinking budget, lowering the budget by setting the MAX_THINKING_TOKENS environment variable, for example MAX_THINKING_TOKENS=8000. Adaptive-reasoning models ignore nonzero budgets, so use effort levels there instead. Disabling thinking is not available on Fable 5.'\n\n**Why the others are wrong**\n\n- **B.** 'Thinking tokens are billed as output tokens.'\n- **C.** max_tokens is a different limit.\n- **D.** Several controls exist.\n\nThe adaptive-versus-fixed distinction is the trap: MAX_THINKING_TOKENS does nothing on an adaptive-reasoning model.",
+      "examTrick": "Thinking = OUTPUT tokens. Fixed-budget models take MAX_THINKING_TOKENS; adaptive models need effort levels instead.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Extended Thinking Cost", "MAX_THINKING_TOKENS", "Effort Levels"]
+    },
+    {
+      "id": 8,
+      "question": "Roughly how much more token usage do agent teams consume when teammates run in plan mode?",
+      "options": [
+        "Approximately 7x more than standard sessions, because each teammate maintains its own context window as a separate Claude instance.",
+        "About 2x, since coordination overhead is small.",
+        "The same, since teammates share one context window.",
+        "About 20x, which is why they are disabled by default."
+      ],
+      "answer": "Approximately 7x more than standard sessions, because each teammate maintains its own context window as a separate Claude instance.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Costs: manage agent team costs",
+      "explanation": "'Agent teams use approximately 7x more tokens than standard sessions when teammates run in plan mode, because each teammate maintains its own context window and runs as a separate Claude instance. Keep team tasks small and self-contained to limit per-teammate token usage.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the documented figure, and teammates do not share a context window.\n\nThe cost-control list: use Sonnet for teammates, keep teams small since usage is 'roughly proportional to team size', keep spawn prompts focused because 'everything in the spawn prompt adds to their context from the start', and 'Shut down teammates when their work is done' since each active teammate keeps consuming tokens until it exits. Agent teams are disabled by default and require CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1.",
+      "examTrick": "Agent teams ≈ 7x in plan mode. Cost scales with team size; idle teammates keep burning tokens until they exit.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Agent Teams", "7x Cost", "Teammate Lifecycle"]
+    },
+    {
+      "id": 9,
+      "question": "Why does the documentation say CLI tools are more context-efficient than MCP servers?",
+      "options": [
+        "CLI tools like gh, aws, and gcloud add no per-tool listing to context, whereas MCP servers contribute tool names and server instructions at session start.",
+        "CLI tools return smaller outputs by definition.",
+        "MCP servers load all schemas upfront in every configuration.",
+        "CLI tools run outside the agent loop entirely."
+      ],
+      "answer": "CLI tools like gh, aws, and gcloud add no per-tool listing to context, whereas MCP servers contribute tool names and server instructions at session start.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Costs: reduce MCP server overhead",
+      "explanation": "'MCP tool definitions are deferred by default, so only tool names and server instructions enter context until Claude uses a specific tool... Prefer CLI tools when available: Tools like gh, aws, gcloud, and sentry-cli are still more context-efficient than MCP servers because they don't add any per-tool listing. Claude can run CLI commands directly.'\n\n**Why the others are wrong**\n\n- **B.** Output size depends on the command; a CLI can be very verbose.\n- **C.** Schemas are deferred by default; only the names load.\n- **D.** Bash calls are ordinary tool calls inside the loop.\n\nThe complementary advice: 'Disable unused servers: Run /mcp to see configured servers and disable any you're not actively using', and run /context to see what is consuming space.",
+      "examTrick": "CLI tools cost ZERO listing; MCP servers cost names + instructions even when idle. Disable servers you aren't using.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "CLI vs MCP", "Per-Tool Listing", "Server Hygiene"]
+    },
+    {
+      "id": 10,
+      "question": "How does a skill reduce token usage compared with letting Claude explore?",
+      "options": [
+        "A skill can supply domain knowledge directly — such as a codebase-overview describing architecture and conventions — so Claude gets it on invocation instead of spending tokens reading multiple files.",
+        "Skills compress file contents before Claude reads them.",
+        "Skills prevent Claude from reading files at all.",
+        "Skills run in a separate context window like subagents."
+      ],
+      "answer": "A skill can supply domain knowledge directly — such as a codebase-overview describing architecture and conventions — so Claude gets it on invocation instead of spending tokens reading multiple files.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: offload processing to hooks and skills",
+      "explanation": "'A skill can give Claude domain knowledge so it doesn't have to explore. For example, a codebase-overview skill could describe your project's architecture, key directories, and naming conventions. When Claude invokes the skill, it gets this context immediately instead of spending tokens reading multiple files to understand the structure.'\n\n**Why the others are wrong**\n\n- **B.** No compression occurs.\n- **C.** Skills inform; they do not restrict tools (that is permissions, or a skill's disallowed-tools within a turn).\n- **D.** Only a skill with context: fork runs in an isolated subagent context.\n\nThe related move: 'Move instructions from CLAUDE.md to skills. Your CLAUDE.md file is loaded into context at session start. If it contains detailed instructions for specific workflows... those tokens are present even when you're doing unrelated work. Skills load on-demand only when invoked.'",
+      "examTrick": "Skills trade exploration tokens for on-demand knowledge. Moving workflow detail out of CLAUDE.md shrinks every session's baseline.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Skills as Knowledge", "CLAUDE.md Migration", "Exploration Cost"]
+    },
+    {
+      "id": 11,
+      "question": "What does /usage show, and what caveat applies to its dollar figure?",
+      "options": [
+        "Session token statistics with a cost computed locally from token counts at standard list rates — so it ignores promotional pricing or contracted discounts and may differ from the actual bill.",
+        "The authoritative billed amount for the session.",
+        "Organization-wide spend across all developers.",
+        "Only the number of lines of code changed."
+      ],
+      "answer": "Session token statistics with a cost computed locally from token counts at standard list rates — so it ignores promotional pricing or contracted discounts and may differ from the actual bill.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: using the /usage command",
+      "explanation": "'Claude Code computes the dollar figure locally from token counts priced at standard list rates, so it doesn't reflect promotional pricing or contracted discounts and may differ from your actual bill. For authoritative billing, see the Usage page in the Claude Console.' The output shows total cost, API and wall duration, code changes, and usage by model including cache read and cache write counts.\n\n**Why the others are wrong**\n\n- **B.** Explicitly not authoritative.\n- **C.** 'The figures are approximate and computed from local session history on this machine, so usage from other devices or claude.ai is not included.'\n- **D.** Code changes are one line of several.\n\nAlso: 'These totals reset when /clear starts a new session.'",
+      "examTrick": "/usage is a LOCAL estimate at list rates, this machine only. The Console is authoritative.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/usage", "Local Estimate", "Cache Counters"]
+    },
+    {
+      "id": 12,
+      "question": "What does the plan usage breakdown in /usage attribute recent usage to?",
+      "options": [
+        "Skills, subagents, plugins, and individual MCP servers, each as a percentage — plus behavior flags for things like long context or cache misses when one accounts for 10% or more.",
+        "Individual files read during the session.",
+        "Each teammate in an agent team only.",
+        "Only the model, with no further breakdown."
+      ],
+      "answer": "Skills, subagents, plugins, and individual MCP servers, each as a percentage — plus behavior flags for things like long context or cache misses when one accounts for 10% or more.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Costs: plan usage breakdown",
+      "explanation": "'Attribution: recent usage attributed to skills, subagents, plugins, and individual MCP servers, each shown as a percentage of the total. An MCP server's share counts only the requests that consumed one of its tool results.' 'Behavior flags: behaviors such as long context or cache misses, flagged when one accounts for 10% or more of recent usage.' There are also Loops rows for the heaviest scheduled tasks, with fire frequency, run count, total and per-run tokens, and last-run time. Press d or w to switch between 24 hours and 7 days.\n\n**Why the others are wrong**\n\n- **B, C, D.** Each is narrower than the documented breakdown.\n\nThis is a feedback loop for your own configuration: attribution tells you which skill, plugin, or MCP server is actually costing you, so you can disable or trim the specific culprit rather than guessing.",
+      "examTrick": "Attribution by skill/subagent/plugin/MCP server + behavior flags at 10%+ + loop rows. Diagnose before you trim.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Usage Attribution", "Behavior Flags", "Loop Costs"]
+    },
+    {
+      "id": 13,
+      "question": "What does /insights produce?",
+      "options": [
+        "An HTML report on HOW you work — what you work on, friction points such as misunderstood requests or buggy code, and suggestions — analyzing up to 200 previously-unseen local sessions per run.",
+        "A token usage chart identical to /usage over a longer window.",
+        "A billing statement for the organization.",
+        "A static analysis report of the codebase."
+      ],
+      "answer": "An HTML report on HOW you work — what you work on, friction points such as misunderstood requests or buggy code, and suggestions — analyzing up to 200 previously-unseen local sessions per run.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: analyze your usage patterns",
+      "explanation": "'Run /insights for a report on how you work rather than how many tokens you've used. It analyzes your recent sessions on this machine and writes an HTML report covering what you work on, friction points such as misunderstood requests or buggy code, and suggestions for using Claude Code more effectively. A single run analyzes up to 200 sessions it hasn't seen before and skips very short ones.' Reports go to ~/.claude/usage-data/report.html with timestamped copies, deleted on the cleanupPeriodDays schedule.\n\n**Why the others are wrong**\n\n- **B.** /usage is the token view; /insights is the behaviour view.\n- **C, D.** Neither is what it produces.\n\nNote the cost of running it: 'The analysis runs through the same provider and account as your regular sessions, and the tokens count against your plan or API usage.'",
+      "examTrick": "/usage = how many tokens. /insights = how you work, as an HTML report. /insights itself costs tokens.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/insights", "Friction Analysis", "Report Location"]
+    },
+    {
+      "id": 14,
+      "question": "Which option streams per-user token and cost metrics into your own observability stack in near real time, on every setup?",
+      "options": [
+        "OpenTelemetry export.",
+        "The Claude Code Analytics API.",
+        "The spend report CSV in org analytics.",
+        "The Console dashboard."
+      ],
+      "answer": "OpenTelemetry export.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: manage costs for your organization",
+      "explanation": "'OpenTelemetry export works on every setup and is the only option that streams per-user token and cost metrics into your own observability stack in near real time.'\n\n**Why the others are wrong**\n\n- **B.** The Claude Code Analytics API returns daily per-user metrics for Console customers, and does not cover cloud-provider usage.\n- **C.** The spend report CSV is 'updated daily' for Teams and Enterprise.\n- **D.** The Console dashboard covers Console customers.\n\nThe cloud-provider constraint is the reason it matters: 'Claude Code does not send metrics from your cloud back to Anthropic, so the analytics dashboards and the Claude Code Analytics API do not cover this usage.' On Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry, OpenTelemetry, a Claude apps gateway, or an LLM gateway are the per-user attribution options.",
+      "examTrick": "OpenTelemetry = every setup, near real time, per user. Cloud-provider usage never reaches Anthropic's dashboards.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "OpenTelemetry", "Per-User Attribution", "Cloud Providers"]
+    },
+    {
+      "id": 15,
+      "question": "A developer sees 'You've hit your Opus limit'. What can they do that would NOT work for 'You've hit your session limit'?",
+      "options": [
+        "Switch to a model outside that family with /model — a session or weekly limit is shared across all models, so switching does not restore access.",
+        "Run /clear to reset the limit.",
+        "Wait five minutes for the rolling window.",
+        "Reduce the context with /compact."
+      ],
+      "answer": "Switch to a model outside that family with /model — a session or weekly limit is shared across all models, so switching does not restore access.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Costs: when a developer asks about a limit",
+      "explanation": "'\"You've hit your session limit\" or \"You've hit your weekly limit\": a seat-based usage window on a subscription plan, shared across all models, so the developer can't restore access by switching models with /model... After the model-specific \"You've hit your Opus limit\" or \"You've hit your Sonnet limit\" message, switching to a model outside that family with /model does keep the developer working.'\n\n**Why the others are wrong**\n\n- **B, D.** Neither resets a usage window.\n- **C.** The message states when the window resets; it is not a fixed five minutes.\n\nThe other options: run /usage-credits to request usage beyond the allowance if credits are enabled, or on v2.1.234+ wait and continue the interrupted task automatically after the reset — controlled fleet-wide by autoContinueAtUsageLimit in managed settings.",
+      "examTrick": "Model-specific limit → switch families. Session/weekly limit → shared across models, switching won't help.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Usage Limits", "Model Families", "autoContinueAtUsageLimit"]
+    },
+    {
+      "id": 16,
+      "question": "Which is NOT a usage limit, per the documentation?",
+      "options": [
+        "A context or auto-compact warning — the conversation has grown close to the auto-compact window.",
+        "'You've hit your weekly limit.'",
+        "A spend limit message from a Claude apps gateway.",
+        "'You've hit your session limit.'"
+      ],
+      "answer": "A context or auto-compact warning — the conversation has grown close to the auto-compact window.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: when a developer asks about a limit",
+      "explanation": "'A context or auto-compact warning: not a usage limit. The conversation has grown close to the session's auto-compact window, the threshold where Claude Code summarizes older history to free space. Point the developer at reduce token usage.'\n\n**Why the others are wrong**\n\n- **B, D.** Both are seat-based usage windows on a subscription plan.\n- **C.** That is a spend cap set on a self-hosted gateway, which 'blocks their requests until the period resets or you raise the cap.'\n\nThe distinction matters operationally: a context warning needs context hygiene (/clear, subagents, hooks), while a usage limit needs credits, a wait, or a higher cap. Treating one as the other wastes effort in the wrong place.",
+      "examTrick": "Context/auto-compact warning ≠ usage limit. One needs context hygiene; the other needs credits or a higher cap.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Limit Types", "Auto-Compact Warning", "Diagnosis"]
+    },
+    {
+      "id": 17,
+      "question": "Which two habits does the documentation name as highest-impact for unexpectedly high spend on an API or cloud plan?",
+      "options": [
+        "Clearing between unrelated tasks, and matching the model to the job.",
+        "Disabling extended thinking, and lowering max_tokens.",
+        "Using batch processing, and turning off prompt caching.",
+        "Reducing the number of files in the repository, and shortening prompts."
+      ],
+      "answer": "Clearing between unrelated tasks, and matching the model to the job.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: when a developer asks about a limit",
+      "explanation": "'Unexpectedly high spend on an API or cloud-provider plan: usually traces back to long sessions that were never cleared or to Opus left as the default model. The highest-impact habits to share are clearing between unrelated tasks and matching the model to the job.'\n\n**Why the others are wrong**\n\n- **B.** Thinking adjustment helps for simpler tasks but is not named as highest-impact.\n- **C.** Turning off caching would INCREASE cost; caching is an automatic optimization.\n- **D.** Repository size does not directly drive cost — what Claude READS does.\n\nBoth named habits attack the same root cause: context that accumulates without purpose, priced on every subsequent request.",
+      "examTrick": "Two highest-impact habits: /clear between unrelated tasks, and right-size the model. Both fight accumulated context.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "High-Impact Habits", "Root Causes", "Spend Diagnosis"]
+    },
+    {
+      "id": 18,
+      "question": "How do plan-mode and verification habits reduce wasted tokens on complex work?",
+      "options": [
+        "Plan mode prevents expensive re-work when the initial direction is wrong; verification targets let Claude catch issues before you request fixes; and course-correcting early with Escape or /rewind stops a wrong path sooner.",
+        "They have no cost effect; they only improve quality.",
+        "They reduce cost by lowering the model's effort level automatically.",
+        "They reduce cost only in headless runs."
+      ],
+      "answer": "Plan mode prevents expensive re-work when the initial direction is wrong; verification targets let Claude catch issues before you request fixes; and course-correcting early with Escape or /rewind stops a wrong path sooner.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: work efficiently on complex tasks",
+      "explanation": "The documented habits: 'Use plan mode for complex tasks... preventing expensive re-work when the initial direction is wrong.' 'Course-correct early: If Claude starts heading the wrong direction, press Escape to stop immediately. Use /rewind or double-tap Escape to restore conversation and code to a previous checkpoint.' 'Give verification targets: Include test cases, paste screenshots, or define expected output... When Claude can verify its own work, it catches issues before you need to request fixes.' 'Test incrementally: Write one file, test it, then continue.'\n\n**Why the others are wrong**\n\n- **B.** Re-work is the expensive failure these prevent.\n- **C.** No automatic effort change occurs.\n- **D.** They apply in every mode.\n\nThe unifying idea: the cheapest tokens are the ones you never spend going down a wrong path.",
+      "examTrick": "Quality practices ARE cost practices. Re-work is the most expensive thing an agent can do.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Plan Mode Economics", "Re-Work", "Verification"]
+    },
+    {
+      "id": 19,
+      "question": "Which statement about background token usage in Claude Code is correct?",
+      "options": [
+        "Some background functionality consumes tokens even when idle — conversation summarization for --resume and some command processing — typically under $0.04 per session.",
+        "Claude Code never sends requests unless you type something.",
+        "Background usage typically exceeds foreground usage in long sessions.",
+        "Background jobs are billed separately from your plan."
+      ],
+      "answer": "Some background functionality consumes tokens even when idle — conversation summarization for --resume and some command processing — typically under $0.04 per session.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: background token usage",
+      "explanation": "'Claude Code uses tokens for some background functionality even when idle: Conversation summarization: Background jobs that summarize previous conversations for the claude --resume feature. Command processing: Some commands like /usage may generate requests to check status. These background processes consume a small amount of tokens (typically under $0.04 per session) even without active interaction.'\n\n**Why the others are wrong**\n\n- **B.** Background jobs exist, including the small/fast-model request that generates a session title from your first prompt.\n- **C.** The documented magnitude is small. The genuinely large idle costs are the ones listed separately — scheduled tasks, cross-session messages, goal check-ins, and teammates — because those send the FULL context.\n- **D.** They count against your plan or API usage like any other tokens.\n\nKeeping these two categories apart is the point: routine background is cents; full-context idle turns are not.",
+      "examTrick": "Routine background ≈ under $0.04/session. The expensive idle costs are the full-context ones: loops, cross-session messages, goal check-ins.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Background Usage", "Magnitude", "Idle Categories"]
+    },
+    {
+      "id": 20,
+      "question": "Which mechanisms does Claude Code use automatically to optimize cost, without configuration?",
+      "options": [
+        "Prompt caching, which reduces costs for repeated content like system prompts, and auto-compaction, which summarizes conversation history when approaching context limits.",
+        "Automatic model downgrading when spend rises.",
+        "Automatic batch submission of non-urgent requests.",
+        "Automatic disabling of MCP servers that go unused."
+      ],
+      "answer": "Prompt caching, which reduces costs for repeated content like system prompts, and auto-compaction, which summarizes conversation history when approaching context limits.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: reduce token usage",
+      "explanation": "'Token costs scale with context size: the more context Claude processes, the more tokens you use. Claude Code automatically optimizes costs through prompt caching, which reduces costs for repeated content like system prompts, and auto-compaction, which summarizes conversation history when approaching context limits.'\n\n**Why the others are wrong**\n\n- **B.** Model choice is yours via /model or /config; there is no automatic downgrade.\n- **C.** Batch is an API-level choice and unsuited to an interactive blocking loop.\n- **D.** You disable unused servers yourself via /mcp.\n\nThe framing matters for the exam: the automatic mechanisms handle the repeated-prefix and overflow cases, while everything else on the reduce-token-usage list — clearing, model choice, hooks, skills, subagents, specific prompts — is a deliberate practice you adopt.",
+      "examTrick": "Automatic: prompt caching + auto-compaction. Everything else on the cost list is a habit you have to adopt deliberately.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Automatic Optimization", "Prompt Caching", "Deliberate Practice"]
+    }
+  ]
+}

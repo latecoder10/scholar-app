@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.8 Settings, Permissions & Enforcement vs Guidance",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "NEW TOPIC. Settings file scopes and precedence, permissions allow/ask/deny rule syntax, and the exam's core distinction: which instructions must be enforced by settings or hooks versus which belong in CLAUDE.md. Every answer is grounded in the official Claude Code documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A team's CLAUDE.md has said 'Never edit files in the migrations/ folder' for three months, and Claude has edited a migration twice anyway. The team lead wants a guarantee, not a stronger sentence. What is the correct restructuring?",
+      "options": [
+        "Move the instruction to the top of CLAUDE.md and prefix it with 'IMPORTANT: NEVER'.",
+        "Replace the CLAUDE.md line with a PreToolUse hook (or an Edit deny rule in permissions) that blocks writes to migrations/.",
+        "Create a .claude/rules/ file with paths: ['migrations/**'] so the rule loads whenever a migration is opened.",
+        "Add the rule to a skill so Claude loads the full migration policy whenever it works on migrations."
+      ],
+      "answer": "Replace the CLAUDE.md line with a PreToolUse hook (or an Edit deny rule in permissions) that blocks writes to migrations/.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code (Hook vs Skill) & Memory: 'Put guardrails in hooks'",
+      "explanation": "The docs state the rule directly: 'An instruction like never edit .env in CLAUDE.md or a skill is a request, not a guarantee. A PreToolUse hook that blocks the edit is enforcement. If a rule must hold every time, make it a hook rather than a prompt instruction.' CLAUDE.md is context that shapes behaviour; settings and hooks are enforced by the client regardless of what Claude decides.\n\n**Why the others are wrong**\n\n- **A.** Emphasis raises the odds, it does not change the category. The docs note that if you emphasize many lines, none stands out, and CLAUDE.md still carries 'no guarantee of strict compliance.'\n- **C.** A path-scoped rule is still context, loaded conditionally. Conditional context is still advisory, so the guarantee the lead asked for is still missing.\n- **D.** A skill is also instructions Claude reads and interprets. Its determinism column in the docs' comparison reads 'Claude interprets the instructions; outcome can vary.'",
+      "examTrick": "'Keeps happening despite the instruction' / 'must hold every time' / 'guarantee' = hook or permissions.deny, never a better-worded CLAUDE.md.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Enforcement vs Guidance", "PreToolUse Hook", "permissions.deny"]
+    },
+    {
+      "id": 2,
+      "question": "The same settings key is set in four places: a managed policy file deployed by IT, the project's .claude/settings.json, your .claude/settings.local.json, and your ~/.claude/settings.json. Which value does Claude Code use?",
+      "options": [
+        "The managed policy value, because managed settings sit at the top of the precedence stack.",
+        "Your ~/.claude/settings.json value, because user settings are the most specific to you.",
+        "The project's .claude/settings.json value, because project settings override personal ones.",
+        "Your .claude/settings.local.json value, because the most local file always wins."
+      ],
+      "answer": "The managed policy value, because managed settings sit at the top of the precedence stack.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Settings: Settings precedence",
+      "explanation": "The documented order, highest precedence first, is: 1. Managed settings (managed-settings.json, MDM, or claude.ai console), 2. Command line (--settings), 3. Project local (.claude/settings.local.json), 4. Shared project (.claude/settings.json), 5. User (~/.claude/settings.json). Nothing you set overrides a managed key, apart from a short list of security-sensitive exceptions where a stricter value from a lower level is honoured.\n\n**Why the others are wrong**\n\n- **B.** User settings are the LOWEST level in the stack, not the highest. This is the most common reversal on the exam.\n- **C.** Project shared settings sit above user settings but below project local, command line, and managed.\n- **D.** Project local beats shared project and user, but it still loses to the command line and to managed settings.",
+      "examTrick": "Memorise the ladder top-down: Managed > --settings > project local > shared project > user. 'User' feels most specific but ranks last.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Settings Precedence", "Managed Settings", "Scope Selection"]
+    },
+    {
+      "id": 3,
+      "question": "You answer 'Yes, and don't ask again' to a permission prompt for a Bash command. Where does Claude Code write that approval, and who does it affect?",
+      "options": [
+        "To .claude/settings.local.json as an allow rule, affecting only you in that repository.",
+        "To .claude/settings.json as an allow rule, affecting everyone who clones the repository.",
+        "To ~/.claude/settings.json as an allow rule, affecting you in every project on the machine.",
+        "To ~/.claude.json under the project's path, the same file MCP local-scoped servers use."
+      ],
+      "answer": "To .claude/settings.local.json as an allow rule, affecting only you in that repository.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Settings: project local settings; Permissions",
+      "explanation": "The docs state that when Claude asks permission to run a Bash command and you choose 'Yes, and don't ask again', Claude Code saves that approval as an allow rule in .claude/settings.local.json. If you started in a subdirectory or a worktree of a git repository, it reads and writes that file at the repository root, so the approval applies across the whole repository. Claude Code also adds the file to your global git excludes the first time it writes it, so it stays out of commits.\n\n**Why the others are wrong**\n\n- **B.** The CLI never writes the shared project file on your behalf; that would silently change permissions for the whole team. (The VS Code extension's approval card does let you pick the shared file explicitly.)\n- **C.** User settings hold personal preferences you set, not per-repository approvals captured from prompts.\n- **D.** ~/.claude.json is the MCP local-scope and project-state file, not a settings file. Confusing .claude/settings.local.json with ~/.claude.json is a deliberate exam trap.",
+      "examTrick": "Prompt-captured approvals land in .claude/settings.local.json. Never in the shared file, never in user settings.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "settings.local.json", "Allow Rules", "Scope Selection"]
+    },
+    {
+      "id": 4,
+      "question": "A settings file contains a deny rule Bash(aws *) and an allow rule Bash(aws s3 ls). Claude attempts to run 'aws s3 ls'. What happens?",
+      "options": [
+        "The call is blocked; a deny rule cannot carry allowlist exceptions, and deny beats a more specific allow.",
+        "The call runs, because the more specific allow rule wins over the broader deny rule.",
+        "Claude Code prompts the user to resolve the conflict between the two rules.",
+        "The call runs, because allow rules are evaluated before deny rules."
+      ],
+      "answer": "The call is blocked; a deny rule cannot carry allowlist exceptions, and deny beats a more specific allow.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Configure permissions",
+      "explanation": "The docs are explicit: 'A broad deny rule like Bash(aws *) blocks every matching call, including calls that also match a narrower allow rule like Bash(aws s3 ls), so a deny rule can't carry allowlist exceptions.' The same precedence applies between ask and allow: a matching ask rule prompts even when a more specific allow rule also matches.\n\n**Why the others are wrong**\n\n- **B.** Specificity does not override rule type. This is the single most common wrong instinct, because it is how firewall and IAM rules often behave.\n- **C.** There is no interactive conflict resolution; the precedence is fixed and deterministic.\n- **D.** Evaluation order is not the mechanism. Deny simply outranks allow, and ask also outranks allow.",
+      "examTrick": "deny > ask > allow, regardless of specificity. To carve an exception, narrow the deny rule itself.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "deny vs allow", "Rule Precedence", "Permissions"]
+    },
+    {
+      "id": 5,
+      "question": "What is the difference between a deny rule written as 'Bash' and one written as 'Bash(rm *)'?",
+      "options": [
+        "A bare tool name removes the tool from Claude's context entirely so Claude never sees it; a scoped rule leaves the tool available and blocks only matching calls.",
+        "They are equivalent; the bare form is shorthand that Claude Code expands to a wildcard pattern.",
+        "The bare form only blocks interactive sessions, while the scoped form also applies in headless -p runs.",
+        "The bare form triggers a permission prompt, while the scoped form denies silently."
+      ],
+      "answer": "A bare tool name removes the tool from Claude's context entirely so Claude never sees it; a scoped rule leaves the tool available and blocks only matching calls.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Configure permissions",
+      "explanation": "Per the docs: 'A bare tool name like Bash removes the tool from Claude's context entirely, so Claude never sees it... A scoped rule like Bash(rm *) leaves the tool available and blocks matching calls when Claude attempts them.' Bare-name removal applies to every tool except EndConversation. Note that Bash(*) is equivalent to Bash, and as a deny rule both forms remove the tool.\n\n**Why the others are wrong**\n\n- **B.** They differ in kind, not just in breadth: one is tool removal, the other is call-time blocking.\n- **C.** Neither form is session-mode dependent; deny rules apply in every mode.\n- **D.** Deny never prompts. Prompting is what an 'ask' rule does.",
+      "examTrick": "Bare name in deny = tool is invisible to Claude. Scoped pattern = tool visible, specific calls blocked.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Deny Rules", "Tool Removal", "Permissions"]
+    },
+    {
+      "id": 6,
+      "question": "A team commits .claude/settings.json containing both permissions.allow and permissions.deny rules. A teammate clones the repo and starts a session but has not yet accepted the workspace trust dialog. Which rules are in effect?",
+      "options": [
+        "The deny and ask rules apply right away; the allow rules wait until the teammate trusts the folder.",
+        "No rules apply until the folder is trusted, so the teammate is prompted for everything.",
+        "All rules apply immediately, because they are committed to the repository.",
+        "The allow rules apply immediately; the deny rules wait until the folder is trusted."
+      ],
+      "answer": "The deny and ask rules apply right away; the allow rules wait until the teammate trusts the folder.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Settings: 'The key waits for trust'; Permissions: workspace trust",
+      "explanation": "The docs state that permissions.allow rules, permissions.additionalDirectories, extraKnownMarketplaces, and most env values apply only after each teammate trusts the folder. Until then they still see prompts. Deny and ask rules apply right away. The asymmetry is a security design: a repository you have not trusted can restrict Claude but cannot grant it new powers.\n\n**Why the others are wrong**\n\n- **B.** Restrictive rules are honoured immediately; a hostile repo cannot be made safer by withholding trust, so there is no reason to delay deny.\n- **C.** Applying committed allow rules before trust would let any cloned repository silently pre-approve commands.\n- **D.** Exactly backwards, and dangerously so.",
+      "examTrick": "Untrusted folder: restrictions (deny/ask) live, grants (allow) dormant. Grants need trust; restrictions never do.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Workspace Trust", "Allow Rules", "Team Settings"]
+    },
+    {
+      "id": 7,
+      "question": "A platform team wants every developer in one repository to get the same lint/test permission allowlist and the same PostToolUse formatting hook, shared through source control. Which file?",
+      "options": [
+        "Commit them to .claude/settings.json at the repository root.",
+        "Put them in ~/.claude/settings.json and ask each developer to copy it.",
+        "Put them in .claude/settings.local.json so each developer's copy stays personal.",
+        "Put them in CLAUDE.md so they load into every session automatically."
+      ],
+      "answer": "Commit them to .claude/settings.json at the repository root.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Settings: settings files and who they affect",
+      "explanation": "The docs describe .claude/settings.json as affecting 'Everyone who starts Claude Code in the folder that contains it. In a git repository, commit it so teammates get it', and list its typical use as 'Team permissions, hooks, plugins, and the environment variables the project needs.' Each teammate can still override for themselves in .claude/settings.local.json.\n\n**Why the others are wrong**\n\n- **B.** User settings are per-machine and per-person; a copy-this-file instruction is exactly the drift the shared file exists to prevent.\n- **C.** The local file is gitignored by design and is for personal overrides, so nothing would be shared.\n- **D.** CLAUDE.md cannot contain permission rules or hooks at all; it is prose context, not configuration.",
+      "examTrick": "Shared team tooling = project-level .claude/settings.json (committed). Personal/experimental = user or local.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Project Scope", "Shared Settings", "Hooks"]
+    },
+    {
+      "id": 8,
+      "question": "Which permission rule correctly blocks Claude's file tools from reading .env files anywhere at or under the current directory?",
+      "options": [
+        "\"deny\": [\"Read(.env)\"] — bare filenames follow gitignore semantics and match at any depth.",
+        "\"deny\": [\"Write(.env)\"] — the Write tool is what creates and modifies the file.",
+        "\"deny\": [\"Glob(**/.env)\"] — Glob is the tool that discovers the files.",
+        "\"deny\": [\"Bash(cat .env)\"] — blocking the shell read is what matters."
+      ],
+      "answer": "\"deny\": [\"Read(.env)\"] — bare filenames follow gitignore semantics and match at any depth.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permissions: Read and Edit",
+      "explanation": "The docs state that Read and Edit rules use gitignore pattern syntax, and that 'Bare filenames follow gitignore semantics and match at any depth, so Read(.env) and Read(**/.env) are equivalent.' Deny rules also cover recognised Bash file commands such as cat, head, grep, and find when a denied path is passed as an argument.\n\n**Why the others are wrong**\n\n- **B.** Claude Code checks file permissions against Edit(path) and Read(path) rules only. A path rule written for Write is accepted but never consulted, and warns at startup. Use Edit(...) instead of Write(...).\n- **C.** Same problem: a Glob path rule is never consulted. Use Read(docs/**) in place of Glob(docs/**).\n- **D.** It blocks one exact command string and nothing else — not the Read tool, not 'head .env', not a different quoting.",
+      "examTrick": "Only Read(path) and Edit(path) are consulted for file paths. Write/Glob/NotebookEdit path rules are silently ignored.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Read Deny Rules", "gitignore Syntax", "Sensitive Files"]
+    },
+    {
+      "id": 9,
+      "question": "Which statement about the Bash rule pattern Bash(ls *) is correct?",
+      "options": [
+        "It matches 'ls -la' but not 'lsof', because a space before the trailing * enforces a word boundary.",
+        "It matches both 'ls -la' and 'lsof', because * matches any sequence of characters.",
+        "It matches only the exact command 'ls *' with a literal asterisk argument.",
+        "It matches 'ls -la' and also 'ls -la && rm -rf /', because * spans the whole command line."
+      ],
+      "answer": "It matches 'ls -la' but not 'lsof', because a space before the trailing * enforces a word boundary.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permissions: Bash rules",
+      "explanation": "Per the docs: 'When * appears at the end with a space before it (like Bash(ls *)), it enforces a word boundary, requiring the prefix to be followed by a space or end-of-string. For example, Bash(ls *) matches ls -la but not lsof. In contrast, Bash(ls*) without a space matches both.'\n\n**Why the others are wrong**\n\n- **B.** That describes Bash(ls*), written without the space. The space is load-bearing.\n- **C.** The asterisk is a wildcard in permission patterns, not a literal.\n- **D.** Claude Code is shell-operator aware. A rule must match each subcommand independently; recognised separators are &&, ||, ;, |, |&, &, and newlines. So Bash(safe-cmd *) does not authorise 'safe-cmd && other-cmd'.",
+      "examTrick": "'ls *' (with space) = word boundary. 'ls*' (no space) = prefix match, catches lsof. And && always splits into independently-matched subcommands.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Bash Patterns", "Word Boundary", "Shell Operators"]
+    },
+    {
+      "id": 10,
+      "question": "An engineer writes the permission rule Bash(command:rm *) intending to block deletions. What does Claude Code do?",
+      "options": [
+        "Ignores the rule and emits a startup warning; the correct form is Bash(rm *).",
+        "Applies it exactly as written, blocking any rm command.",
+        "Applies it only to the PowerShell tool, since 'command' is a PowerShell field name.",
+        "Treats 'command:' as a literal prefix and matches commands that start with the text 'command:'."
+      ],
+      "answer": "Ignores the rule and emits a startup warning; the correct form is Bash(rm *).",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permissions: matching tool input fields",
+      "explanation": "The docs state you cannot match a tool's primary content field this way — command for Bash and PowerShell, file_path for Read/Edit/Write, path for Grep and Glob, notebook_path for NotebookEdit, url for WebFetch. 'A rule like Bash(command:rm *) would be bypassable by a compound command, so Claude Code ignores it and emits a startup warning. Use Bash(rm *), Read(./path), or WebFetch(domain:host) instead.'\n\n**Why the others are wrong**\n\n- **B.** A silently-accepted rule that looks like it blocks rm but does not would be worse than no rule; the docs specify the warning precisely to avoid that.\n- **C.** Both Bash and PowerShell use 'command' as their primary field, and neither can be matched this way.\n- **D.** There is no literal-prefix fallback; the rule is discarded.",
+      "examTrick": "field:value syntax works for secondary fields (WebFetch(domain:...), Bash(run_in_background:true)) but never for the primary content field.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Rule Syntax", "Primary Content Field", "Startup Warning"]
+    },
+    {
+      "id": 11,
+      "question": "Match each requirement to the correct mechanism: (i) block Claude from ever reading production credentials, (ii) tell Claude the project uses 2-space indentation, (iii) run ESLint after every file edit.",
+      "options": [
+        "(i) permissions.deny, (ii) CLAUDE.md, (iii) PostToolUse hook.",
+        "(i) CLAUDE.md, (ii) CLAUDE.md, (iii) CLAUDE.md.",
+        "(i) PreToolUse hook, (ii) settings.json, (iii) a /lint slash command.",
+        "(i) permissions.deny, (ii) a skill, (iii) a .claude/rules/ file with paths frontmatter."
+      ],
+      "answer": "(i) permissions.deny, (ii) CLAUDE.md, (iii) PostToolUse hook.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: managed settings vs managed CLAUDE.md table; Extend Claude Code",
+      "explanation": "The docs give this split as a table: 'Block specific tools, commands, or file paths' → Managed settings: permissions.deny. 'Code style and quality guidelines' → Managed CLAUDE.md. And for automation: 'Use a hook when the action must happen the same way every time and doesn't need Claude to think... Run ESLint after every file edit.' Settings rules are enforced by the client regardless of what Claude decides; CLAUDE.md shapes behaviour but is not an enforcement layer.\n\n**Why the others are wrong**\n\n- **B.** Puts a hard security boundary and a deterministic automation into advisory prose. Neither is guaranteed.\n- **C.** A slash command must be invoked by a human, so it cannot satisfy 'after every file edit'. And indentation style is not a settings key.\n- **D.** A skill loads on demand, so an always-applicable convention like indentation belongs in CLAUDE.md. A path-scoped rule is context, not an executed action, so it cannot run ESLint.",
+      "examTrick": "Three buckets: hard boundary = permissions/hooks; always-on convention = CLAUDE.md; must-run-every-time action = hook.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Mechanism Selection", "Enforcement vs Guidance", "PostToolUse"]
+    },
+    {
+      "id": 12,
+      "question": "An organization wants behavioural instructions ('Always run make lint before committing') applied on every machine, deployed centrally, and not excludable by individual developers. What is the supported mechanism?",
+      "options": [
+        "A managed CLAUDE.md at the managed policy location, or the claudeMd key inside managed-settings.json.",
+        "A CLAUDE.md committed to every repository, enforced by a pre-commit hook in CI.",
+        "The claudeMd key in each developer's ~/.claude/settings.json, distributed by MDM.",
+        "A .claude/rules/ file symlinked from a company-standards directory on each machine."
+      ],
+      "answer": "A managed CLAUDE.md at the managed policy location, or the claudeMd key inside managed-settings.json.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: Deploy organization-wide CLAUDE.md",
+      "explanation": "Managed policy CLAUDE.md lives at /Library/Application Support/ClaudeCode/CLAUDE.md (macOS), /etc/claude-code/CLAUDE.md (Linux and WSL), or C:\\Program Files\\ClaudeCode\\CLAUDE.md (Windows). The claudeMd key lets you put that content directly inside managed-settings.json instead. It loads before user and project CLAUDE.md, and the docs state 'Managed policy CLAUDE.md files cannot be excluded' by claudeMdExcludes.\n\n**Why the others are wrong**\n\n- **B.** A per-repository file is excludable and drifts; CI enforcement happens after the fact, not in the session.\n- **C.** The docs are explicit that claudeMd is honoured in managed and policy settings only — 'Setting claudeMd in user, project, or local settings has no effect.'\n- **D.** Symlinked rules are a sharing convenience for an individual, not an organization-wide policy, and they can be removed locally.",
+      "examTrick": "'Cannot be excluded / organization-wide' = managed policy tier. claudeMd only works in managed/policy settings.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Managed Policy", "claudeMd Key", "Enterprise Deployment"]
+    },
+    {
+      "id": 13,
+      "question": "A developer adds a // comment and a trailing comma to .claude/settings.json to document a rule. What happens at the next session start?",
+      "options": [
+        "Claude Code reports a Settings Error, because settings files are strict JSON.",
+        "The file loads normally; Claude Code strips comments the way it strips HTML comments from CLAUDE.md.",
+        "The comment is preserved and injected into Claude's context as documentation.",
+        "Claude Code auto-repairs the file and writes back valid JSON."
+      ],
+      "answer": "Claude Code reports a Settings Error, because settings files are strict JSON.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Settings: change a setting",
+      "explanation": "The docs say: 'Settings files are strict JSON: a // comment or a trailing comma is a syntax error, and Claude Code reports the file as a Settings Error at the next start.' Add a $schema line instead to get autocomplete and inline validation in your editor.\n\n**Why the others are wrong**\n\n- **B.** Block-level HTML comment stripping is a CLAUDE.md feature (markdown), not a JSON settings feature. The two are being deliberately conflated here.\n- **C.** Settings are configuration read by the client; they never enter Claude's context as prose.\n- **D.** Claude Code does auto-recover a corrupted ~/.claude.json from backups, but it does not rewrite a malformed settings file for you.",
+      "examTrick": "settings.json = strict JSON, no comments. CLAUDE.md = markdown, HTML comments stripped before injection.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Strict JSON", "Settings Error", "Troubleshooting"]
+    },
+    {
+      "id": 14,
+      "question": "Which permission mode automatically accepts file edits and common filesystem commands such as mkdir, touch, mv, and cp within the working directory?",
+      "options": [
+        "acceptEdits",
+        "bypassPermissions",
+        "plan",
+        "default"
+      ],
+      "answer": "acceptEdits",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Permissions: permission modes",
+      "explanation": "The docs define acceptEdits as the mode that 'Automatically accepts file edits and common filesystem commands such as mkdir, touch, mv, and cp for paths in the working directory or additionalDirectories.'\n\n**Why the others are wrong**\n\n- **B.** bypassPermissions skips permission prompts entirely, including writes to protected paths such as .git and .claude — far broader, and the docs restrict it to isolated environments like containers or VMs.\n- **C.** plan mode is the opposite: Claude reads and analyses without making changes.\n- **D.** default asks before actions that might modify your system.",
+      "examTrick": "acceptEdits = edits + benign filesystem commands. bypassPermissions = everything, containers only.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Permission Modes", "acceptEdits", "bypassPermissions"]
+    },
+    {
+      "id": 15,
+      "question": "A security team must ensure developers cannot use bypassPermissions mode. Where should the setting go and what is it?",
+      "options": [
+        "Set permissions.disableBypassPermissionsMode to \"disable\" in managed settings, where it cannot be overridden.",
+        "Set permissions.deny to [\"bypassPermissions\"] in the project's .claude/settings.json.",
+        "Add 'Never use bypassPermissions mode' to the managed policy CLAUDE.md.",
+        "Set defaultMode to \"default\" in ~/.claude/settings.json on each machine."
+      ],
+      "answer": "Set permissions.disableBypassPermissionsMode to \"disable\" in managed settings, where it cannot be overridden.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permissions: permission modes",
+      "explanation": "The docs state: 'To prevent bypassPermissions or auto mode from being used, set permissions.disableBypassPermissionsMode or permissions.disableAutoMode to \"disable\" in any settings file. These are most useful in managed settings where they can't be overridden.'\n\n**Why the others are wrong**\n\n- **B.** deny rules name tools and patterns, not permission modes; a mode is not a tool.\n- **C.** A CLAUDE.md line is advisory. A developer can still press the keys that switch modes — the model's cooperation is not what gates a mode.\n- **D.** A default mode is a starting point the developer can change, and a user-level setting is theirs to edit.",
+      "examTrick": "Prevent a capability = a settings key at the managed tier, not a deny rule and not a CLAUDE.md sentence.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "disableBypassPermissionsMode", "Managed Settings", "Security Policy"]
+    },
+    {
+      "id": 16,
+      "question": "You want to restrict Claude's network access to a small set of approved documentation domains. What is the recommended configuration?",
+      "options": [
+        "Deny curl, wget and similar Bash commands, then allow the WebFetch tool per domain with WebFetch(domain:github.com).",
+        "Allow only Bash(curl https://github.com/ *) so curl is restricted to the approved host.",
+        "Deny the WebFetch tool entirely and let Claude use curl, which is easier to audit in shell history.",
+        "Add the approved domain list to CLAUDE.md and instruct Claude to fetch nothing else."
+      ],
+      "answer": "Deny curl, wget and similar Bash commands, then allow the WebFetch tool per domain with WebFetch(domain:github.com).",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permissions: restrict Bash network tools",
+      "explanation": "The docs recommend exactly this pairing: 'use deny rules to block curl, wget, and similar commands, then use the WebFetch tool with WebFetch(domain:github.com) permission for allowed domains.' The reason is given alongside: Bash permission patterns that try to constrain command arguments are fragile.\n\n**Why the others are wrong**\n\n- **B.** The docs use this exact pattern as the cautionary example: Bash(curl http://github.com/ *) 'won't match variations' — a different scheme, an extra flag before the URL, or a redirect all slip past it.\n- **C.** Backwards. WebFetch is the tool with real domain-level matching; curl arguments are what cannot be constrained reliably.\n- **D.** Advisory text is not a network boundary.",
+      "examTrick": "Domain restriction is a WebFetch(domain:...) job. Constraining URLs inside Bash arguments is documented as fragile.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "WebFetch Domain", "Network Restriction", "Fragile Patterns"]
+    },
+    {
+      "id": 17,
+      "question": "In user settings (~/.claude/settings.json) you write the deny rule Read(/secrets/**), expecting it to block a secrets directory inside every project. What does it actually block?",
+      "options": [
+        "~/.claude/secrets/**, because a /path pattern is relative to the settings source, which for user settings is the config directory.",
+        "/secrets/** at the filesystem root on every machine.",
+        "<project root>/secrets/** in whichever project is open.",
+        "Nothing; a leading slash is invalid in Read rules and the rule is discarded."
+      ],
+      "answer": "~/.claude/secrets/**, because a /path pattern is relative to the settings source, which for user settings is the config directory.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permissions: Read and Edit pattern types",
+      "explanation": "There are four pattern types: //path (absolute from filesystem root), ~/path (from home), /path (relative to the settings source), and path or ./path (relative to current directory). The docs give this case directly: 'A deny rule such as Read(/secrets/**) in user settings blocks ~/.claude/secrets/**, not a secrets directory in your project. To write a rule in user settings that applies inside every project, use a // absolute path or a ~/ home-relative path instead.'\n\n**Why the others are wrong**\n\n- **B.** That is what // means. A single leading slash is source-relative, not root-absolute — the exam's favourite distinction here.\n- **C.** That is what /path means in PROJECT settings, where the settings source is the project root. The same pattern resolves differently depending on which file it lives in.\n- **D.** The rule is valid; it just anchors somewhere the author did not expect.",
+      "examTrick": "Four anchors: // = filesystem root, ~/ = home, / = settings source, ./ or bare = cwd. Same pattern, different file, different target.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Path Anchoring", "User Settings", "Read Rules"]
+    },
+    {
+      "id": 18,
+      "question": "A rule allows Bash(npm test *). Which invocations does it also cover?",
+      "options": [
+        "'timeout 30 npm test' and 'NODE_ENV=test npm test', because a fixed set of wrappers and known-safe env assignments are stripped before matching.",
+        "Only the literal string 'npm test ...'; any prefix causes the rule to miss.",
+        "'devbox run npm test', because environment runners are stripped like other wrappers.",
+        "'npm test && npm run lint', because the allow rule covers the whole command line."
+      ],
+      "answer": "'timeout 30 npm test' and 'NODE_ENV=test npm test', because a fixed set of wrappers and known-safe env assignments are stripped before matching.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permissions: wrapper stripping",
+      "explanation": "The docs list the stripped wrappers as timeout, time, nice, nohup, and stdbuf, plus the shell builtins command and builtin, and zsh's noglob — each runs its argument as the actual command. Claude Code also strips a leading assignment of certain known-safe environment variables, so Bash(npm test *) matches NODE_ENV=test npm test.\n\n**Why the others are wrong**\n\n- **B.** Too strict; the wrapper list exists precisely so ordinary invocations are not blocked.\n- **C.** The docs call this out as a hazard: development environment runners such as devbox run, mise exec, npx, and docker exec are NOT in the strip list, because Bash(devbox run *) would match 'devbox run rm -rf .'. Write a rule naming both the runner and the inner command.\n- **D.** && splits the command; each subcommand must match a rule independently.",
+      "examTrick": "Stripped: timeout/time/nice/nohup/stdbuf/command/builtin/noglob/bare xargs. NOT stripped: npx, docker exec, devbox run, mise exec.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Wrapper Stripping", "Environment Runners", "Bash Rules"]
+    },
+    {
+      "id": 19,
+      "question": "A teammate chose 'Yes, and don't ask again' for a Bash command but is still prompted for it every session. What is the most likely cause?",
+      "options": [
+        "A project or managed file has a matching ask rule, and an allow rule in the local file does not outrank ask.",
+        "The local settings file was not committed, so the approval was discarded at session end.",
+        "Allow rules expire after a fixed retention period set by cleanupPeriodDays.",
+        "The approval was written to user settings, which are read only at install time."
+      ],
+      "answer": "A project or managed file has a matching ask rule, and an allow rule in the local file does not outrank ask.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Settings: common cases",
+      "explanation": "The docs describe this symptom verbatim: 'You chose \"Yes, and don't ask again\" on a permission prompt but still get prompted for the same tool. That choice saved an allow rule to your local file, and an allow rule there doesn't outrank an ask rule from a project or managed file.' The related possibility is that the folder is not yet trusted, which keeps allow rules dormant.\n\n**Why the others are wrong**\n\n- **B.** The local file is deliberately gitignored and persists on disk; committing it is not required for it to work.\n- **C.** cleanupPeriodDays governs session transcript retention, not permission rules.\n- **D.** The approval goes to .claude/settings.local.json, not user settings, and settings files are watched and reloaded live.",
+      "examTrick": "Still prompted after 'don't ask again' = an ask rule upstream, or the folder is untrusted. Rule type beats file locality.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "ask Rules", "Troubleshooting", "Rule Precedence"]
+    },
+    {
+      "id": 20,
+      "question": "Which allow-rule glob is valid and will actually auto-approve MCP tools?",
+      "options": [
+        "\"mcp__github__get_*\" — allow globs are accepted only after a literal, glob-free mcp__<server>__ prefix.",
+        "\"mcp__*\" — it names the MCP namespace, so every MCP tool is approved.",
+        "\"*\" — the universal glob approves all tools including MCP ones.",
+        "\"mcp__*__get_*\" — wildcards in the server segment let one rule cover every server's getters."
+      ],
+      "answer": "\"mcp__github__get_*\" — allow globs are accepted only after a literal, glob-free mcp__<server>__ prefix.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permissions: tool-name globs",
+      "explanation": "Per the docs: 'Allow rules accept tool-name globs only after a literal mcp__<server>__ prefix. The server segment must be glob-free so the rule names a specific server you configured. mcp__puppeteer__* matches every tool from the puppeteer server, and mcp__github__get_* matches its get_ tools. An unanchored allow glob such as \"*\", \"B*\", or \"mcp__*\" is skipped with a warning and doesn't auto-approve anything.'\n\n**Why the others are wrong**\n\n- **B, C, D.** All three are unanchored or have a globbed server segment, so all three are skipped with a warning and approve nothing. Note the asymmetry that makes this a good exam question: deny and ask rules DO accept globs in the tool-name position, so \"mcp__*\" is a perfectly valid way to deny every MCP tool. It is only allow that requires the literal server name.",
+      "examTrick": "Deny/ask: globs anywhere, including \"*\" and \"mcp__*\". Allow: must anchor on a literal mcp__<server>__ prefix.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Tool Name Globs", "MCP Permissions", "Allow vs Deny"]
+    }
+  ]
+}
