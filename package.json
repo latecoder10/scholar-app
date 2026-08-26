@@ -14,7 +14,8 @@
     "preview:static": "npx --yes serve dist -l 5055",
     "build:mock-questions": "tsx scripts/build-mock-questions.ts",
     "build:mobile-content": "tsx scripts/build-mobile-content.ts",
-    "build:content": "npm run build:mock-questions && npm run build:mobile-content"
+    "build:content": "npm run build:mock-questions && npm run build:mobile-content",
+    "build:icons": "tsx scripts/generate-icons.ts"
   },
   "dependencies": {
     "@google/genai": "^2.10.0",

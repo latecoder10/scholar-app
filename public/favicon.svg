@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Exam Scholar">
+  <defs>
+    <linearGradient id="g0" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#4338CA"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="114" fill="url(#g0)"/>
+  <polygon points="156,226 356,226 356,296 347.67,301.75 339.33,307 331,311.75 322.67,316 314.33,319.75 306,323 297.67,325.75 289.33,328 281,329.75 272.67,331 264.33,331.75 256,332 247.67,331.75 239.33,331 231,329.75 222.67,328 214.33,325.75 206,323 197.67,319.75 189.33,316 181,311.75 172.67,307 164.33,301.75 156,296" fill="#C7D2FE"/>
+  <polygon points="256,134 432,208 256,282 80,208" fill="#FFFFFF"/>
+  <circle cx="256" cy="208" r="20" fill="#FBBF24"/>
+  <line x1="256" y1="208" x2="398" y2="214" stroke="#FBBF24" stroke-width="14" stroke-linecap="round"/>
+  <line x1="398" y1="214" x2="398" y2="300" stroke="#FBBF24" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="398" cy="302" r="17" fill="#FBBF24"/>
+  <polygon points="382,302 414,302 408,356 388,356" fill="#FBBF24"/>
+</svg>
