@@ -11,7 +11,10 @@
     "lint": "tsc --noEmit",
     "verify:gemini": "tsx scripts/verify-gemini-key.ts",
     "build:static": "vite build && tsx scripts/build-static-content.ts",
-    "preview:static": "npx --yes serve dist -l 5055"
+    "preview:static": "npx --yes serve dist -l 5055",
+    "build:mock-questions": "tsx scripts/build-mock-questions.ts",
+    "build:mobile-content": "tsx scripts/build-mobile-content.ts",
+    "build:content": "npm run build:mock-questions && npm run build:mobile-content"
   },
   "dependencies": {
     "@google/genai": "^2.10.0",

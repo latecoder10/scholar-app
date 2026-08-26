@@ -19,7 +19,11 @@
       "answer": "E",
       "examTrick": "Circular Opposite Trick: In a 6-person circular table, the person sitting opposite to X is exactly 3 spots away (left or right). If B is between F and D (meaning F-B-D are in adjacent seats) and E is between A and C (meaning A-E-C are in adjacent seats directly across), the middle elements of these two trios (B and E) MUST sit directly opposite to each other! You don't even need to figure out left/right to get this!",
       "importance": "High",
-      "tags": ["Arrangements", "Circular Seating", "Analytical Reasoning"]
+      "tags": [
+        "Arrangements",
+        "Circular Seating",
+        "Analytical Reasoning"
+      ]
     },
     {
       "id": 2,
@@ -36,7 +40,10 @@
       "explanation": "Let's place them on the bench from left to right:\n1. 'A is to the immediate left of B' means we have the pair: [A, B].\n2. 'C is between B and D' means B, C, and D are in order: [B, C, D] (since B is already on the left, D must be on the right).\n3. Combining the two clues, we get the complete linear sequence: [A, B, C, D].\n4. Looking at the sequence [A, B, C, D] from left to right, the person sitting on the extreme left end is A.",
       "examTrick": "Linear Sequence Combination: Clue 1 gives (AB). Clue 2 says C is between B and D, so the sequence grows as (AB) -> (ABC) -> (ABCD). Thus, A is at the extreme left, and D is at the extreme right!",
       "importance": "Medium",
-      "tags": ["Arrangements", "Linear Seating"]
+      "tags": [
+        "Arrangements",
+        "Linear Seating"
+      ]
     },
     {
       "id": 3,
@@ -47,13 +54,16 @@
         "Both statements I and II are independent causes.",
         "Both statements I and II are effects of some common cause."
       ],
-      "answer": "Both statements I and II are effects of some common cause",
+      "answer": "Both statements I and II are effects of some common cause.",
       "difficulty": "Medium",
       "source": "CIL MT Paper I / IndiaBIX",
       "explanation": "Let's analyze both statements:\n- Statement I describes an administrative ban on plastic bags by the municipal body.\n- Statement II describes civic environmental action by local residents.\nBoth actions (the government ban and the citizens' cleanliness drives) are prompted by a common underlying issue: the severe environmental degradation, plastic pollution, and ecological damage caused by plastic waste. Therefore, both are effects of a common cause.",
       "examTrick": "Cause & Effect Test: Ask 'Did Statement I directly lead to Statement II?' or 'Did Statement II lead to Statement I?'. If the ban didn't directly force the volunteer water body collection, and the citizen drive didn't trigger the government rule, but both target environmental cleanup, they are effects of a common cause!",
       "importance": "High",
-      "tags": ["Verbal Reasoning", "Cause and Effect"]
+      "tags": [
+        "Verbal Reasoning",
+        "Cause and Effect"
+      ]
     },
     {
       "id": 4,
@@ -70,7 +80,10 @@
       "explanation": "Let's evaluate the assumptions:\n- The statement mentions testing 'before mass public rollout', which directly implies that testing is a required prerequisite before vaccines can be distributed to the public. Thus, Assumption 1 is implicit.\n- The statement calls double-blind trials the 'gold standard' for evaluating safety and efficacy, which directly implies that this methodology is highly reliable and standard. Thus, Assumption 2 is implicit.\nTherefore, both assumptions are implicit.",
       "examTrick": "An assumption is implicit if the statement's logic would collapse if the assumption were false. If vaccines didn't need testing, 'before mass rollout' testing is meaningless (Assumption 1 holds). If double-blind trials weren't reliable, they couldn't be the 'gold standard' (Assumption 2 holds)!",
       "importance": "High",
-      "tags": ["Verbal Reasoning", "Statement and Assumption"]
+      "tags": [
+        "Verbal Reasoning",
+        "Statement and Assumption"
+      ]
     },
     {
       "id": 5,
@@ -87,7 +100,10 @@
       "explanation": "Let's arrange the people by height (from tallest to shortest):\n1. 'Q is the tallest' => Q is at the top.\n2. 'R is taller than S but shorter than P' => P > R > S.\n3. 'T is slightly shorter than R but slightly taller than S' => R > T > S.\n4. Combining these relationships:\n   - Q is at the absolute top: Q > P > R > T > S.\n5. Let's look at the order from shortest to tallest:\n   - Shortest (1st shortest) = S\n   - Second shortest = T\n   - Third shortest (middle) = R\n   - Fourth shortest = P\n   - Tallest = Q\nThus, the second shortest person is T.",
       "examTrick": "Inequality Chain: Plot heights on a single line. Q > P > R. We are told R > T > S. Therefore: Q > P > R > T > S. Reading from the right (shortest end), S is 1st shortest, T is 2nd shortest. Fast and unambiguous!",
       "importance": "High",
-      "tags": ["Arrangements", "Verbal Puzzles"]
+      "tags": [
+        "Arrangements",
+        "Verbal Puzzles"
+      ]
     },
     {
       "id": 6,
@@ -104,7 +120,10 @@
       "explanation": "Let's analyze the strength of the arguments:\n- Argument 1 is strong because it addresses the vital long-term environmental and technological goal of transitioning to clean energy to combat climate change, which is a major government concern.\n- Argument 2 is also strong because it highlights a realistic, direct, and immediate negative socio-economic impact (inflation and stress on the poor) of an abrupt policy change, which is another critical concern for any government.\nBoth arguments are logical, relevant, and represent major policy trade-offs, making both of them strong.",
       "examTrick": "Strong Argument Test: A strong argument must be both highly relevant (directly related to the topic) and highly significant (not trivial, dealing with substantial real-world consequences like inflation, starvation, health, or environmental survival). If both Yes and No options present valid, major real-world impacts, both are strong!",
       "importance": "High",
-      "tags": ["Verbal Reasoning", "Statement and Arguments"]
+      "tags": [
+        "Verbal Reasoning",
+        "Statement and Arguments"
+      ]
     },
     {
       "id": 7,
@@ -121,7 +140,10 @@
       "explanation": "Let's compute the alphabetical positions (A=1, B=2, ..., Z=26):\n1. For BLUE:\n   - B = 2\n   - L = 12\n   - U = 21\n   - E = 5\n   - Sum = 2 + 12 + 21 + 5 = 40. The code is exactly the sum of letter values.\n2. For RED:\n   - R = 18\n   - E = 5\n   - D = 4\n   - Sum = 18 + 5 + 4 = 27. This confirms the pattern.\n3. For GREEN:\n   - G = 7\n   - R = 18\n   - E = 5\n   - E = 5\n   - N = 14\n   - Sum = 7 + 18 + 5 + 5 + 14 = 49.\nTherefore, the code for GREEN is 49.",
       "examTrick": "Sum of alphabetical positions: G(7) + R(18) + E(5) + E(5) + N(14). \nShortcut: E+E = 10. G+N = 21. 10 + 21 = 31. Add R(18) = 49. Learn to group letters quickly to speed up arithmetic in the exam halls!",
       "importance": "Medium",
-      "tags": ["Coding-Decoding", "Numerical Ability"]
+      "tags": [
+        "Coding-Decoding",
+        "Numerical Ability"
+      ]
     },
     {
       "id": 8,
@@ -138,7 +160,10 @@
       "explanation": "Let's analyze the courses of action:\n- Course 1 is a direct, practical, and urgent solution to the immediate problem (landslide blocking highway and trapping vehicles). It should definitely be followed.\n- Course 2 is an extreme, disproportionate, and economically destructive response. Permanently shutting down all mining operations due to a road landslide is an overreaction and does not solve the immediate road blockage issue. It should not be followed.",
       "examTrick": "Course of Action Rules: A valid course of action must be a practical, logical, and balanced remedy that directly resolves or mitigates the problem. Extreme, drastic, or escapist measures (like permanently closing an entire industry) are always incorrect unless absolutely unavoidable!",
       "importance": "Medium",
-      "tags": ["Verbal Reasoning", "Course of Action"]
+      "tags": [
+        "Verbal Reasoning",
+        "Course of Action"
+      ]
     },
     {
       "id": 9,
@@ -155,7 +180,11 @@
       "explanation": "Let's assemble the linear arrangement of the six books from left to right:\n1. 'R is at the extreme left end' => Slot 1 = R.\n2. 'U is to the immediate right of R' => Slot 2 = U.\n3. 'Q is between U and P' => Since U is at slot 2, Q must be at slot 3 and P must be at slot 4. This places Q directly between them.\n4. 'S is between P and T' => Since P is at slot 4, S must be at slot 5 and T must be at slot 6. This places S directly between them.\n5. The final sequence from left to right is: [R, U, Q, P, S, T].\n6. The book placed at the extreme right end (slot 6) is T.",
       "examTrick": "Build linearly from fixed reference points! 'R is at the extreme left' is your anchor. Immediate right of R is U. Next is Q (between U and P), so P is next. Next is S (between P and T), so T is next. The chain is completed effortlessly!",
       "importance": "High",
-      "tags": ["Arrangements", "Linear Seating", "Analytical Reasoning"]
+      "tags": [
+        "Arrangements",
+        "Linear Seating",
+        "Analytical Reasoning"
+      ]
     },
     {
       "id": 10,
@@ -172,7 +201,11 @@
       "answer": "Both Statements I and II together are sufficient, but neither alone is.",
       "examTrick": "Data Sufficiency Rule: You do not need to find a specific 'positive' answer! Answering a definitive 'No' (e.g., 'No, x is definitely even') is as sufficient as answering 'Yes'. Since combining both statements restricts x to even multiples of 3 (12, 18, 24, etc.), we can definitively answer 'No, x is not odd'. Hence, both are sufficient together!",
       "importance": "High",
-      "tags": ["Data Sufficiency", "Number Theory", "Logical Reasoning"]
+      "tags": [
+        "Data Sufficiency",
+        "Number Theory",
+        "Logical Reasoning"
+      ]
     }
   ]
 }
