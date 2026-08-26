@@ -1,13 +1,55 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
+  Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bookmark,
+  CheckCircle,
+  HelpCircle,
+  Lightbulb,
+  Tag,
+  X,
+  XCircle,
+} from 'lucide-react-native';
 import { MobileQuestion, AnswerRecord } from '../types';
+import { colors, fontSize, palette, radius, spacing, TAP_TARGET } from '../theme';
+import { Badge, Button, Card, EmptyState, ProgressBar } from '../components/ui';
+import RichText from '../components/RichText';
+
+type Confidence = 'Guess' | 'Somewhat Sure' | 'Very Sure';
+
+/**
+ * Per-question state, mirroring the web's PracticeSession. Keeping a record
+ * rather than a single "current answer" is what lets you move back through the
+ * set and still see what you picked and why it was right.
+ */
+interface QuestionState {
+  selected: string | null;
+  confidence: Confidence;
+  answered: boolean;
+}
+
+const DEFAULT_STATE: QuestionState = {
+  selected: null,
+  confidence: 'Very Sure',
+  answered: false,
+};
+
+const CONFIDENCE_LEVELS: { level: Confidence; tint: string; border: string; text: string }[] = [
+  { level: 'Guess', tint: colors.warningSoft, border: colors.warningSoftBorder, text: colors.warningText },
+  { level: 'Somewhat Sure', tint: palette.blue50, border: palette.blue200, text: palette.blue700 },
+  { level: 'Very Sure', tint: colors.successSoft, border: colors.successSoftBorder, text: colors.successText },
+];
 
 interface QuizScreenProps {
   questions: MobileQuestion[];
@@ -22,386 +64,459 @@ export const QuizScreen: React.FC<QuizScreenProps> = ({
   bookmarkedIds,
   onBack,
   onRecordAnswer,
-  onToggleBookmark
+  onToggleBookmark,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [confidence, setConfidence] = useState<'Guess' | 'Somewhat Sure' | 'Very Sure'>('Very Sure');
-  const [showTrick, setShowTrick] = useState(false);
+  const [states, setStates] = useState<Record<number, QuestionState>>({});
+
+  const answeredCount = useMemo(
+    () => questions.reduce((n, _q, i) => (states[i]?.answered ? n + 1 : n), 0),
+    [questions, states]
+  );
 
   if (!questions || questions.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No questions available in this pool.</Text>
-          <TouchableOpacity style={styles.buttonPrimary} onPress={onBack}>
-            <Text style={styles.buttonPrimaryText}>Return to Dashboard</Text>
-          </TouchableOpacity>
+      <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+        <View style={styles.emptyWrap}>
+          <EmptyState
+            icon={HelpCircle}
+            title="No questions found"
+            message="This session has no questions. Pick another exam track and try again."
+          />
+          <Button label="Back to dashboard" onPress={onBack} />
         </View>
       </SafeAreaView>
     );
   }
 
-  const currentQ = questions[currentIndex];
-  const isBookmarked = bookmarkedIds.includes(currentQ.id);
+  const question = questions[currentIndex];
+  const state = states[currentIndex] || DEFAULT_STATE;
+  const isBookmarked = bookmarkedIds.includes(question.id);
+  // The banks store `answer` as the full option text, so correctness is a text
+  // comparison — matching the web. Comparing letters silently marked every
+  // answer wrong.
+  const isCorrect = state.selected === question.answer;
 
-  const handleSubmit = (optionLetter: string) => {
-    if (isSubmitted) return;
-    setSelectedOption(optionLetter);
-    setIsSubmitted(true);
-    const isCorrect = optionLetter.toUpperCase() === currentQ.answer.toUpperCase();
+  const patch = (next: Partial<QuestionState>) =>
+    setStates((prev) => ({
+      ...prev,
+      [currentIndex]: { ...(prev[currentIndex] || DEFAULT_STATE), ...next },
+    }));
+
+  const goTo = (index: number) => {
+    if (index < 0 || index > questions.length - 1) return;
+    setCurrentIndex(index);
+  };
+
+  const handleSubmit = () => {
+    if (!state.selected || state.answered) return;
+    patch({ answered: true });
     onRecordAnswer({
-      questionId: currentQ.id,
-      userAnswer: optionLetter,
-      isCorrect,
-      confidence,
-      timestamp: new Date().toISOString()
+      questionId: question.id,
+      userAnswer: state.selected,
+      isCorrect: state.selected === question.answer,
+      confidence: state.confidence,
+      timestamp: new Date().toISOString(),
     });
   };
 
-  const handleNext = () => {
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setSelectedOption(null);
-      setIsSubmitted(false);
-      setShowTrick(false);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-      setSelectedOption(null);
-      setIsSubmitted(false);
-      setShowTrick(false);
-    }
-  };
-
-  const optionLetters = ['A', 'B', 'C', 'D'];
+  const progress = Math.round((answeredCount / questions.length) * 100);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+      {/* Session bar */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={onBack} style={styles.iconButton}>
-          <Text style={styles.iconButtonText}>✕</Text>
-        </TouchableOpacity>
-        <Text style={styles.counterText}>
-          {currentIndex + 1} / {questions.length}
-        </Text>
-        <TouchableOpacity
-          onPress={() => onToggleBookmark(currentQ.id)}
-          style={styles.iconButton}
-        >
-          <Text style={styles.iconButtonText}>{isBookmarked ? '★' : '☆'}</Text>
-        </TouchableOpacity>
+        <Pressable onPress={onBack} hitSlop={8} style={styles.iconButton}>
+          <X size={18} color={colors.textFaint} />
+        </Pressable>
+        <View style={styles.topBarCenter}>
+          <Text style={styles.counter}>
+            Question <Text style={styles.counterStrong}>{currentIndex + 1}</Text> of{' '}
+            <Text style={styles.counterStrong}>{questions.length}</Text>
+          </Text>
+          <Text style={styles.counterMeta}>{answeredCount} answered</Text>
+        </View>
+        <Pressable onPress={() => onToggleBookmark(question.id)} hitSlop={8} style={styles.iconButton}>
+          <Bookmark
+            size={18}
+            color={isBookmarked ? colors.primary : colors.textMuted}
+            fill={isBookmarked ? colors.primary : 'transparent'}
+          />
+        </Pressable>
+      </View>
+      <View style={styles.progressWrap}>
+        <ProgressBar value={progress} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Badges */}
-        <View style={styles.tagsRow}>
-          <View style={[styles.badge, { backgroundColor: '#1E293B' }]}>
-            <Text style={styles.badgeText}>{currentQ.difficulty || 'Medium'}</Text>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Card>
+          {/* Difficulty, source, importance — the web's badge row */}
+          <View style={styles.badgeRow}>
+            <Badge
+              label={question.difficulty || 'Medium'}
+              tone={
+                question.difficulty === 'Easy'
+                  ? 'success'
+                  : question.difficulty === 'Hard'
+                    ? 'danger'
+                    : 'primary'
+              }
+            />
+            {!!question.source && <Badge label={question.source} />}
+            {question.importance === 'High' && <Badge label="High priority" tone="warning" />}
           </View>
-          {currentQ.exam && (
-            <View style={[styles.badge, { backgroundColor: '#0284C7' }]}>
-              <Text style={styles.badgeText}>{currentQ.exam}</Text>
+
+          <RichText inline style={styles.questionText}>
+            {question.question}
+          </RichText>
+
+          <View style={styles.options}>
+            {question.options.map((option, index) => {
+              const letter = String.fromCharCode(65 + index);
+              const selected = state.selected === option;
+              const correctOption = option === question.answer;
+
+              // Style arrays rather than object spreads: spreading narrows each
+              // hex to a literal type and RN rejects the merge.
+              const cardStyle: StyleProp<ViewStyle>[] = [styles.option];
+              const chipStyle: StyleProp<ViewStyle>[] = [styles.optionChip];
+              const chipTextStyle: StyleProp<TextStyle>[] = [styles.optionChipText];
+
+              if (state.answered) {
+                if (correctOption) {
+                  cardStyle.push(styles.optionCorrect);
+                  chipStyle.push(styles.chipCorrect);
+                  chipTextStyle.push(styles.chipTextOn);
+                } else if (selected) {
+                  cardStyle.push(styles.optionWrong);
+                  chipStyle.push(styles.chipWrong);
+                  chipTextStyle.push(styles.chipTextOn);
+                } else {
+                  cardStyle.push(styles.optionMuted);
+                }
+              } else if (selected) {
+                cardStyle.push(styles.optionSelected);
+                chipStyle.push(styles.chipSelected);
+                chipTextStyle.push(styles.chipTextOn);
+              }
+
+              return (
+                <Pressable
+                  key={`${letter}-${index}`}
+                  onPress={() => !state.answered && patch({ selected: option })}
+                  disabled={state.answered}
+                  style={({ pressed }) => [...cardStyle, pressed && !state.answered && styles.pressed]}
+                >
+                  <View style={chipStyle}>
+                    <Text style={chipTextStyle}>{letter}</Text>
+                  </View>
+                  <RichText inline style={styles.optionText}>
+                    {option}
+                  </RichText>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {!state.answered && (
+            <View style={styles.confidenceBlock}>
+              <Text style={styles.fieldLabel}>How confident are you?</Text>
+              <View style={styles.confidenceRow}>
+                {CONFIDENCE_LEVELS.map((item) => {
+                  const active = state.confidence === item.level;
+                  return (
+                    <Pressable
+                      key={item.level}
+                      onPress={() => patch({ confidence: item.level })}
+                      style={[
+                        styles.confidenceButton,
+                        active && { backgroundColor: item.tint, borderColor: item.border },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.confidenceText,
+                          active && { color: item.text, fontWeight: '700' },
+                        ]}
+                      >
+                        {item.level}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Button
+                label="Submit answer"
+                onPress={handleSubmit}
+                disabled={!state.selected}
+                fullWidth
+              />
             </View>
           )}
-        </View>
+        </Card>
 
-        {/* Question Text */}
-        <Text style={styles.questionText}>{currentQ.question}</Text>
-
-        {/* Options */}
-        <View style={styles.optionsContainer}>
-          {currentQ.options.map((opt, index) => {
-            const letter = optionLetters[index] || String.fromCharCode(65 + index);
-            const isSelected = selectedOption === letter;
-            const isCorrectOption = letter.toUpperCase() === currentQ.answer.toUpperCase();
-
-            let optionStyle = styles.optionCard;
-            let textStyle = styles.optionText;
-
-            if (isSubmitted) {
-              if (isCorrectOption) {
-                optionStyle = { ...styles.optionCard, ...styles.optionCorrect };
-                textStyle = { ...styles.optionText, ...styles.optionCorrectText };
-              } else if (isSelected && !isCorrectOption) {
-                optionStyle = { ...styles.optionCard, ...styles.optionWrong };
-                textStyle = { ...styles.optionText, ...styles.optionWrongText };
-              }
-            } else if (isSelected) {
-              optionStyle = { ...styles.optionCard, ...styles.optionSelected };
-            }
-
-            return (
-              <TouchableOpacity
-                key={letter}
-                style={optionStyle}
-                onPress={() => handleSubmit(letter)}
-                activeOpacity={0.8}
-                disabled={isSubmitted}
-              >
-                <View style={styles.letterCircle}>
-                  <Text style={styles.letterText}>{letter}</Text>
-                </View>
-                <Text style={textStyle}>{opt}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Post-submission Review Details */}
-        {isSubmitted && (
-          <View style={styles.reviewCard}>
+        {state.answered && (
+          <Card tone="muted" style={styles.reviewCard}>
             <View style={styles.reviewHeader}>
-              <Text style={styles.reviewTitle}>
-                {selectedOption?.toUpperCase() === currentQ.answer.toUpperCase()
-                  ? '✅ Correct'
-                  : '❌ Incorrect (Correct: Option ' + currentQ.answer + ')'}
-              </Text>
+              <View style={[styles.reviewIcon, isCorrect ? styles.iconOk : styles.iconBad]}>
+                {isCorrect ? (
+                  <CheckCircle size={22} color={palette.white} />
+                ) : (
+                  <XCircle size={22} color={palette.white} />
+                )}
+              </View>
+              <View style={styles.flex}>
+                <Text style={[styles.reviewTitle, isCorrect ? styles.okText : styles.badText]}>
+                  {isCorrect ? 'Correct!' : 'Incorrect'}
+                </Text>
+                <Text style={styles.reviewMeta}>
+                  Answered with {state.confidence.toLowerCase()} confidence.
+                </Text>
+              </View>
             </View>
 
-            <Text style={styles.explanationText}>{currentQ.explanation}</Text>
-
-            {currentQ.examTrick && (
-              <TouchableOpacity
-                style={styles.trickBox}
-                onPress={() => setShowTrick(!showTrick)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.trickHeader}>💡 30-Second Exam Trick (Tap to {showTrick ? 'Hide' : 'View'})</Text>
-                {showTrick && <Text style={styles.trickContent}>{currentQ.examTrick}</Text>}
-              </TouchableOpacity>
+            {!isCorrect && (
+              <View style={styles.correctAnswerBox}>
+                <Text style={styles.fieldLabel}>Correct answer</Text>
+                <RichText inline style={styles.correctAnswerText}>
+                  {question.answer}
+                </RichText>
+              </View>
             )}
-          </View>
+
+            <View style={styles.section}>
+              <Text style={styles.fieldLabel}>Explanation</Text>
+              <View style={styles.explanationBox}>
+                <RichText>{question.explanation}</RichText>
+              </View>
+            </View>
+
+            {!!question.examTrick && (
+              <View style={styles.trickBox}>
+                <Lightbulb size={18} color={colors.warning} />
+                <View style={styles.flex}>
+                  <Text style={styles.trickTitle}>Exam tip</Text>
+                  <RichText style={styles.trickText}>{question.examTrick}</RichText>
+                </View>
+              </View>
+            )}
+
+            {question.tags?.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.fieldLabel}>Topics</Text>
+                <View style={styles.tagRow}>
+                  {question.tags.slice(0, 6).map((tag) => (
+                    <Badge key={tag} label={tag} tone="primary" icon={Tag} />
+                  ))}
+                </View>
+              </View>
+            )}
+          </Card>
         )}
       </ScrollView>
 
-      {/* Footer Navigation */}
-      <View style={styles.footerBar}>
-        <TouchableOpacity
-          style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
-          onPress={handlePrev}
+      {/* Footer nav — always reachable, matching the web's sticky action row. */}
+      <View style={styles.footer}>
+        <Button
+          label="Previous"
+          icon={ArrowLeft}
+          variant="secondary"
+          onPress={() => goTo(currentIndex - 1)}
           disabled={currentIndex === 0}
-        >
-          <Text style={styles.navButtonText}>← Prev</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.navButton, styles.navButtonPrimary, currentIndex === questions.length - 1 && styles.navButtonDisabled]}
-          onPress={handleNext}
-          disabled={currentIndex === questions.length - 1}
-        >
-          <Text style={[styles.navButtonText, styles.navButtonPrimaryText]}>
-            {currentIndex === questions.length - 1 ? 'End of Pool' : 'Next →'}
-          </Text>
-        </TouchableOpacity>
+          style={styles.footerButton}
+        />
+        <Button
+          label={currentIndex === questions.length - 1 ? 'Finish' : 'Next'}
+          icon={ArrowRight}
+          onPress={() => (currentIndex === questions.length - 1 ? onBack() : goTo(currentIndex + 1))}
+          style={styles.footerButton}
+        />
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0B0F17',
-  },
+  screen: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
+  pressed: { opacity: 0.85 },
+  emptyWrap: { flex: 1, justifyContent: 'center', padding: spacing.lg, gap: spacing.lg },
+
   topBar: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.surface,
   },
+  topBarCenter: { alignItems: 'center' },
   iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#1E293B',
-    justifyContent: 'center',
+    width: TAP_TARGET,
+    height: TAP_TARGET,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  iconButtonText: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '700',
+  counter: { fontSize: fontSize.base, color: colors.textFaint },
+  counterStrong: { color: colors.textPrimary, fontWeight: '700' },
+  counterMeta: { fontSize: fontSize.xs, color: colors.textMuted, marginTop: 1 },
+  progressWrap: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  counterText: {
-    color: '#94A3B8',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 30,
-  },
-  tagsRow: {
+
+  scroll: { padding: spacing.lg, paddingBottom: spacing['3xl'], gap: spacing.lg },
+
+  badgeRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-  },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '600',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   questionText: {
-    fontSize: 16,
+    fontSize: fontSize.xl,
     fontWeight: '700',
-    color: '#F8FAFC',
-    lineHeight: 24,
-    marginBottom: 20,
+    color: colors.textPrimary,
+    lineHeight: 25,
   },
-  optionsContainer: {
-    gap: 12,
-    marginBottom: 20,
-  },
-  optionCard: {
+
+  options: { gap: spacing.md, marginTop: spacing.xl },
+  option: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    padding: 14,
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
-  optionSelected: {
-    borderColor: '#3B82F6',
-    backgroundColor: '#1E3A8A',
-  },
-  optionCorrect: {
-    borderColor: '#10B981',
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-  },
-  optionWrong: {
-    borderColor: '#EF4444',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-  },
-  letterCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#334155',
-    justifyContent: 'center',
+  optionSelected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  optionCorrect: { borderColor: colors.success, backgroundColor: colors.successSoft },
+  optionWrong: { borderColor: colors.danger, backgroundColor: colors.dangerSoft },
+  optionMuted: { opacity: 0.55 },
+  optionChip: {
+    width: 30,
+    height: 30,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
-    marginRight: 12,
+    justifyContent: 'center',
   },
-  letterText: {
-    color: '#F8FAFC',
-    fontWeight: '700',
-    fontSize: 13,
-  },
+  chipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  chipCorrect: { backgroundColor: colors.success, borderColor: colors.success },
+  chipWrong: { backgroundColor: colors.danger, borderColor: colors.danger },
+  optionChipText: { fontSize: fontSize.base, fontWeight: '700', color: colors.textFaint },
+  chipTextOn: { color: palette.white },
   optionText: {
     flex: 1,
-    color: '#E2E8F0',
-    fontSize: 14,
+    fontSize: fontSize.md,
+    color: colors.textBody,
     lineHeight: 20,
   },
-  optionCorrectText: {
-    color: '#34D399',
-    fontWeight: '600',
-  },
-  optionWrongText: {
-    color: '#F87171',
-  },
-  reviewCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#334155',
-    marginTop: 10,
-  },
-  reviewHeader: {
-    marginBottom: 10,
-  },
-  reviewTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#F8FAFC',
-  },
-  explanationText: {
-    color: '#CBD5E1',
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  trickBox: {
-    backgroundColor: 'rgba(245, 158, 11, 0.12)',
-    borderLeftWidth: 3,
-    borderLeftColor: '#F59E0B',
-    padding: 12,
-    borderRadius: 8,
-  },
-  trickHeader: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FBBF24',
-    marginBottom: 4,
-  },
-  trickContent: {
-    fontSize: 13,
-    color: '#FEF3C7',
-    lineHeight: 18,
-  },
-  footerBar: {
-    flexDirection: 'row',
-    padding: 16,
+
+  confidenceBlock: {
+    marginTop: spacing.xl,
+    paddingTop: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: '#1E293B',
-    backgroundColor: '#0F172A',
-    gap: 12,
+    borderTopColor: colors.border,
+    gap: spacing.md,
   },
-  navButton: {
+  fieldLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textMuted,
+  },
+  confidenceRow: { flexDirection: 'row', gap: spacing.sm },
+  confidenceButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: '#1E293B',
+    minHeight: TAP_TARGET,
     alignItems: 'center',
-  },
-  navButtonDisabled: {
-    opacity: 0.4,
-  },
-  navButtonPrimary: {
-    backgroundColor: '#3B82F6',
-  },
-  navButtonText: {
-    color: '#E2E8F0',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  navButtonPrimaryText: {
-    color: '#FFFFFF',
-  },
-  emptyContainer: {
-    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
-  emptyText: {
-    color: '#94A3B8',
-    fontSize: 16,
-    marginBottom: 16,
+  confidenceText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textMuted,
     textAlign: 'center',
   },
-  buttonPrimary: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
+
+  reviewCard: { gap: spacing.lg },
+  reviewHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  reviewIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  buttonPrimaryText: {
-    color: '#FFFFFF',
+  iconOk: { backgroundColor: colors.success },
+  iconBad: { backgroundColor: colors.danger },
+  reviewTitle: { fontSize: fontSize.xl, fontWeight: '700' },
+  okText: { color: colors.successText },
+  badText: { color: colors.dangerText },
+  reviewMeta: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: 1 },
+
+  correctAnswerBox: {
+    gap: spacing.xs,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.successSoftBorder,
+    backgroundColor: colors.successSoft,
+  },
+  correctAnswerText: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.successText,
+    lineHeight: 20,
+  },
+
+  section: { gap: spacing.sm },
+  explanationBox: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+  },
+
+  trickBox: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.warningSoftBorder,
+    backgroundColor: colors.warningSoft,
+  },
+  trickTitle: {
+    fontSize: fontSize.sm,
     fontWeight: '700',
+    color: colors.warningText,
+    marginBottom: 2,
   },
+  trickText: { fontSize: fontSize.sm, color: colors.warningText, lineHeight: 18 },
+
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+
+  footer: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  footerButton: { flex: 1 },
 });

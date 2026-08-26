@@ -1,14 +1,11 @@
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BarChart } from 'lucide-react-native';
 import { UserStats, MobileQuestion } from '../types';
 import { EXAM_REGISTRY } from '../data/examRegistry';
+import { colors, fontSize, spacing } from '../theme';
+import { BackLink, Badge, Card, PageHeading, ProgressBar, StatTile } from '../components/ui';
 
 interface AnalyticsScreenProps {
   stats: UserStats;
@@ -16,238 +13,105 @@ interface AnalyticsScreenProps {
   onBack: () => void;
 }
 
-export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
-  stats,
-  questions,
-  onBack
-}) => {
-  const totalPool = questions.length;
-  const coveragePct = totalPool > 0 ? Math.min(100, Math.round((stats.totalAnswered / totalPool) * 100)) : 0;
+const READY_THRESHOLD = 75;
 
-  // Breakdown by exam
-  const examCounts = EXAM_REGISTRY.map(exam => ({
+export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ stats, questions, onBack }) => {
+  const totalPool = questions.length;
+  const coveragePct =
+    totalPool > 0 ? Math.min(100, Math.round((stats.totalAnswered / totalPool) * 100)) : 0;
+  const ready = stats.accuracy >= READY_THRESHOLD;
+
+  const examCounts = EXAM_REGISTRY.map((exam) => ({
     exam,
-    count: questions.filter(q => q.exam === exam.matchExam).length,
+    count: questions.filter((q) => q.exam === exam.matchExam).length,
   }));
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={onBack} style={styles.iconButton}>
-          <Text style={styles.iconButtonText}>✕</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Cognitive Analytics</Text>
-        <View style={{ width: 36 }} />
-      </View>
+    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <BackLink label="Back to dashboard" onPress={onBack} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Readiness Meter */}
-        <View style={styles.heroCard}>
-          <Text style={styles.heroSub}>OVERALL EXAM READINESS</Text>
+        <PageHeading
+          icon={BarChart}
+          title="Analytics"
+          subtitle="Accuracy, coverage, and progress over time."
+        />
+
+        {/* Readiness */}
+        <Card style={styles.hero}>
+          <Text style={styles.heroLabel}>Overall readiness</Text>
           <Text style={styles.heroScore}>{stats.accuracy}%</Text>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${stats.accuracy}%` }]} />
-          </View>
-          <Text style={styles.heroNote}>
-            {stats.accuracy >= 75
-              ? '🟢 Ready for Certification. High probability of passing.'
-              : '🟡 Practice more domain mock tests to hit >75% consistency.'}
-          </Text>
+          <ProgressBar
+            value={stats.accuracy}
+            color={ready ? colors.successStrong : colors.warning}
+          />
+          <Badge
+            label={
+              ready
+                ? 'On track — accuracy is above the 75% target'
+                : 'Keep practising — aim for 75% accuracy'
+            }
+            tone={ready ? 'success' : 'warning'}
+          />
+        </Card>
+
+        <View style={styles.statRow}>
+          <StatTile value={stats.totalAnswered} label="Answered" />
+          <StatTile value={stats.totalCorrect} label="Correct" color={colors.successStrong} />
+        </View>
+        <View style={styles.statRow}>
+          <StatTile value={stats.bestStreak} label="Best streak" color={colors.warning} />
+          <StatTile value={`${coveragePct}%`} label="Coverage" color={colors.primary} />
         </View>
 
-        {/* 2x2 Metric Cards */}
-        <View style={styles.grid}>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Total Answered</Text>
-            <Text style={styles.metricValue}>{stats.totalAnswered}</Text>
-            <Text style={styles.metricSub}>questions completed</Text>
-          </View>
-
-          <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Correct Answers</Text>
-            <Text style={[styles.metricValue, { color: '#34D399' }]}>
-              {stats.totalCorrect}
-            </Text>
-            <Text style={styles.metricSub}>verified accurate</Text>
-          </View>
-
-          <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Best Streak</Text>
-            <Text style={[styles.metricValue, { color: '#F59E0B' }]}>
-              {stats.bestStreak} 🔥
-            </Text>
-            <Text style={styles.metricSub}>consecutive correct</Text>
-          </View>
-
-          <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Pool Coverage</Text>
-            <Text style={[styles.metricValue, { color: '#38BDF8' }]}>
-              {coveragePct}%
-            </Text>
-            <Text style={styles.metricSub}>of total bank seen</Text>
-          </View>
-        </View>
-
-        {/* Syllabus Distribution */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Question Bank Distribution</Text>
-
-          {examCounts.map(({ exam, count }, idx) => (
-            <React.Fragment key={exam.id}>
-              <View style={idx === 0 ? styles.distRow : [styles.distRow, { marginTop: 14 }]}>
-                <Text style={styles.distName}>{exam.name}</Text>
-                <Text style={styles.distCount}>{count} Questions</Text>
+        {/* Bank distribution */}
+        <Card style={styles.section}>
+          <Text style={styles.sectionTitle}>Question bank distribution</Text>
+          {examCounts.map(({ exam, count }) => (
+            <View key={exam.id} style={styles.distBlock}>
+              <View style={styles.distRow}>
+                <Text style={styles.distName} numberOfLines={1}>
+                  {exam.name}
+                </Text>
+                <Text style={styles.distCount}>{count}</Text>
               </View>
-              <View style={styles.distBar}>
-                <View style={[styles.distFill, { width: `${totalPool > 0 ? (count / totalPool) * 100 : 0}%`, backgroundColor: exam.color }]} />
-              </View>
-            </React.Fragment>
+              <ProgressBar
+                value={totalPool > 0 ? (count / totalPool) * 100 : 0}
+                color={exam.color}
+              />
+            </View>
           ))}
-        </View>
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0B0F17',
-  },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#1E293B',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconButtonText: {
-    color: '#F8FAFC',
-    fontSize: 16,
+  screen: { flex: 1, backgroundColor: colors.background },
+  scroll: { padding: spacing.lg, paddingBottom: spacing['3xl'], gap: spacing.lg },
+
+  hero: { gap: spacing.md, alignItems: 'flex-start' },
+  heroLabel: {
+    fontSize: fontSize['2xs'],
     fontWeight: '700',
-  },
-  title: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 30,
-  },
-  heroCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#334155',
-    marginBottom: 16,
-  },
-  heroSub: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#38BDF8',
-    letterSpacing: 1,
-    marginBottom: 4,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: colors.textMuted,
   },
   heroScore: {
-    fontSize: 40,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    marginBottom: 12,
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: '#334155',
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#38BDF8',
-    borderRadius: 4,
-  },
-  heroNote: {
-    color: '#CBD5E1',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 16,
-  },
-  metricCard: {
-    width: '48%',
-    backgroundColor: '#1E293B',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  metricLabel: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontWeight: '600',
-    marginBottom: 6,
-  },
-  metricValue: {
-    fontSize: 22,
+    fontSize: 44,
     fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 2,
+    color: colors.textHeading,
+    letterSpacing: -1,
   },
-  metricSub: {
-    color: '#64748B',
-    fontSize: 10,
-  },
-  sectionCard: {
-    backgroundColor: '#1E293B',
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  sectionTitle: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 14,
-  },
-  distRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  distName: {
-    color: '#E2E8F0',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  distCount: {
-    color: '#94A3B8',
-    fontSize: 12,
-  },
-  distBar: {
-    height: 6,
-    backgroundColor: '#334155',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  distFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
+
+  statRow: { flexDirection: 'row', gap: spacing.md },
+
+  section: { gap: spacing.lg },
+  sectionTitle: { fontSize: fontSize.base, fontWeight: '700', color: colors.textPrimary },
+  distBlock: { gap: spacing.sm },
+  distRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
+  distName: { flex: 1, fontSize: fontSize.base, color: colors.textBody },
+  distCount: { fontSize: fontSize.sm, fontWeight: '700', color: colors.textMuted },
 });

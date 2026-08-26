@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  SafeAreaView
-} from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ArrowLeft, ArrowRight, HelpCircle, Lightbulb, RotateCcw, X } from 'lucide-react-native';
 import { MobileQuestion } from '../types';
+import { colors, fontSize, radius, spacing, TAP_TARGET } from '../theme';
+import { Badge, Button, Card, EmptyState, ProgressBar } from '../components/ui';
+import RichText from '../components/RichText';
 
 interface FlashcardScreenProps {
   questions: MobileQuestion[];
@@ -17,273 +16,178 @@ export const FlashcardScreen: React.FC<FlashcardScreenProps> = ({ questions, onB
   const [index, setIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
-  const trickQuestions = questions.filter(q => !!q.examTrick);
+  const cards = useMemo(() => questions.filter((q) => !!q.examTrick), [questions]);
 
-  if (trickQuestions.length === 0) {
+  if (cards.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No flashcards found in this question set.</Text>
-          <TouchableOpacity style={styles.button} onPress={onBack}>
-            <Text style={styles.buttonText}>Return Home</Text>
-          </TouchableOpacity>
+      <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+        <View style={styles.emptyWrap}>
+          <EmptyState
+            icon={HelpCircle}
+            title="No flashcards here"
+            message="Flashcards are built from questions that carry an exam tip. Try another exam track."
+          />
+          <Button label="Back to dashboard" onPress={onBack} />
         </View>
       </SafeAreaView>
     );
   }
 
-  const current = trickQuestions[index];
+  const current = cards[index];
 
-  const handleNext = () => {
+  const step = (delta: number) => {
     setIsFlipped(false);
-    if (index < trickQuestions.length - 1) {
-      setIndex(index + 1);
-    } else {
-      setIndex(0);
-    }
-  };
-
-  const handlePrev = () => {
-    setIsFlipped(false);
-    if (index > 0) {
-      setIndex(index - 1);
-    }
+    setIndex((i) => (i + delta + cards.length) % cards.length);
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={onBack} style={styles.iconButton}>
-          <Text style={styles.iconButtonText}>✕</Text>
-        </TouchableOpacity>
-        <Text style={styles.counterText}>
-          Flashcard {index + 1} of {trickQuestions.length}
-        </Text>
-        <View style={{ width: 36 }} />
+        <Pressable onPress={onBack} hitSlop={8} style={styles.iconButton}>
+          <X size={18} color={colors.textFaint} />
+        </Pressable>
+        <View style={styles.topBarCenter}>
+          <Text style={styles.counter}>
+            Card <Text style={styles.counterStrong}>{index + 1}</Text> of {cards.length}
+          </Text>
+        </View>
+        <View style={styles.iconButton} />
+      </View>
+      <View style={styles.progressWrap}>
+        <ProgressBar value={((index + 1) / cards.length) * 100} />
       </View>
 
-      <View style={styles.cardWrapper}>
-        <TouchableOpacity
-          style={[styles.card, isFlipped ? styles.cardBack : styles.cardFront]}
-          onPress={() => setIsFlipped(!isFlipped)}
-          activeOpacity={0.9}
-        >
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardBadge}>
-              {isFlipped ? '💡 EXAM TRICK & SOLUTION' : '❓ CONCEPT & QUESTION'}
-            </Text>
-            <Text style={styles.cardSubject}>{current.subject || current.exam}</Text>
-          </View>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Pressable onPress={() => setIsFlipped((f) => !f)}>
+          <Card tone={isFlipped ? 'warning' : 'default'} style={styles.card}>
+            <View style={styles.cardHead}>
+              <Badge
+                label={isFlipped ? 'Exam tip' : 'Question'}
+                tone={isFlipped ? 'warning' : 'primary'}
+                icon={isFlipped ? Lightbulb : HelpCircle}
+              />
+              {!!(current.subject || current.exam) && (
+                <Text style={styles.cardMeta} numberOfLines={1}>
+                  {current.subject || current.exam}
+                </Text>
+              )}
+            </View>
 
-          <View style={styles.cardBody}>
             {!isFlipped ? (
-              <Text style={styles.questionPrompt}>{current.question}</Text>
+              <RichText inline style={styles.prompt}>
+                {current.question}
+              </RichText>
             ) : (
-              <View>
-                <View style={styles.trickHighlight}>
-                  <Text style={styles.trickHighlightLabel}>⚡ 30-Second Shortcut</Text>
-                  <Text style={styles.trickHighlightText}>{current.examTrick}</Text>
+              <View style={styles.backFace}>
+                <View style={styles.tipBox}>
+                  <RichText style={styles.tipText}>{current.examTrick}</RichText>
                 </View>
-                <Text style={styles.solutionText}>{current.explanation}</Text>
+                <View style={styles.section}>
+                  <Text style={styles.fieldLabel}>Explanation</Text>
+                  <RichText>{current.explanation}</RichText>
+                </View>
               </View>
             )}
-          </View>
 
-          <View style={styles.cardFooter}>
-            <Text style={styles.tapPrompt}>
-              Tap card to {isFlipped ? 'flip back to question' : 'reveal 30-sec trick'} ↻
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
+            <View style={styles.tapHint}>
+              <RotateCcw size={13} color={colors.textMuted} />
+              <Text style={styles.tapHintText}>
+                Tap to {isFlipped ? 'see the question' : 'reveal the tip'}
+              </Text>
+            </View>
+          </Card>
+        </Pressable>
+      </ScrollView>
 
-      {/* Control Buttons */}
-      <View style={styles.footerBar}>
-        <TouchableOpacity
-          style={[styles.actionBtn, index === 0 && styles.actionBtnDisabled]}
-          onPress={handlePrev}
-          disabled={index === 0}
-        >
-          <Text style={styles.actionBtnText}>← Previous</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.actionBtnPrimary]}
-          onPress={handleNext}
-        >
-          <Text style={[styles.actionBtnText, styles.actionBtnPrimaryText]}>
-            Next Card →
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.footer}>
+        <Button
+          label="Previous"
+          icon={ArrowLeft}
+          variant="secondary"
+          onPress={() => step(-1)}
+          style={styles.footerButton}
+        />
+        <Button label="Next" icon={ArrowRight} onPress={() => step(1)} style={styles.footerButton} />
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0B0F17',
-  },
+  screen: { flex: 1, backgroundColor: colors.background },
+  emptyWrap: { flex: 1, justifyContent: 'center', padding: spacing.lg, gap: spacing.lg },
+
   topBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surface,
   },
+  topBarCenter: { alignItems: 'center' },
   iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#1E293B',
-    justifyContent: 'center',
+    width: TAP_TARGET,
+    height: TAP_TARGET,
     alignItems: 'center',
-  },
-  iconButtonText: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  counterText: {
-    color: '#94A3B8',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  cardWrapper: {
-    flex: 1,
-    padding: 20,
     justifyContent: 'center',
   },
-  card: {
-    minHeight: 380,
-    borderRadius: 20,
-    padding: 24,
-    justifyContent: 'space-between',
-    borderWidth: 1,
-  },
-  cardFront: {
-    backgroundColor: '#1E293B',
-    borderColor: '#334155',
-  },
-  cardBack: {
-    backgroundColor: '#172554',
-    borderColor: '#3B82F6',
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  counter: { fontSize: fontSize.base, color: colors.textFaint },
+  counterStrong: { color: colors.textPrimary, fontWeight: '700' },
+  progressWrap: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    paddingBottom: 12,
+    borderBottomColor: colors.border,
   },
-  cardBadge: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#38BDF8',
-    letterSpacing: 0.8,
+
+  scroll: { padding: spacing.lg, paddingBottom: spacing['3xl'] },
+  card: { gap: spacing.lg, minHeight: 320 },
+  cardHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
   },
-  cardSubject: {
-    fontSize: 12,
-    color: '#94A3B8',
-    fontWeight: '600',
-  },
-  cardBody: {
-    flex: 1,
-    justifyContent: 'center',
-    marginVertical: 16,
-  },
-  questionPrompt: {
-    fontSize: 18,
+  cardMeta: { flex: 1, textAlign: 'right', fontSize: fontSize.xs, color: colors.textMuted },
+
+  prompt: {
+    fontSize: fontSize.xl,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     lineHeight: 26,
   },
-  trickHighlight: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderLeftWidth: 3,
-    borderLeftColor: '#F59E0B',
-    padding: 14,
-    borderRadius: 8,
-    marginBottom: 14,
+
+  backFace: { gap: spacing.lg },
+  tipBox: {
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.warningSoftBorder,
+    backgroundColor: colors.surface,
   },
-  trickHighlightLabel: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#FBBF24',
-    marginBottom: 4,
-  },
-  trickHighlightText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FEF3C7',
-    lineHeight: 20,
-  },
-  solutionText: {
-    fontSize: 13,
-    color: '#E2E8F0',
-    lineHeight: 20,
-  },
-  cardFooter: {
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-    paddingTop: 12,
-  },
-  tapPrompt: {
-    fontSize: 12,
-    color: '#94A3B8',
-    fontWeight: '600',
-  },
-  footerBar: {
+  tipText: { fontSize: fontSize.md, color: colors.warningText, lineHeight: 21, fontWeight: '600' },
+  section: { gap: spacing.sm },
+  fieldLabel: { fontSize: fontSize.sm, fontWeight: '600', color: colors.textMuted },
+
+  tapHint: {
     flexDirection: 'row',
-    padding: 16,
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#1E293B',
-  },
-  actionBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#1E293B',
     alignItems: 'center',
-  },
-  actionBtnDisabled: {
-    opacity: 0.4,
-  },
-  actionBtnPrimary: {
-    backgroundColor: '#6366F1',
-  },
-  actionBtnText: {
-    color: '#E2E8F0',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  actionBtnPrimaryText: {
-    color: '#FFFFFF',
-  },
-  emptyContainer: {
-    flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
+    gap: spacing.sm,
+    marginTop: 'auto',
+    paddingTop: spacing.md,
   },
-  emptyText: {
-    color: '#94A3B8',
-    fontSize: 16,
-    marginBottom: 16,
+  tapHintText: { fontSize: fontSize.sm, color: colors.textMuted },
+
+  footer: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.surface,
   },
-  button: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
+  footerButton: { flex: 1 },
 });
