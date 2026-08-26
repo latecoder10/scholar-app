@@ -1,0 +1,383 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.15 Commands, CLI Flags & Diagnostics",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "NEW TOPIC. The diagnostic commands and what each actually answers, bundled skills, CLI flags and their scopes, and choosing the right tool to investigate a configuration problem. Grounded in official Claude Code documentation across memory, settings, context, sessions, costs, MCP, and plugins.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Claude is ignoring an instruction you believe is in CLAUDE.md. Which command tells you whether the file actually loaded into this session?",
+      "options": [
+        "/context — check the list under Memory files.",
+        "/memory — it lists file locations across user and project scopes.",
+        "/doctor — it runs a configuration checkup.",
+        "/status — it shows which managed source applies."
+      ],
+      "answer": "/context — check the list under Memory files.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: troubleshoot memory issues",
+      "explanation": "'Run /context and check the list under Memory files to verify your CLAUDE.md and CLAUDE.local.md files loaded. If a file is missing there, Claude can't see it.' The docs draw the contrast explicitly: /memory lists locations 'including user and project CLAUDE.md entries for files that don't exist yet', but 'To check which files actually loaded into the current session, run /context.'\n\n**Why the others are wrong**\n\n- **B.** /memory answers 'where could files be', not 'what loaded'.\n- **C.** /doctor runs a checkup and proposes trims for a checked-in CLAUDE.md.\n- **D.** /status surfaces the applicable managed settings source.\n\nThe general diagnostic instinct: separate 'what is configured' from 'what actually loaded'. Most configuration confusion lives in that gap.",
+      "examTrick": "/context = what LOADED. /memory = where files could be. The gap between them is where most confusion lives.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "/context", "/memory", "Configured vs Loaded"]
+    },
+    {
+      "id": 2,
+      "question": "Which command shows how many tokens each loaded MCP tool is consuming?",
+      "options": [
+        "/context all",
+        "/mcp",
+        "/usage",
+        "/insights"
+      ],
+      "answer": "/context all",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — MCP: context cost",
+      "explanation": "'Run /mcp to see each server's connection status. Run /context all to see how many tokens each loaded MCP tool uses.'\n\n**Why the others are wrong**\n\n- **B.** /mcp shows connection status per server and lets you authenticate or disconnect.\n- **C.** /usage shows session token statistics and, on paid plans, attribution by skill, subagent, plugin, and MCP server as percentages — useful but at a different granularity.\n- **D.** /insights reports on how you work rather than token counts.\n\nThe three tools answer three different questions: /mcp is 'is it connected', /context all is 'what is it costing right now', /usage is 'what share of recent usage did it account for'.",
+      "examTrick": "/mcp = connected? /context all = per-tool tokens now. /usage = share of recent usage.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/context all", "/mcp", "Diagnostic Granularity"]
+    },
+    {
+      "id": 3,
+      "question": "What does /doctor do for a checked-in CLAUDE.md?",
+      "options": [
+        "It proposes trims — cutting content Claude can derive from the codebase such as directory layouts, dependency lists, and architecture overviews, while keeping pitfalls, rationale, and conventions that differ from tool defaults.",
+        "It rewrites the file automatically to fit 200 lines.",
+        "It validates the file's markdown syntax.",
+        "It reports which instructions Claude followed during the session."
+      ],
+      "answer": "It proposes trims — cutting content Claude can derive from the codebase such as directory layouts, dependency lists, and architecture overviews, while keeping pitfalls, rationale, and conventions that differ from tool defaults.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Memory: my CLAUDE.md is too large",
+      "explanation": "'The /doctor checkup proposes trims for a checked-in CLAUDE.md: it cuts content Claude can derive from the codebase, such as directory layouts, dependency lists, and architecture overviews, and keeps pitfalls, rationale, and conventions that differ from tool defaults.'\n\n**Why the others are wrong**\n\n- **B.** It proposes rather than rewrites.\n- **C.** Markdown validity is not the concern.\n- **D.** Per-instruction adherence is not reported; the InstructionsLoaded hook logs which files load.\n\nWhat it keeps versus cuts encodes the whole CLAUDE.md philosophy: derivable facts are waste, while non-obvious pitfalls and deviations from defaults are exactly what Claude cannot infer.",
+      "examTrick": "/doctor cuts what Claude can DERIVE and keeps what it cannot infer: pitfalls, rationale, deviations from defaults.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/doctor", "Trim Philosophy", "Derivable Content"]
+    },
+    {
+      "id": 4,
+      "question": "Which bundled skill reviews the current diff for bugs in a fresh subagent context?",
+      "options": [
+        "/code-review",
+        "/verify",
+        "/debug",
+        "/insights"
+      ],
+      "answer": "/code-review",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: add an adversarial review step",
+      "explanation": "'For a correctness check, run the bundled /code-review skill, which reviews the current diff for bugs in a fresh subagent and returns findings to the session.'\n\n**Why the others are wrong**\n\n- **B.** /verify builds and runs your app 'to confirm a code change does what it should, without falling back to tests or type checks'.\n- **C.** /debug is a bundled skill for debugging.\n- **D.** /insights analyses your working patterns.\n\nOne caveat from the skills documentation: a project skill named code-review 'replaces the bundled /code-review, and typing the bundled alias /review never runs your skill' — so a teammate typing the alias would silently get different behaviour.",
+      "examTrick": "/code-review = diff correctness in a fresh subagent. Overriding it does NOT capture its /review alias.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/code-review", "Bundled Skills", "Alias Behaviour"]
+    },
+    {
+      "id": 5,
+      "question": "Which pair of bundled skills records a per-project recipe for building and launching your app?",
+      "options": [
+        "/run-skill-generator records the recipe as .claude/skills/run-<name>/, and /verify can record its own at .claude/skills/verify/SKILL.md.",
+        "/init and /doctor.",
+        "/debug and /code-review.",
+        "/batch and /loop."
+      ],
+      "answer": "/run-skill-generator records the recipe as .claude/skills/run-<name>/, and /verify can record its own at .claude/skills/verify/SKILL.md.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: bundled skills",
+      "explanation": "'/run-skill-generator records the recipe instead. It gets your app running from a clean environment, captures what worked (the install commands, the env vars, the launch script), and commits it as a per-project skill at .claude/skills/run-<name>/. After that, /run, /verify, and any other agent in the repo follow the recorded recipe instead of rediscovering it.' And: '/verify can also record its own recipe... it writes what worked to .claude/skills/verify/SKILL.md at the repo root, or in the touched package directory in a monorepo... At the repo root, the recorded skill replaces the bundled /verify.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None records a launch recipe.\n\nThe pattern is a feedback loop over your own configuration: discover once, record as a skill, and every later run and every other agent reuses it instead of re-deriving.",
+      "examTrick": "Discover once, record as a skill, reuse forever. /run-skill-generator and /verify both write recipes to disk.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/run-skill-generator", "/verify", "Recorded Recipes"]
+    },
+    {
+      "id": 6,
+      "question": "Which command asks a side question whose answer never enters conversation history?",
+      "options": [
+        "/btw",
+        "/compact",
+        "/clear",
+        "/subtask"
+      ],
+      "answer": "/btw",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: manage context aggressively",
+      "explanation": "'For questions that don't need to stay in context, use /btw. The answer never enters conversation history, so you can check a detail without growing context.'\n\n**Why the others are wrong**\n\n- **B.** /compact summarizes what is already present.\n- **C.** /clear resets the whole context.\n- **D.** /subtask creates a fork, which inherits the parent conversation and returns its result as a message.\n\nThe three isolation mechanisms differ in what returns: /btw returns an answer that is not retained, a subagent returns a summary into your context, and a fork inherits everything and returns a message. Choose by whether the RESULT should persist.",
+      "examTrick": "/btw = answer not retained. Subagent = summary returns. Fork = inherits everything. Choose by what should persist.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/btw", "Isolation Choices", "Result Persistence"]
+    },
+    {
+      "id": 7,
+      "question": "Which command splits a change across 5 to 30 subagents, each in its own worktree opening a pull request?",
+      "options": [
+        "/batch <instruction>, available in a git repository.",
+        "/loop <instruction>.",
+        "/workflows.",
+        "/deep-research."
+      ],
+      "answer": "/batch <instruction>, available in a git repository.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Best practices: fan out across files",
+      "explanation": "'In a git repository, run /batch <instruction> to have Claude split the change across 5 to 30 subagents. Each subagent works in its own worktree and opens a pull request.'\n\n**Why the others are wrong**\n\n- **B.** /loop runs a prompt repeatedly on an interval.\n- **C.** /workflows lists and manages dynamic workflow runs rather than starting one from an instruction.\n- **D.** /deep-research is the bundled research workflow.\n\nThe distinction from a dynamic workflow is worth holding: /batch fans one change across worktrees with a PR each, while a workflow runs a script Claude wrote that orchestrates dozens to hundreds of agents and returns one result.",
+      "examTrick": "/batch = 5-30 subagents, worktree each, PR each. Workflow = a script, one result. Different shapes of fan-out.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/batch", "Fan-Out Shapes", "Worktrees"]
+    },
+    {
+      "id": 8,
+      "question": "Which command relocates a session to a different directory's project storage?",
+      "options": [
+        "/cd — from v2.1.169 it relocates the session so it appears in the new directory's picker afterward.",
+        "/add-dir, which moves the working directory.",
+        "/branch, which creates a copy in the new location.",
+        "/resume, which re-anchors the session on selection."
+      ],
+      "answer": "/cd — from v2.1.169 it relocates the session so it appears in the new directory's picker afterward.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: where the session picker looks",
+      "explanation": "'From v2.1.169, moving a session with /cd relocates it to the new directory's project storage, so it appears in that directory's picker afterward. As of v2.1.196, a moved session stays out of the old directory's picker even after a crash or forced exit.'\n\n**Why the others are wrong**\n\n- **B.** /add-dir grants access to an additional directory; it does not move the session. Sessions that added a directory that way do appear in that directory's picker.\n- **C.** /branch copies the conversation and switches the process into it, within the same storage.\n- **D.** /resume selects an existing session.\n\nThe cross-project resume lookup handles moved sessions too: claude --resume <session-id> 'looks for the ID in the current project directory and its git worktrees first, then in every other project on this machine, so it finds a session that started elsewhere or moved with /cd.'",
+      "examTrick": "/cd MOVES a session's storage. --resume <id> searches across projects, so a moved session is still findable.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/cd", "Session Relocation", "Cross-Project Lookup"]
+    },
+    {
+      "id": 9,
+      "question": "How do you set a verification condition that a separate evaluator re-checks after every turn?",
+      "options": [
+        "Set it as a /goal condition — Claude keeps working until the goal resolves, and if it stalls Claude Code eventually stops the run with the goal still set.",
+        "Set it as a PostToolUse hook.",
+        "State it in CLAUDE.md as an always-on rule.",
+        "Pass it with --append-system-prompt."
+      ],
+      "answer": "Set it as a /goal condition — Claude keeps working until the goal resolves, and if it stalls Claude Code eventually stops the run with the goal still set.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Best practices: how hard the check gates the stop",
+      "explanation": "'Across a session: set the check as a /goal condition. A separate evaluator re-checks it after every turn and Claude keeps working until the goal resolves. If Claude stalls, Claude Code eventually stops the run with the goal still set.'\n\n**Why the others are wrong**\n\n- **B.** PostToolUse fires per tool call and cannot gate the turn ending — the Stop hook is the deterministic gate.\n- **C.** CLAUDE.md is advisory and has no evaluator.\n- **D.** A system prompt addition is also advisory.\n\n/goal sits in the middle of the gating ladder: a prompt instruction is weakest, /goal re-checks every turn, and a Stop hook blocks the turn from ending (until it gives up after 8 consecutive blocks). Two cost notes: a goal survives session resume with its counters reset, and idle goal check-ins send your full context, controllable with CLAUDE_CODE_GOAL_CHECKIN_MINUTES.",
+      "examTrick": "Gating ladder: prompt < /goal (re-checked per turn) < Stop hook (blocks the turn, 8-block cap).",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/goal", "Gating Ladder", "Idle Check-In Cost"]
+    },
+    {
+      "id": 10,
+      "question": "Which command brings another coding agent's configuration into Claude Code, including MCP servers, commands, subagents, and skills?",
+      "options": [
+        "/import, which appends a one-time copy of instruction files such as AGENTS.md to the matching CLAUDE.md and carries over the other components.",
+        "/init, which reads other agents' rule files and generates a CLAUDE.md.",
+        "/config, which merges external configuration.",
+        "/plugin, which installs the other agent as a plugin."
+      ],
+      "answer": "/import, which appends a one-time copy of instruction files such as AGENTS.md to the matching CLAUDE.md and carries over the other components.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Memory: AGENTS.md",
+      "explanation": "'You can also run /import to bring a supported coding agent's configuration into Claude Code, which appends a one-time copy of instruction files such as AGENTS.md to the matching CLAUDE.md and carries over MCP servers, commands, subagents, and skills. Requires Claude Code v2.1.213 or later.'\n\n**Why the others are wrong**\n\n- **B.** /init generates a starting CLAUDE.md and does read Cursor and Copilot rules — and with CLAUDE_CODE_NEW_INIT=1 also AGENTS.md, .devin/rules/, .windsurf/rules/, and .clinerules — but it does not carry over MCP servers or subagents.\n- **C, D.** Neither is documented for this.\n\nNote the word 'one-time': /import COPIES, so later changes to AGENTS.md do not propagate. For an ongoing link, the documented alternative is a CLAUDE.md containing @AGENTS.md, which re-reads the file every session.",
+      "examTrick": "/import = one-time COPY of another agent's config. @AGENTS.md = a living link that re-reads every session.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/import", "One-Time vs Living", "Interoperability"]
+    },
+    {
+      "id": 11,
+      "question": "Which flag set makes a headless run reproducible across machines?",
+      "options": [
+        "--bare plus explicitly passed --settings, --mcp-config, --agents, --plugin-dir, and --append-system-prompt.",
+        "--verbose plus --output-format json.",
+        "--permission-mode dontAsk plus --allowedTools.",
+        "--no-session-persistence plus --continue."
+      ],
+      "answer": "--bare plus explicitly passed --settings, --mcp-config, --agents, --plugin-dir, and --append-system-prompt.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode: start faster with bare mode",
+      "explanation": "'Bare mode is useful for CI and scripts where you need the same result on every machine. A hook in a teammate's ~/.claude or an MCP server in the project's .mcp.json won't run, because bare mode never reads them.' The 'To load / Use' table then lists the flags for supplying each piece explicitly.\n\n**Why the others are wrong**\n\n- **B.** Output formatting does not affect what configuration loads.\n- **C.** That is the permission posture for CI — important, but orthogonal to reproducibility.\n- **D.** Session persistence is unrelated.\n\nReproducibility comes from making configuration EXPLICIT rather than ambient. Note also that bare mode 'never reads OAuth credentials or the system keychain', so ANTHROPIC_API_KEY must be set.",
+      "examTrick": "Reproducibility = --bare + explicit flags. Ambient configuration is what makes runs differ between machines.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "--bare", "Explicit Configuration", "CI Reproducibility"]
+    },
+    {
+      "id": 12,
+      "question": "Which flag suppresses transcript writes for a single non-interactive run, and which suppresses them in all modes?",
+      "options": [
+        "--no-session-persistence for one -p run; CLAUDE_CODE_SKIP_PROMPT_HISTORY as an environment variable for all modes.",
+        "--no-transcript for one run; cleanupPeriodDays: 0 for all modes.",
+        "--bare for one run; sandbox.enabled for all modes.",
+        "--ephemeral for one run; CLAUDE_CONFIG_DIR for all modes."
+      ],
+      "answer": "--no-session-persistence for one -p run; CLAUDE_CODE_SKIP_PROMPT_HISTORY as an environment variable for all modes.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: where transcripts are stored",
+      "explanation": "The configuration table lists 'Suppress transcript writes in all modes → CLAUDE_CODE_SKIP_PROMPT_HISTORY → Environment variable' and 'Suppress writes for one non-interactive run → --no-session-persistence → CLI flag with claude -p'. The same table covers CLAUDE_CONFIG_DIR to move storage off ~/.claude, CLAUDE_CODE_PROJECT_DIR_NAME to name the project directory, and cleanupPeriodDays to change the 30-day retention.\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches; cleanupPeriodDays controls retention rather than whether writes happen, and CLAUDE_CONFIG_DIR relocates storage rather than disabling it.\n\nNote the interaction: '-p runs still create a resumable session unless you pass --no-session-persistence', which is why -p and SDK sessions are resumable by ID even though they are excluded from the picker.",
+      "examTrick": "--no-session-persistence = one -p run. CLAUDE_CODE_SKIP_PROMPT_HISTORY = all modes. Retention is a separate knob.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Transcript Suppression", "Privacy Flags", "Retention vs Writes"]
+    },
+    {
+      "id": 13,
+      "question": "How do you change a setting from within a -p invocation?",
+      "options": [
+        "Pass key=value to /config in the prompt, for example /config thinking=false.",
+        "Use --set key=value.",
+        "It is not possible; settings must be edited in a file.",
+        "Use --settings with a JSON fragment, which is the only route."
+      ],
+      "answer": "Pass key=value to /config in the prompt, for example /config thinking=false.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Non-interactive mode",
+      "explanation": "'To change a setting from a -p invocation, pass key=value to /config, for example /config thinking=false.' The same note covers other commands that accept a value as an argument in -p: '/model, /effort, /fast, /color, and /rename accept the value as an argument, for example /model sonnet, and /mcp with no argument prints a text summary of server status.'\n\n**Why the others are wrong**\n\n- **B.** Not a documented flag.\n- **C.** It is possible via /config.\n- **D.** --settings works too — 'Settings via --settings <file-or-json>' — so calling it the ONLY route is what makes this option wrong.\n\nThe general point: user-invoked skills and commands work inside a -p prompt string because 'Claude Code expands it before running'. Only terminal-interface built-ins such as /login are unavailable.",
+      "examTrick": "Slash commands work inside a -p prompt string. /config key=value changes a setting; only terminal-only built-ins are excluded.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/config in -p", "Command Arguments", "Headless Commands"]
+    },
+    {
+      "id": 14,
+      "question": "Which command lets you inspect and stop a running dynamic workflow?",
+      "options": [
+        "/workflows — select a run to open its progress view, where p pauses or resumes, x stops an agent or the whole run, r restarts a running agent, and s saves the script as a command.",
+        "/agents, which lists all running agents.",
+        "/tasks, which shows background work.",
+        "/context, which shows what each agent is consuming."
+      ],
+      "answer": "/workflows — select a run to open its progress view, where p pauses or resumes, x stops an agent or the whole run, r restarts a running agent, and s saves the script as a command.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Workflows: watch the run",
+      "explanation": "'Run /workflows at any time to list running and completed workflows, then select one to open its progress view. The progress view shows each phase with its agent counts, token totals, and elapsed time.' The key table lists Enter or → to drill in, Esc or ← to back out, j/k to scroll, f to filter by status, p to pause or resume, x to stop, and r to restart a running agent.\n\n**Why the others are wrong**\n\n- **B, C.** Neither is the documented workflow view. (Progress also appears in the task panel below the input box, expandable with the down arrow then Enter.)\n- **D.** /context reports the main session's context usage, not per-agent workflow progress.\n\nThis is also where the cost signals appear: per-agent token usage as the run progresses, and the 'Large workflow' warning pointing you here to stop a run.",
+      "examTrick": "/workflows is the control surface: p pause, x stop, r restart, s save, f filter. Cost signals appear here too.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/workflows", "Run Control", "Cost Visibility"]
+    },
+    {
+      "id": 15,
+      "question": "A hook seems to work when you run its script by hand, but Claude never reacts to its output. What is the most likely cause?",
+      "options": [
+        "The script writes to stdout and exits 0 — plain stdout on exit 0 goes to the debug log, not the transcript; use additionalContext JSON or exit 2 with stderr.",
+        "The matcher is a glob, which hooks do not support.",
+        "Hooks cannot return output to Claude at all.",
+        "The hook needs a timeout value to deliver output."
+      ],
+      "answer": "The script writes to stdout and exits 0 — plain stdout on exit 0 goes to the debug log, not the transcript; use additionalContext JSON or exit 2 with stderr.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: hooks",
+      "explanation": "'Output reaches Claude via additionalContext JSON. Exit code 2 surfaces stderr to Claude. Plain stdout on exit 0 goes to the debug log, not the transcript.'\n\n**Why the others are wrong**\n\n- **B.** Matchers are exact strings or REGEX (not globs) — a real gotcha, but it would stop the hook firing at all rather than producing invisible output.\n- **C.** Hook output does reach Claude; a linting PostToolUse hook depends on it.\n- **D.** timeout bounds execution, not delivery.\n\nThe diagnostic path: '/hooks to browse what's configured', and 'Claude Code records which hooks matched, their exit codes, and their output in the debug log' viewable with claude --debug. SessionStart is the documented exception where plain stdout text is added to context before the first prompt.",
+      "examTrick": "Hook runs but Claude ignores it? Plain stdout + exit 0 goes to the DEBUG LOG. Use additionalContext or exit 2.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Hook Debugging", "Output Channels", "--debug"]
+    },
+    {
+      "id": 16,
+      "question": "Which flag lets you inspect the plan or a workflow script in your editor before it runs?",
+      "options": [
+        "Ctrl+G — it opens the plan in your text editor in plan mode, and opens the script from a workflow's approval prompt.",
+        "Ctrl+E, which opens the last file Claude edited.",
+        "Ctrl+R, which opens the run configuration.",
+        "Shift+Tab, which cycles to an editing mode."
+      ],
+      "answer": "Ctrl+G — it opens the plan in your text editor in plan mode, and opens the script from a workflow's approval prompt.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: plan; Workflows: approve the plan before it runs",
+      "explanation": "In plan mode: 'Press Ctrl+G to open the plan in your text editor for direct editing before Claude proceeds.' In the workflow launch prompt: 'Ctrl+G opens the script in your editor. Tab lets you adjust the prompt before the run starts.'\n\n**Why the others are wrong**\n\n- **B.** Not documented.\n- **C.** Ctrl+R renames the highlighted session in the session picker.\n- **D.** Shift+Tab cycles permission modes.\n\nThe consistent affordance is worth noting: before a consequential automated action, Claude Code offers to show you the artifact — the plan or the script — in your own editor. Reviewing the plan is cheaper than reviewing the diff it produces.",
+      "examTrick": "Ctrl+G inspects the artifact before it runs — plan or workflow script. Review the plan, not just the diff.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Ctrl+G", "Pre-Execution Review", "Consistent Affordance"]
+    },
+    {
+      "id": 17,
+      "question": "Which command reduces prompts safely by enabling OS-level isolation rather than loosening the permission mode?",
+      "options": [
+        "/sandbox, selecting auto-allow on the Mode tab.",
+        "/permissions, adding broad allow rules.",
+        "/config, setting defaultMode to bypassPermissions.",
+        "/hooks, adding an allow-everything PreToolUse hook."
+      ],
+      "answer": "/sandbox, selecting auto-allow on the Mode tab.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes: choose a mode; Sandboxing",
+      "explanation": "The mode-selection table: 'Iterate locally with fewer prompts, without a classifier → Manual mode plus the Bash sandbox in auto-allow mode: claude --permission-mode default, then run /sandbox and select auto-allow.' Deny rules still apply, and ask rules naming a command still prompt.\n\n**Why the others are wrong**\n\n- **B.** Broad allow rules remove the prompt AND the boundary.\n- **C.** bypassPermissions is documented for 'Isolated containers and VMs only'.\n- **D.** A blanket-allow hook is the same mistake expressed programmatically.\n\nThe principle: get safety from ISOLATION, not from asking. The prompt is a proxy for a boundary; the sandbox is the boundary itself, so you can drop the proxy without dropping the protection.",
+      "examTrick": "Fewer prompts safely = isolation, not looser rules. The prompt is a proxy; the sandbox is the actual boundary.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/sandbox", "Isolation over Prompting", "Safe Convenience"]
+    },
+    {
+      "id": 18,
+      "question": "Which command controls how full the context window gets before automatic compaction runs?",
+      "options": [
+        "/autocompact with a token count, such as /autocompact 500k.",
+        "/compact with a token count.",
+        "/context set, with a threshold.",
+        "/config compactAt=500k."
+      ],
+      "answer": "/autocompact with a token count, such as /autocompact 500k.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Context window: when your context fills up",
+      "explanation": "'Compact earlier: run /autocompact with a token count, like /autocompact 500k, to set how full the context window gets before the automatic pass runs.'\n\n**Why the others are wrong**\n\n- **B.** /compact runs one pass now, optionally with focus instructions such as '/compact Focus on the API changes'.\n- **C, D.** Neither is documented.\n\nWhy compact earlier: performance degrades as context fills, so compacting before the ceiling can produce better output than running right up against it. And a cost note that argues the other way — '/compact reads the conversation it summarizes, so compacting a large context is itself a large request', while '/clear costs nothing'. Compact earlier for quality; clear instead when you do not need continuity.",
+      "examTrick": "/autocompact sets the THRESHOLD; /compact runs one pass NOW; /clear is free. Three different operations.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/autocompact", "Threshold vs Action", "Quality vs Cost"]
+    },
+    {
+      "id": 19,
+      "question": "You want a status line that continuously shows context usage. What does the documentation point to?",
+      "options": [
+        "A custom status line, which can display context window usage and receives data including transcript_path and session_name.",
+        "/usage, which must be re-run manually.",
+        "/context, which refreshes automatically once opened.",
+        "The task panel below the input box."
+      ],
+      "answer": "A custom status line, which can display context window usage and receives data including transcript_path and session_name.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Costs: manage context proactively; Sessions",
+      "explanation": "'Use /usage to check your current token usage, or configure your status line to display it continuously.' The best-practices guidance says the same: 'Track context usage continuously with a custom status line.' Status line commands receive input data including the transcript_path field that hooks also get, and a session_name field that shows the AI-generated session title when no name is set.\n\n**Why the others are wrong**\n\n- **B, C.** Both are point-in-time checks.\n- **D.** The task panel shows background task progress, including a workflow's one-line progress summary.\n\nThe distinction: /context and /usage answer 'where am I now'; the status line makes context pressure ambient so you notice it before it becomes a problem.",
+      "examTrick": "Status line = CONTINUOUS context visibility. /context and /usage are point-in-time checks.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Status Line", "Continuous Visibility", "transcript_path"]
+    },
+    {
+      "id": 20,
+      "question": "Which command shows which managed settings source applies when your setting is being overridden?",
+      "options": [
+        "/status.",
+        "/config.",
+        "/doctor.",
+        "/context."
+      ],
+      "answer": "/status.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Settings: precedence examples",
+      "explanation": "In the scenario where a managed source overrides your value: 'You can't get your value back. Run /status to see which managed source applies, and ask your administrator if the policy should change.'\n\n**Why the others are wrong**\n\n- **B.** /config changes settings and shows options; it does not attribute a managed override.\n- **C.** /doctor is a broader checkup.\n- **D.** /context reports loaded context.\n\nThe diagnostic sequence for a setting that will not take effect is worth memorising: check whether a higher LEVEL sets it (the precedence stack, with /status for managed sources), whether the key WAITS FOR TRUST (allow rules, additionalDirectories, extraKnownMarketplaces and most env values do), whether an environment variable or flag overrides it per-key, and whether the file has a JSON syntax error reported as a Settings Error.",
+      "examTrick": "Setting not applying? Check: higher level (/status), waiting for trust, env/flag override, or a Settings Error.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/status", "Override Diagnosis", "Settings Troubleshooting"]
+    },
+    {
+      "id": 21,
+      "question": "Which command runs a prompt or slash command repeatedly on an interval, and what is its documented side effect on the session picker?",
+      "options": [
+        "/loop — a session whose FIRST prompt was /loop does not appear in the picker and is skipped by claude --continue, though running /loop later does not hide the session.",
+        "/schedule — scheduled sessions are always hidden from the picker.",
+        "/batch — batched sessions are hidden until their PRs are opened.",
+        "/monitor — monitored sessions appear only in the task panel."
+      ],
+      "answer": "/loop — a session whose FIRST prompt was /loop does not appear in the picker and is skipped by claude --continue, though running /loop later does not hide the session.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sessions: where the session picker looks",
+      "explanation": "'Sessions whose first prompt was a /loop command don't appear in the picker, and claude --continue skips them too. Running /loop later in a conversation doesn't hide the session. Before v2.1.211, a /loop run early in a conversation hid the session from the picker permanently.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the documented behaviour.\n\nNote the mode asymmetry: interactive --continue skips -p, SDK, background, and /loop sessions, but 'When you run claude -p --continue, Claude Code includes -p, SDK, and /loop sessions and still skips background sessions.' Each mode continues its own kind of work.\n\nThe cost angle: '/usage' shows Loops rows for the heaviest scheduled tasks, because 'a scheduled task fires on its interval even while the session is idle, sending your full context each time.'",
+      "examTrick": "/loop as the FIRST prompt hides the session from the picker. Loops send full context on every fire — check /usage Loops rows.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/loop", "Picker Visibility", "Idle Cost"]
+    },
+    {
+      "id": 22,
+      "question": "Which sequence best diagnoses 'my project rule is not being applied' in a monorepo session started in a subdirectory?",
+      "options": [
+        "Run /context to see what loaded, remember that .claude/settings.json loads only from the starting directory while CLAUDE.md walks up, check whether the rule is path-scoped and has not matched a file yet, and verify no claudeMdExcludes pattern skips it.",
+        "Run /doctor and accept its proposed trims.",
+        "Run /clear and try again.",
+        "Run /config and re-enter the rule."
+      ],
+      "answer": "Run /context to see what loaded, remember that .claude/settings.json loads only from the starting directory while CLAUDE.md walks up, check whether the rule is path-scoped and has not matched a file yet, and verify no claudeMdExcludes pattern skips it.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Memory troubleshooting; Large codebases; Settings",
+      "explanation": "Four documented causes combine here. /context shows what actually loaded under Memory files. Project settings 'load only from your starting directory and are not inherited from parent directories the way CLAUDE.md files are.' Path-scoped rules 'trigger when Claude reads files matching the pattern, not on every tool use', so a rule can be present and simply not yet active. And claudeMdExcludes can skip a file by absolute-path glob.\n\n**Why the others are wrong**\n\n- **B.** /doctor proposes trims — it would cut content, not explain absence.\n- **C.** Clearing loses context without diagnosing anything, and re-triggers the same loading rules.\n- **D.** Re-entering a rule that is already present changes nothing.\n\nThe diagnostic discipline the exam rewards: distinguish NOT LOADED (wrong directory, excluded) from LOADED BUT NOT YET TRIGGERED (path-scoped, awaiting a matching file) from LOADED BUT ADVISORY (CLAUDE.md is a user message after the system prompt, with no guarantee of compliance). Three different causes, three different fixes.",
+      "examTrick": "Three failure classes: not loaded, loaded-but-untriggered, loaded-but-advisory. Diagnose which before changing anything.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Diagnostic Sequence", "Failure Classes", "Monorepo Troubleshooting"]
+    }
+  ]
+}

@@ -1,0 +1,315 @@
+{
+  "subject": "Claude CCAF: Prompt Engineering & Extraction",
+  "chapter": "2.7 Extraction Schema Design: Optional, Nullable & Enum",
+  "exam": "Claude CCAF",
+  "paper": "Domain-2",
+  "description": "NEW TOPIC. Designing extraction schemas that let the model represent missing or ambiguous information without fabricating values: required vs optional fields, the two nullable forms, enum constraints, and choosing between structured outputs, tool use with a schema, and prompt-based JSON. Grounded in the official Claude API structured-outputs documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "An invoice extraction schema marks purchase_order_number as required with type string. Many invoices genuinely have no PO number, and the model is inventing plausible ones. What is the correct schema fix?",
+      "options": [
+        "Make the field nullable — anyOf [{type: string}, {type: null}] while keeping it in required — so the model has a valid way to say 'not present'.",
+        "Add a prompt instruction saying 'do not invent a PO number if it is absent'.",
+        "Change the type to string and add a description reading 'leave blank if missing'.",
+        "Increase the temperature so the model is less confident about fabricating a value."
+      ],
+      "answer": "Make the field nullable — anyOf [{type: string}, {type: null}] while keeping it in required — so the model has a valid way to say 'not present'.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs: nullable values",
+      "explanation": "This is the central principle of extraction schema design: if the schema offers no legal way to express absence, a constrained model must emit SOMETHING that satisfies the type, and a required non-nullable string can only be satisfied by inventing text. Adding null to the permitted types gives absence a legal representation. The documented recommended form is anyOf with a null branch.\n\n**Why the others are wrong**\n\n- **B.** With grammar-constrained decoding the schema is the hard constraint; a prompt instruction cannot authorise output the grammar forbids. Prompt wording is a weaker lever than schema shape.\n- **C.** An empty string still is not absence — it is a string, and downstream code cannot distinguish 'blank' from 'genuinely empty'. It also encourages the same guessing behaviour in ambiguous cases.\n- **D.** Temperature does not create a legal way to express missingness, and raising it increases fabrication rather than reducing it.",
+      "examTrick": "Hallucinated field values are usually a SCHEMA defect, not a prompt defect. Give absence a legal representation.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Nullable Fields", "Hallucination Prevention", "Schema Design"]
+    },
+    {
+      "id": 2,
+      "question": "Which two forms express a nullable value in a structured-output schema?",
+      "options": [
+        "anyOf: [{\"type\": \"string\"}, {\"type\": \"null\"}] (recommended), or a type array: {\"type\": [\"string\", \"null\"]}.",
+        "{\"type\": \"string\", \"nullable\": true} or {\"type\": \"string\", \"optional\": true}.",
+        "{\"type\": \"string?\"} or {\"type\": \"string\", \"required\": false}.",
+        "{\"type\": \"string\", \"default\": null} only."
+      ],
+      "answer": "anyOf: [{\"type\": \"string\"}, {\"type\": \"null\"}] (recommended), or a type array: {\"type\": [\"string\", \"null\"]}.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs: nullable values",
+      "explanation": "The docs give both forms, with anyOf listed as the recommended option and the type-array form as an equivalent alternative. Both keep the field in the required array while permitting null as a value.\n\n**Why the others are wrong**\n\n- **B.** 'nullable: true' is OpenAPI 3.0 syntax, not JSON Schema — a very common confusion for engineers coming from API specs. 'optional' is not a JSON Schema keyword at all.\n- **C.** 'string?' is TypeScript-flavoured, and 'required: false' is not how JSON Schema expresses optionality (required is an array on the parent object).\n- **D.** A default does not permit null as a produced value.",
+      "examTrick": "JSON Schema nullability = anyOf with a null branch, or a type array. NOT OpenAPI's nullable:true.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Nullable Syntax", "anyOf", "JSON Schema"]
+    },
+    {
+      "id": 3,
+      "question": "What is the semantic difference between omitting a field from the required array and making it nullable?",
+      "options": [
+        "Omitting from required means the key may be absent from the output object; nullable means the key is always present but its value may be null.",
+        "They are identical; both mean the field is optional.",
+        "Omitting from required means the value may be null; nullable means the key may be absent.",
+        "Omitting from required is only valid when additionalProperties is true."
+      ],
+      "answer": "Omitting from required means the key may be absent from the output object; nullable means the key is always present but its value may be null.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs: required vs optional fields",
+      "explanation": "Required fields are listed in the required array. Optional fields are simply omitted from it, which permits the key to be missing entirely. Nullable fields stay in required but accept null. The practical guidance for extraction: prefer required + nullable, because a consistently-present key with an explicit null is easier and safer to consume downstream than a key that may or may not exist. An explicit null is a positive statement that the field was looked for and not found; an absent key is ambiguous between 'not found' and 'not attempted'.\n\n**Why the others are wrong**\n\n- **B.** They differ in output shape and in what they communicate.\n- **C.** Exactly reversed.\n- **D.** additionalProperties must be false for objects in strict schemas regardless; it governs UNDECLARED properties, not declared optional ones.",
+      "examTrick": "required+nullable = key always there, value may be null (preferred for extraction). Not-required = key may vanish.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Optional vs Nullable", "required Array", "Downstream Consumption"]
+    },
+    {
+      "id": 4,
+      "question": "A document classification schema uses enum: [\"invoice\", \"receipt\", \"contract\"]. The corpus also contains purchase orders and delivery notes. What is the likely failure and the fix?",
+      "options": [
+        "The model must choose one of the three permitted values, so out-of-scope documents are misclassified; add an explicit 'other' or 'unknown' member to the enum.",
+        "The model will return a new value not in the enum, so add validation to catch it.",
+        "The request will fail with a schema violation error, so widen additionalProperties.",
+        "The model will return null, so make the field non-nullable."
+      ],
+      "answer": "The model must choose one of the three permitted values, so out-of-scope documents are misclassified; add an explicit 'other' or 'unknown' member to the enum.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs: enum support; grammar-constrained sampling",
+      "explanation": "Structured outputs constrain responses through grammar-constrained sampling, which guarantees valid, parseable output. That guarantee cuts both ways: a value outside the enum cannot be emitted, so a document that fits none of the members gets forced into the closest one. This is the same failure mode as a required non-nullable string: the schema left no legal way to express 'none of these'. An explicit escape member — 'other', 'unknown', or a nullable enum — restores it.\n\n**Why the others are wrong**\n\n- **B.** The constraint prevents an out-of-enum value from being produced at all, which is precisely why the misclassification is silent rather than detectable.\n- **C.** No error occurs; the output is schema-valid and wrong. additionalProperties governs undeclared object keys, not enum membership.\n- **D.** Null is only available if the schema permits it, and the fix direction is backwards.",
+      "examTrick": "A closed enum with no escape hatch produces confident misclassification, not an error. Always include 'other'/'unknown'.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Enum Design", "Escape Hatch", "Silent Misclassification"]
+    },
+    {
+      "id": 5,
+      "question": "Which value types are permitted in an enum under structured outputs?",
+      "options": [
+        "Strings, numbers, booleans, and nulls only — complex types are not supported in enums.",
+        "Any JSON value, including objects and arrays.",
+        "Strings only.",
+        "Strings and numbers only."
+      ],
+      "answer": "Strings, numbers, booleans, and nulls only — complex types are not supported in enums.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs: supported keywords",
+      "explanation": "The supported-keyword list gives enum as supported for 'strings, numbers, bools, nulls only — no complex types'. The docs also flag a practical caveat: 'Enum values are case-sensitive; Claude may fail if values have inconsistent capitalization across your schema.'\n\n**Why the others are wrong**\n\n- **B.** Objects and arrays in enums are explicitly unsupported.\n- **C, D.** Both are narrower than the documented set; booleans and nulls are permitted.\n\nThe null-in-enum allowance is useful: an enum can carry its own 'not determinable' value directly.",
+      "examTrick": "enum = scalars only (string/number/bool/null), and values are CASE-SENSITIVE. Keep capitalization consistent.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Enum Types", "Case Sensitivity", "Supported Keywords"]
+    },
+    {
+      "id": 6,
+      "question": "Which JSON Schema constraint is NOT supported by structured outputs?",
+      "options": [
+        "Numerical and length constraints such as minimum, maximum, multipleOf, minLength, maxLength, and regular-expression pattern.",
+        "The enum keyword.",
+        "The $ref and $defs keywords for internal references.",
+        "String formats such as date-time, email, and uuid."
+      ],
+      "answer": "Numerical and length constraints such as minimum, maximum, multipleOf, minLength, maxLength, and regular-expression pattern.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs: supported and unsupported keywords",
+      "explanation": "The unsupported list includes recursive schemas, complex types in enums, external $ref, numerical constraints (minimum, maximum, multipleOf, minLength, maxLength), array maxItems and minItems greater than 1, and regular expressions / pattern. Supported items include enum, const, anyOf, allOf, internal $ref / $defs / definitions, default, required, additionalProperties (which must be false for objects), the listed string formats, and array minItems limited to 0 and 1.\n\n**Why the others are wrong**\n\n- **B, C, D.** All three appear in the supported list. Note the qualification on $ref: internal references work, external $ref does not.\n\nPractical consequence: value-range validation must happen in your own code after parsing, not in the schema. The SDKs strip unsupported constraints, add descriptions, and validate responses locally.",
+      "examTrick": "Structured outputs enforce SHAPE, not VALUE RANGES. No minimum/maximum/pattern — validate those yourself after parsing.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Unsupported Keywords", "Validation Boundaries", "Schema Limits"]
+    },
+    {
+      "id": 7,
+      "question": "A pipeline requires strictly schema-compliant JSON with no possibility of parse errors. Which method does the documentation identify as the strongest?",
+      "options": [
+        "Structured outputs with a JSON schema — grammar-constrained sampling guarantees valid JSON, so parsing never fails and no retry loop is needed.",
+        "Prompt-based formatting with a clear example of the desired JSON.",
+        "Prefilling the assistant turn with an opening brace.",
+        "Tool use with a JSON schema, which guarantees the schema for the whole response."
+      ],
+      "answer": "Structured outputs with a JSON schema — grammar-constrained sampling guarantees valid JSON, so parsing never fails and no retry loop is needed.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs: comparison table",
+      "explanation": "The comparison table rates structured outputs as 'Guaranteed valid JSON: Yes (grammar-constrained)', 'Parsing errors: Never', 'Retry loops: No'. Tool use with a schema is rated 'No (tool inputs only)' with 'Parsing errors: Possible in responses'. Prompt-based JSON is 'No' with errors 'Likely' and 'Frequent retries'.\n\n**Why the others are wrong**\n\n- **B.** Prompt-based formatting is listed as suitable for quick prototyping, with frequent retries expected.\n- **C.** Prefill nudges the format but constrains nothing structurally.\n- **D.** This is the subtle one. Tool use with a schema enforces the shape of TOOL INPUTS, which is a real guarantee for agent workflows — but it does not constrain the model's conversational response text. When you need the whole response to be schema-valid JSON, structured outputs is the stronger tool.",
+      "examTrick": "Strictest = structured outputs (whole response). Tool use with schema = strict on TOOL INPUTS only. Know which surface each constrains.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Structured Outputs", "Method Selection", "Schema Strictness"]
+    },
+    {
+      "id": 8,
+      "question": "Which parameter shape enables JSON structured output on a Messages request?",
+      "options": [
+        "output_config.format with type \"json_schema\" and a schema object containing properties, required, and additionalProperties: false.",
+        "response_format with type \"json_object\".",
+        "output_schema passed as a top-level string of JSON Schema.",
+        "A system prompt instruction plus stop_sequences to terminate the JSON."
+      ],
+      "answer": "output_config.format with type \"json_schema\" and a schema object containing properties, required, and additionalProperties: false.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs: parameter shape",
+      "explanation": "The documented shape is output_config: { format: { type: \"json_schema\", schema: { type: \"object\", properties: {...}, required: [...], additionalProperties: false } } }. For strict tool validation, the parallel mechanism is a tool definition with \"strict\": true alongside its input_schema. Note that additionalProperties must be false for objects.\n\n**Why the others are wrong**\n\n- **B.** response_format with json_object is another provider's parameter name — a deliberate cross-provider distractor.\n- **C.** No such top-level parameter, and the schema is an object, not a string.\n- **D.** That is prompt-based formatting, the weakest of the three methods.\n\nSDK helpers exist: Python's client.messages.parse with a Pydantic model and output_format, and TypeScript's zodOutputFormat with response.parsed_output.",
+      "examTrick": "output_config.format + type json_schema. Strict tools use \"strict\": true on the tool. additionalProperties MUST be false.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "output_config", "strict Tools", "Parameter Shape"]
+    },
+    {
+      "id": 9,
+      "question": "Why does the documentation require additionalProperties: false on objects in a strict schema?",
+      "options": [
+        "It closes the object so no undeclared keys can be produced, which is what makes the shape guarantee complete.",
+        "It allows extra fields to be returned when the model finds unexpected data.",
+        "It enables recursive schema references.",
+        "It is a performance optimization that speeds up grammar compilation."
+      ],
+      "answer": "It closes the object so no undeclared keys can be produced, which is what makes the shape guarantee complete.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs: supported keywords",
+      "explanation": "The supported-keyword list states that required and additionalProperties are supported and that additionalProperties 'must be false for objects'. Closing the object is what turns 'these keys are permitted' into 'exactly these keys and no others', which is the guarantee downstream code relies on.\n\n**Why the others are wrong**\n\n- **B.** That is what additionalProperties: true would mean, and it is not permitted in strict schemas.\n- **C.** Recursive schemas are unsupported entirely.\n- **D.** It is a correctness requirement, not a performance tuning knob. (Grammar compilation is cached for 24 hours, separately.)\n\nA design consequence: if a document contains data you did want to capture, it must be declared in the schema. Closed objects force you to decide your extraction surface up front.",
+      "examTrick": "additionalProperties: false is mandatory for objects in strict schemas. Undeclared data cannot come back — declare what you want.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "additionalProperties", "Closed Objects", "Shape Guarantee"]
+    },
+    {
+      "id": 10,
+      "question": "An extraction pipeline reads dates as '03/04/2025' from US vendors and '03/04/2025' from EU vendors, meaning different days. Which schema and prompt combination addresses this?",
+      "options": [
+        "Use the date string format in the schema and add an explicit normalization instruction stating the target format and how to resolve ambiguous regional formats.",
+        "Use type string with no format, and post-process every date with a heuristic parser.",
+        "Use a pattern regex to enforce ISO-8601 in the schema.",
+        "Add minLength and maxLength of 10 so only ISO-form dates fit."
+      ],
+      "answer": "Use the date string format in the schema and add an explicit normalization instruction stating the target format and how to resolve ambiguous regional formats.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs: string formats; extraction accuracy patterns",
+      "explanation": "Supported string formats include date-time, time, date, duration, email, hostname, uri, ipv4, ipv6, and uuid, so the schema can pin the SHAPE to a date. But shape cannot resolve which of two valid readings of 03/04/2025 is meant — that is a semantic ambiguity only an instruction (and ideally a few-shot example per vendor format) can settle. The documented extraction-accuracy pattern is exactly this pairing: structured schemas with optional fields, format normalization instructions, and few-shot examples.\n\n**Why the others are wrong**\n\n- **B.** Pushes an ambiguity the model could resolve with context into a downstream heuristic that has less information than the model did.\n- **C.** pattern and regular expressions are explicitly unsupported.\n- **D.** minLength and maxLength are unsupported numerical constraints, and length would not disambiguate day-month order anyway.",
+      "examTrick": "Schema fixes SHAPE, instructions and few-shot examples fix MEANING. Regional date ambiguity is a meaning problem.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Format Normalization", "String Formats", "Few-Shot Examples"]
+    },
+    {
+      "id": 11,
+      "question": "A schema is defined so every field is required and non-nullable, on the reasoning that this maximizes data completeness. What is the predictable consequence?",
+      "options": [
+        "Completeness rises but accuracy falls, because the model must fabricate values for fields the document does not contain.",
+        "Both completeness and accuracy rise, since the model is forced to search harder.",
+        "The model returns a validation error for documents missing any field.",
+        "The model returns empty strings, which are easy to detect downstream."
+      ],
+      "answer": "Completeness rises but accuracy falls, because the model must fabricate values for fields the document does not contain.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs; extraction accuracy patterns",
+      "explanation": "Under grammar-constrained sampling the schema is satisfied by construction, so every field WILL be populated. If the source document has no value, the only way to satisfy a required non-nullable string is to produce plausible text. You have traded a detectable gap for an undetectable error — the worst possible trade in an extraction pipeline, because a null can be routed to human review and a confident fabrication cannot.\n\n**Why the others are wrong**\n\n- **B.** There is nothing to search harder for; the information is absent.\n- **C.** No error is raised. The output is schema-valid.\n- **D.** Empty strings occur only if the model chooses them, and they are not distinguishable from legitimately empty values.\n\nThis is why the documented extraction pattern leads with 'structured schemas with OPTIONAL fields'.",
+      "examTrick": "All-required schemas convert missing data into silent hallucinations. Optional/nullable fields make gaps visible and routable.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Over-Constrained Schemas", "Fabrication", "Human Review Routing"]
+    },
+    {
+      "id": 12,
+      "question": "You need to guarantee the model calls a specific tool rather than replying conversationally, because a conversational reply would break downstream parsing. Which parameter?",
+      "options": [
+        "tool_choice, set to force the required tool.",
+        "strict: true on the tool definition.",
+        "output_config.format with the tool's input_schema.",
+        "stop_sequences set to the tool name."
+      ],
+      "answer": "tool_choice, set to force the required tool.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: tool_choice",
+      "explanation": "tool_choice controls WHETHER and WHICH tool is invoked; it is the parameter that guarantees invocation when a conversational response would cause downstream failures. strict: true is a separate axis controlling whether the tool's inputs are schema-validated. The two compose: tool_choice guarantees the call happens, strict guarantees the arguments conform.\n\n**Why the others are wrong**\n\n- **B.** strict validates inputs of a call that occurs; it does not force the call.\n- **C.** output_config constrains the response text format, a different mechanism from tool invocation.\n- **D.** stop_sequences terminate generation; they cannot compel a tool call.",
+      "examTrick": "tool_choice = WILL a tool be called and which. strict = are its INPUTS schema-valid. Different guarantees, often needed together.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "tool_choice", "strict", "Guaranteed Invocation"]
+    },
+    {
+      "id": 13,
+      "question": "Which statement about structured outputs and prompt caching is correct?",
+      "options": [
+        "The grammar is compiled once and cached for 24 hours; changes to the schema structure or the tool set invalidate that cache.",
+        "The grammar is recompiled on every request, adding constant latency.",
+        "Grammar compilation is unrelated to caching and never affects latency.",
+        "The cache lasts 5 minutes, matching the standard ephemeral prompt cache TTL."
+      ],
+      "answer": "The grammar is compiled once and cached for 24 hours; changes to the schema structure or the tool set invalidate that cache.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs: performance notes",
+      "explanation": "The docs note 'Grammar compiled once per 24h, cached thereafter', a first-request latency cost for grammar compilation, and that 'Changes to schema structure or the tool set invalidate the 24h cache.' There is also a small token cost because the schema is injected as a system prompt.\n\n**Why the others are wrong**\n\n- **B.** Recompilation is a first-request cost, not a per-request one.\n- **C.** There is a documented first-request latency effect.\n- **D.** 24 hours is the grammar cache; 5 minutes is the default ephemeral prompt-cache TTL. Two different caches with two different clocks.\n\nOperational implication: churning your schema on every deploy forfeits the cache, so stabilise schemas in production.",
+      "examTrick": "Grammar cache = 24h, invalidated by schema or tool-set changes. Do not confuse it with the prompt cache TTL.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Grammar Compilation", "24h Cache", "Latency"]
+    },
+    {
+      "id": 14,
+      "question": "A confidence score is needed per extracted field so low-confidence extractions can be routed to human review. How should this be represented in the schema?",
+      "options": [
+        "Declare an explicit confidence field per extracted value, since a closed schema cannot return anything you have not declared.",
+        "Rely on the API's per-field confidence metadata in the response.",
+        "Infer confidence downstream from whether the field is null.",
+        "Ask for confidence in the prompt; it will appear alongside the JSON."
+      ],
+      "answer": "Declare an explicit confidence field per extracted value, since a closed schema cannot return anything you have not declared.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs: additionalProperties; human review routing patterns",
+      "explanation": "With additionalProperties: false, the output object contains exactly the declared keys. Anything you want to route on — confidence, source page, the verbatim span the value came from — must be part of the schema. A common shape pairs each value with its confidence and evidence, for example { value, confidence, source_span }, which is what makes confidence-based review routing possible rather than random sampling.\n\n**Why the others are wrong**\n\n- **B.** The Messages API returns no per-field confidence metadata; confidence must be modelled explicitly if you want it.\n- **C.** Null tells you a value was absent, not that a present value is uncertain. Those are different review signals: absence may be correct, whereas low confidence on a present value is exactly what needs a human.\n- **D.** Under structured outputs the response is the schema-conforming JSON; extra prose alongside it is not available.",
+      "examTrick": "Anything you want to route on must be IN the schema. Confidence, evidence spans, and ambiguity flags are design decisions.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Confidence Scores", "Review Routing", "Schema Completeness"]
+    },
+    {
+      "id": 15,
+      "question": "Which array constraint is supported under structured outputs?",
+      "options": [
+        "minItems, but only the values 0 and 1.",
+        "maxItems with any integer value.",
+        "minItems with any integer value, and maxItems up to 100.",
+        "Neither minItems nor maxItems is supported in any form."
+      ],
+      "answer": "minItems, but only the values 0 and 1.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs: supported keywords",
+      "explanation": "The supported list includes 'Array minItems (only 0 and 1 supported)'. The unsupported list includes 'Array maxItems, minItems > 1'. So you can require that an array be non-empty (minItems: 1) but you cannot require at least three elements, and you cannot cap the length.\n\n**Why the others are wrong**\n\n- **B, C.** maxItems is unsupported entirely, and minItems above 1 is unsupported.\n- **D.** minItems 0 and 1 ARE supported; that limited form is genuinely useful for 'this list must not be empty'.\n\nPractical consequence: cardinality rules beyond 'non-empty' belong in your own post-parse validation.",
+      "examTrick": "minItems: 0 or 1 only. No maxItems at all. Cardinality beyond non-empty is your code's job.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Array Constraints", "minItems", "Supported Keywords"]
+    },
+    {
+      "id": 16,
+      "question": "The same field is captured under different labels across vendors: 'Total Due', 'Amount Payable', 'Balance'. Which combination best improves consistency?",
+      "options": [
+        "One well-described schema field plus few-shot examples showing each vendor's label mapping to it.",
+        "Three separate nullable schema fields, one per observed label.",
+        "A free-form object field so the model can return whatever labels it finds.",
+        "A regex pattern in the schema matching all three label spellings."
+      ],
+      "answer": "One well-described schema field plus few-shot examples showing each vendor's label mapping to it.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Extraction accuracy patterns; few-shot prompting",
+      "explanation": "The documented extraction-accuracy pattern is structured schemas with optional fields, format normalization instructions, and few-shot examples, applied 'to reduce hallucination and improve consistency across varied document formats'. The canonical concept belongs in one field; the label variation is exactly what few-shot examples teach.\n\n**Why the others are wrong**\n\n- **B.** Three fields for one concept pushes reconciliation downstream and breaks as soon as a fourth vendor uses a fourth label.\n- **C.** A free-form object defeats the purpose of a schema and cannot be consumed reliably; it also conflicts with additionalProperties: false.\n- **D.** pattern is unsupported, and it would constrain the OUTPUT value rather than help interpret input labels.",
+      "examTrick": "Varied source formats, one canonical concept = one field + few-shot examples. Do not model the variation in the schema.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Few-Shot Examples", "Format Variation", "Field Consolidation"]
+    },
+    {
+      "id": 17,
+      "question": "A field can legitimately be absent, present but illegible, or present and readable. Which schema design captures all three states?",
+      "options": [
+        "A nullable value field paired with a status enum such as [\"extracted\", \"not_present\", \"illegible\"].",
+        "A single nullable string, using null for both absent and illegible.",
+        "A boolean found flag plus a required string value.",
+        "A single required string, using the literal text 'ILLEGIBLE' when unreadable."
+      ],
+      "answer": "A nullable value field paired with a status enum such as [\"extracted\", \"not_present\", \"illegible\"].",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs: enum and nullable design",
+      "explanation": "Three distinct states need three distinguishable representations. A nullable value carries the data when it exists; a status enum names which of the three situations produced that value. This matters operationally because the three states route differently: 'not_present' may be normal and need no action, while 'illegible' should go to human review with the source image. Collapsing them destroys the routing signal.\n\n**Why the others are wrong**\n\n- **B.** Two states collapsed into one null. You lose the ability to distinguish a correct absence from a scan-quality failure.\n- **C.** A found flag covers absence but not illegibility, and the required string still forces fabrication when the field is missing.\n- **D.** A sentinel string inside the value field pollutes the value's type — downstream code must now string-match against a magic constant, and a genuine document containing that text becomes ambiguous.",
+      "examTrick": "Count the distinct states you must act on differently, then give each an explicit representation. Sentinel values in the value field are an anti-pattern.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Status Enums", "Ambiguity Representation", "Sentinel Anti-Pattern"]
+    },
+    {
+      "id": 18,
+      "question": "Which statement about SDK helpers for structured outputs is correct?",
+      "options": [
+        "The SDKs auto-transform schemas, strip unsupported constraints such as minimum, add descriptions, and validate responses locally.",
+        "The SDKs pass the schema through untouched, so unsupported constraints cause an API error.",
+        "The SDKs support only hand-written JSON Schema, not Pydantic or Zod models.",
+        "The SDKs perform server-side validation and retry failed responses automatically."
+      ],
+      "answer": "The SDKs auto-transform schemas, strip unsupported constraints such as minimum, add descriptions, and validate responses locally.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Structured outputs: SDK helpers",
+      "explanation": "'Constraint stripping: SDKs remove unsupported constraints (e.g. minimum), add descriptions, and validate responses locally.' Python offers client.messages.parse with a Pydantic model passed as output_format and a parsed_output result; TypeScript offers zodOutputFormat from the Zod helpers with output_config.format and response.parsed_output.\n\n**Why the others are wrong**\n\n- **B.** Stripping is exactly what prevents that error.\n- **C.** Pydantic and Zod integration is the headline SDK feature here.\n- **D.** Validation is local, and with grammar-constrained sampling retries are unnecessary for schema conformance in the first place.\n\nWatch the implication: a minimum: 0 you wrote in Pydantic is silently stripped, so the model is not constrained by it. Enforce value ranges in your own code after parsing.",
+      "examTrick": "SDKs STRIP unsupported constraints silently — your minimum/maximum never reaches the model. Validate ranges yourself.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "SDK Helpers", "Pydantic", "Constraint Stripping"]
+    }
+  ]
+}

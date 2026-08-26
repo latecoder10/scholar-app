@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.8 Context Window Mechanics & Compaction",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "NEW TOPIC. What loads into context at startup, exactly what survives compaction and how, the re-injection caps for skills and files, auto-compaction thresholds and /autocompact, and reading /context output. Grounded in the official Claude Code context-window documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which items are re-injected FROM DISK after compaction?",
+      "options": [
+        "Project-root CLAUDE.md and unscoped rules, auto memory, and the plan Claude wrote in plan mode.",
+        "The full conversation history and all tool outputs.",
+        "The skill listing of all discovered skills.",
+        "Every file Claude read during the session."
+      ],
+      "answer": "Project-root CLAUDE.md and unscoped rules, auto memory, and the plan Claude wrote in plan mode.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Context window: what survives compaction",
+      "explanation": "The survives-compaction table marks exactly three mechanisms as 'Re-injected from disk': project-root CLAUDE.md and unscoped rules, auto memory, and the plan mode plan. The system prompt and output style are listed separately as 'Unchanged; not part of message history'.\n\n**Why the others are wrong**\n\n- **B.** The conversation is replaced by a structured summary — 'full tool outputs and intermediate reasoning are gone.'\n- **C.** 'Unlike the rest of the startup content, this listing is not re-injected after /compact. Only skills you actually invoked get preserved.'\n- **D.** Only up to five, most recently modified first.\n\nThe unifying principle: things that live on DISK can be re-read; things that lived only in the conversation are summarized away.",
+      "examTrick": "Re-injected from disk: root CLAUDE.md + unscoped rules, auto memory, the plan. Everything conversational is summarized.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Compaction Survival", "Re-injection", "Plan File"]
+    },
+    {
+      "id": 2,
+      "question": "How many files does Claude Code re-read after compaction, and which ones?",
+      "options": [
+        "Up to five, choosing the ones modified most recently; a file over 5,000 tokens comes back as a path reference without its content.",
+        "All files read during the session, in the order they were read.",
+        "Only the single most recently edited file.",
+        "None — files must be re-read manually."
+      ],
+      "answer": "Up to five, choosing the ones modified most recently; a file over 5,000 tokens comes back as a path reference without its content.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: what survives compaction",
+      "explanation": "'Right after compaction, Claude Code re-reads up to five of the files Claude has read or edited in the session, choosing the ones modified most recently, and reloads the rules and nested CLAUDE.md files that apply to those files. A file over 5,000 tokens comes back as a path reference without its content, shown as Referenced file instead of Read. Its rules still reload.'\n\n**Why the others are wrong**\n\n- **B.** Re-reading everything would defeat compaction's purpose.\n- **C.** Five, not one.\n- **D.** The re-read is automatic.\n\nThe 'Referenced file' behaviour is the subtle detail: a large file you were working in loses its CONTENT after compaction while its path and rules survive, so Claude may need to re-read it deliberately.",
+      "examTrick": "Five most-recently-modified files. Over 5,000 tokens = path reference only, but its rules still reload.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "File Re-reading", "Referenced File", "5000 Tokens"]
+    },
+    {
+      "id": 3,
+      "question": "What are the caps on re-injecting invoked skill bodies after compaction?",
+      "options": [
+        "5,000 tokens per skill and 25,000 tokens total, with the oldest invoked skills dropped first.",
+        "5,000 tokens total across all skills.",
+        "There is no cap; skill bodies are re-injected in full.",
+        "25,000 tokens per skill with no overall limit."
+      ],
+      "answer": "5,000 tokens per skill and 25,000 tokens total, with the oldest invoked skills dropped first.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: what survives compaction",
+      "explanation": "'Invoked skill bodies: Re-injected, capped at 5,000 tokens per skill and 25,000 tokens total; oldest dropped first.' The docs add a design consequence: 'Truncation keeps the start of the file, so put the most important instructions near the top of SKILL.md.'\n\n**Why the others are wrong**\n\n- **B, C, D.** Each misses one of the two caps or the drop order.\n\nThat authoring guidance is genuinely actionable: a long SKILL.md whose critical constraints sit at the bottom will silently lose them after compaction in a long session.",
+      "examTrick": "5k per skill / 25k total, oldest dropped first, truncation keeps the START. Put critical instructions at the top of SKILL.md.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Skill Re-injection", "Token Caps", "SKILL.md Authoring"]
+    },
+    {
+      "id": 4,
+      "question": "A rule with paths: frontmatter must persist across compaction. What does the documentation recommend?",
+      "options": [
+        "Drop the paths: frontmatter, or move the rule to the project-root CLAUDE.md.",
+        "Increase the rule's priority with a frontmatter field.",
+        "Duplicate the rule into a skill so it is re-injected.",
+        "Nothing is needed; path-scoped rules always survive compaction."
+      ],
+      "answer": "Drop the paths: frontmatter, or move the rule to the project-root CLAUDE.md.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: what survives compaction",
+      "explanation": "'Path-scoped rules and nested CLAUDE.md files load into message history when their trigger file is read, so compaction summarizes them away with everything else... If a rule must persist across compaction, drop the paths: frontmatter or move it to the project-root CLAUDE.md.' Path-scoped rules do reload — but only when Claude next reads a matching file.\n\n**Why the others are wrong**\n\n- **B.** No priority field exists.\n- **C.** Invoked skills are re-injected, but a rule is not a workflow and this misuses the mechanism.\n- **D.** They reload conditionally, not unconditionally — that is the whole distinction.\n\nThere is a real tradeoff here: paths: frontmatter buys context efficiency, and unconditional loading buys compaction durability.",
+      "examTrick": "paths: rules = context-efficient but compaction-fragile. Unscoped rules and root CLAUDE.md = durable but always loaded.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Path-Scoped Rules", "Compaction Fragility", "Tradeoff"]
+    },
+    {
+      "id": 5,
+      "question": "Which hook can add context back after a compaction?",
+      "options": [
+        "A SessionStart hook that matches the 'compact' source — Claude Code runs it and adds its output to the compacted context.",
+        "A PostCompact hook, which is the only event with context-injection ability.",
+        "A PreToolUse hook, which fires on the next tool call.",
+        "No hook can inject context after compaction."
+      ],
+      "answer": "A SessionStart hook that matches the 'compact' source — Claude Code runs it and adds its output to the compacted context.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: what survives compaction",
+      "explanation": "The table's last row: 'SessionStart hooks that match the compact source: Claude Code runs them and adds their output to the compacted context.' This works because SessionStart accepts session-reason matchers — startup, resume, clear, and compact.\n\n**Why the others are wrong**\n\n- **B.** PostCompact exists as an event, but the documented re-injection path is the SessionStart hook matching 'compact'.\n- **C.** PreToolUse fires per tool call and is a permission gate.\n- **D.** This is precisely the supported mechanism.\n\nIt is the escape hatch for anything else you need to survive: compute it in a script and print it, and it comes back after every compaction.",
+      "examTrick": "SessionStart matcher 'compact' re-injects computed context after compaction. That is why SessionStart takes reason matchers.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "SessionStart compact", "Context Re-injection", "Hook Matchers"]
+    },
+    {
+      "id": 6,
+      "question": "What does the compaction summary keep, and what does it lose?",
+      "options": [
+        "Keeps requests and intent, key technical concepts, files examined or modified with important snippets, errors and fixes, pending tasks, and current work; loses full tool outputs and intermediate reasoning.",
+        "Keeps the last ten messages verbatim and discards everything earlier.",
+        "Keeps all tool outputs and discards the prose.",
+        "Keeps a random sample sized to fit the remaining window."
+      ],
+      "answer": "Keeps requests and intent, key technical concepts, files examined or modified with important snippets, errors and fixes, pending tasks, and current work; loses full tool outputs and intermediate reasoning.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Context window: compaction",
+      "explanation": "'The summary keeps: your requests and intent, key technical concepts, files examined or modified with important code snippets, errors and how they were fixed, pending tasks, and current work. It replaces the verbatim conversation: full tool outputs and intermediate reasoning are gone. Claude can still reference the rest of the work but won't have the exact content.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the documented behaviour; compaction is a structured summarization, not truncation or sampling.\n\nThe practical implication: if an exact tool output matters later — a specific error string, a precise diff — write it to a file rather than relying on it staying in conversation.",
+      "examTrick": "Compaction keeps intent, concepts, files, errors, pending tasks. It loses exact tool outputs. Persist exact values to disk.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Summary Contents", "Lost Detail", "Persistence Strategy"]
+    },
+    {
+      "id": 7,
+      "question": "How do you make automatic compaction run earlier than the default?",
+      "options": [
+        "Run /autocompact with a token count, such as /autocompact 500k.",
+        "Set compactThreshold in settings.json.",
+        "Run /compact repeatedly; there is no threshold control.",
+        "Set CLAUDE_CODE_COMPACT_AT as an environment variable."
+      ],
+      "answer": "Run /autocompact with a token count, such as /autocompact 500k.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Context window: when your context fills up",
+      "explanation": "'Compact earlier: run /autocompact with a token count, like /autocompact 500k, to set how full the context window gets before the automatic pass runs.' The point where automatic compaction runs otherwise 'depends on your model and configuration', with per-model boundaries documented under default auto-compact thresholds.\n\n**Why the others are wrong**\n\n- **B, D.** Neither is a documented key or variable for this.\n- **C.** /compact is the manual pass; /autocompact controls the automatic threshold.\n\nWhy you might want it earlier: performance degrades as context fills, so compacting before you reach the limit can produce better output than running right up against it.",
+      "examTrick": "/autocompact <tokens> sets the automatic threshold. /compact runs one pass now. Different commands.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/autocompact", "Threshold Control", "Auto-Compaction"]
+    },
+    {
+      "id": 8,
+      "question": "Which models support a 1 million token context window, per the documentation?",
+      "options": [
+        "Fable 5, Sonnet 5, Opus 4.6 and later, and Sonnet 4.6 — with Sonnet 5 running at 1M with no [1m] variant to select.",
+        "Every Claude model supports 1M by default.",
+        "Only Opus 5, via a [1m] variant.",
+        "None; the maximum is 200,000 tokens."
+      ],
+      "answer": "Fable 5, Sonnet 5, Opus 4.6 and later, and Sonnet 4.6 — with Sonnet 5 running at 1M with no [1m] variant to select.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: extended context",
+      "explanation": "'If you need a larger window rather than a smaller conversation, Fable 5, Sonnet 5, Opus 4.6 and later, and Sonnet 4.6 support a 1 million token context window... Sonnet 5 runs at 1M with no [1m] variant to select. Compaction works the same way at the larger limit.'\n\n**Why the others are wrong**\n\n- **B, C, D.** Each misstates availability.\n\nThe closing sentence is the exam-relevant one: 'Compaction works the same way at the larger limit.' A bigger window postpones compaction; it does not remove the need for context discipline, because performance still degrades as the window fills.",
+      "examTrick": "1M window is available on specific models and postpones compaction — it does not eliminate context management.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Extended Context", "1M Window", "Model Availability"]
+    },
+    {
+      "id": 9,
+      "question": "Which command shows a live breakdown of what is currently consuming context?",
+      "options": [
+        "/context, which reports by category with optimization suggestions, including which CLAUDE.md and auto memory files loaded.",
+        "/memory, which lists memory file locations.",
+        "/status, which shows the managed settings source.",
+        "/export, which writes the transcript to a file."
+      ],
+      "answer": "/context, which reports by category with optimization suggestions, including which CLAUDE.md and auto memory files loaded.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Context window; sessions",
+      "explanation": "'To see your actual context usage at any point, run /context for a live breakdown by category with optimization suggestions, including which CLAUDE.md and auto memory files loaded.' The MCP docs add that '/context all' shows how many tokens each loaded MCP tool uses.\n\n**Why the others are wrong**\n\n- **B.** /memory opens and edits memory files and lists locations — including ones that do not exist yet.\n- **C.** /status shows which managed source applies.\n- **D.** /export copies or saves the conversation as readable text.\n\nThe pairing to remember: /context answers 'what is loaded and what is it costing', /memory answers 'where do the instruction files live'.",
+      "examTrick": "/context = live usage + what actually loaded. /context all = per-MCP-tool tokens. /memory = file locations.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/context", "Usage Breakdown", "Diagnostics"]
+    },
+    {
+      "id": 10,
+      "question": "What loads into the context window before you type your first prompt?",
+      "options": [
+        "The system prompt, auto memory (MEMORY.md), environment info, MCP tool names, the skill listing, and CLAUDE.md files.",
+        "Only the system prompt; everything else loads on demand.",
+        "Only CLAUDE.md; the system prompt is server-side and costs nothing.",
+        "Nothing — the context window starts empty."
+      ],
+      "answer": "The system prompt, auto memory (MEMORY.md), environment info, MCP tool names, the skill listing, and CLAUDE.md files.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Context window: startup content",
+      "explanation": "The startup sequence includes the system prompt (core instructions, always loaded first), auto memory from MEMORY.md (first 200 lines or 25KB), environment info (working directory, platform, shell, OS, git repo status), MCP tool names with schemas deferred, the skill listing of one-line descriptions, and CLAUDE.md. The docs' summary: 'A lot loads before you type anything.'\n\n**Why the others are wrong**\n\n- **B, C, D.** Each understates startup load.\n\nThe takeaway the visualization draws: 'Your prompt is tiny compared to what's already loaded. Most of Claude's context is project knowledge, not your words.' That is why pruning CLAUDE.md and the skill catalogue matters more than shortening prompts.",
+      "examTrick": "Startup load is large: system prompt + MEMORY.md + env + MCP names + skill listing + CLAUDE.md. Your prompt is the small part.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Startup Context", "Load Order", "Context Budget"]
+    },
+    {
+      "id": 11,
+      "question": "How do MCP tool schemas load by default, and how can that be changed?",
+      "options": [
+        "Tool names load and full schemas stay deferred, loaded on demand via tool search; ENABLE_TOOL_SEARCH=auto loads schemas upfront when they fit within 10% of the context window, and =false loads everything.",
+        "All schemas load upfront and there is no way to defer them.",
+        "Nothing loads until a tool is called, including names.",
+        "Schemas load only inside subagents."
+      ],
+      "answer": "Tool names load and full schemas stay deferred, loaded on demand via tool search; ENABLE_TOOL_SEARCH=auto loads schemas upfront when they fit within 10% of the context window, and =false loads everything.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: MCP tools (deferred)",
+      "explanation": "'MCP tool names listed so Claude knows what is available. By default, full schemas stay deferred and Claude loads specific ones on demand via tool search when a task needs them. Set ENABLE_TOOL_SEARCH=auto to load schemas upfront when they fit within 10% of the context window, or ENABLE_TOOL_SEARCH=false to load everything.'\n\n**Why the others are wrong**\n\n- **B.** Deferral is the default behaviour.\n- **C.** Names do load so Claude knows what exists.\n- **D.** Unrelated to subagents.\n\nNote the counter-intuitive naming: ENABLE_TOOL_SEARCH=false means load everything eagerly — turning the search mechanism OFF, not turning tool loading off.",
+      "examTrick": "Default = names only, schemas deferred. =auto loads upfront if under 10% of the window. =false loads EVERYTHING.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "ENABLE_TOOL_SEARCH", "Deferred Schemas", "MCP Context Cost"]
+    },
+    {
+      "id": 12,
+      "question": "A skill with disable-model-invocation: true is invoked manually. What is its context cost profile?",
+      "options": [
+        "Zero until you invoke it, because its description is not in the startup skill index; then the full body loads.",
+        "Its description loads at startup like any other skill.",
+        "It never enters context, even when invoked.",
+        "It loads its body at startup but hides it from Claude."
+      ],
+      "answer": "Zero until you invoke it, because its description is not in the startup skill index; then the full body loads.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Context window: user-only skills",
+      "explanation": "'Skills with disable-model-invocation: true are not in this list. They stay completely out of context until you invoke them with /name.' And on invocation: 'Its description was not in the skill index at startup, so it cost zero context until this moment. Now the full skill content loads.'\n\n**Why the others are wrong**\n\n- **B.** Being absent from the index is exactly what the flag does.\n- **C.** Invoking it loads the body.\n- **D.** Nothing loads at startup.\n\nAfter compaction, 'Claude Code re-injects the body of each skill you invoked, capped at 5,000 tokens per skill' — so an invoked user-only skill does persist, while the startup listing does not reload at all.",
+      "examTrick": "disable-model-invocation = zero context until invoked. But once invoked, its body IS re-injected after compaction.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "User-Only Skills", "Zero Context", "Post-Compaction Behaviour"]
+    },
+    {
+      "id": 13,
+      "question": "How does hook output reach Claude, and what happens to plain stdout on exit 0?",
+      "options": [
+        "Output reaches Claude via additionalContext JSON, and exit code 2 surfaces stderr to Claude; plain stdout on exit 0 goes to the debug log, not the transcript.",
+        "All stdout is always added to the transcript.",
+        "Only stderr ever reaches Claude, in every case.",
+        "Hook output never reaches Claude; hooks are side-effect only."
+      ],
+      "answer": "Output reaches Claude via additionalContext JSON, and exit code 2 surfaces stderr to Claude; plain stdout on exit 0 goes to the debug log, not the transcript.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: hooks",
+      "explanation": "The visualization's takeaway states it directly: 'Hooks fire automatically on tool events. Output reaches Claude via additionalContext JSON. Exit code 2 surfaces stderr to Claude. Plain stdout on exit 0 goes to the debug log, not the transcript.'\n\n**Why the others are wrong**\n\n- **B.** Plain stdout on exit 0 is a common source of confusion precisely because it does NOT reach the conversation.\n- **C.** Structured JSON is the primary path.\n- **D.** Hook output can and often should reach Claude — a linting hook is useless otherwise.\n\nThis explains a classic debugging symptom: a hook 'works' when run by hand but Claude never seems to see its output, because it was echoing to stdout with exit 0.\n\n(The SessionStart hook is a documented exception, where plain stdout text is added to context before the first prompt.)",
+      "examTrick": "additionalContext JSON or exit 2 + stderr reaches Claude. Plain stdout on exit 0 goes to the DEBUG LOG.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Hook Output", "additionalContext", "Debug Log"]
+    },
+    {
+      "id": 14,
+      "question": "What happens to a subagent's file reads with respect to your context window?",
+      "options": [
+        "None of them touch your context; the subagent works in its own separate window and only the final summary returns.",
+        "They are added to your context but compressed.",
+        "They are added to your context in full, which is why subagents are expensive.",
+        "They are written to disk and re-read into your context after the subagent finishes."
+      ],
+      "answer": "None of them touch your context; the subagent works in its own separate window and only the final summary returns.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Context window: subagents",
+      "explanation": "'The subagent works in its own separate context window. None of its file reads touch yours. Only the final summary comes back.' This is why the docs call subagents 'one of the most powerful tools available' given that context is the fundamental constraint.\n\n**Why the others are wrong**\n\n- **B, C.** Both contradict the isolation property.\n- **D.** No disk round trip occurs.\n\nThe cost model is worth stating precisely: subagents are not free — they consume their own input and output tokens — but that spend happens outside your window, so it does not degrade your main conversation's performance.",
+      "examTrick": "Subagent file reads never touch your window. Isolation is about YOUR context, not about total token spend.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Subagent Isolation", "Separate Window", "Cost Model"]
+    },
+    {
+      "id": 15,
+      "question": "What does a bang (!) command contribute to context?",
+      "options": [
+        "It runs in your shell and prefixes the output to your next message, grounding Claude in command results without Claude running them.",
+        "It runs in Claude's Bash tool and appears as a tool call.",
+        "It executes silently with no context contribution.",
+        "It queues a command for Claude to run later."
+      ],
+      "answer": "It runs in your shell and prefixes the output to your next message, grounding Claude in command results without Claude running them.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Context window: bang commands",
+      "explanation": "'Bang commands run in your shell and prefix the output to your next message. Useful for grounding Claude in command results without it running them.'\n\n**Why the others are wrong**\n\n- **B.** It is YOUR shell, not Claude's tool call, so it consumes no permission decision and appears as message content.\n- **C.** The output does enter context, attached to your next message.\n- **D.** It executes immediately.\n\nThis is a useful context-control technique: you decide exactly which command runs and exactly what output Claude sees, instead of Claude exploring and pulling in more than you wanted.",
+      "examTrick": "Bang commands = your shell, output prefixed to your next message. Precise context injection you control.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Bang Commands", "Controlled Injection", "Grounding"]
+    },
+    {
+      "id": 16,
+      "question": "Does reaching the context limit end a Claude Code session?",
+      "options": [
+        "No — Claude Code compacts automatically as you approach the limit, and the automatic pass works the same way as /compact.",
+        "Yes — the session ends and must be resumed.",
+        "Yes — but only in headless -p runs.",
+        "No — the window silently drops the oldest messages with no summarization."
+      ],
+      "answer": "No — Claude Code compacts automatically as you approach the limit, and the automatic pass works the same way as /compact.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Context window: when your context fills up",
+      "explanation": "'Claude Code compacts automatically as you approach the limit, so a full context window doesn't end your session. The automatic pass works the same way as the /compact step in the timeline.'\n\n**Why the others are wrong**\n\n- **B, C.** Compaction exists precisely to prevent this.\n- **D.** It is a structured summarization, not a sliding-window drop — which is why intent, pending tasks, and errors are preserved rather than silently lost.\n\nThe practical framing from best practices remains true though: automatic compaction is a safety net, not a strategy. Deliberate /clear between unrelated tasks produces better results than letting context fill and compact repeatedly.",
+      "examTrick": "Auto-compaction prevents session death but is a SAFETY NET. /clear between unrelated tasks is the strategy.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Auto-Compaction", "Session Continuity", "Strategy vs Safety Net"]
+    },
+    {
+      "id": 17,
+      "question": "Which statement about the compaction summarization request is correct?",
+      "options": [
+        "It inherits the session's extended thinking configuration, and thinking affects only how the summary is produced — session settings are unchanged afterward.",
+        "It always runs with extended thinking enabled for quality.",
+        "It always runs on a small fast model regardless of session settings.",
+        "It permanently enables thinking for the rest of the session."
+      ],
+      "answer": "It inherits the session's extended thinking configuration, and thinking affects only how the summary is produced — session settings are unchanged afterward.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: what survives compaction",
+      "explanation": "'As of v2.1.198, the summarization request inherits your session's extended thinking configuration, so it reasons with thinking enabled when your session has it enabled and stays off otherwise. Thinking affects only how the summary is produced; your session settings are unchanged afterward.'\n\n**Why the others are wrong**\n\n- **B, C.** It inherits rather than forcing either way.\n- **D.** Session settings are explicitly unchanged.\n\nWorth connecting to the caching material: changing thinking parameters invalidates the messages cache, so thinking configuration has cost consequences beyond the summary itself.",
+      "examTrick": "Compaction inherits your thinking config and leaves session settings untouched afterward.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Extended Thinking", "Summarization Request", "Inheritance"]
+    },
+    {
+      "id": 18,
+      "question": "Which pairing correctly describes /clear versus /compact versus /rewind in a session?",
+      "options": [
+        "/clear starts fresh with empty context (the previous conversation is saved and resumable); /compact replaces history with a summary; /rewind restores conversation or code to an earlier checkpoint.",
+        "/clear deletes the conversation permanently; /compact archives it; /rewind exports it.",
+        "All three summarize; they differ only in how aggressive the summary is.",
+        "/clear and /compact are identical; /rewind is the only distinct command."
+      ],
+      "answer": "/clear starts fresh with empty context (the previous conversation is saved and resumable); /compact replaces history with a summary; /rewind restores conversation or code to an earlier checkpoint.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sessions: manage context within a session; Checkpointing",
+      "explanation": "'/clear: start fresh with an empty context. Claude Code saves the previous conversation; resume it with /resume.' '/compact [instructions]: replace history with a summary, optionally focused on what you specify.' Rewind restores 'conversation only, code only, both, or summarize from a selected message.'\n\n**Why the others are wrong**\n\n- **B.** /clear does not delete — the conversation is saved and resumable, and is also reachable from the rewind menu's previous-session entry.\n- **C, D.** They are distinct operations with distinct effects.\n\nOne detail worth keeping: after /clear 'You keep a name you set with --name or /rename in the new conversation, but not an AI-generated session title.'",
+      "examTrick": "/clear = empty but SAVED. /compact = summarize in place. /rewind = restore to a checkpoint (conversation, code, or both).",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/clear", "/compact", "/rewind"]
+    },
+    {
+      "id": 19,
+      "question": "Which content is summarized away rather than re-injected after compaction?",
+      "options": [
+        "Context that hooks added earlier in the session.",
+        "Auto memory.",
+        "The plan written in plan mode.",
+        "Project-root CLAUDE.md."
+      ],
+      "answer": "Context that hooks added earlier in the session.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Context window: what survives compaction",
+      "explanation": "The table row reads 'Context that hooks added earlier: Summarized with the rest of the conversation.' Only SessionStart hooks matching the compact source run again and add fresh output.\n\n**Why the others are wrong**\n\n- **B, C, D.** All three are 'Re-injected from disk'.\n\nThe distinction is consistent: content that entered as MESSAGES gets summarized; content that lives in a FILE gets re-read. A hook's earlier output was a message, so it is summarized — which is exactly why the SessionStart-on-compact mechanism exists to regenerate it.",
+      "examTrick": "Hook output already in the conversation = summarized. Only SessionStart-on-compact regenerates hook context.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Hook Context", "Summarized Away", "Regeneration"]
+    },
+    {
+      "id": 20,
+      "question": "A long-running session repeatedly loses a critical convention that lives in a nested CLAUDE.md deep in the tree. What is the most reliable fix?",
+      "options": [
+        "Move the convention to the project-root CLAUDE.md, which is re-injected from disk after every compaction.",
+        "Increase the auto-compact threshold with /autocompact so compaction happens less often.",
+        "Convert it to a skill so it loads on demand.",
+        "Repeat the convention in each prompt."
+      ],
+      "answer": "Move the convention to the project-root CLAUDE.md, which is re-injected from disk after every compaction.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Context window; Memory troubleshooting",
+      "explanation": "'Nested CLAUDE.md in subdirectories: Claude Code reloads them as Claude reads files in that subdirectory' — conditional, so between compaction and the next read of that subdirectory the convention is absent. The project-root CLAUDE.md is re-injected from disk unconditionally, and the memory docs give the same remedy for path-scoped rules: 'If a rule must persist across compaction, drop the paths: frontmatter or move it to the project-root CLAUDE.md.'\n\n**Why the others are wrong**\n\n- **B.** Fewer compactions is not durability; the gap reappears at the next one.\n- **C.** Skills load on demand too, and only INVOKED skills are re-injected — same conditional problem.\n- **D.** Manual repetition is the toil these mechanisms exist to remove.\n\nThe tradeoff is explicit: root CLAUDE.md costs context in every session, so reserve it for conventions that genuinely must always hold.",
+      "examTrick": "Must survive compaction unconditionally = project-root CLAUDE.md. Everything conditional has a post-compaction gap.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Nested CLAUDE.md", "Durability", "Compaction Gap"]
+    }
+  ]
+}

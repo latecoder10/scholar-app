@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.12 Monorepos & Large-Codebase Configuration",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "NEW TOPIC. Layering CLAUDE.md by directory, excluding irrelevant instruction files, blocking generated and vendored code, sparse worktrees, cross-package access, per-directory skills, and centralizing conventions when layering stops scaling. Grounded in the official Claude Code large-codebase documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What problem does a single root CLAUDE.md create in a large codebase?",
+      "options": [
+        "It either grows to cover every subsystem, costing context on instructions unrelated to the current task, or stays too generic to be useful.",
+        "It cannot exceed 200 lines, so most conventions cannot fit.",
+        "It fails to load when the repository exceeds a size threshold.",
+        "It overrides per-package settings, breaking package-specific tooling."
+      ],
+      "answer": "It either grows to cover every subsystem, costing context on instructions unrelated to the current task, or stays too generic to be useful.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: layer CLAUDE.md files by directory",
+      "explanation": "'In a large codebase, a single CLAUDE.md at the repository root tends to either grow to cover every subsystem's conventions, costing context on instructions unrelated to the current task, or stay too generic to be useful. Splitting instructions across per-directory files means Claude loads repository-wide rules plus only the conventions for the code you're working in.'\n\n**Why the others are wrong**\n\n- **B.** 200 lines is a guideline for adherence, not a hard cap; the hard limit is 4 MiB.\n- **C.** No such threshold.\n- **D.** CLAUDE.md is context, not configuration, and cannot override settings.\n\nThe recommended split is two levels: a root file for repository-wide rules such as coding standards and commit conventions, and a per-subdirectory file for that area's stack.",
+      "examTrick": "One big root file has two failure modes: bloated (wastes context) or generic (useless). Layer by directory instead.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "CLAUDE.md Layering", "Context Waste", "Two-Level Split"]
+    },
+    {
+      "id": 2,
+      "question": "Starting Claude in packages/api/, which CLAUDE.md files load?",
+      "options": [
+        "packages/api/CLAUDE.md and the root CLAUDE.md, but not packages/web/CLAUDE.md.",
+        "Only packages/api/CLAUDE.md.",
+        "Only the root CLAUDE.md.",
+        "Every CLAUDE.md in the repository."
+      ],
+      "answer": "packages/api/CLAUDE.md and the root CLAUDE.md, but not packages/web/CLAUDE.md.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: layer CLAUDE.md files by directory",
+      "explanation": "'When you start Claude from packages/api/, it loads both packages/api/CLAUDE.md and the root CLAUDE.md. Claude sees the local instructions alongside the repository-wide rules, with no instructions from packages/web/ in context.' Files in directories BELOW the working directory load on demand when Claude reads files there.\n\n**Why the others are wrong**\n\n- **B, C.** Both halves of the upward walk load.\n- **D.** Sibling packages are out of scope from a subdirectory start.\n\nThe critical asymmetry: 'Project settings in .claude/settings.json load only from your starting directory and are not inherited from parent directories the way CLAUDE.md files are: a .claude/settings.json at the repository root applies only when you start from the root.'",
+      "examTrick": "CLAUDE.md walks UP. settings.json does NOT. Starting in a subdirectory silently drops root settings.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Upward Walk", "Settings Non-Inheritance", "Launch Directory"]
+    },
+    {
+      "id": 3,
+      "question": "When should you choose a path-scoped rule in .claude/rules/ over a per-directory CLAUDE.md?",
+      "options": [
+        "When you want all conventions in one place, or the same rule applies to many scattered paths.",
+        "When directory owners should maintain their own conventions versioned with the code.",
+        "When the rule must survive compaction unconditionally.",
+        "When the rule needs to execute a command."
+      ],
+      "answer": "When you want all conventions in one place, or the same rule applies to many scattered paths.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: choose between per-directory CLAUDE.md and path-scoped rules",
+      "explanation": "The comparison table: a per-directory CLAUDE.md lives 'Inside the directory, alongside its code', loads at launch when started there or on demand when Claude reads a file there, and suits 'Directory owners maintain their own conventions; instructions are versioned with the code'. A path-scoped rule lives in the 'Central .claude/ at the repo root', loads 'When Claude works with a file matching the rule's paths: glob', and suits 'You want all conventions in one place, or the same rule applies to many scattered paths.'\n\n**Why the others are wrong**\n\n- **B.** That is the per-directory CLAUDE.md case.\n- **C.** Path-scoped rules are the FRAGILE choice for compaction — they reload only when Claude next reads a matching file.\n- **D.** Neither executes anything; that is a hook.\n\nThe axis is ownership and scatter: co-located files for owned areas, central rules for cross-cutting patterns.",
+      "examTrick": "Per-directory file = owned by that area. Central path-scoped rule = one place, or scattered paths.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Rules vs Per-Directory", "Ownership", "Scattered Paths"]
+    },
+    {
+      "id": 4,
+      "question": "How should claudeMdExcludes patterns be written, and where should a personal exclusion live?",
+      "options": [
+        "As globs matched against absolute file paths, so relative-style patterns must start with **/; put a personal exclusion in .claude/settings.local.json.",
+        "As paths relative to the repository root, in .claude/settings.json.",
+        "As regular expressions, in managed settings only.",
+        "As directory names only, in CLAUDE.md frontmatter."
+      ],
+      "answer": "As globs matched against absolute file paths, so relative-style patterns must start with **/; put a personal exclusion in .claude/settings.local.json.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: exclude irrelevant CLAUDE.md files",
+      "explanation": "'If you only want these exclusions for yourself, put the setting in .claude/settings.local.json... Patterns use glob syntax matched against absolute file paths, so start relative-style patterns with **/ to match anywhere in the tree.' Documented examples: '**/packages/web/**' excludes a package including its rules, '**/packages/*/CLAUDE.md' excludes every package's file while keeping the root, and '/home/user/monorepo/legacy/CLAUDE.md' excludes one specific file by absolute path.\n\n**Why the others are wrong**\n\n- **B.** Absolute-path matching is what makes the **/ prefix necessary.\n- **C.** It works at any settings layer — user, project, local, or managed — and 'Arrays merge across scopes.'\n- **D.** No such frontmatter.\n\nOne boundary: 'Managed policy CLAUDE.md files cannot be excluded.' And the docs note the list is static: 'To focus on one package today and another tomorrow, start Claude from that package's directory instead of editing exclusions.'",
+      "examTrick": "Globs vs ABSOLUTE paths, so lead with **/. Arrays merge across scopes. Managed policy files are unexcludable.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "claudeMdExcludes", "Absolute Matching", "Static List"]
+    },
+    {
+      "id": 5,
+      "question": "Which paths need Read deny rules, and which are already handled?",
+      "options": [
+        "Checked-in noise such as a vendored SDK or committed generated code needs deny rules; gitignored paths like node_modules/, dist/, and build/ already stay out of search results.",
+        "All noise paths need deny rules, including gitignored ones.",
+        "Only gitignored paths need deny rules.",
+        "Neither is needed; Claude reads only what you reference."
+      ],
+      "answer": "Checked-in noise such as a vendored SDK or committed generated code needs deny rules; gitignored paths like node_modules/, dist/, and build/ already stay out of search results.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: block reads of generated and vendored code",
+      "explanation": "'Claude's content searches respect .gitignore by default, so paths already listed there, such as node_modules/, dist/, and build/, stay out of search results without additional configuration. For paths that are checked in, such as a vendored SDK or committed generated code, add Read deny rules in permissions.deny.' The example blocks Read(./**/dist/**), Read(./**/build/**), Read(./**/*.generated.*), and Read(./vendor/**).\n\n**Why the others are wrong**\n\n- **B.** Redundant for gitignored paths.\n- **C.** Backwards.\n- **D.** Claude explores autonomously.\n\nThe scope choice matters: commit to .claude/settings.json for everyone, use .claude/settings.local.json for yourself, or use managed settings for rules 'which user and project settings cannot override'.",
+      "examTrick": "gitignored = already excluded from search. CHECKED-IN noise needs Read deny rules.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Read Deny Rules", "Vendored Code", "gitignore Interaction"]
+    },
+    {
+      "id": 6,
+      "question": "A local settings file uses Read(./vendor/**) but sessions start from different subdirectories. What breaks, and what is the fix?",
+      "options": [
+        "Relative patterns anchor at the directory you start Claude Code from, so write the rules as //-absolute paths such as Read(//absolute/path/to/repo/vendor/**).",
+        "Local settings never load outside the starting directory, so move them to the shared file.",
+        "Relative patterns are invalid in local settings and must use ~/.",
+        "Nothing breaks; local rules always anchor at the repository root."
+      ],
+      "answer": "Relative patterns anchor at the directory you start Claude Code from, so write the rules as //-absolute paths such as Read(//absolute/path/to/repo/vendor/**).",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: block reads; Permissions",
+      "explanation": "'Use .claude/settings.local.json at the repository root, which loads in every CLI session inside the repository regardless of starting directory... Relative patterns like the example's Read(./vendor/**) still anchor at the directory you start Claude Code from, so if you start sessions from subdirectories, write the rules in this file as //-absolute paths.'\n\n**Why the others are wrong**\n\n- **B.** The local file at the repository root does load from any starting directory (from v2.1.211), 'except in the cases where Claude Code keeps the local file in the starting directory, such as on Windows'.\n- **C.** Relative patterns are valid, just anchored where you started.\n- **D.** They anchor at the launch directory, not the repository root.\n\nThe subtlety: the FILE loads repository-wide, but its relative PATTERNS still resolve against your launch directory. Loading and anchoring are separate concerns.",
+      "examTrick": "The local file loads repo-wide; its relative patterns still anchor at your LAUNCH directory. Use // for stability.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Path Anchoring", "Local Settings", "Loading vs Anchoring"]
+    },
+    {
+      "id": 7,
+      "question": "What does worktree.sparsePaths do, and what is always checked out alongside it?",
+      "options": [
+        "It uses git sparse-checkout to write only the listed directories plus root-level files to disk; root-level files like package.json and lock files come along, but root-level directories do not — include .claude explicitly if you need it.",
+        "It limits which files Claude may read inside a worktree.",
+        "It creates a separate branch per listed path.",
+        "It checks out only the listed directories and nothing else at all."
+      ],
+      "answer": "It uses git sparse-checkout to write only the listed directories plus root-level files to disk; root-level files like package.json and lock files come along, but root-level directories do not — include .claude explicitly if you need it.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: check out only the directories you need",
+      "explanation": "'In a large repository, the worktree.sparsePaths setting uses git sparse-checkout to write only the listed directories plus root-level files to disk, so worktrees start faster and use less space... List directories in sparsePaths, not individual files. Root-level files like package.json, tsconfig.base.json, and lock files are always checked out alongside the directories you list. Root-level directories are not, so include .claude in the list if you want the repository root's .claude/settings.json, .claude/rules/, or .claude/skills/ available inside the worktree.'\n\n**Why the others are wrong**\n\n- **B.** It controls what is on DISK, not read permissions.\n- **C.** Worktrees are about isolation, not branch creation per path.\n- **D.** Root-level files always come.\n\nPaths are 'relative to the repository root, regardless of which subdirectory you start Claude from.' Pair it with symlinkDirectories for node_modules to avoid duplication.",
+      "examTrick": "sparsePaths: root-level FILES always come, root-level DIRECTORIES do not. Add .claude explicitly.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "sparsePaths", "Worktrees", ".claude Inclusion"]
+    },
+    {
+      "id": 8,
+      "question": "Inside a worktree created from a session started in packages/api/, which settings file loads?",
+      "options": [
+        "The worktree root's .claude/settings.json — the checked-out copy of the repository root's file — because the session's working directory becomes the worktree root.",
+        "packages/api/.claude/settings.json, since that is where the session started.",
+        "Both, merged together.",
+        "None; worktrees run without project settings."
+      ],
+      "answer": "The worktree root's .claude/settings.json — the checked-out copy of the repository root's file — because the session's working directory becomes the worktree root.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: worktree settings note",
+      "explanation": "'The sparsePaths and symlinkDirectories settings are read from your starting directory before the worktree is created. After creation, the session's working directory is the worktree root, not the subdirectory you launched from. Project settings inside the worktree therefore load from the worktree root's .claude/settings.json, the checked-out copy of the repository root's file. Put any other settings you need inside worktrees, such as permission rules or hooks, in the repository root's .claude/settings.json.'\n\n**Why the others are wrong**\n\n- **B, C.** The working directory moves, so the per-package file no longer applies.\n- **D.** They load from the worktree root.\n\nThe practical consequence appears in the docs' worked example: the deny rules 'need a second copy in the repository root's .claude/settings.json so worktree sessions pick them up.' A rule that exists only in a package's settings silently disappears inside a worktree.",
+      "examTrick": "A worktree's working directory is its ROOT. Package-level settings vanish there — duplicate critical rules at the repo root.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Worktree Settings", "Working Directory Shift", "Rule Duplication"]
+    },
+    {
+      "id": 9,
+      "question": "What is the difference between additionalDirectories and --add-dir for cross-package work?",
+      "options": [
+        "Both grant read and write access, but additionalDirectories never loads CLAUDE.md, rules, or skills, while --add-dir loads skills always and CLAUDE.md/rules only with CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD set.",
+        "additionalDirectories grants read-only access; --add-dir grants write access too.",
+        "Both load all configuration from the added directory.",
+        "--add-dir is temporary and additionalDirectories is permanent, with no other difference."
+      ],
+      "answer": "Both grant read and write access, but additionalDirectories never loads CLAUDE.md, rules, or skills, while --add-dir loads skills always and CLAUDE.md/rules only with CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD set.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: grant access across packages",
+      "explanation": "'However you add a directory, Claude can read and edit files in it.' The loading table: additionalDirectories loads CLAUDE.md and rules 'Never' and skills 'Never'; --add-dir or /add-dir loads skills 'Yes' and CLAUDE.md/rules 'Only with the environment variable below'. 'The environment variable has no effect on directories listed in the additionalDirectories setting.'\n\n**Why the others are wrong**\n\n- **B.** Both grant read and write.\n- **C.** additionalDirectories loads no configuration at all.\n- **D.** Persistence differs, but the loading difference is the substantive one.\n\nThe skills documentation frames the exception: '--add-dir and /add-dir grant file access rather than configuration discovery, but skills and commands are an exception.'",
+      "examTrick": "Same ACCESS, different LOADING. additionalDirectories = files only, ever. --add-dir = files + skills, CLAUDE.md via env var.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "additionalDirectories", "--add-dir", "Access vs Discovery"]
+    },
+    {
+      "id": 10,
+      "question": "Where should per-directory skills live, and when do they load?",
+      "options": [
+        "Under .claude/skills/ inside the subdirectory, committed alongside that area's code; nested ones load the first time Claude reads or edits a file in that subdirectory.",
+        "In the repository root's .claude/skills/ only, since nested skills are not supported.",
+        "In each package's package.json under a skills key.",
+        "In ~/.claude/skills/, namespaced by package."
+      ],
+      "answer": "Under .claude/skills/ inside the subdirectory, committed alongside that area's code; nested ones load the first time Claude reads or edits a file in that subdirectory.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: add per-directory skills; Skills",
+      "explanation": "'Any subdirectory can define skills scoped to its own stack. A skill loads on demand when Claude determines it's relevant, so API-specific tooling doesn't consume context during frontend work. Skills live under .claude/skills/ inside the directory. Commit them alongside that area's code.' And: 'Skills in nested .claude/skills/ directories below your starting directory aren't loaded at startup. They load the first time Claude reads or edits a file inside that subdirectory... Until then, those skills don't appear in autocomplete and can't be invoked by name.'\n\n**Why the others are wrong**\n\n- **B.** Nested skills are supported and are the documented monorepo pattern.\n- **C, D.** Neither is a documented location.\n\nThe alternative when placement is not the right axis: the paths frontmatter field scopes a root-level skill by file pattern instead, 'such as a database-migration skill scoped to **/migrations/**.'",
+      "examTrick": "Nested skills load lazily on first file touch in that directory — invisible in autocomplete until then.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Per-Directory Skills", "Lazy Loading", "paths Alternative"]
+    },
+    {
+      "id": 11,
+      "question": "Why does the documentation warn about skill discoverability in a large monorepo?",
+      "options": [
+        "Starting from the repository root brings in skills from every subdirectory Claude touches, which can accumulate into the hundreds, and descriptions are shortened when there are many — stripping the keywords Claude uses to decide.",
+        "Skills stop loading past a fixed count.",
+        "Nested skills override root skills, silently changing behaviour.",
+        "Skill names must be globally unique or loading fails."
+      ],
+      "answer": "Starting from the repository root brings in skills from every subdirectory Claude touches, which can accumulate into the hundreds, and descriptions are shortened when there are many — stripping the keywords Claude uses to decide.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: keep skills discoverable",
+      "explanation": "'From the repository root: root skills, plus skills from every subdirectory Claude touches during the session, which can accumulate into the hundreds.' And: 'Names always load, but descriptions are shortened when there are many, which can strip the keywords Claude uses to decide whether a skill applies. Keep descriptions short and lead with words a request would contain, like \"writing or modifying tests in packages/api/\".'\n\n**Why the others are wrong**\n\n- **B.** No fixed cutoff; descriptions are truncated rather than skills dropped.\n- **C.** 'If a nested skill shares a name with another skill, both stay available.'\n- **D.** Namespacing and coexistence handle collisions.\n\nThe measurement path: enable the OpenTelemetry logs exporter with OTEL_LOG_TOOL_DETAILS=1, and the skill_activated event records every invocation with its skill.name and invocation_trigger, 'which tells you what to consolidate or retire.'",
+      "examTrick": "Hundreds of skills = truncated descriptions = worse selection. Front-load trigger words; measure with skill_activated.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Skill Sprawl", "Description Truncation", "Telemetry"]
+    },
+    {
+      "id": 12,
+      "question": "When per-directory CLAUDE.md files stop scaling, what does the documentation recommend?",
+      "options": [
+        "Move conventions into mechanisms that load on demand — skills, plugins owned by a platform team, or an MCP server exposing an existing code-search or RAG index.",
+        "Consolidate everything back into one large root CLAUDE.md.",
+        "Increase the auto-compact threshold so more instructions fit.",
+        "Split the monorepo into separate repositories."
+      ],
+      "answer": "Move conventions into mechanisms that load on demand — skills, plugins owned by a platform team, or an MCP server exposing an existing code-search or RAG index.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: centralize conventions when layering stops scaling",
+      "explanation": "'Per-directory CLAUDE.md files can become hard to govern as the codebase grows. Conventions drift, files go stale, and no one owns the root... Move conventions and reference content out of always-loaded CLAUDE.md and into mechanisms that load on demand: Skills: reference material Claude loads only when relevant. Plugins: versioned bundles of skills, hooks, and commands that a platform team owns centrally. MCP servers: if your organization already runs a code search or RAG index over the repository, expose it as an MCP tool so Claude queries it instead of reading files directly.'\n\n**Why the others are wrong**\n\n- **B.** That is the problem layering was introduced to solve.\n- **C.** A threshold change does not address governance or drift.\n- **D.** Far beyond the documented guidance.\n\nThe named failure is GOVERNANCE — drift, staleness, unowned files — not capacity.",
+      "examTrick": "Layering fails on governance, not capacity. The fix is on-demand mechanisms with clear ownership: skills, plugins, MCP.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Governance", "On-Demand Mechanisms", "Platform Ownership"]
+    },
+    {
+      "id": 13,
+      "question": "How can a teammate starting in an unfamiliar part of the tree learn which plugin that area's owners maintain?",
+      "options": [
+        "A SessionStart hook that reads the launch directory from the hook input, looks it up in a committed path-to-plugin map, and prints a recommendation Claude relays in its first reply.",
+        "A root CLAUDE.md section listing every package's plugin.",
+        "The /plugin manager, which shows recommendations per directory.",
+        "There is no mechanism; teammates must ask the owning team."
+      ],
+      "answer": "A SessionStart hook that reads the launch directory from the hook input, looks it up in a committed path-to-plugin map, and prints a recommendation Claude relays in its first reply.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: recommend the right plugin at session start",
+      "explanation": "'Once conventions live in plugins, a teammate starting Claude in an unfamiliar part of the tree has no signal about which plugin that area's owners maintain. A SessionStart hook can close that gap, since Claude Code adds plain text the hook prints to stdout to Claude's context before the first prompt. For example, you can write a script that reads the launch directory from the hook input, looks it up in a path-to-plugin map committed to the repository, and prints the recommendation for Claude to relay in its first reply.'\n\n**Why the others are wrong**\n\n- **B.** A static root list is the always-loaded content the plugin approach exists to remove, and it goes stale.\n- **C.** Not a documented per-directory feature.\n- **D.** The hook mechanism exists.\n\nThis is the case for COMPUTED context: the recommendation depends on where you launched, which no static file can express.",
+      "examTrick": "SessionStart stdout = computed context before the first prompt. Use it when the right context depends on runtime state.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "SessionStart Hook", "Computed Context", "Plugin Discovery"]
+    },
+    {
+      "id": 14,
+      "question": "Which practices keep layered CLAUDE.md files current as the codebase and models change?",
+      "options": [
+        "Review CLAUDE.md edits in pull requests, revisit after major model releases since workarounds for older limitations become overhead, and add a Stop hook that proposes updates from the session transcript.",
+        "Regenerate every file with /init on a schedule.",
+        "Freeze them once they work, to avoid churn.",
+        "Move all of them to managed settings so only administrators can edit."
+      ],
+      "answer": "Review CLAUDE.md edits in pull requests, revisit after major model releases since workarounds for older limitations become overhead, and add a Stop hook that proposes updates from the session transcript.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: keep the files current",
+      "explanation": "The three documented practices: 'Review in pull requests: treat CLAUDE.md edits like any other documentation change so conventions track the code.' 'Revisit after major model releases: instructions that worked around an older model's limitation may become overhead once a newer model handles the case on its own. For example, a rule that forces single-file refactors can be deleted once the limitation is gone.' 'Add a Stop hook that proposes updates: a Stop hook receives the path to the session transcript when Claude finishes responding, so a script can review the session and propose CLAUDE.md updates while the gap it exposed is fresh.'\n\n**Why the others are wrong**\n\n- **B.** /init generates a starting file or suggests improvements; it is not a scheduled regeneration tool.\n- **C.** Freezing guarantees staleness — obsolete workarounds keep consuming context and crowding out live rules.\n- **D.** Locking editing to administrators would prevent the directory owners closest to the code from maintaining their conventions.\n\nInstruction files need PRUNING as much as addition.",
+      "examTrick": "Maintain like code: PR review, prune after model upgrades, and automate proposals with a Stop hook.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Instruction Maintenance", "Pruning", "Stop Hook"]
+    },
+    {
+      "id": 15,
+      "question": "Which technique reduces file reads when finding where a symbol is defined or used in a large tree?",
+      "options": [
+        "A code intelligence plugin connecting Claude to a language server, so a 'go to definition' call replaces a grep plus reading multiple candidate files.",
+        "Increasing the auto-compact threshold.",
+        "Adding every symbol's location to CLAUDE.md.",
+        "Running the search in a subagent, which is the only way to reduce reads."
+      ],
+      "answer": "A code intelligence plugin connecting Claude to a language server, so a 'go to definition' call replaces a grep plus reading multiple candidate files.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: reduce file reads with code intelligence",
+      "explanation": "'Code intelligence plugins connect Claude to a language server so it can jump to definitions, find references, and surface type errors directly instead of scanning the tree.' The cost documentation adds: 'A single go to definition call replaces what might otherwise be a grep followed by reading multiple candidate files. Installed language servers also report type errors automatically after edits.' Install with, for example, /plugin install typescript-lsp@claude-plugins-official.\n\n**Why the others are wrong**\n\n- **B.** A threshold change does not reduce reads.\n- **C.** Symbol locations are exactly what the docs list under Exclude from CLAUDE.md — derivable from the code and frequently changing.\n- **D.** Subagents isolate reads but do not eliminate them; and the two techniques pair well.\n\n'This pairs well with claudeMdExcludes and the Read deny rules above. Those keep irrelevant content out of context, and code intelligence keeps Claude from reading through what remains.'",
+      "examTrick": "Three complementary levers: claudeMdExcludes (instructions), Read deny (files), code intelligence (navigation).",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Code Intelligence", "Complementary Levers", "Read Reduction"]
+    },
+    {
+      "id": 16,
+      "question": "How should a change that touches several packages be scoped and sequenced?",
+      "options": [
+        "Give Claude the whole change in one session so decisions stay consistent, and plan first in plan mode so the plan file survives the compactions a long cross-package session will trigger.",
+        "Split it into one session per package to keep each context small.",
+        "Make the shared edit first, then start a fresh session for each call site.",
+        "Use a separate worktree per package and merge at the end."
+      ],
+      "answer": "Give Claude the whole change in one session so decisions stay consistent, and plan first in plan mode so the plan file survives the compactions a long cross-package session will trigger.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: scope and plan changes that span packages",
+      "explanation": "'Give Claude the whole change in one session: handing over the shared edit and its call sites together keeps the decisions behind each edit consistent, rather than re-deriving them per package. Plan before editing: plan first in plan mode, and Claude writes the plan to a file. A long cross-package session compacts its context along the way. Claude Code re-injects the plan file after each compaction, so the plan survives where conversation history may not.'\n\n**Why the others are wrong**\n\n- **B, C.** Both re-derive decisions per package, which is the inconsistency the guidance warns against.\n- **D.** Worktrees isolate parallel work on different branches; they do not help a single coherent change.\n\nNote the tension with 'clear between unrelated tasks': these are RELATED parts of one change, so continuity is the right call — and the plan file is what makes a long session survivable.",
+      "examTrick": "Related cross-package work = ONE session + a plan file. /clear is for UNRELATED tasks, not for splitting one change.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Cross-Package Changes", "Decision Consistency", "Plan Survival"]
+    },
+    {
+      "id": 17,
+      "question": "Where should Read deny rules go so they apply to every session inside a repository regardless of starting directory, without being committed?",
+      "options": [
+        ".claude/settings.local.json at the repository root, using //-absolute paths.",
+        ".claude/settings.json at the repository root, committed.",
+        "~/.claude/settings.json, using /-prefixed paths.",
+        "Managed settings, which is the only reliable option."
+      ],
+      "answer": ".claude/settings.local.json at the repository root, using //-absolute paths.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: block reads; Permissions",
+      "explanation": "The local file at the repository root 'loads in every CLI session inside the repository regardless of starting directory', is kept out of git automatically, and needs //-absolute patterns when sessions start from subdirectories.\n\n**Why the others are wrong**\n\n- **B.** The shared file loads 'only from your starting directory', so a subdirectory session would miss it — and it is committed, which the question excludes.\n- **C.** In USER settings a /-prefixed path resolves against the config directory: 'A deny rule such as Read(/secrets/**) in user settings blocks ~/.claude/secrets/**, not a secrets directory in your project.'\n- **D.** Managed settings work but require administrator deployment, which is disproportionate for a personal exclusion.\n\nThree separate facts combine here: which files LOAD from where, how PATTERNS anchor, and which files are COMMITTED.",
+      "examTrick": "Local file at repo root = loads everywhere in the repo, uncommitted. Use // paths so anchoring doesn't bite.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Settings Placement", "Absolute Paths", "Combined Reasoning"]
+    },
+    {
+      "id": 18,
+      "question": "Why does the documentation say to include .claude in worktree.sparsePaths?",
+      "options": [
+        "Root-level directories are not checked out automatically, so without it the repository root's .claude/settings.json, .claude/rules/, and .claude/skills/ are unavailable inside the worktree.",
+        "It is required for git sparse-checkout to function.",
+        "It ensures the worktree inherits the parent session's permission grants.",
+        "It makes the worktree visible in the session picker."
+      ],
+      "answer": "Root-level directories are not checked out automatically, so without it the repository root's .claude/settings.json, .claude/rules/, and .claude/skills/ are unavailable inside the worktree.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: check out only the directories you need",
+      "explanation": "'Root-level files like package.json, tsconfig.base.json, and lock files are always checked out alongside the directories you list. Root-level directories are not, so include .claude in the list if you want the repository root's .claude/settings.json, .claude/rules/, or .claude/skills/ available inside the worktree.'\n\n**Why the others are wrong**\n\n- **B.** Sparse checkout works with any path list.\n- **C.** Permission grants relate to process boundaries — /branch carries them, --fork-session does not.\n- **D.** Session visibility is unrelated.\n\nThe failure mode is quietly severe: a worktree without .claude runs with no project permission rules, no path-scoped rules, and no project skills — a session that looks normal but has silently lost its guardrails. Combined with the working-directory shift, worktree configuration is the easiest place in a monorepo to lose rules without noticing.",
+      "examTrick": "No .claude in sparsePaths = a worktree with NO project rules, permissions, or skills. Silent guardrail loss.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "sparsePaths .claude", "Silent Guardrail Loss", "Worktree Configuration"]
+    },
+    {
+      "id": 19,
+      "question": "Which start-location choice fits a task scoped to one package, and what does it trade away?",
+      "options": [
+        "Start in that package's directory — you get its CLAUDE.md plus every ancestor's and a narrower file-access scope, but lose access to sibling packages until you grant it and lose the root's .claude/settings.json.",
+        "Start at the repository root, which is always preferable for focus.",
+        "Start in the package directory, which also loads sibling packages' skills.",
+        "Start anywhere; the launch directory affects nothing but the prompt display."
+      ],
+      "answer": "Start in that package's directory — you get its CLAUDE.md plus every ancestor's and a narrower file-access scope, but lose access to sibling packages until you grant it and lose the root's .claude/settings.json.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: choose where to start Claude",
+      "explanation": "The table: starting from a subdirectory gives 'That subtree only, until you grant more' access and loads 'That directory's plus every ancestor's' CLAUDE.md, and suits work 'scoped to one package or subsystem'. Starting from the repository root gives access to every file and loads the root CLAUDE.md only, with subdirectory files loading on demand — suited to tasks spanning packages.\n\n**Why the others are wrong**\n\n- **B.** Root start is for multi-package work; it also pulls in every subdirectory's skills as Claude touches them.\n- **C.** Sibling skills load only if you add the directory with --add-dir.\n- **D.** It affects file access, instruction loading, settings loading, and skill scope.\n\nThe trade-away that surprises people is settings: 'a .claude/settings.json at the repository root applies only when you start from the root.'",
+      "examTrick": "Subdirectory start = focused context, narrower access — but the ROOT's settings.json does not load.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Launch Choice", "Tradeoffs", "Settings Loss"]
+    },
+    {
+      "id": 20,
+      "question": "Which summary correctly describes the combined monorepo setup the documentation builds?",
+      "options": [
+        "Per-directory CLAUDE.md files, claudeMdExcludes for irrelevant ones, Read deny rules for generated and vendored code, code intelligence for symbol lookup, sparsePaths and symlinkDirectories for cheap worktrees, additionalDirectories for sibling access, and per-directory skills.",
+        "One root CLAUDE.md with every convention, plus a large allowlist.",
+        "A single plugin that replaces all project configuration.",
+        "Separate repositories, since monorepos are not supported."
+      ],
+      "answer": "Per-directory CLAUDE.md files, claudeMdExcludes for irrelevant ones, Read deny rules for generated and vendored code, code intelligence for symbol lookup, sparsePaths and symlinkDirectories for cheap worktrees, additionalDirectories for sibling access, and per-directory skills.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: settings on this page; put it together",
+      "explanation": "The settings table maps each goal to a mechanism, and the docs note 'Each setting below is independent. They layer rather than replace each other, so apply whichever fit your repository.' The worked result: starting from packages/api/ 'Loads the root CLAUDE.md and packages/api/CLAUDE.md, skips packages/web/CLAUDE.md; Can read and edit files in packages/api/ and packages/shared/; Skips reads of build output under dist/ and build/; Has the api-testing skill available on demand; Creates worktrees containing .claude/, packages/api/, packages/shared/, and root-level files.'\n\n**Why the others are wrong**\n\n- **B.** The anti-pattern layering replaces.\n- **C.** Plugins are the answer when layering stops scaling by governance, not a wholesale replacement.\n- **D.** Monorepos are explicitly supported.\n\nNote the docs' own observation in the example: 'Because this session starts from packages/api/, sibling packages' CLAUDE.md files are already out of scope, so claudeMdExcludes is not needed here' — the launch choice can make a setting unnecessary.",
+      "examTrick": "Independent, layerable settings — and your LAUNCH DIRECTORY can make some of them unnecessary.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Combined Setup", "Independent Layers", "Launch Interaction"]
+    }
+  ]
+}

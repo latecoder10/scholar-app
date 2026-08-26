@@ -1,0 +1,383 @@
+{
+  "subject": "Claude CCAF: MCP & Tool Design",
+  "chapter": "4.7 Tool Use Fundamentals, tool_choice & the Tool Loop",
+  "exam": "Claude CCAF",
+  "paper": "Domain-4",
+  "description": "NEW TOPIC. Tool definition shape, the client-tool round trip and stop_reason: tool_use, client versus server tools, tool_choice and disable_parallel_tool_use, strict tool use, tool_result and error signalling, and the token cost of tools. Grounded in the official Claude API tool-use documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which three fields define a custom client tool?",
+      "options": [
+        "name, description, and input_schema.",
+        "name, parameters, and handler.",
+        "type, name, and output_schema.",
+        "name, description, and function."
+      ],
+      "answer": "name, description, and input_schema.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Tool use overview",
+      "explanation": "The documented shape is {\"name\": \"get_weather\", \"description\": \"Get the current weather for a given location.\", \"input_schema\": {\"type\": \"object\", \"properties\": {...}, \"required\": [...]}}. Note it is input_schema, not 'parameters' — a common cross-provider slip.\n\n**Why the others are wrong**\n\n- **B, D.** 'parameters', 'handler' and 'function' come from other function-calling APIs.\n- **C.** 'type' identifies Anthropic-defined tools such as {\"type\": \"web_search_20260209\", \"name\": \"web_search\"}; a custom tool does not use it, and there is no output_schema.\n\nThe description is not decoration: 'Claude determines when to call a tool based on the user's request and the tool's description.'",
+      "examTrick": "input_schema, not parameters. type is for Anthropic-defined tools only.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Tool Definition", "input_schema", "Custom Tools"]
+    },
+    {
+      "id": 2,
+      "question": "What distinguishes a client tool from a server tool?",
+      "options": [
+        "Client tools run in your application — Claude returns stop_reason tool_use and you send back a tool_result; server tools run on Anthropic's infrastructure and you see the results directly.",
+        "Client tools are defined by you; server tools are any tool with a JSON schema.",
+        "Client tools run synchronously; server tools always run in a batch.",
+        "Client tools are free; server tools cost extra tokens only."
+      ],
+      "answer": "Client tools run in your application — Claude returns stop_reason tool_use and you send back a tool_result; server tools run on Anthropic's infrastructure and you see the results directly.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: how tool use works",
+      "explanation": "'Tools differ primarily by WHERE THE CODE EXECUTES. Client tools (including user-defined tools and tools with Anthropic-defined schemas, such as bash and text_editor) run in your application. Claude responds with stop_reason: \"tool_use\" and one or more tool_use blocks. Your code executes the operation and sends back a tool_result. Server tools (such as web_search, web_fetch, code_execution, and tool_search) run on Anthropic's infrastructure: you see the results directly without handling execution.'\n\n**Why the others are wrong**\n\n- **B.** Anthropic-schema tools like bash and text_editor have Anthropic-published schemas yet are still CLIENT tools — your app executes them. That is the trap.\n- **C.** Neither is batch-bound.\n- **D.** Server tools 'can incur additional charges based on their specific usage', for example web search charging per search — but client tools are not free; they cost tokens like any request.\n\nOne exception noted: a server tool called in the same parallel group as a client tool does surface for handling.",
+      "examTrick": "The axis is WHERE CODE RUNS, not who wrote the schema. bash and text_editor are Anthropic-schema CLIENT tools.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Client vs Server Tools", "stop_reason", "Execution Location"]
+    },
+    {
+      "id": 3,
+      "question": "Claude returns stop_reason \"tool_use\". What must your application do next?",
+      "options": [
+        "Execute the operation, then send a second request whose messages include the assistant turn with the tool_use block and a user turn carrying a tool_result with the matching tool_use_id.",
+        "Send an empty follow-up request; Claude will retry the tool itself.",
+        "Append the tool output as a plain text user message.",
+        "Set tool_choice to none and resend the original request."
+      ],
+      "answer": "Execute the operation, then send a second request whose messages include the assistant turn with the tool_use block and a user turn carrying a tool_result with the matching tool_use_id.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: the round trip",
+      "explanation": "The documented round trip: the first response carries a tool_use block, your code runs the lookup, and 'a second request sends the result back in a tool_result block so Claude can reply with the answer.' The messages array grows by two entries — the assistant's content, then a user turn containing {type: \"tool_result\", tool_use_id: ..., content: ...}.\n\n**Why the others are wrong**\n\n- **B.** The API is stateless; it cannot run your tool or remember the pending call.\n- **C.** Plain text loses the tool_use_id correlation, which breaks as soon as parallel tool calls occur.\n- **D.** Suppressing tools does not deliver the result Claude asked for.\n\nThis loop — model decides, you execute, you return the result, model continues — IS the agentic loop, and stop_reason is the signal that drives it.",
+      "examTrick": "stop_reason tool_use → run it → append assistant tool_use + user tool_result (with tool_use_id) → resend everything.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Agentic Loop", "tool_result", "tool_use_id"]
+    },
+    {
+      "id": 4,
+      "question": "What is the default tool_choice, and what does it mean?",
+      "options": [
+        "{\"type\": \"auto\"} — Claude determines on each turn whether to call a tool or respond directly.",
+        "{\"type\": \"any\"} — Claude must call one of the provided tools.",
+        "{\"type\": \"none\"} — tools are advertised but never called unless forced.",
+        "There is no default; tool_choice is required whenever tools are provided."
+      ],
+      "answer": "{\"type\": \"auto\"} — Claude determines on each turn whether to call a tool or respond directly.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: when Claude uses tools",
+      "explanation": "'With the default tool_choice of {\"type\": \"auto\"}, Claude determines on each turn whether to call a tool or respond directly. It calls a tool when the request maps to that tool's described capability and the answer isn't already in context. It responds directly for stable knowledge, creative tasks, and conversational turns.'\n\n**Why the others are wrong**\n\n- **B.** 'any' forces some tool call — useful when a conversational reply would break downstream parsing, but not the default.\n- **C.** 'none' suppresses tool use. Notably, 'If no tools are provided, then a tool choice of none uses 0 additional system prompt tokens.'\n- **D.** It is optional and defaults to auto.\n\nThe four values to know: auto (model decides), any (must call something), tool (must call a NAMED tool), none (must not call).",
+      "examTrick": "auto = model decides (default). any = must call something. tool = must call THIS one. none = must not.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "tool_choice", "auto", "Default Behaviour"]
+    },
+    {
+      "id": 5,
+      "question": "Claude is not calling tools as often as you expect. What does the documentation offer before you force tool use?",
+      "options": [
+        "Steer with a system-prompt instruction such as 'Use the tools to investigate before responding'; to require a call rather than rely on prompting, set tool_choice.",
+        "Increase the number of tools so one is more likely to match.",
+        "Lower max_tokens so the model cannot afford a prose answer.",
+        "Remove the descriptions so Claude cannot rule tools out."
+      ],
+      "answer": "Steer with a system-prompt instruction such as 'Use the tools to investigate before responding'; to require a call rather than rely on prompting, set tool_choice.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: when Claude uses tools",
+      "explanation": "'This boundary is steerable through your system prompt. If Claude isn't calling tools when you expect, a light instruction such as \"Use the tools to investigate before responding.\" increases tool use. A stronger form such as \"Always call a tool first before responding.\" pushes further. Conversely, \"Use your judgment about whether to call a tool or respond directly.\" keeps triggering behavior conservative. To require a tool call rather than rely on prompting, set tool_choice.'\n\n**Why the others are wrong**\n\n- **B.** More tools makes SELECTION harder, not triggering more likely.\n- **C.** Token limits do not change tool-selection behaviour.\n- **D.** Descriptions are the primary selection signal; removing them makes things worse.\n\nThe ladder again: prompt to influence, parameter to guarantee.",
+      "examTrick": "Prompt tunes the tendency; tool_choice guarantees the call. Same influence-vs-enforce pattern as CLAUDE.md vs hooks.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "System Prompt Steering", "tool_choice", "Influence vs Guarantee"]
+    },
+    {
+      "id": 6,
+      "question": "What does disable_parallel_tool_use do?",
+      "options": [
+        "Asks for at most one tool call per turn, set alongside tool_choice as in {\"type\": \"auto\", \"disable_parallel_tool_use\": true}.",
+        "Prevents two different tools from ever being defined together.",
+        "Forces tool calls to execute sequentially in your application.",
+        "Disables server tools while leaving client tools available."
+      ],
+      "answer": "Asks for at most one tool call per turn, set alongside tool_choice as in {\"type\": \"auto\", \"disable_parallel_tool_use\": true}.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: tool_choice",
+      "explanation": "The documented examples annotate it as 'Ask for at most one tool call per turn' and set it inside the tool_choice object. Without it, Claude may emit several tool_use blocks in one response, which your code must execute and return as multiple tool_result blocks.\n\n**Why the others are wrong**\n\n- **B.** It constrains calls per turn, not tool definitions.\n- **C.** Execution order in your application is entirely your code's concern; the flag governs what the model emits.\n- **D.** It is unrelated to the client/server split.\n\nWhen to use it: when a workflow has ordering dependencies — one tool must produce data another consumes — sequencing is safer than parallel emission. When calls are independent, parallel is faster.",
+      "examTrick": "disable_parallel_tool_use lives INSIDE tool_choice and caps the model at one call per turn. Use it when tools have ordering dependencies.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Parallel Tool Use", "Sequencing", "tool_choice"]
+    },
+    {
+      "id": 7,
+      "question": "How do you guarantee a tool call's arguments match your schema exactly?",
+      "options": [
+        "Add strict: true to the custom tool definition.",
+        "Add required: true to every property.",
+        "Set tool_choice to {\"type\": \"tool\", \"name\": ...}.",
+        "Add validate: true alongside input_schema."
+      ],
+      "answer": "Add strict: true to the custom tool definition.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: strict tool use",
+      "explanation": "'Add strict: true to your custom tool definitions to ensure Claude's tool calls always match your schema exactly.' The structured-outputs docs describe the same feature as 'Strict tool use (strict: true): Tool names and inputs are schema-validated', with the object rule that additionalProperties must be false.\n\n**Why the others are wrong**\n\n- **B.** required lists which properties must be present; it does not enforce the whole schema at decode time.\n- **C.** tool_choice guarantees the call HAPPENS; strict guarantees the ARGUMENTS conform. These are orthogonal, and production code that needs both must set both.\n- **D.** Not a documented field.",
+      "examTrick": "tool_choice = will it be called. strict = will the arguments be valid. Two different guarantees, often needed together.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "strict Tool Use", "Schema Conformance", "tool_choice"]
+    },
+    {
+      "id": 8,
+      "question": "A user asks 'What's the weather?' with no location, and the tool requires a location parameter. What does the documentation say happens?",
+      "options": [
+        "Claude Opus is much more likely to recognise the missing parameter and ask for it; Sonnet might ask, but might also infer a reasonable value.",
+        "The API rejects the turn with a validation error for the missing parameter.",
+        "The tool is skipped entirely and Claude replies conversationally.",
+        "Claude always asks for any missing required parameter, on every model."
+      ],
+      "answer": "Claude Opus is much more likely to recognise the missing parameter and ask for it; Sonnet might ask, but might also infer a reasonable value.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Tool use: when required parameters are missing",
+      "explanation": "'If the user's prompt doesn't include enough information to fill all the required parameters for a tool, Claude Opus is much more likely to recognize that a parameter is missing and ask for it. Claude Sonnet might ask, especially when prompted to think before outputting a tool request. But it might also infer a reasonable value... This behavior is not guaranteed, especially for more ambiguous prompts and for less capable models.' The docs show it guessing {\"location\": \"New York, NY\", \"unit\": \"fahrenheit\"}.\n\n**Why the others are wrong**\n\n- **B.** The model fills the schema; there is no upstream rejection for an under-specified user prompt.\n- **C.** It may still call the tool with an inferred value.\n- **D.** Explicitly 'not guaranteed'.\n\nThe design lesson mirrors extraction schema design: if a parameter can be genuinely unknown, the system needs a legal way to represent that rather than forcing a guess.",
+      "examTrick": "Missing required params get GUESSED, especially on smaller models. Design for absence; do not assume the model will ask.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Missing Parameters", "Model Differences", "Inference Risk"]
+    },
+    {
+      "id": 9,
+      "question": "Which of these is an Anthropic-schema CLIENT tool that your application must execute?",
+      "options": [
+        "The text editor tool.",
+        "The web search tool.",
+        "The code execution tool.",
+        "The tool search tool."
+      ],
+      "answer": "The text editor tool.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Tool use: choose a tool",
+      "explanation": "Anthropic-schema client tools are ones where 'Anthropic publishes the schema and trains Claude on it. Your application still executes each call and returns the tool_result.' That group includes the memory tool, bash tool, text editor tool, computer use tool, and browser use tool.\n\n**Why the others are wrong**\n\n- **B, C, D.** Web search, code execution, and tool search are SERVER tools that 'run on Anthropic's infrastructure, with no handler code in your application.' Others in that group include web fetch, the advisor tool, and the MCP connector.\n\nThe distinction has real architectural consequences: a server tool needs no execution environment from you, while an Anthropic-schema client tool means you must supply a sandbox, a filesystem, or a browser.",
+      "examTrick": "Anthropic-schema CLIENT tools: memory, bash, text editor, computer use, browser use. SERVER: web search, web fetch, code execution, advisor, tool search.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Anthropic-Schema Tools", "Server Tools", "Execution Responsibility"]
+    },
+    {
+      "id": 10,
+      "question": "Which sources contribute the additional tokens that tool use adds to a request?",
+      "options": [
+        "The tools parameter (names, descriptions, schemas), tool_use blocks, tool_result blocks, and an automatically included tool-use system prompt.",
+        "Only the tool_result blocks, since those carry data.",
+        "Only the tools parameter; the blocks are free.",
+        "Nothing extra; tool use reuses the existing message tokens."
+      ],
+      "answer": "The tools parameter (names, descriptions, schemas), tool_use blocks, tool_result blocks, and an automatically included tool-use system prompt.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: pricing",
+      "explanation": "'The additional tokens from tool use come from: the tools parameter in API requests (tool names, descriptions, and schemas), tool_use content blocks in API requests and responses, tool_result content blocks in API requests.' Plus: 'When you use tools, the API also automatically includes a special system prompt for the model that enables tool use.'\n\n**Why the others are wrong**\n\n- **B, C.** Each omits real cost sources.\n- **D.** Tool use measurably increases input tokens.\n\nThe practical tension: richer tool descriptions improve selection reliability but cost tokens on every request. That is exactly what prompt caching addresses, since tool definitions are the first cacheable prefix section.",
+      "examTrick": "Tools cost tokens EVERY request: definitions + blocks + a tool-use system prompt. Cache the definitions.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Tool Token Cost", "Description Tradeoff", "Prompt Caching"]
+    },
+    {
+      "id": 11,
+      "question": "How does the tool-use system prompt token count vary with tool_choice on Claude Opus 5?",
+      "options": [
+        "286 tokens for auto or none, and 406 tokens for any or tool.",
+        "It is a flat 286 tokens regardless of tool_choice.",
+        "It is zero whenever tools are provided.",
+        "406 tokens for auto and 286 for any or tool."
+      ],
+      "answer": "286 tokens for auto or none, and 406 tokens for any or tool.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Tool use: pricing table",
+      "explanation": "The per-model table lists Claude Opus 5 at 286 tokens for auto/none and 406 tokens for any/tool. The forcing modes cost more because they require additional instruction. Also documented: 'the table assumes at least 1 tool is provided. If no tools are provided, then a tool choice of none uses 0 additional system prompt tokens.'\n\n**Why the others are wrong**\n\n- **B.** The count varies by tool_choice.\n- **C.** Zero applies only when NO tools are provided and tool_choice is none.\n- **D.** Reversed — forcing costs more, not less.\n\nYou do not need every model's numbers, but you should know the shape: forcing a tool call costs more system-prompt tokens than letting the model choose.",
+      "examTrick": "Forcing (any/tool) costs MORE system-prompt tokens than auto/none. Zero only when no tools at all + none.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Token Accounting", "tool_choice Cost", "Opus 5"]
+    },
+    {
+      "id": 12,
+      "question": "A structured-output pipeline breaks whenever Claude replies conversationally instead of calling the extraction tool. Which configuration fixes it, and what does it not fix?",
+      "options": [
+        "Set tool_choice to force the tool — that guarantees invocation, but does not guarantee the arguments conform unless you also set strict: true.",
+        "Set strict: true — that guarantees invocation and conformance together.",
+        "Add a system prompt instruction — that guarantees invocation deterministically.",
+        "Set disable_parallel_tool_use: true — that forces exactly one tool call, which must be the extraction tool."
+      ],
+      "answer": "Set tool_choice to force the tool — that guarantees invocation, but does not guarantee the arguments conform unless you also set strict: true.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Tool use: define tools, strict tool use",
+      "explanation": "The exam objective names this pair directly: configure tool_choice to guarantee tool invocation when conversational responses would cause downstream failures, and use tool schemas to enforce structured output compliance. tool_choice governs WHETHER; strict governs WHETHER THE ARGUMENTS ARE VALID.\n\n**Why the others are wrong**\n\n- **B.** strict validates a call that occurs; it cannot make one occur.\n- **C.** Prompting shifts likelihood, not certainty — 'To require a tool call rather than rely on prompting, set tool_choice.'\n- **D.** It caps the NUMBER of calls per turn; it does not force a call to happen at all, nor pick which tool.",
+      "examTrick": "Two orthogonal guarantees: tool_choice (invocation) and strict (conformance). Downstream reliability usually needs both.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Guaranteed Invocation", "strict", "Downstream Reliability"]
+    },
+    {
+      "id": 13,
+      "question": "What is Tool Runner, per the documentation?",
+      "options": [
+        "An SDK feature where the SDKs execute your tools and send the results back automatically, so you don't write the round trip yourself.",
+        "A server tool that runs arbitrary code on Anthropic's infrastructure.",
+        "A CLI for testing tool schemas before deployment.",
+        "The component inside Claude Code that dispatches built-in tools."
+      ],
+      "answer": "An SDK feature where the SDKs execute your tools and send the results back automatically, so you don't write the round trip yourself.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use overview",
+      "explanation": "'To skip writing this round trip yourself, use Tool Runner: the SDKs execute your tools and send the results back automatically.' It automates the loop of parsing tool_use, executing, and appending tool_result.\n\n**Why the others are wrong**\n\n- **B.** That describes the code execution tool.\n- **C.** Not a schema-testing CLI.\n- **D.** Claude Code's internal dispatch is not what this names.\n\nThe conceptual point worth carrying: the agentic loop is the same whether you hand-roll it, use Tool Runner, or use Claude Code. Model decides → tool executes → result returns → model continues, until stop_reason is no longer tool_use.",
+      "examTrick": "Tool Runner automates the tool_use → execute → tool_result loop in the SDKs. Same loop, less boilerplate.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Tool Runner", "SDK", "Agentic Loop"]
+    },
+    {
+      "id": 14,
+      "question": "Which tool exists specifically for working with very large tool catalogues?",
+      "options": [
+        "The tool search tool, which discovers and loads tools on demand.",
+        "The advisor tool, which ranks tools by relevance.",
+        "The MCP connector, which pages through server tool lists.",
+        "The memory tool, which caches tool definitions between sessions."
+      ],
+      "answer": "The tool search tool, which discovers and loads tools on demand.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: server tools",
+      "explanation": "The server-tools list describes the tool search tool as 'Work with thousands of tools by discovering and loading them on demand.' This is the API-level analogue of Claude Code's MCP tool search, which the MCP docs say is 'on by default, so idle MCP tools consume minimal context.'\n\n**Why the others are wrong**\n\n- **B.** The advisor tool lets 'a faster executor model consult a higher-intelligence advisor model mid-generation'.\n- **C.** The MCP connector connects to remote MCP servers from the Messages API without a separate MCP client.\n- **D.** The memory tool stores and retrieves information across conversations in files you control.\n\nThe underlying problem it solves is the token cost from question 10: every tool definition is paid for on every request, so thousands of tools cannot all be resident.",
+      "examTrick": "Thousands of tools = tool search (on-demand loading). It exists because tool definitions cost tokens every request.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Tool Search", "Scale", "Token Efficiency"]
+    },
+    {
+      "id": 15,
+      "question": "Two tools have overlapping purposes and Claude picks the wrong one. Which change most directly addresses the cause?",
+      "options": [
+        "Rewrite the descriptions with concrete use cases, input format specifications, and explicit guidance on when to prefer each.",
+        "Set tool_choice to the correct tool on every request.",
+        "Merge the two tools into one with a mode parameter.",
+        "Set strict: true on both tools."
+      ],
+      "answer": "Rewrite the descriptions with concrete use cases, input format specifications, and explicit guidance on when to prefer each.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: when Claude uses tools; tool description guidance",
+      "explanation": "Selection is driven by the description: 'Claude determines when to call a tool based on the user's request and the tool's description.' Ambiguous descriptions therefore produce ambiguous selection, and the remedy is to make each description carry what distinguishes it.\n\n**Why the others are wrong**\n\n- **B.** Forcing works only when YOU already know the answer. An autonomous agent choosing across varied requests cannot be fixed this way.\n- **C.** Sometimes legitimate, but it hides a description problem behind a parameter and often produces one overloaded tool that is itself hard to describe.\n- **D.** strict validates arguments of the call that was made; it cannot influence which tool was chosen.\n\nThis mirrors the skills guidance exactly: 'If descriptions are vague or overlap, Claude may load the wrong skill or miss one that would help.'",
+      "examTrick": "Wrong-tool selection is always a DESCRIPTION problem first. Same as wrong-skill selection.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Tool Descriptions", "Disambiguation", "Selection Reliability"]
+    },
+    {
+      "id": 16,
+      "question": "Which statement about parallel tool calls and server tools is correct?",
+      "options": [
+        "You normally see server-tool results directly, unless Claude calls the server tool in the same group of parallel calls as one of your client tools.",
+        "Server tools can never appear in a parallel group with client tools.",
+        "All parallel calls are always returned to you for execution.",
+        "Parallel calls are disabled automatically whenever a server tool is present."
+      ],
+      "answer": "You normally see server-tool results directly, unless Claude calls the server tool in the same group of parallel calls as one of your client tools.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Tool use: how tool use works",
+      "explanation": "'Server tools run on Anthropic's infrastructure: you see the results directly without handling execution, UNLESS Claude calls the tool in the same group of parallel tool calls as one of your client tools.' The docs point to the stop-reasons page for the fallback behaviour.\n\n**Why the others are wrong**\n\n- **B.** The exception exists precisely because they can.\n- **C.** Server-tool results normally come back resolved.\n- **D.** No automatic disabling occurs.\n\nWhy it matters in practice: a handler written on the assumption that server tools never need handling will break the first time the model batches a web search alongside your own tool. Handle the general case.",
+      "examTrick": "A server tool batched in parallel with a client tool becomes your problem. Don't assume server results are always pre-resolved.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Parallel Groups", "Server Tool Fallback", "Handler Robustness"]
+    },
+    {
+      "id": 17,
+      "question": "Your workflow requires that a lookup tool runs before a dependent write tool. What is the most reliable way to enforce that ordering?",
+      "options": [
+        "Sequence the workflow so the prerequisite data is obtained first — disable parallel tool use and structure the turns so the dependent tool is only available or only sensible once the first result is in context.",
+        "Define both tools and rely on Claude to infer the dependency from their names.",
+        "Set tool_choice to any, which processes tools in definition order.",
+        "Put both operations in one tool call with an array of steps."
+      ],
+      "answer": "Sequence the workflow so the prerequisite data is obtained first — disable parallel tool use and structure the turns so the dependent tool is only available or only sensible once the first result is in context.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Tool use: parallel tool use; CCAF objective wording",
+      "explanation": "The exam objective states it directly: configure tool_choice to guarantee invocation when structured output is required, 'and sequence multi-tool workflows so prerequisite data is obtained before dependent tools are called.' disable_parallel_tool_use is the mechanism that stops the model emitting both at once, and the turn structure carries the dependency.\n\n**Why the others are wrong**\n\n- **B.** Names are weak signals; explicit description guidance is better, and neither is an ordering guarantee.\n- **C.** tool_choice: any forces SOME call; it defines no execution order and definition order carries no semantics.\n- **D.** Collapsing a real dependency into one opaque call removes the model's ability to react to the first result — which is the entire value of the agentic loop.",
+      "examTrick": "Ordering comes from SEQUENCING TURNS plus disable_parallel_tool_use. Definition order means nothing.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Multi-Tool Sequencing", "Dependencies", "disable_parallel_tool_use"]
+    },
+    {
+      "id": 18,
+      "question": "In the tool-use round trip, which role carries the tool_result block?",
+      "options": [
+        "The user role.",
+        "The assistant role, since the tool acted for the assistant.",
+        "The system parameter.",
+        "A dedicated tool role."
+      ],
+      "answer": "The user role.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: the round trip",
+      "explanation": "Every documented example appends {role: \"user\", content: [{type: \"tool_result\", tool_use_id: ..., content: ...}]}. The assistant turn carries the tool_use block; the user turn carries the tool_result.\n\n**Why the others are wrong**\n\n- **B.** The assistant turn holds the REQUEST (tool_use), not the result.\n- **C.** The system parameter holds the system prompt only.\n- **D.** The Messages API has exactly two message roles, user and assistant. Other function-calling APIs do have a 'tool' role, which is why this is a frequent cross-provider error.\n\nIt follows from the alternating-turn design: the model spoke (assistant), so the next turn returning information to it must be user.",
+      "examTrick": "Only two roles exist: user and assistant. tool_result goes in a USER turn. There is no tool role.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Message Roles", "tool_result", "Cross-Provider Confusion"]
+    },
+    {
+      "id": 19,
+      "question": "Which is the correct reading of tool use as an agentic loop?",
+      "options": [
+        "The loop continues while the model returns stop_reason tool_use, and terminates when it returns a final response with a different stop_reason.",
+        "The loop runs a fixed number of iterations set by max_tokens.",
+        "The loop terminates as soon as any tool returns an error.",
+        "The loop is driven by the client deciding when enough tools have run."
+      ],
+      "answer": "The loop continues while the model returns stop_reason tool_use, and terminates when it returns a final response with a different stop_reason.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: how tool use works; CCAF objective wording",
+      "explanation": "The objective wording is 'how the agentic loop uses model responses and stop_reason signals to decide whether to continue tool execution or terminate and return a final response.' The mechanism: a client tool causes 'stop_reason: \"tool_use\"' and one or more tool_use blocks; you execute and return tool_result; the loop repeats until the model stops asking for tools.\n\n**Why the others are wrong**\n\n- **B.** max_tokens caps generation length per response, not loop iterations.\n- **C.** An error can be returned to the model as a tool_result so it can recover — that is the point of structured, recoverable error reporting.\n- **D.** The MODEL signals continuation via stop_reason; the client executes and may impose its own safety bounds (like maxTurns), but it does not decide the loop's semantics.",
+      "examTrick": "stop_reason is the loop condition. tool_use = keep going. Anything else = terminate with a final response.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Agentic Loop", "stop_reason", "Loop Termination"]
+    },
+    {
+      "id": 20,
+      "question": "An MCP server needs to be reachable from the Messages API without building a separate MCP client. What does the documentation point to?",
+      "options": [
+        "The MCP connector.",
+        "The tool search tool.",
+        "The code execution tool.",
+        "Tool Runner."
+      ],
+      "answer": "The MCP connector.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: server tools",
+      "explanation": "'For connecting to Model Context Protocol (MCP) servers, see the MCP connector.' It is listed among server tools as 'Connect to remote MCP servers from the Messages API without a separate MCP client.' Building your own client is the alternative path, covered by the Model Context Protocol guide.\n\n**Why the others are wrong**\n\n- **B.** Tool search handles large tool catalogues.\n- **C.** Code execution runs Python and bash in a sandboxed container.\n- **D.** Tool Runner automates the client-tool round trip in the SDKs.\n\nWorth holding the three MCP integration paths apart: Claude Code's own MCP client (claude mcp add), the API's MCP connector, and a custom MCP client you build.",
+      "examTrick": "MCP from the Messages API = MCP connector. From Claude Code = claude mcp add. Or build your own client.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "MCP Connector", "Integration Paths", "Server Tools"]
+    },
+    {
+      "id": 21,
+      "question": "You provide no tools at all and set tool_choice to none. What is the token cost of the tool-use system prompt?",
+      "options": [
+        "0 additional system prompt tokens.",
+        "The model's auto/none figure, since tool_choice was specified.",
+        "The model's any/tool figure, since none is a forcing mode.",
+        "Half the auto figure."
+      ],
+      "answer": "0 additional system prompt tokens.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Tool use: pricing",
+      "explanation": "'Note that the table assumes at least 1 tool is provided. If no tools are provided, then a tool choice of none uses 0 additional system prompt tokens.'\n\n**Why the others are wrong**\n\n- **B.** The table figures apply when at least one tool exists; with no tools there is nothing to enable.\n- **C.** none is a suppressing mode, not a forcing one — forcing modes are any and tool.\n- **D.** Not a documented behaviour.\n\nThe operational takeaway: leaving unused tool definitions attached costs tokens on every request. Prune the tool list per call path rather than defining everything everywhere.",
+      "examTrick": "No tools + tool_choice none = zero overhead. Unused tool definitions are a recurring, silent cost.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Zero Overhead", "Tool Pruning", "Cost Control"]
+    },
+    {
+      "id": 22,
+      "question": "Which statement best captures when Claude answers directly instead of calling a tool, under tool_choice auto?",
+      "options": [
+        "It responds directly for stable knowledge, creative tasks, and conversational turns; it calls a tool when the request maps to a described capability and the answer isn't already in context.",
+        "It always calls a tool if any tool is defined.",
+        "It calls a tool only when the user explicitly names one.",
+        "It responds directly whenever the tool list exceeds ten entries."
+      ],
+      "answer": "It responds directly for stable knowledge, creative tasks, and conversational turns; it calls a tool when the request maps to a described capability and the answer isn't already in context.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Tool use: when Claude uses tools",
+      "explanation": "Quoted almost verbatim from the docs. Two conditions govern a call: the request maps to that tool's DESCRIBED capability, and the answer is not already in context.\n\n**Why the others are wrong**\n\n- **B.** That is tool_choice: any behaviour, not auto.\n- **C.** Explicit naming helps but is not required.\n- **D.** Tool count does not gate calling, though a very large catalogue does degrade selection — the problem tool search addresses.\n\nThe 'not already in context' clause explains a common surprise: after a tool has returned a value earlier in the conversation, Claude may reasonably reuse it rather than call again. If you need freshness, say so in the tool description or the prompt.",
+      "examTrick": "Two conditions for a call under auto: maps to the described capability AND not already in context. The second explains 'why didn't it call again?'",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "auto Behaviour", "Context Reuse", "Tool Triggering"]
+    }
+  ]
+}

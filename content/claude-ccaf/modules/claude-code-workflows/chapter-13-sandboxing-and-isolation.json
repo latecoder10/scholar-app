@@ -1,0 +1,315 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.13 Sandboxing, Isolation & Credential Protection",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "NEW TOPIC. The Bash sandbox's filesystem and network isolation, sandbox modes and auto-allow, platform requirements, path prefix resolution, allow/deny interaction, credential masking, the dangerouslyDisableSandbox escape hatch, and enforcing sandboxing with managed settings. Grounded in the official Claude Code sandboxing documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What does the Bash sandbox do, and who enforces the boundary?",
+      "options": [
+        "You define which files and network domains commands can touch, and the operating system enforces that boundary for every Bash command and its child processes.",
+        "Claude is instructed to avoid restricted paths and complies voluntarily.",
+        "Claude Code inspects each command string and rejects unsafe ones before running.",
+        "Commands run in a remote container managed by Anthropic."
+      ],
+      "answer": "You define which files and network domains commands can touch, and the operating system enforces that boundary for every Bash command and its child processes.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sandboxing",
+      "explanation": "'The Bash sandbox lets Claude run most shell commands without stopping to ask permission. Instead of approving each command, you define which files and network domains commands can touch, and the operating system enforces that boundary for every Bash command and its child processes.'\n\n**Why the others are wrong**\n\n- **B.** Voluntary compliance is what CLAUDE.md offers; the sandbox is OS-level enforcement — the strongest layer in the model.\n- **C.** Pattern-based command inspection is what permission rules do, and the docs note such patterns are fragile.\n- **D.** It is local: macOS uses the built-in Seatbelt framework; Linux and WSL2 use bubblewrap and socat.\n\nThe child-process clause matters: a permission rule matches the command STRING, but the sandbox constrains everything that command spawns.",
+      "examTrick": "Sandbox = OS-enforced, covers child processes too. Permission rules match strings; the OS matches syscalls.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "OS Enforcement", "Child Processes", "Isolation Layer"]
+    },
+    {
+      "id": 2,
+      "question": "Which platforms support the sandbox, and what is required on each?",
+      "options": [
+        "macOS, Linux, and WSL2 — nothing to install on macOS (built-in Seatbelt); Linux and WSL2 need bubblewrap and socat. Native Windows is not supported.",
+        "All platforms including native Windows, with no dependencies.",
+        "Linux only, using seccomp.",
+        "macOS and native Windows; Linux requires a container."
+      ],
+      "answer": "macOS, Linux, and WSL2 — nothing to install on macOS (built-in Seatbelt); Linux and WSL2 need bubblewrap and socat. Native Windows is not supported.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sandboxing: get started",
+      "explanation": "'The sandbox is built into Claude Code and runs on macOS, Linux, and WSL2. Native Windows is not supported. On Windows, run Claude Code inside a WSL2 distribution. On macOS, there is nothing to install: sandboxing uses the built-in Seatbelt framework.' The Linux packages are bubblewrap ('the unprivileged sandboxing tool that enforces filesystem isolation') and socat ('the relay used to route network traffic through the sandbox proxy').\n\n**Why the others are wrong**\n\n- **B, C, D.** Each misstates platform support.\n\nThe /sandbox panel's Dependencies tab 'lists which of ripgrep, bubblewrap, socat, and the seccomp filter your platform lacks'. The seccomp filter is optional and 'adds Unix domain socket blocking', installed with npm install -g @anthropic-ai/sandbox-runtime. The dependency check runs at startup, so restart after installing.",
+      "examTrick": "macOS = Seatbelt, nothing to install. Linux/WSL2 = bubblewrap + socat. Native Windows = unsupported, use WSL2.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Platform Support", "bubblewrap", "seccomp"]
+    },
+    {
+      "id": 3,
+      "question": "What is the difference between the two sandbox modes?",
+      "options": [
+        "Both enforce the same filesystem and network restrictions; auto-allow runs sandboxed commands without prompting, while regular permissions keeps the normal permission prompts even when commands are sandboxed.",
+        "Auto-allow disables the sandbox restrictions entirely.",
+        "Regular permissions applies filesystem isolation only; auto-allow adds network isolation.",
+        "Auto-allow works only in bypassPermissions mode."
+      ],
+      "answer": "Both enforce the same filesystem and network restrictions; auto-allow runs sandboxed commands without prompting, while regular permissions keeps the normal permission prompts even when commands are sandboxed.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sandboxing: sandbox modes",
+      "explanation": "'Claude Code offers two sandbox modes. In both, the sandbox enforces the same filesystem and network restrictions; the difference is only in whether sandboxed commands are auto-approved or require explicit permission.'\n\n**Why the others are wrong**\n\n- **B.** The restrictions are identical in both modes.\n- **C.** Both layers apply in both modes.\n- **D.** 'Auto-allow mode works independently of your permission mode setting, with one exception: plan mode.'\n\nThe important consequence in auto-allow: 'sandboxed Bash commands run automatically when auto-allow is enabled. This means Bash commands that modify files within the sandbox boundaries execute without prompting, even in Manual mode, where the file edit tools would prompt.' And in plan mode, 'auto-allow doesn't widen approvals.'",
+      "examTrick": "Same restrictions, different prompting. Auto-allow lets Bash write files without a prompt even in Manual mode — but not in plan mode.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Sandbox Modes", "auto-allow", "Plan Mode Exception"]
+    },
+    {
+      "id": 4,
+      "question": "By default, where can commands inside the sandbox write?",
+      "options": [
+        "Only to the working directory and the session temp directory; the first time a command needs a new network domain, Claude Code prompts for approval.",
+        "Anywhere on the filesystem, with only network restricted.",
+        "Nowhere — the sandbox is read-only.",
+        "Only to a dedicated sandbox scratch directory outside the project."
+      ],
+      "answer": "Only to the working directory and the session temp directory; the first time a command needs a new network domain, Claude Code prompts for approval.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sandboxing: get started",
+      "explanation": "'By default, commands inside the sandbox can write only to the working directory and the session temp directory. The first time a command needs a new network domain, Claude Code prompts for approval, or in auto mode sends the request to the classifier.'\n\n**Why the others are wrong**\n\n- **B.** That is what setting sandbox.filesystem.disabled to true produces, which is a deliberate opt-out rather than the default.\n- **C.** Builds and test suites need to write.\n- **D.** The working directory is writable, which is what makes ordinary development work.\n\nThe network default is the notable half: outbound domains are denied until approved, so a command that tries to reach an unexpected host surfaces rather than succeeding silently.",
+      "examTrick": "Default writes: working directory + session temp. Network: deny-by-default, approved per domain on first use.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Default Boundaries", "Network Approval", "Deny by Default"]
+    },
+    {
+      "id": 5,
+      "question": "How do allowRead and denyRead interact in sandbox filesystem settings?",
+      "options": [
+        "A narrower allow re-opens part of a denied region, and a deny holds inside a wider allow — so a broad allow cannot silently re-expose a secret, and wildcard denies hold the same way exact paths do.",
+        "Allow always wins over deny, since it is more specific.",
+        "Deny always wins and cannot be narrowed by any allow.",
+        "The last-listed rule wins."
+      ],
+      "answer": "A narrower allow re-opens part of a denied region, and a deny holds inside a wider allow — so a broad allow cannot silently re-expose a secret, and wildcard denies hold the same way exact paths do.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sandboxing: filesystem isolation",
+      "explanation": "The documented cases: denyRead ['~/'] with allowRead ['~/projects'] means '~/projects is readable and the rest of the home directory stays blocked. The narrower allow re-opens that part of the denied region.' allowRead ['~/'] with denyRead ['~/.env'] means '~/.env stays blocked and the rest of the home directory is readable. The deny holds inside a wider allow, so a broad allow can't silently re-expose a secret.' And allowRead ['~/'] with denyRead ['~/**/.env'] blocks every .env under home — 'A wildcard deny holds inside a wider allow the same way an exact path does.'\n\n**Why the others are wrong**\n\n- **B, C.** Both are absolutes; the real rule is specificity-based in a way that preserves safety.\n- **D.** Order does not decide.\n\nNote this differs from PERMISSION rules, where 'a deny rule can't carry allowlist exceptions' and deny beats a narrower allow outright. Sandbox paths and permission rules resolve conflicts differently.",
+      "examTrick": "Sandbox paths: narrower rule wins, but a deny inside a wider allow still holds. Permission RULES: deny always beats allow. Different systems.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "allowRead vs denyRead", "Specificity", "Rule System Contrast"]
+    },
+    {
+      "id": 6,
+      "question": "How does a path with no prefix resolve in sandbox settings?",
+      "options": [
+        "Relative to the project root for project settings, or to ~/.claude for user settings — so ./output in .claude/settings.json resolves to <project-root>/output.",
+        "Always relative to the filesystem root.",
+        "Always relative to the home directory.",
+        "Always relative to the current working directory regardless of the settings file."
+      ],
+      "answer": "Relative to the project root for project settings, or to ~/.claude for user settings — so ./output in .claude/settings.json resolves to <project-root>/output.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sandboxing: path prefixes",
+      "explanation": "The prefix table: '/' is an absolute path from the filesystem root ('/tmp/build stays /tmp/build'); '~/' is relative to the home directory ('~/.kube becomes $HOME/.kube'); './' or no prefix is 'Relative to the project root for project settings, or to ~/.claude for user settings'.\n\n**Why the others are wrong**\n\n- **B, C, D.** Each fixes one anchor, missing the settings-source dependency.\n\nCompare with PERMISSION rules, which have four prefixes: // for filesystem root, ~/ for home, / for the settings source, and ./ or bare for the current directory. Sandbox paths use a SINGLE slash for filesystem root where permission rules use a double slash. Mixing them up silently anchors a rule in the wrong place.",
+      "examTrick": "Sandbox: / = filesystem root. Permission rules: // = filesystem root, single / = settings source. Do not transfer the syntax.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Path Prefixes", "Syntax Contrast", "Settings Source"]
+    },
+    {
+      "id": 7,
+      "question": "What is the dangerouslyDisableSandbox escape hatch, and how is it disabled?",
+      "options": [
+        "When a command fails because of sandbox restrictions, Claude analyzes the failure and may retry with dangerouslyDisableSandbox; set \"allowUnsandboxedCommands\": false to ignore the parameter entirely, shown as Strict sandbox mode.",
+        "It is a CLI flag that turns the sandbox off for a session.",
+        "It is a permission rule that exempts named commands.",
+        "It cannot be disabled once sandboxing is enabled."
+      ],
+      "answer": "When a command fails because of sandbox restrictions, Claude analyzes the failure and may retry with dangerouslyDisableSandbox; set \"allowUnsandboxedCommands\": false to ignore the parameter entirely, shown as Strict sandbox mode.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sandboxing",
+      "explanation": "'When a command fails after the sandbox denied it access, Claude Code appends the violation details to the failed command's output, so Claude sees which file path or network host the sandbox blocked. Rather than failing the task or requiring you to turn sandboxing off, Claude Code includes an escape hatch: when a command fails because of sandbox restrictions, Claude analyzes the failure and may retry the command with the dangerouslyDisableSandbox parameter.' And: 'You can disable this escape hatch by setting \"allowUnsandboxedCommands\": false... When disabled, which the /sandbox Overrides tab shows as Strict sandbox mode, the dangerouslyDisableSandbox parameter is completely ignored and all commands must run sandboxed or be explicitly listed in excludedCommands.'\n\n**Why the others are wrong**\n\n- **B, C.** It is a per-call tool parameter, not a flag or a rule.\n- **D.** allowUnsandboxedCommands: false disables it.\n\nThe violation-details feedback is itself good design: the failure tells Claude WHICH path or host was blocked, so it can react specifically rather than guessing.",
+      "examTrick": "Sandbox failures append violation details so Claude can react. Strict sandbox mode = allowUnsandboxedCommands: false.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "dangerouslyDisableSandbox", "Strict Sandbox Mode", "Structured Failure Detail"]
+    },
+    {
+      "id": 8,
+      "question": "What does credential masking do that a deny entry does not?",
+      "options": [
+        "The sandboxed command sees a per-session sentinel value, and the sandbox proxy swaps in the real value on outbound requests to hosts listed in injectHosts — so requests still authenticate while the command never holds the real credential.",
+        "It encrypts the credential file on disk.",
+        "It blocks the credential entirely, which is what deny also does.",
+        "It rotates the credential after each command."
+      ],
+      "answer": "The sandboxed command sees a per-session sentinel value, and the sandbox proxy swaps in the real value on outbound requests to hosts listed in injectHosts — so requests still authenticate while the command never holds the real credential.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sandboxing: mask credentials",
+      "explanation": "'Masking goes further than a deny entry under Protect credentials. Instead of blocking a credential, Claude Code shows sandboxed commands a placeholder, the sentinel, and the sandbox proxy swaps in the real value on outbound requests to hosts you allow... With mask, the sandboxed command sees a per-session sentinel value instead of the real one. Each mask entry can list injectHosts, the hosts the real value is allowed to reach... The command and anything it logs never hold the real credential, but its requests still authenticate.'\n\n**Why the others are wrong**\n\n- **B.** No encryption at rest is involved.\n- **C.** Deny blocks; mask substitutes — the whole point is that the command keeps working.\n- **D.** No rotation occurs.\n\nA platform caveat: 'For files, the substitution is Linux and WSL2 behavior; macOS blocks the file instead.'",
+      "examTrick": "mask = sentinel to the command, real value injected by the proxy for injectHosts. macOS blocks masked FILES instead.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Credential Masking", "injectHosts", "Sentinel Values"]
+    },
+    {
+      "id": 9,
+      "question": "What is the documented risk of setting sandbox.filesystem.disabled to true while commands are auto-allowed?",
+      "options": [
+        "A sandboxed command can write files that later commands run or read — shell startup files, executables on $PATH, or ~/.claude/settings.json — and use them to widen its own access on the next run.",
+        "Network isolation is also disabled, removing all boundaries.",
+        "Claude Code refuses to start.",
+        "Nothing; disabling filesystem isolation is equivalent to the default."
+      ],
+      "answer": "A sandboxed command can write files that later commands run or read — shell startup files, executables on $PATH, or ~/.claude/settings.json — and use them to widen its own access on the next run.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sandboxing: filesystem isolation disabled",
+      "explanation": "'With filesystem isolation off and commands auto-allowed, a sandboxed command can write files that later commands run or read, such as shell startup files, executables on $PATH, or ~/.claude/settings.json, and use them to widen its own access on the next run. Set filesystem.disabled to true only for workloads you trust not to escalate their own access. Locking network domains with allowManagedDomainsOnly narrows the risk but doesn't remove it, since that lock applies only to commands running inside the sandbox.'\n\n**Why the others are wrong**\n\n- **B.** 'The sandbox has two independent layers' — network isolation survives.\n- **C.** It is a supported configuration.\n- **D.** The default restricts writes to the working directory and session temp.\n\nThe named self-escalation path through ~/.claude/settings.json is the sharpest example: writing your own permission rules is the ultimate privilege escalation, which is exactly why .claude is a protected path in the permission system.",
+      "examTrick": "Writable config = self-escalation. That is why .claude and .git are protected paths under every permission mode.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Privilege Escalation", "filesystem.disabled", "Independent Layers"]
+    },
+    {
+      "id": 10,
+      "question": "Which statement about the sandbox and permission rules is correct?",
+      "options": [
+        "Deny rules still apply inside the sandbox, and ask rules naming a command such as Bash(git push *) still prompt even in auto-allow mode.",
+        "The sandbox replaces permission rules; neither deny nor ask applies inside it.",
+        "Only allow rules apply inside the sandbox.",
+        "Permission rules apply only when the sandbox is unavailable."
+      ],
+      "answer": "Deny rules still apply inside the sandbox, and ask rules naming a command such as Bash(git push *) still prompt even in auto-allow mode.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permission modes: choose a mode; Sandboxing",
+      "explanation": "The mode-selection table's row for Manual plus the sandbox in auto-allow notes: 'Deny rules still apply, and ask rules that name a command, such as Bash(git push *), still prompt.' Commands that cannot be sandboxed 'fall back to the regular permission flow, where Claude Code checks your permission rules and gates any command those rules do not already allow.'\n\n**Why the others are wrong**\n\n- **B, C.** The layers compose rather than replace.\n- **D.** They apply alongside it.\n\nThis completes the four-layer model: permission MODES set the baseline for what is asked, RULES allow/ask/deny specific calls, HOOKS add programmatic decisions, and the SANDBOX adds OS-level isolation. Each layer is independent, and the strictest applicable constraint governs.",
+      "examTrick": "Sandbox composes with rules. Deny and command-specific ask still fire inside auto-allow. Four layers, strictest wins.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Layer Composition", "Deny Persistence", "Four-Layer Model"]
+    },
+    {
+      "id": 11,
+      "question": "Where does selecting a sandbox mode in the /sandbox panel save the setting, and how do you enable it more broadly?",
+      "options": [
+        "To .claude/settings.local.json for the current project; set sandbox.enabled to true in ~/.claude/settings.json for all your projects, or use managed settings to enforce it organization-wide.",
+        "To .claude/settings.json, shared with the team by default.",
+        "To ~/.claude.json, alongside MCP local-scope servers.",
+        "It is session-only and not persisted anywhere."
+      ],
+      "answer": "To .claude/settings.local.json for the current project; set sandbox.enabled to true in ~/.claude/settings.json for all your projects, or use managed settings to enforce it organization-wide.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sandboxing: get started",
+      "explanation": "'When you select a mode in the panel, Claude Code saves it to your project's local settings at .claude/settings.local.json, which apply to the current project. Claude Code adds that file to your global gitignore when it saves a setting there. To enable the sandbox across all of your projects, set sandbox.enabled to true in your user settings at ~/.claude/settings.json. To enforce sandboxing for every developer in an organization, use managed settings.'\n\n**Why the others are wrong**\n\n- **B.** The panel writes the LOCAL file, not the shared one — consistent with how permission approvals are saved.\n- **C.** That is the MCP local-scope and project-state file.\n- **D.** It persists.\n\nThe three tiers repeat the pattern seen everywhere: local for this project and you, user for all your projects, managed for the organization.",
+      "examTrick": "Panel writes settings.local.json. sandbox.enabled in user settings = all your projects. Managed = enforced org-wide.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "sandbox.enabled", "Settings Tiers", "Panel Behaviour"]
+    },
+    {
+      "id": 12,
+      "question": "On WSL2, what governs whether a sandboxed command can launch a Windows binary such as powershell.exe?",
+      "options": [
+        "The sandbox's Unix-socket settings — WSL hands the launch to the Windows host over a Unix socket, and the optional seccomp filter must be installed to block that socket at all.",
+        "The filesystem allow and deny rules for /mnt/c/.",
+        "The network allowedDomains list.",
+        "Windows binaries are always blocked inside the sandbox."
+      ],
+      "answer": "The sandbox's Unix-socket settings — WSL hands the launch to the Windows host over a Unix socket, and the optional seccomp filter must be installed to block that socket at all.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sandboxing: WSL2 notes",
+      "explanation": "'On WSL2, WSL hands a launch of a Windows binary such as cmd.exe, powershell.exe, or anything under /mnt/c/ to the Windows host over a Unix socket, so whether a sandboxed command can launch one follows the sandbox's Unix-socket settings: the optional seccomp filter has to be installed to block the socket in the first place. To allow these launches, set allowAllUnixSockets; to keep them out of the sandbox entirely, add the command to excludedCommands.'\n\n**Why the others are wrong**\n\n- **B, C.** The mechanism is socket-based, not path- or domain-based.\n- **D.** They are permitted unless the seccomp filter is installed and blocks the socket.\n\nThis is a genuine isolation gap worth understanding: without the optional seccomp filter, a WSL2 sandbox cannot prevent escape to the Windows host, because the escape route is a socket rather than a filesystem path.",
+      "examTrick": "WSL2 Windows-binary launches go over a UNIX SOCKET. Without the optional seccomp filter, the sandbox cannot block them.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "WSL2", "Unix Sockets", "Isolation Gap"]
+    },
+    {
+      "id": 13,
+      "question": "When is turning filesystem isolation off while keeping network isolation the right choice?",
+      "options": [
+        "When you sandbox to control where commands connect rather than what they write — the two layers are independent, so network egress stays confined to allowed domains.",
+        "Never; both layers must be on together.",
+        "When you need faster command execution.",
+        "When commands need to reach any domain but must not write outside the project."
+      ],
+      "answer": "When you sandbox to control where commands connect rather than what they write — the two layers are independent, so network egress stays confined to allowed domains.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sandboxing: filesystem isolation disabled",
+      "explanation": "'The sandbox has two independent layers: filesystem isolation controls which paths sandboxed commands can read and write, and network isolation controls which domains they can reach. With the filesystem layer off, sandboxed commands get unrestricted read and write access to the host filesystem, while their network egress stays confined to your allowed domains. Turn the layer off when you sandbox to control where commands connect rather than what they write.'\n\n**Why the others are wrong**\n\n- **B.** They are explicitly independent and separately configurable.\n- **C.** Performance is not the documented rationale.\n- **D.** That describes the DEFAULT configuration inverted — filesystem restricted, network open — which is not what disabling the filesystem layer produces.\n\nRemember the paired warning: only do this 'for workloads you trust not to escalate their own access.'",
+      "examTrick": "Two independent layers. Disable filesystem only when your goal is egress control, and only for trusted workloads.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Layer Independence", "Egress Control", "Trust Boundary"]
+    },
+    {
+      "id": 14,
+      "question": "How do the sandbox and auto mode relate?",
+      "options": [
+        "They work independently and combine, except in plan mode where auto-allow does not widen approvals; a sandbox or container adds defense in depth to auto mode.",
+        "Auto mode replaces the sandbox, since the classifier reviews every action.",
+        "The sandbox only functions when auto mode is enabled.",
+        "They are mutually exclusive and cannot both be active."
+      ],
+      "answer": "They work independently and combine, except in plan mode where auto-allow does not widen approvals; a sandbox or container adds defense in depth to auto mode.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes; Sandboxing",
+      "explanation": "'The Bash sandbox and auto mode work independently and combine, except in plan mode, where auto-allow doesn't widen approvals.' And in the mode-selection table, working hands-off with a classifier notes 'a sandbox or container adds defense in depth.'\n\n**Why the others are wrong**\n\n- **B.** A model-based classifier and an OS-enforced boundary fail in different ways — that independence is exactly what makes them complementary.\n- **C.** The sandbox works in any permission mode, including Manual.\n- **D.** They are designed to combine.\n\nDefense in depth requires INDEPENDENT layers: if the classifier misjudges a command, the OS boundary still holds, and if a command is within the sandbox boundary but strategically wrong, the classifier can still stop it.",
+      "examTrick": "Classifier (model judgement) + sandbox (OS boundary) = independent failure modes = real defense in depth.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Defense in Depth", "Independence", "Auto Mode"]
+    },
+    {
+      "id": 15,
+      "question": "What happens to commands that cannot be sandboxed in auto-allow mode?",
+      "options": [
+        "They fall back to the regular permission flow, where Claude Code checks your permission rules and gates anything not already allowed — a prompt in Manual mode, or the classifier in auto mode.",
+        "They are silently skipped.",
+        "They run unsandboxed without any check.",
+        "They cause the session to exit."
+      ],
+      "answer": "They fall back to the regular permission flow, where Claude Code checks your permission rules and gates anything not already allowed — a prompt in Manual mode, or the classifier in auto mode.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sandboxing: auto-allow mode",
+      "explanation": "'When a command can be sandboxed, Claude Code runs it inside the sandbox and approves it automatically, without asking your permission. Commands that cannot be sandboxed, such as those needing network access to non-allowed hosts, fall back to the regular permission flow, where Claude Code checks your permission rules and gates any command those rules do not already allow, with a prompt in Manual mode or the classifier in auto mode.'\n\n**Why the others are wrong**\n\n- **B, C.** Silent skipping or unchecked execution would both be unsafe defaults.\n- **D.** No session termination.\n\nThe design principle: the sandbox is an OPTIMISATION for the common case, not a replacement for the permission system. Anything it cannot cover falls back to the layer beneath it rather than through a gap.",
+      "examTrick": "Non-sandboxable commands fall BACK to permission checks, never through a gap. Layers degrade safely.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Fallback Behaviour", "Safe Degradation", "Auto-Allow"]
+    },
+    {
+      "id": 16,
+      "question": "Which sandbox setting keeps a specific command out of the sandbox entirely?",
+      "options": [
+        "excludedCommands",
+        "allowUnsandboxedCommands",
+        "allowAllUnixSockets",
+        "filesystem.disabled"
+      ],
+      "answer": "excludedCommands",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sandboxing",
+      "explanation": "excludedCommands lists commands that run outside the sandbox. The docs reference it twice: 'to keep them out of the sandbox entirely, add the command to excludedCommands', and under Strict sandbox mode 'all commands must run sandboxed or be explicitly listed in excludedCommands.'\n\n**Why the others are wrong**\n\n- **B.** allowUnsandboxedCommands: false disables the dangerouslyDisableSandbox escape hatch.\n- **C.** allowAllUnixSockets governs Unix-socket access, relevant to WSL2 Windows-binary launches.\n- **D.** filesystem.disabled turns off the filesystem layer while keeping network isolation.\n\nThe pairing matters: in Strict sandbox mode, excludedCommands becomes the ONLY route for a command that genuinely cannot be sandboxed — an explicit, reviewable list rather than a per-call model decision.",
+      "examTrick": "excludedCommands = an explicit, reviewable exception list. In Strict mode it is the only escape route left.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "excludedCommands", "Strict Mode", "Explicit Exceptions"]
+    },
+    {
+      "id": 17,
+      "question": "A security team wants sandboxing on for every developer, with domain policy that developers cannot widen. What combination does the documentation point to?",
+      "options": [
+        "Enforce sandboxing through managed settings, and lock the domain policy with allowManagedDomainsOnly — noting that lock applies only to commands running inside the sandbox.",
+        "Ask developers to set sandbox.enabled in their user settings.",
+        "Add a CLAUDE.md rule requiring sandbox use.",
+        "Set sandbox.enabled in the committed .claude/settings.json."
+      ],
+      "answer": "Enforce sandboxing through managed settings, and lock the domain policy with allowManagedDomainsOnly — noting that lock applies only to commands running inside the sandbox.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Sandboxing: enforce with managed settings; keep developers from widening the policy",
+      "explanation": "'To enforce sandboxing for every developer in an organization, use managed settings.' And on domain locking: 'Locking network domains with allowManagedDomainsOnly narrows the risk but doesn't remove it, since that lock applies only to commands running inside the sandbox.'\n\n**Why the others are wrong**\n\n- **B.** User settings are the developer's own file to change.\n- **C.** CLAUDE.md is advisory context and cannot configure the sandbox at all.\n- **D.** A committed project file is overridable by each developer's local settings, which sit higher in the precedence stack.\n\nThe caveat in the answer is the sophisticated part: a policy that binds only inside the sandbox does not bind a command that runs outside it, which is why Strict sandbox mode and a curated excludedCommands list matter alongside it.",
+      "examTrick": "Managed settings enforce; allowManagedDomainsOnly locks domains — but only for commands INSIDE the sandbox.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Managed Enforcement", "allowManagedDomainsOnly", "Policy Scope"]
+    },
+    {
+      "id": 18,
+      "question": "Which describes the sandbox's place in the overall safety model?",
+      "options": [
+        "It is the OS-level layer that makes autonomous execution safer by constraining what any command and its children can touch, complementing rather than replacing modes, rules, and hooks.",
+        "It is the primary permission mechanism, with rules and hooks as legacy fallbacks.",
+        "It is a debugging aid with no security guarantee.",
+        "It is only relevant for untrusted third-party code, not your own project."
+      ],
+      "answer": "It is the OS-level layer that makes autonomous execution safer by constraining what any command and its children can touch, complementing rather than replacing modes, rules, and hooks.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Sandboxing",
+      "explanation": "The docs frame it as providing 'filesystem and network isolation for safer, more autonomous agent execution', with the OS enforcing the boundary for every command and its child processes. Deny and command-specific ask rules continue to apply, and the sandbox composes with permission modes.\n\n**Why the others are wrong**\n\n- **B.** Rules and hooks are current and complementary; the sandbox covers Bash specifically, while 'To reduce permission prompts for tools other than Bash, see permission modes.'\n- **C.** OS-level enforcement is a real boundary, though not unconditional — the WSL2 socket case and the self-escalation risk with filesystem.disabled are documented limits.\n- **D.** The documented purpose is enabling autonomous execution on your own work with fewer prompts.\n\nThe unifying idea for the exam: safety comes from LAYERS with different failure modes — advisory context, client-enforced rules, deterministic hooks, and OS isolation — not from any single mechanism.",
+      "examTrick": "The sandbox covers BASH specifically. Other tools are governed by modes and rules. Layers, not a single mechanism.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Safety Model", "Scope of Sandbox", "Layered Defense"]
+    }
+  ]
+}

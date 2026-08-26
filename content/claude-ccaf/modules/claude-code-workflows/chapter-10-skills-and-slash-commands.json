@@ -1,0 +1,383 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.10 Skills, Slash Commands & Invocation Control",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "NEW TOPIC. Where skills live, the SKILL.md frontmatter reference, discovery and precedence, controlling who invokes a skill, pre-approving tools, running skills in a subagent, and how custom commands relate to skills. Grounded in the official Claude Code skills documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A 'deploy' skill exists in both ~/.claude/skills/ and the project's .claude/skills/. Which one runs when you type /deploy?",
+      "options": [
+        "The personal one in ~/.claude/skills/ — skill precedence is managed > user > project.",
+        "The project one in .claude/skills/, because project configuration is closest to the work.",
+        "Both load and their content is concatenated.",
+        "Claude Code refuses to run either and reports a name collision."
+      ],
+      "answer": "The personal one in ~/.claude/skills/ — skill precedence is managed > user > project.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: where skills live",
+      "explanation": "The docs give this example directly: 'with a deploy skill in both ~/.claude/skills/ and your project's .claude/skills/, /deploy runs the personal one.' Skills override by name with priority managed > user > project.\n\n**Why the others are wrong**\n\n- **B.** This is the intuitive answer and it is wrong for skills. Note the contrast with SUBAGENTS, where project outranks user. The two mechanisms order those tiers oppositely, which is exactly why the exam asks.\n- **C.** Skills override by name; they do not merge. (CLAUDE.md files are the additive mechanism.)\n- **D.** No error — one simply wins.\n\nPlugin skills avoid the problem entirely because they are namespaced: my-plugin/skills/deploy/SKILL.md becomes /my-plugin:deploy and loads alongside a project deploy skill.",
+      "examTrick": "Skills: managed > USER > project. Subagents: managed > --agents > PROJECT > user. Opposite middle order.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Skill Precedence", "Name Collision", "Plugin Namespacing"]
+    },
+    {
+      "id": 2,
+      "question": "What is the relationship between .claude/commands/deploy.md and .claude/skills/deploy/SKILL.md?",
+      "options": [
+        "Both create /deploy and work the same way; if both exist the skill takes precedence, and skills add a directory for supporting files plus invocation-control frontmatter.",
+        "Commands are deprecated and no longer load at all.",
+        "Commands create /deploy; skills can only be invoked automatically by Claude, never by typing.",
+        "They are unrelated features that happen to share a name."
+      ],
+      "answer": "Both create /deploy and work the same way; if both exist the skill takes precedence, and skills add a directory for supporting files plus invocation-control frontmatter.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Skills: custom commands merged into skills",
+      "explanation": "'Custom commands have been merged into skills. A file at .claude/commands/deploy.md and a skill at .claude/skills/deploy/SKILL.md both create /deploy and work the same way. Your existing .claude/commands/ files keep working. Skills add optional features: a directory for supporting files, frontmatter to control whether you or Claude invokes them, and the ability for Claude to load them automatically when relevant.' And: 'if a skill and a command share the same name, the skill takes precedence.'\n\n**Why the others are wrong**\n\n- **B.** Command files keep working.\n- **C.** Skills are invocable by typing /name unless user-invocable is set to false.\n- **D.** They are the same feature after the merge.\n\nOne detail: command files support the same frontmatter EXCEPT name and paths, which Claude Code ignores in a command file, and you invoke a command file by its file name.",
+      "examTrick": "Commands merged into skills. Skill beats command on a name tie. Command files ignore the name and paths fields.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Slash Commands", "Skills Merge", ".claude/commands/"]
+    },
+    {
+      "id": 3,
+      "question": "You have a deployment skill with real side effects and want only yourself to trigger it, never Claude automatically. Which frontmatter field?",
+      "options": [
+        "disable-model-invocation: true",
+        "user-invocable: false",
+        "allowed-tools: none",
+        "context: fork"
+      ],
+      "answer": "disable-model-invocation: true",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Skills: control who invokes a skill",
+      "explanation": "'disable-model-invocation: Set to true to prevent Claude from automatically loading this skill. Use for workflows you want to trigger manually with /name.' The docs recommend it explicitly: 'Use disable-model-invocation: true for skills with side effects. This saves context and ensures only you trigger them.' It also prevents the skill from being preloaded into subagents and from running when a scheduled task fires with the skill as its prompt.\n\n**Why the others are wrong**\n\n- **B.** user-invocable: false is the exact opposite — it hides the skill from the / menu so ONLY Claude can invoke it, used for background knowledge users should not trigger directly.\n- **C.** allowed-tools pre-approves tools; 'none' is not a mechanism for invocation control.\n- **D.** context: fork runs the skill in a forked subagent context.\n\nThese two fields are the exam's favourite pair because they are near-mirror images.",
+      "examTrick": "disable-model-invocation: true = only YOU. user-invocable: false = only CLAUDE. Learn them as a pair.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "disable-model-invocation", "user-invocable", "Invocation Control"]
+    },
+    {
+      "id": 4,
+      "question": "There is no side-effect concern, but a skill contains background knowledge users should never invoke directly from the / menu. Which field?",
+      "options": [
+        "user-invocable: false",
+        "disable-model-invocation: true",
+        "description: omitted",
+        "disallowed-tools: Skill"
+      ],
+      "answer": "user-invocable: false",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Skills: frontmatter reference",
+      "explanation": "'user-invocable: Set to false when only Claude should invoke the skill: Claude Code hides it from the / menu and doesn't run it when you type /name. Use for background knowledge users shouldn't invoke directly. Default: true.'\n\n**Why the others are wrong**\n\n- **B.** That blocks Claude, leaving only manual invocation — the reverse of the requirement.\n- **C.** Omitting the description does not hide the skill; it just makes Claude 'use the first paragraph of markdown content' instead, which usually makes selection WORSE.\n- **D.** Not a real mechanism.\n\nIf you want the same effect without editing someone else's skill file, the docs offer skillOverrides in settings, which can set a skill to 'user-invocable-only' from the outside.",
+      "examTrick": "user-invocable: false hides it from you but keeps it available to Claude. skillOverrides does it from settings without editing the file.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "user-invocable", "Background Knowledge", "skillOverrides"]
+    },
+    {
+      "id": 5,
+      "question": "What does the allowed-tools field in SKILL.md do, and how long does the grant last?",
+      "options": [
+        "It lets Claude use the listed tools without asking permission during the turn that invokes the skill; the grant clears when you send your next message.",
+        "It permanently allowlists those tools in .claude/settings.local.json.",
+        "It restricts the skill to only those tools, blocking everything else.",
+        "It grants the tools for the remainder of the session."
+      ],
+      "answer": "It lets Claude use the listed tools without asking permission during the turn that invokes the skill; the grant clears when you send your next message.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: frontmatter reference",
+      "explanation": "'allowed-tools: Tools Claude can use without asking permission during the turn that invokes this skill. The grant clears when you send your next message.' It accepts a space- or comma-separated string, or a YAML list.\n\n**Why the others are wrong**\n\n- **B.** Nothing is written to settings; the grant is ephemeral by design.\n- **C.** That is disallowed-tools, which removes tools from Claude's available pool while the skill is active — also clearing on your next message.\n- **D.** Turn-scoped, not session-scoped. The single-turn lifetime is the safety property: a skill cannot silently widen your permissions for the rest of the session.\n\nOne limit worth knowing: like deny rules, disallowed-tools cannot remove EndConversation while any other tool remains.",
+      "examTrick": "allowed-tools and disallowed-tools are both TURN-scoped and clear on your next message. Neither persists.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "allowed-tools", "Turn-Scoped Grant", "disallowed-tools"]
+    },
+    {
+      "id": 6,
+      "question": "A skill's description and when_to_use text are long. What happens in the skill listing?",
+      "options": [
+        "The combined description and when_to_use text is truncated at 1,536 characters, so the key use case must come first.",
+        "The full text always loads; only the skill body is deferred.",
+        "Descriptions over 200 characters are rejected at load time.",
+        "The text is summarized by a model before entering the listing."
+      ],
+      "answer": "The combined description and when_to_use text is truncated at 1,536 characters, so the key use case must come first.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: frontmatter reference",
+      "explanation": "'Put the key use case first: the combined description and when_to_use text is truncated at 1,536 characters in the skill listing to reduce context usage.' when_to_use is 'Additional context for when Claude should invoke the skill, such as trigger phrases or example requests. Appended to description and counts toward the 1,536-character cap.'\n\n**Why the others are wrong**\n\n- **B.** Names always load, but descriptions are what get cut.\n- **C.** No rejection occurs; it is silent truncation.\n- **D.** Truncation, not summarization — which is why the ORDER of your words matters.\n\nThe large-codebase docs add the consequence: 'descriptions are shortened when there are many, which can strip the keywords Claude uses to decide whether a skill applies. Keep descriptions short and lead with words a request would contain.'",
+      "examTrick": "1,536-character cap on description + when_to_use combined, and it is TRUNCATION. Front-load the trigger words.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Description Truncation", "when_to_use", "Skill Selection"]
+    },
+    {
+      "id": 7,
+      "question": "How does a skill run in an isolated context without you writing a separate subagent file?",
+      "options": [
+        "Set context: fork in the skill's frontmatter, which runs it in a forked subagent context.",
+        "Set isolation: worktree in the skill's frontmatter.",
+        "Set model: inherit, which routes the skill through a subagent.",
+        "It is not possible; only subagent files can create isolated context."
+      ],
+      "answer": "Set context: fork in the skill's frontmatter, which runs it in a forked subagent context.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Skills: run skills in a subagent",
+      "explanation": "'context: Set to fork to run in a forked subagent context.' The Extend Claude Code docs confirm the pairing from the other direction: 'A subagent can preload specific skills (skills: field). A skill can run in isolated context using context: fork.' With context: fork set, the skill's model field 'sets the forked subagent's model instead.'\n\n**Why the others are wrong**\n\n- **B.** isolation: worktree is SUBAGENT frontmatter, not skill frontmatter.\n- **C.** model selects a model; it does not create isolation.\n- **D.** Explicitly possible via context: fork.\n\nThis is the cheap way to get isolation: a task-content skill with 'context: fork' and 'disable-model-invocation: true' is a manually-triggered, isolated workflow in one file.",
+      "examTrick": "context: fork is the skill-side route to isolation. skills: is the subagent-side route to shared content. They meet in the middle.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "context: fork", "Skill Isolation", "Subagent Integration"]
+    },
+    {
+      "id": 8,
+      "question": "Where do project skills load from when you start Claude Code in a subdirectory of a repository?",
+      "options": [
+        "From .claude/skills/ in the starting directory and in every parent directory up to the repository root.",
+        "From the starting directory's .claude/skills/ only.",
+        "From the repository root's .claude/skills/ only.",
+        "From every .claude/skills/ directory in the entire repository, loaded eagerly at startup."
+      ],
+      "answer": "From .claude/skills/ in the starting directory and in every parent directory up to the repository root.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: where skills load from",
+      "explanation": "'Project skills load from .claude/skills/ in the directory where you start Claude Code and in every parent directory up to the repository root. Starting Claude in a subdirectory still picks up skills defined at the root.' Skills in NESTED directories below your starting directory are different: 'They load the first time Claude reads or edits a file inside that subdirectory, and stay available for the rest of the session. Until then, those skills don't appear in autocomplete and can't be invoked by name.'\n\n**Why the others are wrong**\n\n- **B, C.** Both halves of the upward walk are needed.\n- **D.** Nested skills load lazily on first file access, not eagerly.\n\nNote this differs from .claude/settings.json, which loads ONLY from the starting directory and is not inherited from parents.",
+      "examTrick": "Skills walk UP to the repo root at startup, and load DOWNWARD lazily when Claude touches a file there. settings.json does neither.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Skill Discovery", "Nested Skills", "Lazy Loading"]
+    },
+    {
+      "id": 9,
+      "question": "Does the permissions.additionalDirectories setting load skills from the directories it grants access to?",
+      "options": [
+        "No — it grants file access only. Only --add-dir and /add-dir load .claude/skills/ and .claude/commands/ from added directories.",
+        "Yes — any granted directory has its skills discovered automatically.",
+        "Yes, but only if CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD is set.",
+        "No — neither mechanism loads skills from outside the project."
+      ],
+      "answer": "No — it grants file access only. Only --add-dir and /add-dir load .claude/skills/ and .claude/commands/ from added directories.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: skills from added directories",
+      "explanation": "'The --add-dir flag and /add-dir command grant file access rather than configuration discovery, but skills and commands are an exception: Claude Code loads .claude/skills/ and .claude/commands/ from each added directory automatically. This exception applies only to --add-dir and /add-dir. The permissions.additionalDirectories setting in settings.json grants file access only and doesn't load skills, commands, or subagents.'\n\n**Why the others are wrong**\n\n- **B.** The setting and the flag behave differently, which is the whole point.\n- **C.** That environment variable governs CLAUDE.md and rules loading from added directories, not skills. Skills load from --add-dir without it.\n- **D.** --add-dir does load them.\n\nRemember the full matrix: additionalDirectories = files only, ever. --add-dir = files + skills/commands always, + CLAUDE.md/rules only with the env var.",
+      "examTrick": "additionalDirectories = files ONLY. --add-dir = files + skills/commands, and CLAUDE.md too if the env var is set.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "--add-dir", "additionalDirectories", "Configuration Discovery"]
+    },
+    {
+      "id": 10,
+      "question": "You edit a skill file mid-session. Do you need to restart Claude Code?",
+      "options": [
+        "No for an existing watched directory — Claude Code picks up adds, edits, and removals within the session; yes if you created a top-level skills directory that did not exist at startup.",
+        "Yes always; skills are read once at session start.",
+        "No; all skill changes including new top-level directories are picked up automatically.",
+        "Only plugin skills support live reloading."
+      ],
+      "answer": "No for an existing watched directory — Claude Code picks up adds, edits, and removals within the session; yes if you created a top-level skills directory that did not exist at startup.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: live change detection",
+      "explanation": "'Claude Code watches skill directories for file changes. When you add, edit, or remove a skill under ~/.claude/skills/, the project .claude/skills/, or a .claude/skills/ inside an --add-dir directory, Claude Code picks up the change within the current session, without a restart. If you create a top-level skills directory that didn't exist when the session started, restart Claude Code so it can watch the new directory.'\n\n**Why the others are wrong**\n\n- **B.** Live detection is explicitly supported.\n- **C.** The new-directory case is the documented exception.\n- **D.** It applies to user, project, and --add-dir skills.\n\nA related lifecycle detail: if you delete a skill, Claude Code drops it from /skills in the current session, but content from an invocation earlier in the session stays in context until the session ends.",
+      "examTrick": "Live reload works inside already-watched directories. A brand-new top-level skills directory needs a restart.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Live Change Detection", "Skill Lifecycle", "Restart Cases"]
+    },
+    {
+      "id": 11,
+      "question": "How does a skill get the command name you type to invoke it?",
+      "options": [
+        "From the directory name; the optional name field sets the display name shown in listings and defaults to the directory name.",
+        "From the name frontmatter field only; the directory name is ignored.",
+        "From the first markdown heading in the file body.",
+        "From the description field's first word."
+      ],
+      "answer": "From the directory name; the optional name field sets the display name shown in listings and defaults to the directory name.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Skills: create a skill; frontmatter reference",
+      "explanation": "'The directory name becomes the command you type.' The frontmatter reference lists name as not required: 'Display name shown in skill listings. Defaults to the directory name.' So ~/.claude/skills/summarize-changes/SKILL.md gives you /summarize-changes.\n\n**Why the others are wrong**\n\n- **B.** name is optional and is a display name.\n- **C, D.** Neither is used for naming.\n\nCommand files behave differently: 'You invoke a command file by its file name', and command files ignore the name and paths fields entirely.",
+      "examTrick": "Skill: DIRECTORY name is the command. Command file: FILE name is the command. name: frontmatter is display only.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Skill Naming", "Directory Name", "Command Files"]
+    },
+    {
+      "id": 12,
+      "question": "Which field sets the reasoning effort level while a skill is active?",
+      "options": [
+        "effort, accepting low, medium, high, xhigh, or max, overriding the session effort level.",
+        "model, using an effort-suffixed alias.",
+        "maxTurns, which bounds reasoning depth.",
+        "context, set to deep."
+      ],
+      "answer": "effort, accepting low, medium, high, xhigh, or max, overriding the session effort level.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Skills: frontmatter reference",
+      "explanation": "'effort: Effort level when this skill is active. Overrides the session effort level. Default: inherits from session. Options: low, medium, high, xhigh, max; available levels depend on the model.'\n\n**Why the others are wrong**\n\n- **B.** model selects the model; it accepts the same values as /model or 'inherit'. Note its scoping detail: 'The override applies for the rest of the current turn and is not saved to settings; the session model resumes on your next prompt.'\n- **C.** maxTurns is subagent frontmatter, not skill frontmatter.\n- **D.** context accepts fork.\n\nBoth model and effort are turn-scoped overrides, matching the pattern of allowed-tools and disallowed-tools.",
+      "examTrick": "Skill overrides (model, effort, allowed-tools, disallowed-tools) are all TURN-scoped and revert on your next prompt.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "effort", "Turn-Scoped Override", "model"]
+    },
+    {
+      "id": 13,
+      "question": "What happens if a skill omits the description field?",
+      "options": [
+        "Claude Code uses the first paragraph of the markdown content as the description.",
+        "The skill fails to load and is reported as invalid.",
+        "The skill loads but can only be invoked manually, never by Claude.",
+        "The directory name is used as the description."
+      ],
+      "answer": "Claude Code uses the first paragraph of the markdown content as the description.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Skills: frontmatter reference",
+      "explanation": "The reference marks description as 'Recommended' rather than required: 'What the skill does and when to use it. Claude uses this to decide when to apply the skill. If omitted, uses the first paragraph of markdown content.'\n\n**Why the others are wrong**\n\n- **B.** It loads; description is recommended, not required.\n- **C.** Model invocation is controlled by disable-model-invocation, not by whether a description exists.\n- **D.** The directory name supplies the command name and the display name default, not the description.\n\nThe practical risk: an accidental first paragraph becomes your selection signal, and 'How Claude chooses skills' says that if descriptions are vague or overlap, 'Claude may load the wrong skill or miss one that would help.'",
+      "examTrick": "No description = first markdown paragraph becomes it. That is a silent quality problem, not an error.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "description Field", "Skill Selection", "Fallback Behaviour"]
+    },
+    {
+      "id": 14,
+      "question": "A project skill named 'code-review' is created. What happens to the bundled /code-review skill and its alias /review?",
+      "options": [
+        "The project skill replaces the bundled /code-review, and typing the bundled alias /review never runs your skill.",
+        "Both remain available; the bundled one takes precedence because it ships with Claude Code.",
+        "Claude Code refuses to load a skill whose name collides with a bundled one.",
+        "The project skill replaces both /code-review and its alias /review."
+      ],
+      "answer": "The project skill replaces the bundled /code-review, and typing the bundled alias /review never runs your skill.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: where skills live",
+      "explanation": "The docs give this exact example: 'a code-review skill in your project's .claude/skills/ replaces the bundled /code-review, and typing the bundled alias /review never runs your skill.' Aliases stay bound to the bundled skill.\n\n**Why the others are wrong**\n\n- **B.** Your skill wins over the bundled one on the primary name.\n- **C.** No refusal; overriding a bundled skill is supported.\n- **D.** The alias is the exception, and that asymmetry is the testable detail — a teammate typing /review would silently get different behaviour from one typing /code-review.\n\nSimilarly, a skill enabled on claude.ai loses to a project skill of the same name.",
+      "examTrick": "You can override a bundled skill by name, but NOT its aliases. The alias keeps running the bundled version.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Bundled Skills", "Aliases", "Override Behaviour"]
+    },
+    {
+      "id": 15,
+      "question": "Which frontmatter field scopes a skill so Claude loads it automatically only when working with matching files, without moving the skill into that directory?",
+      "options": [
+        "paths, which takes glob patterns.",
+        "when_to_use, describing the file types.",
+        "context, set to the directory.",
+        "argument-hint, naming the file pattern."
+      ],
+      "answer": "paths, which takes glob patterns.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: add per-directory skills; Skills frontmatter",
+      "explanation": "'You can also scope a skill by file pattern instead of by placement. The paths frontmatter field takes glob patterns, and Claude loads the skill automatically only when it works with matching files. Use this for a skill that lives in the repository root's .claude/skills/ but applies only to certain files wherever they appear, such as a database-migration skill scoped to **/migrations/**.'\n\n**Why the others are wrong**\n\n- **B.** when_to_use is prose appended to the description; it influences selection but enforces nothing.\n- **C.** context accepts fork.\n- **D.** argument-hint is autocomplete text such as [issue-number].\n\nNote that command files in .claude/commands/ ignore the paths field entirely — another reason skills are recommended over command files.",
+      "examTrick": "paths: globs scope a skill by FILE PATTERN, independent of where the skill file sits. Command files ignore paths.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "paths Frontmatter", "Skill Scoping", "Glob Patterns"]
+    },
+    {
+      "id": 16,
+      "question": "Which pair of fields supports passing and substituting arguments in a skill?",
+      "options": [
+        "argument-hint for autocomplete display, and arguments for named positional $name substitution in the skill content.",
+        "args and params.",
+        "$ARGUMENTS only; named arguments are not supported.",
+        "input-schema and defaults."
+      ],
+      "answer": "argument-hint for autocomplete display, and arguments for named positional $name substitution in the skill content.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Skills: frontmatter reference",
+      "explanation": "'argument-hint: Hint shown during autocomplete to indicate expected arguments. Example: [issue-number] or [filename] [format].' And 'arguments: Named positional arguments for $name substitution in the skill content. Accepts a space-separated string or a YAML list. Names map to argument positions in order.' The bundled example in the docs uses $ARGUMENTS in a fix-issue skill invoked as /fix-issue 1234.\n\n**Why the others are wrong**\n\n- **B, D.** Not documented field names.\n- **C.** $ARGUMENTS works, but named positional arguments via the arguments field are also supported — the claim that they are not is what makes this option wrong.",
+      "examTrick": "argument-hint = what the user sees in autocomplete. arguments = named positional substitution. $ARGUMENTS = the whole string.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Skill Arguments", "$ARGUMENTS", "argument-hint"]
+    },
+    {
+      "id": 17,
+      "question": "When is a skill the right mechanism rather than CLAUDE.md?",
+      "options": [
+        "When the content is reference material needed only sometimes, or a multi-step procedure you trigger with /<name>.",
+        "When the content is a build command every session needs.",
+        "When the rule must hold every time regardless of what Claude decides.",
+        "When the instruction should apply only to files matching a glob."
+      ],
+      "answer": "When the content is reference material needed only sometimes, or a multi-step procedure you trigger with /<name>.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Skills; Extend Claude Code: CLAUDE.md vs Skill",
+      "explanation": "'Create a skill when you keep pasting the same instructions, checklist, or multi-step procedure into chat, or when a section of CLAUDE.md has grown into a procedure rather than a fact. Unlike CLAUDE.md content, a skill's body loads only when it's used, so long reference material costs almost nothing until you need it.'\n\n**Why the others are wrong**\n\n- **B.** Always-needed facts belong in CLAUDE.md.\n- **C.** A must-hold-every-time rule is a hook or a permission rule; a skill is interpreted content.\n- **D.** That is a .claude/rules/ file with paths frontmatter — though note a skill can also carry paths, the rules mechanism is the one for conventions that apply while editing matching files.\n\nThe distinguishing test is the shape of the content: a FACT belongs in CLAUDE.md, a PROCEDURE belongs in a skill.",
+      "examTrick": "Fact every session = CLAUDE.md. Procedure or reference used sometimes = skill. Must-hold rule = hook.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Skill vs CLAUDE.md", "Mechanism Selection", "Procedure vs Fact"]
+    },
+    {
+      "id": 18,
+      "question": "What is the context cost of skills at session start?",
+      "options": [
+        "Names and descriptions load at session start; full content loads only when the skill is used, so cost is low until then.",
+        "Full skill content loads at session start for every discovered skill.",
+        "Nothing loads until invocation, so the cost is exactly zero.",
+        "Only skills with paths frontmatter load anything at startup."
+      ],
+      "answer": "Names and descriptions load at session start; full content loads only when the skill is used, so cost is low until then.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code: context cost by feature",
+      "explanation": "The context-cost table lists skills as loading at 'Session start + when used', with 'Descriptions at start, full content when used', giving 'Low (descriptions every request)'. The footnote adds: 'By default, skill descriptions load at session start so Claude can decide when to use them. Set disable-model-invocation: true in a skill's frontmatter to hide it from Claude entirely until you invoke it manually.'\n\n**Why the others are wrong**\n\n- **B.** That is CLAUDE.md behaviour.\n- **C.** Zero cost applies to USER-ONLY skills (disable-model-invocation: true) and to hooks. Ordinary skills pay the description cost every request.\n- **D.** All discovered skills contribute their descriptions.\n\nThis is why the 1,536-character description cap exists and why a sprawling skill library degrades selection.",
+      "examTrick": "Skills cost DESCRIPTIONS every request. disable-model-invocation: true drops that to zero until you invoke it.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Context Cost", "Description Loading", "Zero-Cost Skills"]
+    },
+    {
+      "id": 19,
+      "question": "A routine (scheduled cloud run) invokes a skill that exists only in ~/.claude/skills/ on your machine. What happens?",
+      "options": [
+        "Claude Code reports that the skill was not found, because each routine run starts as a fresh remote session that does not read your machine's user skills.",
+        "The skill is uploaded automatically at schedule time.",
+        "The routine falls back to the closest-matching skill by description.",
+        "The routine runs the skill from a cached copy of your last local session."
+      ],
+      "answer": "Claude Code reports that the skill was not found, because each routine run starts as a fresh remote session that does not read your machine's user skills.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills in Cowork and cloud sessions",
+      "explanation": "'Cowork sessions and cloud sessions, including routines, don't read ~/.claude/skills/ on your machine... If a skill exists only in ~/.claude/skills/ on your machine, Claude Code reports that the skill was not found when a routine invokes it, because each routine run starts as a fresh remote session.' The fixes: for cloud sessions, commit the skill to the repository's .claude/skills/, or ship it in a plugin declared in the repository's .claude/settings.json, since 'Repo-declared plugins install at session start; plugins enabled only in your user settings don't transfer.'\n\n**Why the others are wrong**\n\n- **B, D.** No upload or caching of local user skills occurs.\n- **C.** There is no fuzzy fallback; a missing skill is reported as missing.",
+      "examTrick": "Cloud/routine sessions see REPO skills, not your ~/.claude/skills/. Commit it or ship it in a repo-declared plugin.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Cloud Sessions", "Routines", "Skill Portability"]
+    },
+    {
+      "id": 20,
+      "question": "Which statement about nested skills sharing a name with a root skill is correct?",
+      "options": [
+        "Both stay available — a deploy skill at the project root and another in apps/web/.claude/skills/ coexist rather than one overriding the other.",
+        "The nested skill silently replaces the root skill for the whole session.",
+        "The root skill always wins and the nested one never loads.",
+        "Claude Code reports a collision and loads neither."
+      ],
+      "answer": "Both stay available — a deploy skill at the project root and another in apps/web/.claude/skills/ coexist rather than one overriding the other.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: nested skills",
+      "explanation": "'If a nested skill shares a name with another skill, both stay available. For example, with a deploy skill at the project root and another in apps/web/.claude/skills/...' This is a deliberate exception to the usual override-by-name rule, so a monorepo package can provide its own version of a workflow without destroying the root one.\n\n**Why the others are wrong**\n\n- **B, C.** Neither overrides the other.\n- **D.** No error.\n\nRemember the loading condition though: nested skills 'aren't loaded at startup. They load the first time Claude reads or edits a file inside that subdirectory.' So the nested one is invisible until Claude touches that package.",
+      "examTrick": "Nested skills COEXIST with same-named root skills — an exception to override-by-name. But they load lazily.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Nested Skills", "Monorepo", "Coexistence"]
+    },
+    {
+      "id": 21,
+      "question": "An administrator wants to remove an enterprise skill. Where does it live?",
+      "options": [
+        "In .claude/skills/ inside the managed settings directory, for example /etc/claude-code/.claude/skills/<skill-name>/ on Linux.",
+        "In ~/.claude/skills/synced/ on each user's machine.",
+        "In the project's .claude/skills/, deployed by MDM.",
+        "In managed-settings.json as an inline skills array."
+      ],
+      "answer": "In .claude/skills/ inside the managed settings directory, for example /etc/claude-code/.claude/skills/<skill-name>/ on Linux.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Skills: delete a skill",
+      "explanation": "'Enterprise skill: an administrator deletes the skill's directory from .claude/skills/ inside the managed settings directory, for example /etc/claude-code/.claude/skills/<skill-name>/ on Linux.'\n\n**Why the others are wrong**\n\n- **B.** ~/.claude/skills/synced/ is where skills you enable on claude.ai are downloaded when CLAUDE_CODE_SYNC_SKILLS is set. That folder name is reserved, and Claude Code skips a skill you author at that name.\n- **C.** Project skills are the team-shared tier, not the enterprise tier.\n- **D.** Skills are directories with SKILL.md files, not inline settings values. (claudeMd is the inline-content key, and it is for CLAUDE.md, not skills.)",
+      "examTrick": "Enterprise skills live under the MANAGED SETTINGS directory. 'synced' is a reserved folder name for claude.ai skills.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Enterprise Skills", "Managed Settings Directory", "synced Folder"]
+    },
+    {
+      "id": 22,
+      "question": "Which trigger, per the documentation, means you should capture something as a skill rather than leaving it in chat?",
+      "options": [
+        "You paste the same playbook or multi-step procedure into chat for the third time.",
+        "Claude gets a convention wrong twice.",
+        "You want something to happen every time without asking.",
+        "A side task floods your conversation with output you won't reference again."
+      ],
+      "answer": "You paste the same playbook or multi-step procedure into chat for the third time.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code: build your setup over time",
+      "explanation": "The trigger table maps each symptom to a mechanism: 'You paste the same playbook or multi-step procedure into chat for the third time' → capture it as a skill. Also 'You keep typing the same prompt to start a task' → save it as a user-invocable skill.\n\n**Why the others are wrong**\n\n- **B.** 'Claude gets a convention or command wrong twice' → add it to CLAUDE.md.\n- **C.** 'You want something to happen every time without asking' → write a hook.\n- **D.** 'A side task floods your conversation with output you won't reference again' → route it through a subagent.\n\nMemorising this table answers a whole family of mechanism-selection questions, because each row states the observable symptom rather than the abstract principle.",
+      "examTrick": "Learn the trigger table by SYMPTOM: wrong twice → CLAUDE.md; pasted thrice → skill; every time → hook; floods context → subagent.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Trigger Table", "Mechanism Selection", "Setup Evolution"]
+    }
+  ]
+}

@@ -1,0 +1,315 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.9 Context Provisioning: @ References, CLAUDE.md Imports & Mechanism Selection",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "NEW TOPIC. Choosing between @ references, CLAUDE.md, rules, skills and inline description based on reusability, specificity and cross-session need; plus @ import syntax rules, CLAUDE.md load order, and the auto-memory system. Grounded in the official Claude Code memory documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A developer needs Claude to consider one specific config file while answering a single question in this session only. Which mechanism fits?",
+      "options": [
+        "An @ reference to the file in the prompt — Claude reads it before responding, with no cross-session cost.",
+        "An entry in CLAUDE.md, so the file is always available.",
+        "A .claude/rules/ file with a paths glob matching that config file.",
+        "A skill containing the file's contents, invoked with /<name>."
+      ],
+      "answer": "An @ reference to the file in the prompt — Claude reads it before responding, with no cross-session cost.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: provide rich content; Memory",
+      "explanation": "The three-way decision turns on reusability, specificity, and cross-session need. This case is one file, one question, one session — so an @ reference is right: 'Reference files with @ instead of describing where code lives. Claude reads the file before responding.' Nothing is added to any persistent file, so no future session pays for it.\n\n**Why the others are wrong**\n\n- **B.** CLAUDE.md loads its FULL content into every session's context window. Paying that cost forever for a one-off question is the documented anti-pattern: 'only include things that apply broadly.'\n- **C.** A path-scoped rule is for conventions that should apply whenever matching files are touched, across sessions — not for a single question.\n- **D.** A skill is for reusable reference material or a repeatable workflow, not a one-time file read.",
+      "examTrick": "One-off, this session = @ reference. Every session = CLAUDE.md. Sometimes, on demand = skill. When matching files are touched = .claude/rules/.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "@ References", "Context Provisioning", "Mechanism Selection"]
+    },
+    {
+      "id": 2,
+      "question": "Which content belongs in CLAUDE.md rather than a skill?",
+      "options": [
+        "Build and test commands, code style rules that differ from defaults, and 'always do X' conventions the project needs every session.",
+        "The team's full API style guide and endpoint reference documentation.",
+        "A multi-step deployment checklist triggered before a release.",
+        "A debugging playbook used a few times a month."
+      ],
+      "answer": "Build and test commands, code style rules that differ from defaults, and 'always do X' conventions the project needs every session.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code: CLAUDE.md vs Skill",
+      "explanation": "The docs' rule: 'Put it in CLAUDE.md if Claude should always know it: coding conventions, build commands, project structure, never do X rules. Put it in a skill if it's reference material Claude needs sometimes (API docs, style guides) or a workflow you trigger with /<name> (deploy, review, release).' The load difference drives it — CLAUDE.md loads every session automatically; skills load on demand.\n\n**Why the others are wrong**\n\n- **B, C, D.** All three are the docs' own examples of skill content: reference material needed sometimes, and invocable workflows. Putting them in CLAUDE.md spends context every session on material most sessions never use.\n\nThe stated rule of thumb: 'Keep CLAUDE.md under 200 lines. If it's growing, move reference content to skills or split into .claude/rules/ files.'",
+      "examTrick": "CLAUDE.md = always needed. Skill = sometimes needed, or /invoked. The test is 'would removing this cause Claude to make mistakes?'",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "CLAUDE.md vs Skill", "Load Timing", "Mechanism Selection"]
+    },
+    {
+      "id": 3,
+      "question": "What is the maximum import depth for @path imports in CLAUDE.md, and how do relative paths resolve?",
+      "options": [
+        "Imported files can recursively import others up to a maximum depth of four hops; relative paths resolve relative to the file containing the import.",
+        "Imports are not recursive at all; only the top-level CLAUDE.md may use @.",
+        "Depth is unlimited; relative paths resolve against the working directory.",
+        "Maximum depth is two hops; relative paths resolve against the project root."
+      ],
+      "answer": "Imported files can recursively import others up to a maximum depth of four hops; relative paths resolve relative to the file containing the import.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: import additional files",
+      "explanation": "'Both relative and absolute paths are allowed. Relative paths resolve relative to the file containing the import, not the working directory. Imported files can recursively import other files, with a maximum depth of four hops.'\n\n**Why the others are wrong**\n\n- **B.** Recursive imports are explicitly supported.\n- **C.** Both halves are wrong: depth is capped at four, and resolution is relative to the importing file, not the cwd.\n- **D.** Two is the wrong number, and project-root resolution is the wrong anchor.",
+      "examTrick": "Four hops max. Relative to the IMPORTING FILE, not the working directory.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "@ Imports", "Import Depth", "Path Resolution"]
+    },
+    {
+      "id": 4,
+      "question": "You want to mention the path @README in CLAUDE.md as documentation, without importing the file. How?",
+      "options": [
+        "Wrap it in backticks; import parsing skips Markdown code spans and fenced code blocks.",
+        "Escape it as \\@README.",
+        "Prefix it with a hash: #@README.",
+        "It is not possible; any @ followed by a path is always imported."
+      ],
+      "answer": "Wrap it in backticks; import parsing skips Markdown code spans and fenced code blocks.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: import additional files",
+      "explanation": "'Import parsing skips Markdown code spans and fenced code blocks. To mention a path in your CLAUDE.md without importing it, wrap it in backticks: writing `@README` keeps the text literal, while @README outside backticks imports the file.'\n\n**Why the others are wrong**\n\n- **B.** No backslash escape is documented for imports.\n- **C.** A hash prefix makes it a markdown heading; the @ would still be parsed.\n- **D.** Directly contradicted by the code-span rule.",
+      "examTrick": "Backticks make @paths literal. This is why a CLAUDE.md documenting its own import syntax does not import everything it mentions.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "@ Imports", "Code Spans", "Literal Paths"]
+    },
+    {
+      "id": 5,
+      "question": "Does splitting a large CLAUDE.md into @path imports reduce context usage?",
+      "options": [
+        "No — imported files still load and enter the context window at launch; use path-scoped rules in .claude/rules/ to actually reduce context.",
+        "Yes — imports are lazy and load only when Claude needs the referenced content.",
+        "Yes — imported files are summarized before entering context.",
+        "No — imports are never loaded at all, so the content is simply lost."
+      ],
+      "answer": "No — imported files still load and enter the context window at launch; use path-scoped rules in .claude/rules/ to actually reduce context.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Memory: write effective instructions; my CLAUDE.md is too large",
+      "explanation": "The docs say it twice. 'You can also split content into imports for organization, though imported files still load and enter the context window at launch.' And: 'Splitting into @path imports helps organization but doesn't reduce context, since imported files load at launch.' The mechanism that genuinely reduces context is path-scoped rules, which 'only load when Claude works with matching files.'\n\n**Why the others are wrong**\n\n- **B.** Skills are the on-demand mechanism; imports are eager.\n- **C.** No summarization occurs; content is expanded and loaded.\n- **D.** They are loaded — that is precisely the problem.",
+      "examTrick": "Imports = organization only, zero context savings. Real savings = .claude/rules/ with paths frontmatter, or skills.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "@ Imports", "Context Savings Myth", "Path-Scoped Rules"]
+    },
+    {
+      "id": 6,
+      "question": "Claude Code is launched in foo/bar/. In what order does CLAUDE.md content appear in context?",
+      "options": [
+        "foo/CLAUDE.md before foo/bar/CLAUDE.md — content is ordered from the filesystem root down to your working directory, and within a directory CLAUDE.local.md is appended after CLAUDE.md.",
+        "foo/bar/CLAUDE.md before foo/CLAUDE.md — the most specific file loads first so it takes precedence.",
+        "Only foo/bar/CLAUDE.md loads; parent directory files are ignored unless imported.",
+        "Files load in alphabetical order by absolute path, regardless of depth."
+      ],
+      "answer": "foo/CLAUDE.md before foo/bar/CLAUDE.md — content is ordered from the filesystem root down to your working directory, and within a directory CLAUDE.local.md is appended after CLAUDE.md.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Memory: how CLAUDE.md files load",
+      "explanation": "'All discovered files are concatenated into context rather than overriding each other. Across the directory tree, content is ordered from the filesystem root down to your working directory. For the foo/bar/ example, foo/CLAUDE.md appears in context before foo/bar/CLAUDE.md, so instructions closer to where you launched Claude are read last. Within each directory, CLAUDE.local.md is appended after CLAUDE.md.'\n\n**Why the others are wrong**\n\n- **B.** Reversed. Note also that CLAUDE.md files are ADDITIVE, not overriding — 'When instructions conflict, Claude uses judgment to reconcile them, with more specific instructions typically taking precedence.' That is judgement, not a precedence rule.\n- **C.** Ancestor files load at launch; subdirectory files below the cwd load on demand when Claude reads files there.\n- **D.** Order is by tree position, not alphabetical.",
+      "examTrick": "Root → down to cwd. Additive concatenation, NOT override. CLAUDE.local.md always after CLAUDE.md in the same directory.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Load Order", "Additive Concatenation", "CLAUDE.local.md"]
+    },
+    {
+      "id": 7,
+      "question": "Which CLAUDE.md location is shared with the team via source control?",
+      "options": [
+        "./CLAUDE.md or ./.claude/CLAUDE.md — project instructions.",
+        "~/.claude/CLAUDE.md — user instructions.",
+        "./CLAUDE.local.md — local instructions.",
+        "/etc/claude-code/CLAUDE.md — managed policy."
+      ],
+      "answer": "./CLAUDE.md or ./.claude/CLAUDE.md — project instructions.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Memory: choose where to put CLAUDE.md files",
+      "explanation": "The table lists four scopes in load order, broadest to most specific: Managed policy (OS-specific system paths, all users in the organization), User instructions at ~/.claude/CLAUDE.md (just you, all projects), Project instructions at ./CLAUDE.md or ./.claude/CLAUDE.md (shared with 'Team members via source control'), and Local instructions at ./CLAUDE.local.md (just you, current project, add to .gitignore).\n\n**Why the others are wrong**\n\n- **B.** Personal preferences across all your projects, shared with nobody.\n- **C.** Explicitly personal and gitignored: 'For private per-project preferences that shouldn't be checked into version control.'\n- **D.** Distributed by MDM or configuration management, not source control, and it applies machine-wide rather than per repository.",
+      "examTrick": "Four scopes: managed policy > user > project > local. Only PROJECT travels through source control.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "CLAUDE.md Scopes", "Team Sharing", "CLAUDE.local.md"]
+    },
+    {
+      "id": 8,
+      "question": "You work across several git worktrees of one repository and want the same personal instructions in each. Why does CLAUDE.local.md fail, and what is the documented alternative?",
+      "options": [
+        "A gitignored CLAUDE.local.md only exists in the worktree where you created it; instead import a file from your home directory, such as @~/.claude/my-project-instructions.md.",
+        "CLAUDE.local.md is deprecated in worktrees; use .claude/CLAUDE.md instead.",
+        "Worktrees do not load any CLAUDE.md files; use --add-dir to reach the main checkout.",
+        "CLAUDE.local.md loads fine in worktrees; the correct fix is to commit it."
+      ],
+      "answer": "A gitignored CLAUDE.local.md only exists in the worktree where you created it; instead import a file from your home directory, such as @~/.claude/my-project-instructions.md.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Memory: import additional files",
+      "explanation": "'If you work across multiple git worktrees of the same repository, a gitignored CLAUDE.local.md only exists in the worktree where you created it. To share personal instructions across worktrees, import a file from your home directory instead.' The docs show '# Individual Preferences\\n- @~/.claude/my-project-instructions.md'.\n\n**Why the others are wrong**\n\n- **B.** .claude/CLAUDE.md is the shared project file; putting personal preferences there exposes them to the team.\n- **C.** Worktrees load CLAUDE.md normally.\n- **D.** Committing a personal file defeats its purpose and shares it with everyone.\n\nRelated warning worth knowing: an import in a project-level memory file whose path resolves OUTSIDE the working directory is an 'external' import. The first time Claude Code encounters external imports in a project it shows an approval dialog; if you decline, they stay disabled.",
+      "examTrick": "Worktree-portable personal instructions = a home-directory import (@~/...). External imports from a PROJECT file trigger a one-time approval dialog.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Worktrees", "Home Directory Imports", "External Import Approval"]
+    },
+    {
+      "id": 9,
+      "question": "A repository already uses AGENTS.md for another coding agent. What is the documented way to make Claude Code read the same instructions without duplicating them?",
+      "options": [
+        "Create a CLAUDE.md that imports it with @AGENTS.md, optionally adding Claude-specific instructions below the import.",
+        "Rename AGENTS.md to CLAUDE.md, since Claude Code reads only that filename.",
+        "Set an agentsMdCompat flag in settings.json.",
+        "Claude Code reads AGENTS.md automatically when no CLAUDE.md is present."
+      ],
+      "answer": "Create a CLAUDE.md that imports it with @AGENTS.md, optionally adding Claude-specific instructions below the import.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: AGENTS.md",
+      "explanation": "'Claude Code reads CLAUDE.md, not AGENTS.md. If your repository already uses AGENTS.md for other coding agents, create a CLAUDE.md that imports it so both tools read the same instructions without duplicating them. You can also add Claude-specific instructions below the import.' A symlink also works if you do not need Claude-specific content — but on Windows creating a symlink requires Administrator privileges or Developer Mode, so use the @AGENTS.md import instead.\n\n**Why the others are wrong**\n\n- **B.** Renaming breaks the other agent that depends on AGENTS.md.\n- **C.** No such setting exists.\n- **D.** Explicitly contradicted: 'Claude Code reads CLAUDE.md, not AGENTS.md.'",
+      "examTrick": "@AGENTS.md import inside CLAUDE.md. Symlink is the alternative, but not on Windows without admin/Developer Mode.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "AGENTS.md", "Interoperability", "@ Imports"]
+    },
+    {
+      "id": 10,
+      "question": "What is the documented target size for a CLAUDE.md file, and what happens above the hard limit?",
+      "options": [
+        "Target under 200 lines; Claude Code loads a CLAUDE.md of up to 4 MiB in full and skips a larger file.",
+        "Target under 200 lines; anything above 200 lines is truncated at load.",
+        "Target under 25KB; anything larger is summarized before injection.",
+        "There is no size guidance; CLAUDE.md files are always loaded in full."
+      ],
+      "answer": "Target under 200 lines; Claude Code loads a CLAUDE.md of up to 4 MiB in full and skips a larger file.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Memory: write effective instructions; how it works",
+      "explanation": "'Size: target under 200 lines per CLAUDE.md file. Longer files consume more context and reduce adherence.' And separately: 'Claude Code loads a CLAUDE.md file of up to 4 MiB in full and skips a larger file. Shorter files produce better adherence.'\n\n**Why the others are wrong**\n\n- **B.** 200 lines is a guideline for adherence, not a truncation point.\n- **C.** The 200-line / 25KB pair is the AUTO MEMORY limit — 'The first 200 lines of MEMORY.md, or the first 25KB, whichever comes first, are loaded at the start of every conversation.' The docs state that limit 'applies only to MEMORY.md.' Confusing the two limits is a deliberate trap.\n- **D.** Both a guideline and a hard limit are documented.",
+      "examTrick": "CLAUDE.md: 200-line TARGET, 4 MiB hard skip. MEMORY.md: 200 lines OR 25KB, whichever first — a real load cutoff.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "CLAUDE.md Size", "4 MiB Limit", "MEMORY.md Limit"]
+    },
+    {
+      "id": 11,
+      "question": "Which item does the documentation say to EXCLUDE from CLAUDE.md?",
+      "options": [
+        "File-by-file descriptions of the codebase and detailed API documentation.",
+        "Bash commands Claude cannot guess.",
+        "Developer environment quirks such as required environment variables.",
+        "Repository etiquette such as branch naming and PR conventions."
+      ],
+      "answer": "File-by-file descriptions of the codebase and detailed API documentation.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: write an effective CLAUDE.md",
+      "explanation": "The Exclude column lists: anything Claude can figure out by reading code, standard language conventions Claude already knows, detailed API documentation (link to docs instead), information that changes frequently, long explanations or tutorials, file-by-file descriptions of the codebase, and self-evident practices like 'write clean code'. The test given is: 'For each line, ask: Would removing this cause Claude to make mistakes? If not, cut it.'\n\n**Why the others are wrong**\n\n- **B, C, D.** All three appear verbatim in the Include column.\n\nThe consequence of ignoring this: 'If Claude keeps doing something you don't want despite having a rule against it, the file is probably too long and the rule is getting lost.'",
+      "examTrick": "Exclude anything derivable from the code. /doctor proposes exactly these cuts for a checked-in CLAUDE.md.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "CLAUDE.md Content", "Pruning", "/doctor"]
+    },
+    {
+      "id": 12,
+      "question": "Terraform conventions should load only when Claude edits .tf files. Which configuration achieves this?",
+      "options": [
+        "A .claude/rules/ markdown file with YAML frontmatter paths: ['terraform/**/*'], which activates only when Claude works with matching files.",
+        "A section in the root CLAUDE.md headed '# Terraform'.",
+        "A CLAUDE.md placed inside the terraform/ directory.",
+        "A /terraform slash command that loads the conventions on demand."
+      ],
+      "answer": "A .claude/rules/ markdown file with YAML frontmatter paths: ['terraform/**/*'], which activates only when Claude works with matching files.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: path-specific rules",
+      "explanation": "'Rules can be scoped to specific files using YAML frontmatter with the paths field. These conditional rules only apply when Claude is working with files matching the specified patterns.' Rules WITHOUT a paths field are loaded unconditionally at launch, with the same priority as .claude/CLAUDE.md.\n\n**Why the others are wrong**\n\n- **B.** A root CLAUDE.md section loads in every session regardless of whether any .tf file is touched — the context cost the question is trying to avoid.\n- **C.** A per-directory CLAUDE.md is a valid alternative and the docs compare the two, but it is tied to directory placement. A path-scoped rule is the right answer when conventions should be centralized or apply to scattered paths; the question's phrasing ('.tf files', not 'the terraform/ directory') points at globs.\n- **D.** A slash command requires a human to invoke it, so it cannot fire automatically when Claude edits a file.",
+      "examTrick": "'Only when editing <file type>' = .claude/rules/ + paths frontmatter globs. No paths field = loads unconditionally.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Path-Specific Rules", "paths Frontmatter", "Conditional Loading"]
+    },
+    {
+      "id": 13,
+      "question": "Which glob pattern in a rule's paths field matches all TypeScript and TSX files under src/, plus all TypeScript under lib/?",
+      "options": [
+        "paths: [\"src/**/*.{ts,tsx}\", \"lib/**/*.ts\"] — multiple patterns are allowed and brace expansion matches multiple extensions.",
+        "paths: \"src/**/*.ts,tsx; lib/**/*.ts\" — a single comma- and semicolon-delimited string.",
+        "paths: [\"src/**/*.ts|tsx\", \"lib/**/*.ts\"] — pipe alternation inside the extension.",
+        "paths: [\"src/\", \"lib/\"] with an extensions: [\"ts\",\"tsx\"] sibling key."
+      ],
+      "answer": "paths: [\"src/**/*.{ts,tsx}\", \"lib/**/*.ts\"] — multiple patterns are allowed and brace expansion matches multiple extensions.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: path-specific rules",
+      "explanation": "The docs show exactly this shape: a YAML list under paths, with brace expansion for multiple extensions. Documented pattern examples include **/*.ts (all TypeScript in any directory), src/**/* (all files under src/), *.md (markdown in the project root only), and src/components/*.tsx.\n\n**Why the others are wrong**\n\n- **B, C, D.** None is valid glob or valid frontmatter for this field.\n\nTwo documented edge cases the exam can reach for: brace groups multiply, so a rule's whole paths list shares one budget of 1,000 expanded patterns and 4 MiB; a pattern exceeding the budget is used unexpanded and its literal braces match nothing. And glob treats [ as a bracket expression, so 'photos [2024/**' is invalid and matches nothing — escape it as 'photos \\\\[2024/**'.",
+      "examTrick": "paths is a LIST of globs; braces expand. Budget: 1,000 expanded patterns / 4 MiB per rule.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Glob Patterns", "Brace Expansion", "paths Frontmatter"]
+    },
+    {
+      "id": 14,
+      "question": "How do user-level rules in ~/.claude/rules/ relate to project rules in .claude/rules/?",
+      "options": [
+        "User-level rules are loaded before project rules, giving project rules higher priority.",
+        "User-level rules override project rules, since personal preferences are more specific.",
+        "User-level rules are ignored whenever a project defines any rules of its own.",
+        "The two directories are merged alphabetically by filename, regardless of scope."
+      ],
+      "answer": "User-level rules are loaded before project rules, giving project rules higher priority.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: user-level rules",
+      "explanation": "'Personal rules in ~/.claude/rules/ apply to every project on your machine. Use them for preferences that aren't project-specific... User-level rules are loaded before project rules, giving project rules higher priority.' This mirrors the CLAUDE.md ordering principle: broader scope first, more specific scope read last.\n\n**Why the others are wrong**\n\n- **B.** Reversed, and it would let a personal preference silently override a team convention.\n- **C.** Both load; they are additive.\n- **D.** Ordering is by scope, not filename.\n\nNote that .claude/rules/ also supports symlinks, so you can maintain one shared rule set and link it into multiple projects; circular symlinks are detected and handled.",
+      "examTrick": "Loaded FIRST = lower priority, because later content is read last. User rules before project rules.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "User-Level Rules", "Rule Priority", "Symlinks"]
+    },
+    {
+      "id": 15,
+      "question": "Claude is not following an instruction in CLAUDE.md. Which command verifies whether the file actually loaded into the current session?",
+      "options": [
+        "/context — check the list under 'Memory files'.",
+        "/memory — it lists locations, but does not show what loaded this session.",
+        "/doctor — it runs a configuration checkup.",
+        "/status — it shows which managed source applies."
+      ],
+      "answer": "/context — check the list under 'Memory files'.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: troubleshoot memory issues",
+      "explanation": "'Run /context and check the list under Memory files to verify your CLAUDE.md and CLAUDE.local.md files loaded. If a file is missing there, Claude can't see it.' The docs distinguish the two commands explicitly: /memory lists your CLAUDE.md, CLAUDE.local.md, and other memory file locations across user and project scopes, 'including user and project CLAUDE.md entries for files that don't exist yet' — but 'To check which files actually loaded into the current session, run /context.'\n\n**Why the others are wrong**\n\n- **B.** /memory is the browse-and-edit command; it lists locations including ones with no file.\n- **C.** /doctor proposes trims for a checked-in CLAUDE.md and runs a broader checkup, not a per-session load list.\n- **D.** /status surfaces which managed settings source applies.\n\nFor deeper debugging the docs suggest the InstructionsLoaded hook, which logs exactly which instruction files load, when, and why.",
+      "examTrick": "/memory = where files COULD be. /context = what actually LOADED. The exam tests that distinction.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/context", "/memory", "Troubleshooting"]
+    },
+    {
+      "id": 16,
+      "question": "Why might an instruction in CLAUDE.md not be followed even when /context confirms the file loaded?",
+      "options": [
+        "CLAUDE.md is delivered as a user message after the system prompt and is context rather than enforced configuration, so vague or conflicting instructions may not be followed strictly.",
+        "CLAUDE.md is only read on the first turn and is dropped from later requests.",
+        "CLAUDE.md instructions apply only to file edits, not to Bash commands or tool selection.",
+        "CLAUDE.md is loaded lazily and reaches the model only if Claude decides it is relevant."
+      ],
+      "answer": "CLAUDE.md is delivered as a user message after the system prompt and is context rather than enforced configuration, so vague or conflicting instructions may not be followed strictly.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Memory: Claude isn't following my CLAUDE.md",
+      "explanation": "'CLAUDE.md content is delivered as a user message after the system prompt, not as part of the system prompt itself. Claude reads it and tries to follow it, but there's no guarantee of strict compliance, especially for vague or conflicting instructions.' The documented remedies: make instructions more specific, look for conflicts across files, and — if it must run at a specific point — write it as a hook instead. For system-prompt-level instructions, use --append-system-prompt, though that must be passed every invocation.\n\n**Why the others are wrong**\n\n- **B.** The context-cost table lists CLAUDE.md's cost as 'Every request'.\n- **C.** No such scoping exists.\n- **D.** That describes skills. CLAUDE.md loads eagerly at session start.",
+      "examTrick": "CLAUDE.md = a user message after the system prompt = advisory. That single fact answers most 'why wasn't it followed' questions.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Advisory Context", "System Prompt", "--append-system-prompt"]
+    },
+    {
+      "id": 17,
+      "question": "Which statement about auto memory is correct?",
+      "options": [
+        "Claude writes it itself from your corrections and preferences; it is stored per repository at ~/.claude/projects/<project>/memory/ and is machine-local.",
+        "You write it manually and it is committed alongside CLAUDE.md.",
+        "It is synchronized across your machines and cloud sessions automatically.",
+        "It replaces CLAUDE.md; a project with auto memory enabled ignores CLAUDE.md."
+      ],
+      "answer": "Claude writes it itself from your corrections and preferences; it is stored per repository at ~/.claude/projects/<project>/memory/ and is machine-local.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: auto memory",
+      "explanation": "The comparison table: CLAUDE.md is written by you and contains instructions and rules; auto memory is written by Claude and contains learnings and patterns, scoped 'Per repository, shared across worktrees'. 'Auto memory is machine-local... Files are not shared across machines or cloud environments.' The four memory types are user, feedback, project, and reference.\n\n**Why the others are wrong**\n\n- **B.** You write CLAUDE.md; Claude writes auto memory.\n- **C.** Explicitly machine-local.\n- **D.** They are complementary and both load at the start of every conversation.\n\nAlso documented: Claude 'skips anything it can derive from the codebase, such as architecture, file paths, or debugging fixes. It also skips anything your CLAUDE.md files already say.'",
+      "examTrick": "You write CLAUDE.md (rules). Claude writes auto memory (learnings). Both load every session; auto memory never leaves the machine.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Auto Memory", "MEMORY.md", "Machine-Local"]
+    },
+    {
+      "id": 18,
+      "question": "How much of MEMORY.md is loaded at the start of every conversation, and what happens to the rest?",
+      "options": [
+        "The first 200 lines or the first 25KB, whichever comes first; content beyond that threshold is not loaded at session start.",
+        "The entire file, however large, since it is the memory index.",
+        "Only the frontmatter; the body is read on demand.",
+        "The last 200 lines, so the most recent memories are always present."
+      ],
+      "answer": "The first 200 lines or the first 25KB, whichever comes first; content beyond that threshold is not loaded at session start.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Memory: how it works",
+      "explanation": "'The first 200 lines of MEMORY.md, or the first 25KB, whichever comes first, are loaded at the start of every conversation. Content beyond that threshold is not loaded at session start.' If the file is over a limit the write still succeeds, but Claude Code returns an error telling Claude to rewrite the index, 'because everything past the limit is dropped on the next load.' Topic files such as user_role.md are NOT loaded at startup; Claude reads them on demand.\n\n**Why the others are wrong**\n\n- **B.** That is CLAUDE.md behaviour (full load up to 4 MiB), not MEMORY.md.\n- **C.** MEMORY.md is an index of one-line pointers; its body is the point.\n- **D.** It is the FIRST 200 lines, not the last — which is why Claude is instructed to keep the index short and move detail into topic files.",
+      "examTrick": "MEMORY.md: first 200 lines OR 25KB, whichever first. Topic files load on demand, never at startup.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "MEMORY.md", "Load Limits", "Topic Files"]
+    }
+  ]
+}

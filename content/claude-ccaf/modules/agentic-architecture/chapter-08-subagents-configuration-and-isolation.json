@@ -1,0 +1,383 @@
+{
+  "subject": "Claude CCAF: Agentic Architecture & Orchestration",
+  "chapter": "1.8 Subagent Configuration, Scope & Context Isolation",
+  "exam": "Claude CCAF",
+  "paper": "Domain-1",
+  "description": "NEW TOPIC. Subagent file locations and scope precedence, the full frontmatter reference, what loads at startup in a subagent versus a fork, tool allowlists and denylists, spawn depth and concurrency limits, and the built-in Explore and Plan agents. Grounded in the official Claude Code subagents documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A subagent named 'code-reviewer' is defined in managed settings, in .claude/agents/, in ~/.claude/agents/, and in an enabled plugin. Which definition wins?",
+      "options": [
+        "The managed settings definition — subagent scope precedence runs managed > --agents flag > project > user > plugin.",
+        "The project definition in .claude/agents/, because project configuration is closest to the work.",
+        "The user definition in ~/.claude/agents/, because personal configuration is most specific.",
+        "The plugin definition, because plugin components are namespaced and load last."
+      ],
+      "answer": "The managed settings definition — subagent scope precedence runs managed > --agents flag > project > user > plugin.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: file locations and scope precedence",
+      "explanation": "The documented priority order is: 1 managed settings (organization-wide), 2 the --agents CLI flag (current session), 3 .claude/agents/ (project), 4 ~/.claude/agents/ (all projects), 5 a plugin's agents/ directory. Subagents override BY NAME — one definition wins outright rather than merging.\n\n**Why the others are wrong**\n\n- **B.** Project sits third, below managed and the CLI flag.\n- **C.** User sits fourth, above only plugins.\n- **D.** Plugin agents are the lowest priority of the five.\n\nNote the contrast with SKILLS, whose precedence is managed > user > project — the opposite ordering of project and user. The exam likes this asymmetry.",
+      "examTrick": "Subagents: managed > --agents > project > user > plugin. Skills: managed > user > project. The middle two swap.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Subagent Precedence", "Scope Selection", ".claude/agents/"]
+    },
+    {
+      "id": 2,
+      "question": "Which two frontmatter fields are required in a subagent definition file?",
+      "options": [
+        "name and description.",
+        "name and tools.",
+        "description and model.",
+        "name, description, and tools."
+      ],
+      "answer": "name and description.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Subagents: frontmatter fields",
+      "explanation": "'Only name and description are required.' name is a unique lowercase identifier; description tells Claude when to delegate to this subagent. Everything else — tools, disallowedTools, model, permissionMode, skills, memory, isolation, maxTurns, background, hooks, mcpServers — is optional.\n\n**Why the others are wrong**\n\n- **B, D.** tools is optional; omitting it gives the subagent the full available tool set.\n- **C.** model is optional and defaults to 'inherit'.\n\nThe description carries real weight: it is what Claude matches your task against when deciding whether to delegate, so a vague description means the subagent never gets used or gets used wrongly.",
+      "examTrick": "Only name + description required. description is the delegation trigger, so write it as when-to-use text.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Subagent Frontmatter", "Required Fields", "Delegation"]
+    },
+    {
+      "id": 3,
+      "question": "What is the difference between the tools and disallowedTools frontmatter fields?",
+      "options": [
+        "tools is an allowlist — only the listed tools work; disallowedTools is a denylist — everything except the listed tools works.",
+        "tools applies to built-in tools and disallowedTools applies only to MCP tools.",
+        "tools grants permission without prompting; disallowedTools triggers a prompt instead of blocking.",
+        "They are equivalent; disallowedTools is the deprecated older spelling."
+      ],
+      "answer": "tools is an allowlist — only the listed tools work; disallowedTools is a denylist — everything except the listed tools works.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: tool restrictions",
+      "explanation": "The docs present both approaches: an allowlist such as 'tools: Read, Grep, Glob, Bash' means only those tools are available, while a denylist such as 'disallowedTools: Write, Edit' means everything except those. disallowedTools also accepts MCP patterns: 'mcp__github' removes all tools from that server, and 'mcp__*' removes every MCP tool.\n\n**Why the others are wrong**\n\n- **B.** Both fields handle built-in and MCP tools.\n- **C.** These fields shape the tool POOL, not permission prompting. Pre-approving tools without prompting is what a skill's allowed-tools field does.\n- **D.** Both are current and serve opposite purposes.\n\nA further documented form restricts which subagents this one may spawn: 'tools: Agent(worker, researcher), Read, Bash'.",
+      "examTrick": "tools = allowlist. disallowedTools = denylist. Both accept mcp__server and mcp__* patterns.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Tool Restrictions", "Allowlist vs Denylist", "MCP Patterns"]
+    },
+    {
+      "id": 4,
+      "question": "Which of these does NOT load into a normal (non-fork) subagent at startup?",
+      "options": [
+        "The main conversation's history and its auto memory.",
+        "The system prompt from the subagent file's markdown body.",
+        "CLAUDE.md files and a git status snapshot.",
+        "Skills listed in the subagent's skills field."
+      ],
+      "answer": "The main conversation's history and its auto memory.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: what loads at startup",
+      "explanation": "A non-fork subagent starts with: its own system prompt from the file body, the task delegation message Claude wrote, CLAUDE.md files, a git status snapshot, preloaded skills from the skills field, and the sibling roster of named agents. What never reaches subagents: output style settings, the main conversation's auto memory, and conversation history — 'except forks'.\n\n**Why the others are wrong**\n\n- **B, C, D.** All three are documented as loading.\n\nThis is why a subagent needs everything it must know stated in the delegation prompt. It cannot see what you discussed with the lead agent. A vague delegation like 'review that' fails because there is no 'that' in the subagent's context.",
+      "examTrick": "Subagent gets CLAUDE.md + git status + its own prompt + preloaded skills. It does NOT get the conversation. Forks get the conversation.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Subagent Startup", "Context Isolation", "Delegation Prompt"]
+    },
+    {
+      "id": 5,
+      "question": "What does a fork inherit that a normal subagent does not?",
+      "options": [
+        "The entire parent conversation history, the same system prompt, the same tools, and the same model.",
+        "Only the parent's tool set; the conversation is still isolated.",
+        "The parent's auto memory but not its conversation history.",
+        "Nothing extra; a fork is another name for a subagent with inherit as its model."
+      ],
+      "answer": "The entire parent conversation history, the same system prompt, the same tools, and the same model.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: fork the current conversation",
+      "explanation": "'For a fork, Claude Code loads the parent's conversation so far, system prompt, and tools instead.' The fork also shares the prompt cache with the parent, stays in the background, and returns its result as a message. Use a fork 'when the side task needs extensive context'; use a subagent when the task produces verbose output or needs constrained tools.\n\n**Why the others are wrong**\n\n- **B, C.** The defining property of a fork is inheriting the conversation.\n- **D.** They differ fundamentally in what loads.\n\nA skill can also run forked via 'context: fork' in its frontmatter, which is how a skill gets isolation without you writing a subagent file.",
+      "examTrick": "Fork = full parent conversation + same prompt/tools/model + shared prompt cache. Subagent = fresh context, own definition.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Fork", "context: fork", "Prompt Cache Sharing"]
+    },
+    {
+      "id": 6,
+      "question": "What is distinctive about the built-in Explore and Plan subagents?",
+      "options": [
+        "They are read-only, they omit CLAUDE.md and the git status snapshot, they don't count toward spawn depth limits, and they can't be resumed.",
+        "They run on a fixed small model regardless of the session model.",
+        "They have write access but are restricted to the working directory.",
+        "They inherit the parent conversation like forks do."
+      ],
+      "answer": "They are read-only, they omit CLAUDE.md and the git status snapshot, they don't count toward spawn depth limits, and they can't be resumed.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: built-in subagents",
+      "explanation": "Explore handles file discovery and codebase exploration; Plan handles codebase research during plan mode. Both are read-only, both inherit the session model (Explore capped at Opus on the Claude API), and both 'omit CLAUDE.md and git status'. They also 'don't count toward spawn depth limits and can't be resumed.' The general-purpose agent, by contrast, inherits the model and has all available tools.\n\n**Why the others are wrong**\n\n- **B.** They inherit rather than pin a small model.\n- **C.** Both are read-only; no write access.\n- **D.** Only forks inherit the parent conversation.\n\nThe CLAUDE.md omission is deliberate: these agents are pure search workers, and project conventions would be context they never act on.",
+      "examTrick": "Explore/Plan: read-only, no CLAUDE.md, no git status, exempt from depth limits, not resumable.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Explore Agent", "Plan Agent", "Built-in Subagents"]
+    },
+    {
+      "id": 7,
+      "question": "Which invocation guarantees that a specific named subagent runs, rather than leaving the decision to Claude?",
+      "options": [
+        "An @-mention such as @\"code-reviewer (agent)\".",
+        "Natural language: 'Use the code-reviewer subagent to suggest improvements.'",
+        "Setting model: inherit in the subagent's frontmatter.",
+        "Adding the subagent name to CLAUDE.md."
+      ],
+      "answer": "An @-mention such as @\"code-reviewer (agent)\".",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: invoking subagents",
+      "explanation": "The docs describe three escalating patterns: natural language names the subagent and 'Claude decides whether to delegate'; an @-mention 'Guarantees that specific subagent runs'; and 'claude --agent code-reviewer' or the agent key in .claude/settings.json makes the whole session use that subagent's configuration.\n\n**Why the others are wrong**\n\n- **B.** Naming it in prose is a suggestion Claude weighs, not a guarantee.\n- **C.** model: inherit controls which model runs, not whether the agent is chosen.\n- **D.** CLAUDE.md is advisory context and cannot force delegation.\n\nThe escalation ladder mirrors the enforcement-versus-guidance theme across the whole exam: prose suggests, syntax guarantees, configuration pins.",
+      "examTrick": "Prose = Claude decides. @-mention = guaranteed. --agent flag = whole session.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Subagent Invocation", "@-mention", "--agent"]
+    },
+    {
+      "id": 8,
+      "question": "What are the default limits on subagent nesting and concurrency?",
+      "options": [
+        "Up to 3 layers deep and a maximum of 20 subagents running simultaneously, both configurable by environment variable.",
+        "Unlimited nesting, with a maximum of 5 concurrent subagents.",
+        "One layer only — subagents cannot spawn other subagents.",
+        "Up to 10 layers deep with no concurrency limit."
+      ],
+      "answer": "Up to 3 layers deep and a maximum of 20 subagents running simultaneously, both configurable by environment variable.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: key behaviors",
+      "explanation": "'Subagents can spawn other subagents up to 3 layers deep by default (configurable via CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH)' and 'max 20 subagents running simultaneously (configurable via CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS).' Explore and Plan do not count toward the depth limit.\n\n**Why the others are wrong**\n\n- **B, D.** Depth is bounded at 3 by default; concurrency is bounded at 20.\n- **C.** Nesting is explicitly allowed.\n\nThe limits exist because each subagent is a full context window with its own token cost — unbounded fan-out is expensive and hard to reason about.",
+      "examTrick": "3 layers deep, 20 concurrent, both env-var configurable. Explore/Plan are exempt from depth.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Spawn Depth", "Concurrency Limits", "Environment Variables"]
+    },
+    {
+      "id": 9,
+      "question": "A subagent should keep notes across invocations in a directory separate from the main conversation's memory. Which frontmatter field enables that?",
+      "options": [
+        "memory, set to user, project, or local.",
+        "autoMemoryDirectory, set to a path.",
+        "context, set to persist.",
+        "skills, listing a memory skill."
+      ],
+      "answer": "memory, set to user, project, or local.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: enable persistent memory",
+      "explanation": "The subagent frontmatter includes 'memory: project  # Optional: user, project, or local'. The memory docs confirm the isolation: 'The main conversation's auto memory isn't loaded into subagents... A subagent's own auto memory, enabled with the subagent memory field, is a separate directory.'\n\n**Why the others are wrong**\n\n- **B.** autoMemoryDirectory is a settings.json key that relocates the whole auto-memory directory; it is not subagent frontmatter.\n- **C.** context accepts fork, not persist.\n- **D.** skills preloads skill content; it has nothing to do with persistence.\n\nThe separation matters: a subagent's learnings do not leak into the main conversation's memory, and vice versa.",
+      "examTrick": "Subagent memory is a SEPARATE directory from the main conversation's. Enabled by the memory: frontmatter field.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Subagent Memory", "Isolation", "Frontmatter"]
+    },
+    {
+      "id": 10,
+      "question": "Which frontmatter field gives a subagent its own git worktree so its edits stay isolated from the main checkout?",
+      "options": [
+        "isolation: worktree",
+        "worktree: true",
+        "sandbox: worktree",
+        "permissionMode: plan"
+      ],
+      "answer": "isolation: worktree",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: frontmatter fields; worktrees",
+      "explanation": "The frontmatter reference lists 'isolation: worktree  # Optional: git worktree isolation'. This pairs with the worktree.sparsePaths setting, which the large-codebase docs describe as 'particularly useful for subagent worktree isolation' — each subagent that runs in a worktree gets a lightweight checkout instead of the full tree, and all worktrees in a session share the same sparsePaths.\n\n**Why the others are wrong**\n\n- **B, C.** Neither is a documented field name.\n- **D.** permissionMode controls whether Claude asks before acting; it does not isolate the filesystem.\n\nNote the pairing to remember: isolation: worktree on the agent, worktree.sparsePaths and symlinkDirectories in settings to keep those checkouts cheap.",
+      "examTrick": "isolation: worktree on the agent + worktree.sparsePaths in settings = cheap isolated parallel work.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Worktree Isolation", "sparsePaths", "Parallel Agents"]
+    },
+    {
+      "id": 11,
+      "question": "Which frontmatter field caps how many agentic turns a subagent may take before it must return?",
+      "options": [
+        "maxTurns",
+        "effort",
+        "background",
+        "permissionMode"
+      ],
+      "answer": "maxTurns",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Subagents: frontmatter fields",
+      "explanation": "The frontmatter reference lists 'maxTurns: 10  # Optional: agentic turn limit'. It is a bound on the subagent's loop, which matters for cost control and for guaranteeing that a delegated task terminates.\n\n**Why the others are wrong**\n\n- **B.** effort sets the reasoning effort level (low/medium/high/xhigh/max), not a turn count.\n- **C.** background: true controls whether the subagent runs in the background.\n- **D.** permissionMode sets the subagent's permission baseline (default, acceptEdits, auto, plan).\n\nmaxTurns is one of the orchestration-layer safeguards the exam asks about: it guarantees the loop ends, so the coordinator always gets control back.",
+      "examTrick": "maxTurns bounds the agentic loop. It is a termination guarantee, which is why it appears in orchestration-safeguard questions.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "maxTurns", "Loop Termination", "Orchestration Safeguards"]
+    },
+    {
+      "id": 12,
+      "question": "How can a non-fork subagent be given more work after it has already returned a result?",
+      "options": [
+        "Resume it with full context using the SendMessage tool; non-fork subagents are resumable.",
+        "It cannot be resumed; spawn a new subagent with the accumulated context in its prompt.",
+        "Re-invoke it by name, which automatically restores its prior context.",
+        "Only forks can be resumed, because only they carry conversation history."
+      ],
+      "answer": "Resume it with full context using the SendMessage tool; non-fork subagents are resumable.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: key behaviors",
+      "explanation": "'Resumable: non-fork subagents can be resumed with full context via SendMessage.' The exceptions are the built-in Explore and Plan agents, which 'can't be resumed'. Resuming preserves the subagent's accumulated context, which is the difference between continuing an investigation and restarting one from cold.\n\n**Why the others are wrong**\n\n- **B.** Resumption exists precisely so you do not have to re-derive context.\n- **C.** A fresh Agent call starts a cold context; only SendMessage continues an existing one.\n- **D.** Reversed — non-fork subagents are the resumable ones.\n\nThis is the session-resumption principle applied within a single session: restore state rather than repeat prior work.",
+      "examTrick": "SendMessage resumes an existing subagent with its context. A new Agent call starts cold. Explore/Plan cannot be resumed at all.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "SendMessage", "Subagent Resumption", "State Preservation"]
+    },
+    {
+      "id": 13,
+      "question": "A side task needs everything discussed so far in the conversation but will produce a lot of intermediate output. Which is the better choice and why?",
+      "options": [
+        "A fork — it inherits the full conversation the task depends on, and its work still happens outside the main thread.",
+        "A subagent — its fresh context prevents the verbose output from polluting the conversation.",
+        "A skill with allowed-tools set, run inline.",
+        "A dynamic workflow, since verbose output always warrants a script."
+      ],
+      "answer": "A fork — it inherits the full conversation the task depends on, and its work still happens outside the main thread.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: forks vs subagents",
+      "explanation": "The documented split: use a fork 'when the side task needs extensive context'; use a subagent 'when the task produces verbose output or needs constraints'. Here the task NEEDS the accumulated context, which a fresh subagent cannot see. The fork still runs in the background and returns its result as a message, so the verbose intermediate work stays out of the main thread either way.\n\n**Why the others are wrong**\n\n- **B.** A subagent's fresh context is a liability when the task depends on the conversation; you would have to re-explain everything in the prompt.\n- **C.** Running inline puts all the verbose output into the main context.\n- **D.** Workflows are for jobs that 'outgrow a handful of subagents' — a codebase-wide audit or a large migration, not one side task.",
+      "examTrick": "Needs the conversation → fork. Needs isolation or tool constraints → subagent. Outgrows a handful of agents → workflow.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Fork vs Subagent", "Decision Criteria", "Context Dependence"]
+    },
+    {
+      "id": 14,
+      "question": "How does a subagent's permission handling work relative to the main session?",
+      "options": [
+        "Subagents inherit parent permissions, and permission prompts raised by a background subagent surface in the main session.",
+        "Subagents run without permissions and must request each tool from the parent explicitly.",
+        "Subagents always run in bypassPermissions mode so they are not interrupted.",
+        "Subagent permission prompts are auto-denied because the subagent runs in the background."
+      ],
+      "answer": "Subagents inherit parent permissions, and permission prompts raised by a background subagent surface in the main session.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: key behaviors",
+      "explanation": "'Subagents inherit parent permissions' and 'subagents run in background by default in interactive mode; permission prompts surface in the main session.' A subagent can also set its own permissionMode in frontmatter (default, acceptEdits, auto, plan) to tighten or loosen its baseline.\n\n**Why the others are wrong**\n\n- **B.** There is no per-tool request protocol back to the parent; inheritance plus the frontmatter fields govern access.\n- **C.** bypassPermissions is not the subagent default, and the docs caution about it specifically.\n- **D.** Prompts are surfaced to you, not silently denied.\n\nThe practical consequence: a permission rule you set for the session also constrains what your subagents can do, which is how you keep a fan-out of 20 agents safe.",
+      "examTrick": "Permissions inherit downward; prompts bubble upward to the main session. permissionMode in frontmatter adjusts the baseline.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Subagent Permissions", "Background Execution", "permissionMode"]
+    },
+    {
+      "id": 15,
+      "question": "Which frontmatter field preloads specific skill content into a subagent at launch?",
+      "options": [
+        "skills — listed skills are fully preloaded into the subagent's context at launch, rather than loaded on demand.",
+        "allowed-tools — which also grants the skills' tools.",
+        "context — set to the skill name.",
+        "mcpServers — skills are delivered as MCP resources."
+      ],
+      "answer": "skills — listed skills are fully preloaded into the subagent's context at launch, rather than loaded on demand.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: preload skills; Extend Claude Code",
+      "explanation": "'Skills work differently in subagents. Instead of on-demand loading, skills listed in the subagent's skills field are fully preloaded into its context at launch. Subagents can still discover and invoke unlisted project, user, and plugin skills through the Skill tool.' Note the interaction with disable-model-invocation: that flag 'Also prevents the skill from being preloaded into subagents.'\n\n**Why the others are wrong**\n\n- **B.** allowed-tools is a SKILL frontmatter field for pre-approving tools, not a subagent field for loading skills.\n- **C.** context accepts fork.\n- **D.** mcpServers scopes MCP servers to the subagent.",
+      "examTrick": "In the main session skills load on demand. In a subagent, listed skills are PRELOADED at launch. disable-model-invocation blocks preloading.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Skill Preloading", "skills Field", "disable-model-invocation"]
+    },
+    {
+      "id": 16,
+      "question": "A subagent should be restricted so it can only spawn two specific worker agents. Which syntax expresses that?",
+      "options": [
+        "tools: Agent(worker, researcher), Read, Bash",
+        "allowedAgents: worker, researcher",
+        "subagents: [worker, researcher]",
+        "disallowedTools: Agent(*), plus tools: Agent(worker), Agent(researcher)"
+      ],
+      "answer": "tools: Agent(worker, researcher), Read, Bash",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: tool restrictions",
+      "explanation": "The docs show 'Restrict spawnable subagents (only these can be spawned): tools: Agent(worker, researcher), Read, Bash'. The Agent tool takes a parenthesised list in the same way permission rules scope a tool, so the allowlist entry both grants the Agent tool and constrains which agent types it may launch.\n\n**Why the others are wrong**\n\n- **B, C.** Neither field name exists.\n- **D.** Over-complicated and self-contradictory: a bare deny of the Agent tool would remove it entirely, and the allowlist form already expresses the constraint in one entry.\n\nThis matters for orchestration design: a coordinator that can spawn anything is hard to reason about, while a coordinator restricted to two named workers has a bounded delegation graph.",
+      "examTrick": "Agent(name1, name2) inside tools: constrains WHICH agents can be spawned, not just whether spawning is allowed.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Agent Tool Scoping", "Delegation Graph", "Orchestration Design"]
+    },
+    {
+      "id": 17,
+      "question": "Which statement about the model field in subagent frontmatter is correct?",
+      "options": [
+        "It accepts sonnet, opus, haiku, fable, or inherit, and inherit is the default.",
+        "It is required, and there is no inherit option.",
+        "It accepts only a full model id such as claude-opus-5.",
+        "It is ignored for background subagents, which always use the fastest available model."
+      ],
+      "answer": "It accepts sonnet, opus, haiku, fable, or inherit, and inherit is the default.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: frontmatter fields",
+      "explanation": "The frontmatter reference reads 'model: sonnet  # Optional: sonnet, opus, haiku, fable, inherit (default)'. Inheriting means the subagent runs on whatever model the session is using.\n\n**Why the others are wrong**\n\n- **B.** It is optional, and inherit is explicitly the default.\n- **C.** Short aliases are accepted; full ids are not required here.\n- **D.** Background execution does not change model selection.\n\nA related detail from the built-in agents: Explore 'Inherits (capped at Opus on Claude API)' — inheritance can be bounded by the agent's own definition.",
+      "examTrick": "model defaults to inherit. Aliases: sonnet, opus, haiku, fable. A per-agent cap can override inheritance upward.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Model Selection", "inherit", "Subagent Frontmatter"]
+    },
+    {
+      "id": 18,
+      "question": "You want an entire session to run under a custom subagent's configuration. Which two mechanisms do that?",
+      "options": [
+        "The claude --agent <name> flag, or the agent key in .claude/settings.json.",
+        "The --permission-mode flag, or defaultMode in settings.",
+        "An @-mention at the start of the first prompt, or the skills field.",
+        "CLAUDE_CODE_DEFAULT_AGENT, or a SessionStart hook."
+      ],
+      "answer": "The claude --agent <name> flag, or the agent key in .claude/settings.json.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Subagents: invoking subagents",
+      "explanation": "The session-wide pattern is 'claude --agent code-reviewer' or, in .claude/settings.json, { \"agent\": \"code-reviewer\" }. This makes the whole session use that subagent's configuration rather than delegating to it as a worker.\n\n**Why the others are wrong**\n\n- **B.** Permission mode governs approvals, not which agent configuration the session uses.\n- **C.** An @-mention guarantees one delegated invocation; it does not reconfigure the session. The skills field is subagent frontmatter.\n- **D.** Neither is the documented mechanism.\n\nThe distinction to hold: delegating TO a subagent is a worker pattern; running AS one reconfigures your own session.",
+      "examTrick": "--agent / \"agent\" key = run the session AS that agent. @-mention = delegate one task TO it.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "--agent", "Session Configuration", "Invocation Patterns"]
+    },
+    {
+      "id": 19,
+      "question": "Which task is the documented case for a dynamic workflow rather than a handful of subagents?",
+      "options": [
+        "A codebase-wide audit or large migration where you also want findings cross-checked before you see them.",
+        "Researching how token refresh works in the auth module.",
+        "Reviewing one file for security issues.",
+        "Answering a question without adding it to conversation history."
+      ],
+      "answer": "A codebase-wide audit or large migration where you also want findings cross-checked before you see them.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code: subagent vs dynamic workflow",
+      "explanation": "'Use a dynamic workflow when a job outgrows a handful of subagents, or when you want the findings cross-checked before you see them, such as a codebase-wide audit, a large migration, or a plan drafted from several angles.' The structural difference: 'With subagents, Claude decides turn by turn what runs next. In a workflow, the script decides.'\n\n**Why the others are wrong**\n\n- **B, C.** Both are the documented subagent case: 'a quick, focused worker: research a question, verify a claim, review a file.'\n- **D.** That is /btw, which keeps an answer out of conversation history entirely.",
+      "examTrick": "Subagent = Claude decides turn by turn. Workflow = a script Claude wrote decides, for jobs beyond a handful of agents.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Dynamic Workflows", "Scale Threshold", "Orchestration Choice"]
+    },
+    {
+      "id": 20,
+      "question": "Where should a subagent definition live so the whole team gets it through version control?",
+      "options": [
+        ".claude/agents/ in the project, checked into version control.",
+        "~/.claude/agents/, with each teammate copying the file.",
+        "In managed settings, deployed by MDM.",
+        "In a plugin, which is the only distributable form."
+      ],
+      "answer": ".claude/agents/ in the project, checked into version control.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Subagents: file locations",
+      "explanation": "'Project subagents (.claude/agents/) should be checked into version control for team collaboration.' This mirrors the pattern across the whole configuration surface: project-level files are the sharing mechanism, user-level files are personal.\n\n**Why the others are wrong**\n\n- **B.** User-level agents are per-machine and per-person; manual copying is exactly the drift the project file prevents.\n- **C.** Managed settings are for organization-wide policy an administrator deploys, not for a team sharing through its own repository.\n- **D.** Plugins are a valid distribution mechanism when the same setup must span multiple repositories, but they are not required for one team in one repo.",
+      "examTrick": "One repo, one team = project .claude/agents/. Multiple repos = package it as a plugin. Org-wide policy = managed.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Team Sharing", "Project Agents", "Version Control"]
+    },
+    {
+      "id": 21,
+      "question": "A delegated subagent returns a summary that omits a detail the lead agent needs. What does the documentation imply is the root cause?",
+      "options": [
+        "The delegation prompt did not state what the subagent needed to report, since the subagent cannot see the conversation that motivated the task.",
+        "The subagent's model was too small and should be upgraded.",
+        "Subagent summaries are always lossy and the work should be done inline.",
+        "The subagent's maxTurns limit truncated its investigation."
+      ],
+      "answer": "The delegation prompt did not state what the subagent needed to report, since the subagent cannot see the conversation that motivated the task.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: what loads at startup",
+      "explanation": "A non-fork subagent receives its own system prompt, the task delegation message, CLAUDE.md, git status, and preloaded skills — but never the conversation history. Everything it must know, and everything it must report back, has to be in the delegation prompt. A summary that omits what you needed is almost always a prompt that never asked for it.\n\n**Why the others are wrong**\n\n- **B.** Model size does not tell an agent what you wanted reported.\n- **C.** Summarisation is the point of the pattern, and the docs recommend it; lossiness is managed by specifying the report format, not by abandoning isolation.\n- **D.** Possible in principle, but maxTurns is optional and unset by default, so it is not the general explanation.\n\nThis is the same principle as structured handoff packages: state the context, the findings needed, and the authorization state explicitly.",
+      "examTrick": "Subagent quality is a DELEGATION PROMPT problem. It cannot see your conversation, so name the context and the required output.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Delegation Quality", "Handoff Design", "Context Passing"]
+    },
+    {
+      "id": 22,
+      "question": "Which item never reaches a subagent, fork or otherwise?",
+      "options": [
+        "Output style settings.",
+        "CLAUDE.md files.",
+        "The sibling roster of named agents.",
+        "Preloaded skills from the skills field."
+      ],
+      "answer": "Output style settings.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Subagents: what loads at startup",
+      "explanation": "The 'Never reaches subagents' list is: output style settings, the main conversation's auto memory, and conversation history (except forks). Output style is the only one of those with no exception at all.\n\n**Why the others are wrong**\n\n- **B.** CLAUDE.md loads into normal subagents; only the built-in Explore and Plan agents omit it.\n- **C.** The sibling roster — agents that were given names when spawned — loads so agents can message each other.\n- **D.** Skills listed in the skills field are fully preloaded at launch.\n\nThe sibling roster is worth remembering separately: named subagents can message one another, which is what makes multi-agent coordination possible without routing everything through the lead.",
+      "examTrick": "Never reaches any subagent: output style. Reaches all but Explore/Plan: CLAUDE.md + git status. Forks only: conversation history.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Startup Context", "Sibling Roster", "Output Style"]
+    }
+  ]
+}

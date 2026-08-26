@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Claude Code Configuration & Workflows",
+  "chapter": "3.11 Permission Modes, Plan Mode & Unattended Execution",
+  "exam": "Claude CCAF",
+  "paper": "Domain-3",
+  "description": "NEW TOPIC. Every permission mode and what runs without asking in each, plan mode versus direct execution, protected paths, actions no mode auto-approves, how modes interact with permission rules, and choosing a mode for CI and unattended runs. Grounded in the official Claude Code permission-modes documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "What is the config value of the mode labelled 'Manual' in the CLI, and why does it matter?",
+      "options": [
+        "default — hooks and SDK integrations use the config value, and the CLI also accepts 'manual' as an alias.",
+        "manual — 'default' was renamed and is now deprecated.",
+        "review — Manual is the display name for the review mode.",
+        "ask — Manual maps to the ask permission rule type."
+      ],
+      "answer": "default — hooks and SDK integrations use the config value, and the CLI also accepts 'manual' as an alias.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes: available modes",
+      "explanation": "'The mode that reviews every action is named Manual in the CLI, in claude --help, in the VS Code and JetBrains extensions, and in the desktop app. Its config value is default, which is what hooks and SDK integrations use. The CLI accepts manual as an alias wherever you type the value, for example claude --permission-mode manual or \"defaultMode\": \"manual\".'\n\n**Why the others are wrong**\n\n- **B.** default is the config value, not a deprecated name; manual is the alias.\n- **C, D.** Neither is a mode name. Note that 'ask' is a permission RULE type, not a mode — rules and modes are two different layers.\n\nThe label-versus-value split matters because a settings file, a hook payload, and the UI can each show a different string for the same mode.",
+      "examTrick": "Manual (label) = default (config value) = manual (CLI alias). Hooks and SDK see 'default'.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Manual Mode", "default", "Mode Naming"]
+    },
+    {
+      "id": 2,
+      "question": "In plan mode, what runs without asking?",
+      "options": [
+        "Reads, plus classifier-approved commands when auto mode is available; Claude Code blocks edits until you approve a plan.",
+        "Reads and file edits, but no shell commands.",
+        "Nothing at all — plan mode prompts for every action including reads.",
+        "Everything, since plan mode is only about output formatting."
+      ],
+      "answer": "Reads, plus classifier-approved commands when auto mode is available; Claude Code blocks edits until you approve a plan.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes: available modes",
+      "explanation": "The mode table lists plan as allowing 'Reads, plus classifier-approved commands when auto mode is available', best for 'Exploring a codebase before changing it'. The mode-selection table adds: 'Explore before changing anything → claude --permission-mode plan → Claude Code blocks edits until you approve a plan.'\n\n**Why the others are wrong**\n\n- **B.** Blocking edits is the defining property of plan mode; allowing them would defeat it.\n- **C.** Reads are permitted, which is what makes exploration possible.\n- **D.** Plan mode is a permission mode with real enforcement, not a presentation setting.\n\nNote the sandbox interaction: 'The Bash sandbox and auto mode work independently and combine, except in plan mode, where auto-allow doesn't widen approvals.'",
+      "examTrick": "Plan mode = reads yes, edits blocked until the plan is approved. Sandbox auto-allow does NOT widen approvals in plan mode.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Plan Mode", "Edit Blocking", "Exploration"]
+    },
+    {
+      "id": 3,
+      "question": "How do you switch permission modes in a running CLI session, and what is the cycle from auto?",
+      "options": [
+        "Press Shift+Tab; from auto the first press switches to default, then the cycle runs default → acceptEdits → plan → back to default.",
+        "Press Ctrl+P to open a mode picker; there is no cycle.",
+        "Modes can only be set at launch with --permission-mode.",
+        "Type /mode followed by the mode name; Shift+Tab only toggles plan mode."
+      ],
+      "answer": "Press Shift+Tab; from auto the first press switches to default, then the cycle runs default → acceptEdits → plan → back to default.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes: switch permission modes",
+      "explanation": "'During a session: press Shift+Tab to cycle permission modes. From auto, the first press switches to default, and the cycle then runs default → acceptEdits → plan → back to default. Optional modes slot in after plan.' The status bar shows the active mode as ⏸ manual mode on, ⏵⏵ accept edits on, ⏸ plan mode on, ⏵⏵ auto mode on, ⏵⏵ don't ask on, or ⏵⏵ bypass permissions on.\n\n**Why the others are wrong**\n\n- **B, D.** Not the documented controls.\n- **C.** Modes are changeable mid-session; the flag only sets the starting mode.\n\nOptional modes have specific entry conditions: bypassPermissions 'appears after you start with --permission-mode bypassPermissions, --dangerously-skip-permissions, --allow-dangerously-skip-permissions, or permissions.defaultMode: \"bypassPermissions\"', and dontAsk 'never appears in the cycle; set it with --permission-mode dontAsk'.",
+      "examTrick": "Shift+Tab cycles default → acceptEdits → plan. bypassPermissions only joins the cycle if you started with a flag enabling it. dontAsk never joins.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Shift+Tab", "Mode Cycle", "Status Bar"]
+    },
+    {
+      "id": 4,
+      "question": "Which statement about deny rules and permission modes is correct?",
+      "options": [
+        "Deny rules block in every mode, including bypassPermissions; allow rules have no effect in bypassPermissions.",
+        "bypassPermissions overrides deny rules, which is why it is restricted to containers.",
+        "Deny rules apply only in Manual mode; other modes replace them.",
+        "Allow rules are the only rule type that survives a mode change."
+      ],
+      "answer": "Deny rules block in every mode, including bypassPermissions; allow rules have no effect in bypassPermissions.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permission modes: available modes",
+      "explanation": "'Modes set the baseline. Layer permission rules on top to pre-approve or block specific tools. Deny rules block in every mode, including bypassPermissions. Deny and ask rules don't apply to EndConversation as long as Claude still has at least one other tool it can call. Allow rules have no effect in bypassPermissions.'\n\n**Why the others are wrong**\n\n- **B.** Deny survives bypassPermissions — this is the key safety property, and getting it backwards is a serious misunderstanding.\n- **C.** Rules layer on top of every mode.\n- **D.** Allow rules are the ones that become irrelevant in bypassPermissions, since nothing is being asked anyway.\n\nThe mental model: MODES decide what gets asked about; RULES decide what is permitted at all. Deny is the floor beneath every mode.",
+      "examTrick": "Modes = baseline. Rules = layered on top. Deny holds in EVERY mode including bypass; allow is meaningless in bypass.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Deny in Every Mode", "Rules vs Modes", "bypassPermissions"]
+    },
+    {
+      "id": 5,
+      "question": "Which writes are never auto-approved regardless of mode?",
+      "options": [
+        "Writes to protected paths, except in bypassPermissions mode and in plan-mode sessions where bypass permissions are available.",
+        "Writes to any file outside the working directory, in every mode without exception.",
+        "Writes to files larger than a size threshold.",
+        "All writes; every mode prompts for file writes."
+      ],
+      "answer": "Writes to protected paths, except in bypassPermissions mode and in plan-mode sessions where bypass permissions are available.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permission modes: protected paths",
+      "explanation": "'Writes to protected paths are never auto-approved except in bypassPermissions mode and in plan-mode sessions where bypass permissions are available, meaning sessions started in a way that puts bypassPermissions in the mode cycle.' The permissions docs identify protected paths as including .git and .claude — the directories that control the repository and Claude Code's own configuration.\n\n**Why the others are wrong**\n\n- **B.** Directory scope is governed by working directories and additionalDirectories, a separate mechanism.\n- **C.** Size is irrelevant.\n- **D.** acceptEdits auto-approves ordinary file edits by design.\n\nThe reason .claude is protected is self-evident once you see it: a write there could rewrite the permission rules that constrain the session.",
+      "examTrick": "Protected paths (.git, .claude) resist every mode except bypassPermissions. Self-modification of the permission system is the risk.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Protected Paths", ".git and .claude", "Auto-Approval Limits"]
+    },
+    {
+      "id": 6,
+      "question": "A CI pipeline should run the test suite non-interactively with an exact allowlist. Which invocation matches the documented pattern?",
+      "options": [
+        "claude -p \"run the test suite\" --permission-mode dontAsk --allowedTools \"Bash(npm test)\" \"Read\"",
+        "claude -p \"run the test suite\" --dangerously-skip-permissions",
+        "claude --permission-mode acceptEdits \"run the test suite\"",
+        "claude -p \"run the test suite\" --permission-mode plan"
+      ],
+      "answer": "claude -p \"run the test suite\" --permission-mode dontAsk --allowedTools \"Bash(npm test)\" \"Read\"",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permission modes: choose a mode",
+      "explanation": "The mode-selection table gives this verbatim under 'Run in CI with an exact allowlist'. dontAsk plus a tight --allowedTools list is the CI pattern: nothing prompts, and nothing outside the allowlist runs. The caveat noted: 'Claude Code on the web ignores dontAsk from settings files.'\n\n**Why the others are wrong**\n\n- **B.** --dangerously-skip-permissions is the fully-unattended-in-a-container pattern and REQUIRES 'a container, VM, or the sandbox runtime'; on Linux and macOS it should run as a non-root user. It is far broader than a test run needs.\n- **C.** acceptEdits still prompts for other actions and is not a headless pattern; also -p is missing.\n- **D.** Plan mode blocks edits and produces a plan, not a test run.\n\nThe principle: in unattended contexts, narrow the TOOL surface rather than widening the permission mode.",
+      "examTrick": "CI = -p + dontAsk + tight --allowedTools. Container-only = --dangerously-skip-permissions. Never confuse the two.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "CI Pattern", "dontAsk", "--allowedTools"]
+    },
+    {
+      "id": 7,
+      "question": "Which is the correct precedence for deciding a session's starting permission mode?",
+      "options": [
+        "The --permission-mode flag (or --dangerously-skip-permissions) outranks permissions.defaultMode in settings files.",
+        "permissions.defaultMode in managed settings outranks the --permission-mode flag.",
+        "The mode of the most recently resumed session always wins.",
+        "The VS Code extension setting outranks everything, including managed settings."
+      ],
+      "answer": "The --permission-mode flag (or --dangerously-skip-permissions) outranks permissions.defaultMode in settings files.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes: which mode a session starts in",
+      "explanation": "The documented order is: 1 the --permission-mode flag or --dangerously-skip-permissions, 2 permissions.defaultMode in a settings file. Within settings files, ordinary settings precedence applies, 'so a project or managed value outranks ~/.claude/settings.json'.\n\n**Why the others are wrong**\n\n- **B.** Reversed for the starting mode specifically. Note that an organization CAN still remove auto mode entirely by setting permissions.disableAutoMode to \"disable\" — a capability lock, not a starting-mode preference.\n- **C.** 'A session you resume keeps the permission mode it was in unless you pass --permission-mode or --dangerously-skip-permissions' — so the flag still wins.\n- **D.** Managed settings are not overridden by an extension preference.\n\nA quirk worth knowing: an \"auto\" value in .claude/settings.json or settings.local.json does not take effect, and Claude Code then uses the built-in default rather than a defaultMode from ~/.claude/settings.json.",
+      "examTrick": "Flag beats settings for the STARTING mode. But capability locks (disableAutoMode, disableBypassPermissionsMode) at the managed tier beat everything.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Starting Mode", "defaultMode", "Flag Precedence"]
+    },
+    {
+      "id": 8,
+      "question": "What distinguishes auto mode from acceptEdits?",
+      "options": [
+        "In auto mode a classifier model reviews most actions instead of you, blocking risky ones; acceptEdits mechanically auto-approves reads, edits, and common filesystem commands with no review.",
+        "Auto mode approves everything; acceptEdits approves only reads.",
+        "They are the same mode under two names on different plans.",
+        "Auto mode is a plan-mode variant that auto-approves the plan."
+      ],
+      "answer": "In auto mode a classifier model reviews most actions instead of you, blocking risky ones; acceptEdits mechanically auto-approves reads, edits, and common filesystem commands with no review.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes: eliminate prompts with auto mode",
+      "explanation": "'In auto mode, a second model, the classifier, reviews actions instead of you.' The best-practices docs describe what it blocks: 'scope escalation, unknown infrastructure, and hostile-content-driven actions'. acceptEdits has no classifier — it 'Automatically accepts file edits and common filesystem commands such as mkdir, touch, mv, and cp for paths in the working directory or additionalDirectories.'\n\n**Why the others are wrong**\n\n- **B.** Auto mode blocks risky actions; it does not approve everything. bypassPermissions is the approve-everything mode.\n- **C.** Different mechanisms. Auto mode is the built-in starting mode on Pro, Max, and Team plans, but it is a distinct mode.\n- **D.** Unrelated to plan approval.\n\nAuto mode also 'Requires a supported model, and your organization can turn auto mode off.'",
+      "examTrick": "auto = a CLASSIFIER reviews. acceptEdits = mechanical rule, no review. bypass = no checks at all.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Auto Mode", "Classifier", "acceptEdits"]
+    },
+    {
+      "id": 9,
+      "question": "A developer wants fewer prompts while iterating locally, without a classifier reviewing actions. What does the documentation suggest?",
+      "options": [
+        "Manual mode plus the Bash sandbox in auto-allow mode — run /sandbox and select auto-allow, or set sandbox.enabled to true.",
+        "bypassPermissions mode, since local machines are trusted.",
+        "dontAsk mode with no allowlist.",
+        "Plan mode, which reduces prompts by blocking edits."
+      ],
+      "answer": "Manual mode plus the Bash sandbox in auto-allow mode — run /sandbox and select auto-allow, or set sandbox.enabled to true.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permission modes: choose a mode",
+      "explanation": "The table row reads: 'Iterate locally with fewer prompts, without a classifier → Manual mode plus the Bash sandbox in auto-allow mode: claude --permission-mode default, then run /sandbox and select auto-allow.' The sandbox provides 'OS-level isolation that restricts filesystem and network access', available on macOS, Linux, and WSL2. Crucially: 'Deny rules still apply, and ask rules that name a command, such as Bash(git push *), still prompt.'\n\n**Why the others are wrong**\n\n- **B.** bypassPermissions is documented for 'Isolated containers and VMs only' — a developer machine is not that.\n- **C.** dontAsk without an allowlist removes the prompts and the boundary at once.\n- **D.** Plan mode blocks edits, which stops iteration entirely.\n\nThe principle: get safety from ISOLATION rather than from prompting, then keep your deny rules.",
+      "examTrick": "Fewer prompts safely = sandbox (isolation), not a looser mode. Deny and command-specific ask rules still fire inside the sandbox.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Sandboxing", "auto-allow", "Local Iteration"]
+    },
+    {
+      "id": 10,
+      "question": "What happens to the few calls that would still prompt when a -p run uses --dangerously-skip-permissions?",
+      "options": [
+        "They are denied instead of prompting, since a headless run cannot show a prompt.",
+        "They block the run indefinitely waiting for input.",
+        "They are auto-approved, since bypassPermissions approves everything.",
+        "They fall back to the classifier for a decision."
+      ],
+      "answer": "They are denied instead of prompting, since a headless run cannot show a prompt.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permission modes: choose a mode",
+      "explanation": "The table row for 'Run fully unattended inside a container' notes: 'In this -p run, the few calls that would still prompt are denied instead.' Those are the actions no mode auto-approves — the list Claude Code never auto-approves 'in any mode, including bypassPermissions'.\n\n**Why the others are wrong**\n\n- **B.** Hanging forever would make headless automation unusable; denial is the fail-safe.\n- **C.** bypassPermissions skips prompts, but there remains a documented set of actions no mode auto-approves.\n- **D.** The classifier belongs to auto mode, not bypassPermissions.\n\nThe general design principle: when a decision cannot be surfaced to a human, the safe default is refusal, not assumption.",
+      "examTrick": "Headless + bypass: unpromptable calls are DENIED, never auto-approved. There is always a set no mode auto-approves.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Headless Denial", "Fail-Safe", "Unattended Runs"]
+    },
+    {
+      "id": 11,
+      "question": "Plan mode adds overhead. According to the documentation, when should you skip it?",
+      "options": [
+        "When the scope is clear and the fix is small — a typo, a log line, a rename — or if you could describe the diff in one sentence.",
+        "Whenever you are working in a language you know well.",
+        "Whenever the change is reversible with git.",
+        "Whenever you are the only person working on the repository."
+      ],
+      "answer": "When the scope is clear and the fix is small — a typo, a log line, a rename — or if you could describe the diff in one sentence.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: explore first, then plan, then code",
+      "explanation": "'Plan mode is useful, but also adds overhead. For tasks where the scope is clear and the fix is small (like fixing a typo, adding a log line, or renaming a variable) ask Claude to do it directly... If you could describe the diff in one sentence, skip the plan.' The inverse triggers are approach uncertainty, multi-file scope, and unfamiliar code.\n\n**Why the others are wrong**\n\n- **B.** Your familiarity with the LANGUAGE is not the criterion; your familiarity with the CODE is.\n- **C.** Reversibility is a reasonable engineering consideration but is not one of the documented criteria.\n- **D.** Team size is not a criterion — though the exam objective does mention 'the need for stakeholder review before implementation', which is a reason TO plan, not to skip.\n\nThis objective scored 67% on the real exam, so the one-sentence-diff heuristic is worth memorising verbatim.",
+      "examTrick": "The one-sentence-diff test decides it. Plan when: uncertain approach, multiple files, unfamiliar code, or stakeholders must review.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Plan vs Direct", "One-Sentence Diff", "Overhead"]
+    },
+    {
+      "id": 12,
+      "question": "How can you edit a plan before Claude implements it?",
+      "options": [
+        "Press Ctrl+G to open the plan in your text editor before Claude proceeds.",
+        "Plans are immutable once generated; reject it and ask for a new one.",
+        "Run /compact with instructions to reshape the plan.",
+        "Edit the PLAN.md file after implementation begins."
+      ],
+      "answer": "Press Ctrl+G to open the plan in your text editor before Claude proceeds.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: explore first, then plan, then code",
+      "explanation": "In the Plan step: 'Press Ctrl+G to open the plan in your text editor for direct editing before Claude proceeds.' You then switch out of plan mode by approving the plan or pressing Shift+Tab.\n\n**Why the others are wrong**\n\n- **B.** Direct editing is supported, which is faster than a regeneration round-trip.\n- **C.** /compact summarizes conversation context; it is not a plan editor.\n- **D.** Editing after implementation starts means the work already diverged from the plan.\n\nThe plan file is also what survives compaction: 'Claude Code re-injects the plan file after each compaction, so the plan survives where conversation history may not.'",
+      "examTrick": "Ctrl+G edits the plan in your editor. Shift+Tab or approval exits plan mode. The plan file survives compaction by re-injection.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Ctrl+G", "Plan Editing", "Compaction Survival"]
+    },
+    {
+      "id": 13,
+      "question": "An organization wants to remove auto mode so nobody can select it. What is the correct setting and tier?",
+      "options": [
+        "permissions.disableAutoMode set to \"disable\" in managed settings.",
+        "permissions.defaultMode set to \"default\" in managed settings.",
+        "permissions.deny including \"auto\" in managed settings.",
+        "claudeCode.initialPermissionMode set to \"default\" in VS Code settings."
+      ],
+      "answer": "permissions.disableAutoMode set to \"disable\" in managed settings.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes: start in a different mode",
+      "explanation": "'Every terminal session in your organization → Set permissions.defaultMode in managed settings. Terminal sessions start in that mode and people can still switch to auto mode... To remove auto mode so nobody can select it, set permissions.disableAutoMode to \"disable\" instead.'\n\n**Why the others are wrong**\n\n- **B.** defaultMode sets where sessions START; users can still switch. The docs say so explicitly.\n- **C.** deny rules name tools and patterns, not modes.\n- **D.** A VS Code user setting is neither organization-wide nor a capability lock, and the extension setting does not even accept 'auto'.\n\nThe pattern generalises: a starting-mode preference is not an enforcement mechanism. To remove a capability you need the dedicated disable* key at the managed tier — the same distinction as disableBypassPermissionsMode.",
+      "examTrick": "defaultMode = where you START. disableAutoMode / disableBypassPermissionsMode = capability REMOVED. Only the latter enforces.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "disableAutoMode", "Capability Lock", "Managed Settings"]
+    },
+    {
+      "id": 14,
+      "question": "Which mode does a resumed session start in?",
+      "options": [
+        "The mode it was in when it was suspended, unless you pass --permission-mode or --dangerously-skip-permissions.",
+        "Always the built-in default for the plan, regardless of prior mode.",
+        "Always Manual, as a safety measure on resume.",
+        "The mode set by permissions.defaultMode, which always overrides the saved mode."
+      ],
+      "answer": "The mode it was in when it was suspended, unless you pass --permission-mode or --dangerously-skip-permissions.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes: which mode a session starts in",
+      "explanation": "'A session you resume keeps the permission mode it was in unless you pass --permission-mode or --dangerously-skip-permissions.' The sessions documentation lists the exceptions under 'what a resumed session restores'.\n\n**Why the others are wrong**\n\n- **B, D.** The saved session state takes priority over the default; only an explicit flag overrides it.\n- **C.** No forced downgrade on resume.\n\nThis fits the broader session-resumption principle the exam tests: resumption restores accumulated state accurately rather than resetting it, so you do not have to re-establish your working context.",
+      "examTrick": "Resume keeps the prior mode. Only an explicit flag changes it. Resumption restores state rather than resetting it.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Session Resumption", "Mode Persistence", "State Restoration"]
+    },
+    {
+      "id": 15,
+      "question": "Which claim about the dontAsk mode is correct?",
+      "options": [
+        "It never appears in the Shift+Tab cycle and must be set with --permission-mode dontAsk; Claude Code on the web ignores it from settings files.",
+        "It is the same as bypassPermissions under a friendlier name.",
+        "It appears in the cycle immediately after plan mode by default.",
+        "It disables deny rules so nothing can block a run."
+      ],
+      "answer": "It never appears in the Shift+Tab cycle and must be set with --permission-mode dontAsk; Claude Code on the web ignores it from settings files.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permission modes: switch permission modes; choose a mode",
+      "explanation": "'dontAsk: never appears in the cycle; set it with --permission-mode dontAsk.' And in the CI row: 'Claude Code on the web ignores dontAsk from settings files.' The status bar shows it as ⏵⏵ don't ask on.\n\n**Why the others are wrong**\n\n- **B.** They are distinct modes; dontAsk is paired with an exact --allowedTools list in the documented CI pattern, whereas bypassPermissions requires container isolation.\n- **C.** Optional modes that DO slot in after plan are bypassPermissions (first) and auto (last); dontAsk is not among them.\n- **D.** Deny rules block in every mode.\n\nThe design logic: dontAsk is meant for scripted contexts where you have already enumerated the permitted tools, so putting it one keystroke away in an interactive cycle would be a hazard.",
+      "examTrick": "dontAsk is flag-only, never in the cycle. Optional cycle modes are bypassPermissions (first) and auto (last).",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "dontAsk", "Cycle Membership", "Cloud Behaviour"]
+    },
+    {
+      "id": 16,
+      "question": "Which combination gives defense in depth for a hands-off run?",
+      "options": [
+        "auto mode with a classifier reviewing each action, plus a sandbox or container for isolation.",
+        "bypassPermissions with a long allow list.",
+        "acceptEdits plus a PostToolUse hook.",
+        "Manual mode with every tool pre-approved."
+      ],
+      "answer": "auto mode with a classifier reviewing each action, plus a sandbox or container for isolation.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes: choose a mode",
+      "explanation": "The table row: 'Work hands-off with a classifier reviewing each action → claude --permission-mode auto → None [required]; a sandbox or container adds defense in depth.' Two independent layers: a model-level review of each action and an OS-level restriction on what any action can reach.\n\n**Why the others are wrong**\n\n- **B.** Allow rules have no effect in bypassPermissions, so the list does nothing — a subtle trap.\n- **C.** A PostToolUse hook fires AFTER the tool ran, so it cannot prevent a harmful action; PreToolUse is the blocking event.\n- **D.** Pre-approving everything converts Manual mode into an unreviewed mode while keeping its name.\n\nDefense in depth means the layers must be INDEPENDENT — a second layer that the first can disable is not a second layer.",
+      "examTrick": "auto (classifier) + sandbox (OS isolation) = independent layers. PostToolUse cannot prevent; only PreToolUse blocks.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Defense in Depth", "Auto Mode", "Sandbox"]
+    },
+    {
+      "id": 17,
+      "question": "On which plans is auto mode the built-in starting permission mode for interactive terminal and VS Code sessions?",
+      "options": [
+        "Pro, Max, and Team plans.",
+        "All plans, including the free tier.",
+        "Enterprise plans only.",
+        "No plan; auto mode always requires an explicit flag."
+      ],
+      "answer": "Pro, Max, and Team plans.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Permission modes: which mode a session starts in",
+      "explanation": "'On Pro, Max, and Team plans, the built-in starting permission mode is auto mode.' On other plans, Manual mode is the built-in starting mode. Auto mode also 'Requires a supported model, and your organization can turn auto mode off.'\n\n**Why the others are wrong**\n\n- **B, C, D.** Each misstates the plan set or the requirement.\n\nA related behaviour: on those plans, if your ~/.claude/settings.json sets a defaultMode other than auto and no other settings file sets one, 'Claude Code asks once, in the terminal or in the VS Code extension, whether to change the setting to auto mode. If you decline, your setting stays as it is.'",
+      "examTrick": "Pro/Max/Team start in auto. Other plans start in Manual. Auto needs a supported model and can be disabled by the org.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Plan Differences", "Auto Mode Availability", "Starting Mode"]
+    },
+    {
+      "id": 18,
+      "question": "Which best describes the layered mental model for Claude Code permissions?",
+      "options": [
+        "Modes set the baseline of what is asked about; permission rules layer on top to pre-approve or block; hooks add deterministic programmatic decisions; sandboxing adds OS-level isolation.",
+        "Modes and rules are alternatives; you choose one system or the other.",
+        "Rules set the baseline and modes are exceptions to them.",
+        "Hooks replace permission rules once configured."
+      ],
+      "answer": "Modes set the baseline of what is asked about; permission rules layer on top to pre-approve or block; hooks add deterministic programmatic decisions; sandboxing adds OS-level isolation.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Permission modes; Permissions; Hooks",
+      "explanation": "'Modes set the baseline. Layer permission rules on top to pre-approve or block specific tools.' Hooks sit alongside as programmatic control — a PreToolUse hook can return permissionDecision allow, deny, or ask, and exit code 2 blocks regardless. Sandboxing is orthogonal: 'The Bash sandbox and auto mode work independently and combine.'\n\n**Why the others are wrong**\n\n- **B.** They compose by design.\n- **C.** Modes are the baseline; rules layer on top. Reversing them predicts the wrong outcome for deny-in-bypassPermissions.\n- **D.** Hooks and rules coexist; hooks merge from all sources and all registered hooks fire for matching events.\n\nHolding this four-layer model straight answers most permission questions without memorising individual cases.",
+      "examTrick": "Four layers: mode (baseline) → rules (allow/ask/deny) → hooks (programmatic) → sandbox (OS isolation). They compose, never replace.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Layered Model", "Modes vs Rules vs Hooks", "Sandboxing"]
+    },
+    {
+      "id": 19,
+      "question": "A --allow-dangerously-skip-permissions launch differs from --dangerously-skip-permissions how?",
+      "options": [
+        "The --allow- variant adds bypassPermissions to the mode cycle without activating it.",
+        "The --allow- variant is the deprecated spelling of the same flag.",
+        "The --allow- variant activates bypass mode but logs every action.",
+        "The --allow- variant enables bypass only for read operations."
+      ],
+      "answer": "The --allow- variant adds bypassPermissions to the mode cycle without activating it.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Permission modes: switch permission modes",
+      "explanation": "'bypassPermissions: appears after you start with --permission-mode bypassPermissions, --dangerously-skip-permissions, --allow-dangerously-skip-permissions, or permissions.defaultMode: \"bypassPermissions\" in settings; the --allow- variant adds the permission mode to the cycle without activating it.'\n\n**Why the others are wrong**\n\n- **B.** Both are current, with different effects.\n- **C, D.** Neither logging nor a read-only restriction is what distinguishes them.\n\nThe design is opt-in-then-choose: you declare at launch that this session MAY reach bypass mode, and then reach it deliberately with Shift+Tab rather than starting there. It also explains the plan-mode protected-path exception, which applies 'in plan-mode sessions where bypass permissions are available' — that is, sessions started with one of these flags.",
+      "examTrick": "--allow-dangerously-skip-permissions puts bypass IN the cycle without starting there. That is what 'bypass available' means elsewhere.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Flag Variants", "Bypass Availability", "Mode Cycle"]
+    },
+    {
+      "id": 20,
+      "question": "Where does the exam-relevant decision 'plan mode versus direct execution' ultimately turn?",
+      "options": [
+        "Task scope, reversibility, architectural uncertainty, and whether stakeholders must review before implementation.",
+        "The size of the codebase alone.",
+        "Whether the session is interactive or headless.",
+        "Whether the repository has a CLAUDE.md."
+      ],
+      "answer": "Task scope, reversibility, architectural uncertainty, and whether stakeholders must review before implementation.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices; CCAF objective wording",
+      "explanation": "These four factors are the decision axes. The documentation supplies the practical heuristics: plan when uncertain about the approach, when the change modifies multiple files, or when unfamiliar with the code; skip it when you could describe the diff in one sentence. Stakeholder review is the fourth axis — a plan is an artifact a human can read and edit with Ctrl+G before any code changes, which is exactly what a review gate needs.\n\n**Why the others are wrong**\n\n- **B.** A large codebase with a one-line fix still does not need a plan.\n- **C.** Plan mode works with -p as well; interactivity is not the axis.\n- **D.** Unrelated.\n\nThis objective scored 67% on the real exam. The trap is treating change SIZE as the criterion when the documented criteria are uncertainty, spread, familiarity, and review need.",
+      "examTrick": "Four axes: scope, reversibility, architectural uncertainty, stakeholder review. Size alone is a distractor.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Plan vs Direct", "Decision Criteria", "Stakeholder Review"]
+    }
+  ]
+}

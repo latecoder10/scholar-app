@@ -1,0 +1,349 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.7 Codebase Exploration Strategy & Context Budgeting",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "NEW TOPIC. Systematic Grep/Glob/Read exploration that builds incremental understanding, subagent isolation, scratchpad and spec files, targeted reading, /clear vs /compact, and the documented exploration anti-patterns. Grounded in the official Claude Code best-practices and large-codebase documentation.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "A developer asks Claude to 'investigate how authentication works' in an unfamiliar 400k-line repository, with no further scoping. Claude reads hundreds of files and the context window fills before any implementation starts. Which documented failure pattern is this, and what is the fix?",
+      "options": [
+        "The infinite exploration — scope investigations narrowly, or route them through subagents so the exploration doesn't consume the main context.",
+        "The kitchen sink session — run /clear between unrelated tasks.",
+        "The trust-then-verify gap — always provide tests or scripts Claude can run.",
+        "The over-specified CLAUDE.md — ruthlessly prune the instruction file."
+      ],
+      "answer": "The infinite exploration — scope investigations narrowly, or route them through subagents so the exploration doesn't consume the main context.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: avoid common failure patterns",
+      "explanation": "The docs name this pattern exactly: 'The infinite exploration. You ask Claude to investigate something without scoping it. Claude reads hundreds of files, filling the context. Fix: Scope investigations narrowly or use subagents so the exploration doesn't consume your main context.'\n\n**Why the others are wrong**\n\n- **B.** The kitchen sink session is about mixing UNRELATED tasks in one session, not one unscoped task.\n- **C.** The trust-then-verify gap is about plausible-looking implementations that miss edge cases — a verification problem, not a context problem.\n- **D.** Nothing here concerns the size of CLAUDE.md.",
+      "examTrick": "Unscoped 'investigate X' + context blowout = infinite exploration. Fix = narrow the scope OR delegate to a subagent.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Exploration Strategy", "Failure Patterns", "Context Window"]
+    },
+    {
+      "id": 2,
+      "question": "Why does delegating codebase research to a subagent preserve the main conversation's context?",
+      "options": [
+        "Subagents run in separate context windows with their own input and output tokens, and report back only a summary.",
+        "Subagents compress every file they read before adding it to the shared context window.",
+        "Subagents run with a smaller model, so their reads cost proportionally fewer tokens.",
+        "Subagents write everything they read to disk instead of into any context window."
+      ],
+      "answer": "Subagents run in separate context windows with their own input and output tokens, and report back only a summary.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Best practices: use subagents for investigation; Extend Claude Code",
+      "explanation": "'Since context is your fundamental constraint, subagents are one of the most powerful tools available. When Claude researches a codebase it reads lots of files, all of which consume your context. Subagents run in separate context windows and report back summaries.' The comparison table lists the subagent's key benefit as 'Context isolation. Work happens separately, only summary returns.'\n\n**Why the others are wrong**\n\n- **B.** There is no shared context window to compress into; the isolation is the mechanism, not compression.\n- **C.** A subagent's model is configurable, but model size is not why the main context is preserved.\n- **D.** Subagents do have context windows; they simply are not yours.",
+      "examTrick": "Subagent = separate context window, summary returns. That is the whole benefit. Not compression, not a smaller model.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Subagent Isolation", "Context Budgeting", "Research Delegation"]
+    },
+    {
+      "id": 3,
+      "question": "When should you use /clear rather than /compact?",
+      "options": [
+        "/clear resets context entirely between unrelated tasks; /compact summarizes and preserves what matters when you are continuing the same work.",
+        "/clear is for when the context is full; /compact is for when it is nearly empty.",
+        "/clear summarizes the conversation into a shorter form; /compact deletes it outright.",
+        "They are aliases; /compact is the newer name and /clear is retained for compatibility."
+      ],
+      "answer": "/clear resets context entirely between unrelated tasks; /compact summarizes and preserves what matters when you are continuing the same work.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: manage context aggressively",
+      "explanation": "The docs advise 'Use /clear frequently between tasks to reset the context window entirely' and describe compaction as: 'When auto compaction triggers, Claude summarizes what matters most, including code patterns, file states, and key decisions.' For more control, run /compact <instructions>, like '/compact Focus on the API changes'.\n\n**Why the others are wrong**\n\n- **B.** Fullness is not the deciding factor; task continuity is. You /clear when moving to unrelated work even if there is room left.\n- **C.** Exactly backwards — /compact summarizes, /clear resets.\n- **D.** They are distinct commands with different effects.",
+      "examTrick": "Unrelated next task = /clear. Same task, running long = /compact (optionally with focus instructions).",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "/clear vs /compact", "Session Management", "Context Reset"]
+    },
+    {
+      "id": 4,
+      "question": "You have corrected Claude three times on the same issue in one session and it is still wrong. What does the documentation recommend?",
+      "options": [
+        "Run /clear and start fresh with a more specific prompt that incorporates what you learned; the context is now polluted with failed approaches.",
+        "Continue correcting with progressively more detailed feedback until it converges.",
+        "Switch to a larger model, since repeated failure indicates insufficient capability.",
+        "Add the correction to CLAUDE.md so it persists, then continue in the same session."
+      ],
+      "answer": "Run /clear and start fresh with a more specific prompt that incorporates what you learned; the context is now polluted with failed approaches.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: course-correct early and often",
+      "explanation": "'If you've corrected Claude more than twice on the same issue in one session, the context is cluttered with failed approaches. Run /clear and start fresh with a more specific prompt that incorporates what you learned. A clean session with a better prompt almost always outperforms a long session with accumulated corrections.' The docs list this separately as the failure pattern 'Correcting over and over'.\n\n**Why the others are wrong**\n\n- **B.** This is the failure pattern itself. Each correction adds another wrong approach to the context, making the next attempt harder.\n- **C.** The problem is context pollution, not capability.\n- **D.** A CLAUDE.md edit is a good long-term move, but staying in the polluted session keeps the failed approaches in front of the model.",
+      "examTrick": "The threshold is TWO failed corrections. After that, /clear and rewrite the prompt — do not keep correcting.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Course Correction", "Context Pollution", "/clear"]
+    },
+    {
+      "id": 5,
+      "question": "A large feature will span several sittings and multiple compactions. What is the documented way to make the plan survive?",
+      "options": [
+        "Plan in plan mode so Claude writes the plan to a file; Claude Code re-injects the plan file after each compaction.",
+        "Keep restating the plan in each prompt so it stays near the end of the context window.",
+        "Paste the plan into CLAUDE.md, since CLAUDE.md is the only thing that survives compaction.",
+        "Disable auto-compaction for the session so nothing is ever summarized away."
+      ],
+      "answer": "Plan in plan mode so Claude writes the plan to a file; Claude Code re-injects the plan file after each compaction.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: scope and plan changes that span packages",
+      "explanation": "'Plan first in plan mode, and Claude writes the plan to a file. A long cross-package session compacts its context along the way. Claude Code re-injects the plan file after each compaction, so the plan survives where conversation history may not.' A related documented practice is having Claude interview you and write a complete spec to SPEC.md, then starting a fresh session to execute it.\n\n**Why the others are wrong**\n\n- **B.** Manual restating is exactly the toil the plan file removes, and it consumes context each time.\n- **C.** Project-root CLAUDE.md does survive compaction (Claude re-reads it from disk), but it is for durable project conventions, not a single feature's plan. The plan file is the documented mechanism.\n- **D.** Not the recommended approach; compaction exists because the window is finite.",
+      "examTrick": "Plan-mode plan file and project-root CLAUDE.md both survive compaction by re-injection. Conversation-only instructions do not.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Scratchpad Files", "Compaction Survival", "Plan Mode"]
+    },
+    {
+      "id": 6,
+      "question": "Which instruction disappears after /compact, and what is the documented fix?",
+      "options": [
+        "An instruction given only in conversation; add it to CLAUDE.md so it persists.",
+        "The project-root CLAUDE.md; re-run /init after each compaction.",
+        "The system prompt; pass --append-system-prompt on every invocation.",
+        "The plan file written in plan mode; re-read it manually after each compaction."
+      ],
+      "answer": "An instruction given only in conversation; add it to CLAUDE.md so it persists.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory: instructions seem lost after /compact",
+      "explanation": "'Project-root CLAUDE.md survives compaction: after /compact, Claude re-reads it from disk and re-injects it into the session. Nested CLAUDE.md files in subdirectories and rules with paths: frontmatter reload as Claude reads files they apply to. If an instruction disappeared after compaction, it was given only in conversation, lives in a nested CLAUDE.md that hasn't reloaded yet, or is a path-scoped rule that hasn't matched a file since. Add conversation-only instructions to CLAUDE.md to make them persist.'\n\n**Why the others are wrong**\n\n- **B.** It survives by design; /init is for generating a starting file, not for recovery.\n- **C.** The system prompt is not what compaction removes.\n- **D.** The plan file is re-injected automatically after each compaction.",
+      "examTrick": "Survives compaction: root CLAUDE.md (re-read from disk), plan file (re-injected). Does not: anything you only said in chat.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Compaction", "CLAUDE.md Persistence", "Conversation-Only Instructions"]
+    },
+    {
+      "id": 7,
+      "question": "In a monorepo, Claude keeps loading CLAUDE.md files from other teams' packages as it reads their files. Which setting skips them, and where should a personal exclusion live?",
+      "options": [
+        "claudeMdExcludes, with glob patterns matched against absolute paths; put a personal exclusion in .claude/settings.local.json.",
+        "claudeMdIgnore, listed in .gitignore alongside the excluded files.",
+        "permissions.deny with Read rules, which also prevents the CLAUDE.md files from loading.",
+        "contextExcludes in the root CLAUDE.md frontmatter."
+      ],
+      "answer": "claudeMdExcludes, with glob patterns matched against absolute paths; put a personal exclusion in .claude/settings.local.json.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Memory & Large codebases: exclude irrelevant CLAUDE.md files",
+      "explanation": "'The claudeMdExcludes setting lets you skip specific files by path or glob pattern... Patterns are matched against absolute file paths using glob syntax. You can configure claudeMdExcludes at any settings layer: user, project, local, or managed policy. Arrays merge across layers.' The docs recommend .claude/settings.local.json 'so the exclusion stays local to your machine'. Because patterns match absolute paths, start relative-style patterns with **/ to match anywhere in the tree. Managed policy CLAUDE.md files cannot be excluded.\n\n**Why the others are wrong**\n\n- **B.** No such setting; .gitignore governs git, not context loading.\n- **C.** Read deny rules block Claude from opening files — a valid and recommended technique for generated and vendored code — but claudeMdExcludes is the mechanism specifically for instruction files.\n- **D.** CLAUDE.md has no such frontmatter key.",
+      "examTrick": "claudeMdExcludes = glob vs ABSOLUTE paths, so lead with **/. Arrays merge across layers. Managed policy files are unexcludable.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "claudeMdExcludes", "Monorepo", "Context Noise"]
+    },
+    {
+      "id": 8,
+      "question": "A repository contains a committed vendored SDK and checked-in generated code that Claude keeps opening. What is the documented way to keep them out of context for the whole team?",
+      "options": [
+        "Add Read deny rules such as Read(./vendor/**) and Read(./**/*.generated.*) to the committed .claude/settings.json.",
+        "Add the paths to .gitignore, since Claude's searches respect it.",
+        "List the paths in claudeMdExcludes at the project layer.",
+        "Add a CLAUDE.md line telling Claude never to read vendored or generated code."
+      ],
+      "answer": "Add Read deny rules such as Read(./vendor/**) and Read(./**/*.generated.*) to the committed .claude/settings.json.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: block reads of generated and vendored code",
+      "explanation": "The docs split this precisely: 'Claude's content searches respect .gitignore by default, so paths already listed there, such as node_modules/, dist/, and build/, stay out of search results without additional configuration. For paths that are CHECKED IN, such as a vendored SDK or committed generated code, add Read deny rules in permissions.deny.' Commit them to .claude/settings.json to cover everyone.\n\n**Why the others are wrong**\n\n- **B.** The premise of the question is that these files are checked in, so .gitignore does not apply to them.\n- **C.** claudeMdExcludes governs instruction files (CLAUDE.md and rules), not source-file reads.\n- **D.** Advisory, not enforced — and the deny rule also covers recognised Bash file commands like cat, head, grep, and find.",
+      "examTrick": "gitignored paths = already excluded from search. CHECKED-IN noise = Read deny rules. Instruction files = claudeMdExcludes.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Read Deny Rules", "Vendored Code", "Search Scope"]
+    },
+    {
+      "id": 9,
+      "question": "What is a documented limitation of Read deny rules with respect to Bash searches?",
+      "options": [
+        "Claude still sees denied paths in the output of a Bash search such as 'grep -r' or 'find', and deny rules don't cover subprocesses that open files themselves.",
+        "Deny rules have no effect on Bash at all; only the built-in file tools are checked.",
+        "Deny rules cause Bash to exit non-zero whenever a denied path exists anywhere in the tree.",
+        "Deny rules apply to Bash only in interactive sessions, not in -p runs."
+      ],
+      "answer": "Claude still sees denied paths in the output of a Bash search such as 'grep -r' or 'find', and deny rules don't cover subprocesses that open files themselves.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: block reads; Permissions",
+      "explanation": "The docs are careful here: 'Deny rules cover Claude's built-in file tools and recognized Bash file commands, including cat, head, grep, and find, when a denied path is passed as an argument. Claude Code also makes a best-effort attempt to leave denied paths out of the results of the built-in Grep and Glob tools. Claude still sees denied paths in the output of a Bash search such as grep -r or find. Deny rules don't cover subprocesses that open files themselves.'\n\n**Why the others are wrong**\n\n- **B.** Recognised Bash file commands ARE checked when the denied path is an explicit argument.\n- **C.** No such behaviour; the rule blocks the call, it does not poison unrelated commands.\n- **D.** Deny rules apply in every mode.",
+      "examTrick": "Denied path as an explicit argument = blocked. Denied path appearing in recursive search OUTPUT = still visible. Know the difference.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Deny Rule Limits", "Bash Search", "Best Effort"]
+    },
+    {
+      "id": 10,
+      "question": "Where you launch Claude Code in a large repository changes what loads. Which pairing is correct?",
+      "options": [
+        "Start at the repository root when a task spans multiple packages; start in a subdirectory when work is scoped to one package, which loads that directory's CLAUDE.md plus every ancestor's.",
+        "Always start at the repository root, since starting in a subdirectory prevents Claude from reading any parent files.",
+        "Always start in the deepest relevant subdirectory, since project settings are inherited from parent directories anyway.",
+        "The launch directory affects file access only; CLAUDE.md loading is identical either way."
+      ],
+      "answer": "Start at the repository root when a task spans multiple packages; start in a subdirectory when work is scoped to one package, which loads that directory's CLAUDE.md plus every ancestor's.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: choose where to start Claude",
+      "explanation": "The docs give a table: starting from the repository root gives access to every file and loads the root CLAUDE.md only, with subdirectory files loading on demand — use it when tasks span multiple packages. Starting from a subdirectory limits access to that subtree until you grant more, and loads 'That directory's plus every ancestor's' CLAUDE.md — use it when work is scoped to one package.\n\n**Why the others are wrong**\n\n- **B.** Ancestor CLAUDE.md files DO load when you start in a subdirectory; that is the documented behaviour.\n- **C.** This is the key asymmetry: 'Project settings in .claude/settings.json load only from your starting directory and are not inherited from parent directories the way CLAUDE.md files are.' CLAUDE.md walks up; settings.json does not.\n- **D.** It changes both file access and which instruction files load.",
+      "examTrick": "CLAUDE.md walks UP the tree from your launch directory. .claude/settings.json does NOT — it loads only from where you started.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Launch Directory", "CLAUDE.md Inheritance", "Settings Non-Inheritance"]
+    },
+    {
+      "id": 11,
+      "question": "Claude repeatedly reads many files just to find where a symbol is defined and who calls it. What does the documentation recommend?",
+      "options": [
+        "Install a code intelligence plugin so Claude uses a language server for definitions, references, and type errors instead of scanning files.",
+        "Increase the context window setting so the reads fit.",
+        "Ask Claude to read the whole directory once at session start so later lookups hit context.",
+        "Add every symbol's location to CLAUDE.md as a reference index."
+      ],
+      "answer": "Install a code intelligence plugin so Claude uses a language server for definitions, references, and type errors instead of scanning files.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Large codebases: reduce file reads with code intelligence",
+      "explanation": "'In a large codebase, finding where a symbol is defined or used can cost many file reads and grep calls. Code intelligence plugins connect Claude to a language server so it can jump to definitions, find references, and surface type errors directly instead of scanning the tree.' The context-cost table notes symbol lookups 'often replace broad file reads, so net context use can go down.' The documented trigger is: 'Claude reads many files to find where a symbol is defined or used.'\n\n**Why the others are wrong**\n\n- **B.** The context window is not a user-tunable setting, and the docs' whole premise is that performance degrades as it fills regardless of size.\n- **C.** Bulk pre-reading is the opposite of targeted reading and guarantees the blowout.\n- **D.** Symbol locations are exactly what the docs list under 'Exclude' from CLAUDE.md — anything Claude can figure out by reading code, and information that changes frequently.",
+      "examTrick": "Repeated symbol hunting = code intelligence plugin (LSP). Note it is listed as a context REDUCER, not an addition.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Code Intelligence", "LSP", "Targeted Lookup"]
+    },
+    {
+      "id": 12,
+      "question": "A developer starts Claude in packages/api/ and needs to edit a shared type in packages/shared/. Which options grant that access, and what is the difference?",
+      "options": [
+        "The additionalDirectories setting or the --add-dir flag; additionalDirectories never loads the sibling's CLAUDE.md, rules, or skills, while --add-dir loads skills and loads CLAUDE.md only with an environment variable set.",
+        "Only --add-dir; the additionalDirectories setting grants read access but not write access.",
+        "Only additionalDirectories; --add-dir is for adding directories to the git index.",
+        "Both grant identical access and load identical context; the flag is just the runtime form of the setting."
+      ],
+      "answer": "The additionalDirectories setting or the --add-dir flag; additionalDirectories never loads the sibling's CLAUDE.md, rules, or skills, while --add-dir loads skills and loads CLAUDE.md only with an environment variable set.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude Code docs — Large codebases: grant access across packages",
+      "explanation": "The docs give a table: with additionalDirectories, CLAUDE.md and rules load 'Never' and skills load 'Never'. With --add-dir or /add-dir, skills load 'Yes' and CLAUDE.md/rules load 'Only with the environment variable' CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1. The variable has no effect on directories listed in the additionalDirectories setting.\n\n**Why the others are wrong**\n\n- **B.** 'However you add a directory, Claude can read and edit files in it.' Both grant read and write.\n- **C.** --add-dir is a Claude Code flag, unrelated to git.\n- **D.** The whole point of the table is that what LOADS differs even though file access is the same.",
+      "examTrick": "Access is the same either way. What differs is loading: additionalDirectories = files only, ever. --add-dir = skills yes, CLAUDE.md only with the env var.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "additionalDirectories", "--add-dir", "Cross-Package Access"]
+    },
+    {
+      "id": 13,
+      "question": "According to the documentation, what single constraint underlies most Claude Code best practices?",
+      "options": [
+        "Claude's context window fills up fast, and model performance degrades as it fills.",
+        "Tool calls are rate-limited, so the number of calls per session must be minimized.",
+        "File writes are irreversible, so every change needs a checkpoint first.",
+        "The model cannot see files it has not been explicitly given with @ references."
+      ],
+      "answer": "Claude's context window fills up fast, and model performance degrades as it fills.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Best practices",
+      "explanation": "The docs state it as the organising principle: 'Most best practices are based on one constraint: Claude's context window fills up fast, and performance degrades as it fills... This matters since LLM performance degrades as context fills. When the context window is getting full, Claude may start forgetting earlier instructions or making more mistakes. The context window is the most important resource to manage.'\n\n**Why the others are wrong**\n\n- **B.** Not the stated organising constraint.\n- **C.** Checkpointing exists and every prompt creates one automatically, but the docs warn it 'isn't a replacement for git' and it is not the underlying constraint.\n- **D.** False — Claude explores with its own tools; @ references are one convenience among several.",
+      "examTrick": "Any 'why does this practice exist' question resolves to: the context window is finite and performance degrades as it fills.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Context Window", "Core Constraint", "Best Practices"]
+    },
+    {
+      "id": 14,
+      "question": "Which sequence matches the documented four-phase workflow for a change where the approach is uncertain?",
+      "options": [
+        "Explore (plan mode, read and ask questions) → Plan (produce a detailed plan) → Implement (approve the plan, then code and verify against it) → Commit.",
+        "Plan → Explore → Implement → Review.",
+        "Implement a spike → Explore what broke → Plan the real change → Commit.",
+        "Explore → Implement → Plan the refactor → Commit."
+      ],
+      "answer": "Explore (plan mode, read and ask questions) → Plan (produce a detailed plan) → Implement (approve the plan, then code and verify against it) → Commit.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Best practices: explore first, then plan, then code",
+      "explanation": "'Letting Claude jump straight to coding can produce code that solves the wrong problem. Use plan mode to separate exploration from execution.' The four phases are Explore, Plan, Implement, Commit. Enter plan mode with Shift+Tab or claude --permission-mode plan; Ctrl+G opens the plan in your editor before Claude proceeds.\n\n**Why the others are wrong**\n\n- **B.** Planning before exploring is planning without information — the failure the workflow exists to prevent.\n- **C, D.** Both put implementation before the plan, which is the 'solves the wrong problem' path.\n\nThe documented counterweight matters too: 'For tasks where the scope is clear and the fix is small (like fixing a typo, adding a log line, or renaming a variable) ask Claude to do it directly... If you could describe the diff in one sentence, skip the plan.'",
+      "examTrick": "Explore → Plan → Implement → Commit. But 'if you could describe the diff in one sentence, skip the plan' — plan mode has real overhead.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Plan Mode", "Explore First", "Workflow Sequencing"]
+    },
+    {
+      "id": 15,
+      "question": "Which factors indicate plan mode is worth its overhead, per the documentation?",
+      "options": [
+        "You are uncertain about the approach, the change modifies multiple files, or you are unfamiliar with the code being modified.",
+        "The change is large in line count, regardless of how well understood it is.",
+        "The change touches production configuration, regardless of scope.",
+        "Any change at all; plan mode has no overhead and should always be used."
+      ],
+      "answer": "You are uncertain about the approach, the change modifies multiple files, or you are unfamiliar with the code being modified.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: explore first, then plan, then code",
+      "explanation": "'Planning is most useful when you're uncertain about the approach, when the change modifies multiple files, or when you're unfamiliar with the code being modified. If you could describe the diff in one sentence, skip the plan.' The docs also state plainly that 'Plan mode is useful, but also adds overhead.'\n\n**Why the others are wrong**\n\n- **B.** Line count is not the criterion; a large but mechanical rename is a one-sentence diff.\n- **C.** Not among the documented criteria, though reversibility is a reasonable engineering consideration.\n- **D.** Directly contradicted — the docs explicitly say to ask Claude to do small clear-scope tasks directly.",
+      "examTrick": "Three documented triggers: approach uncertainty, multi-file scope, unfamiliar code. One-sentence diff = skip planning.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Plan Mode vs Direct", "Task Scope", "Overhead"]
+    },
+    {
+      "id": 16,
+      "question": "You want a side question answered without it entering the conversation history. Which mechanism is documented for this?",
+      "options": [
+        "/btw — the answer never enters conversation history, so you can check a detail without growing context.",
+        "/compact with focus instructions, which drops the side thread afterwards.",
+        "A subagent, which returns its answer outside the main context.",
+        "Esc + Esc, which rewinds the side question away after you read it."
+      ],
+      "answer": "/btw — the answer never enters conversation history, so you can check a detail without growing context.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: manage context aggressively",
+      "explanation": "'For questions that don't need to stay in context, use /btw. The answer never enters conversation history, so you can check a detail without growing context.'\n\n**Why the others are wrong**\n\n- **B.** /compact summarizes what is already there; it is not a way to ask a free question.\n- **C.** A subagent isolates the WORK, but its summary does return into your conversation. Close, and a good distractor, but /btw is the mechanism for a question whose answer should not persist at all.\n- **D.** Rewind restores previous conversation and code state; it is a recovery tool, not a way to ask a costless question.",
+      "examTrick": "/btw = answer never enters history. Subagent = work isolated, summary still returns. Different guarantees.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "/btw", "Side Questions", "Context Hygiene"]
+    },
+    {
+      "id": 17,
+      "question": "Claude has implemented a feature and reports it complete. What does the documentation recommend before treating the work as done?",
+      "options": [
+        "Have a subagent review the diff in a fresh context against the plan, told to flag only gaps affecting correctness or stated requirements.",
+        "Ask the same session to re-read its own diff and self-assess.",
+        "Rely on the fact that Claude stops only when the work is genuinely complete.",
+        "Run /compact so the reviewer sees a clean summary of what was done."
+      ],
+      "answer": "Have a subagent review the diff in a fresh context against the plan, told to flag only gaps affecting correctness or stated requirements.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: add an adversarial review step",
+      "explanation": "'A reviewer running in a fresh subagent context sees only the diff and the criteria you give it, not the reasoning that produced the change, so it evaluates the result on its own terms.' The docs add an important calibration: 'A reviewer prompted to find gaps will usually report some, even when the work is sound... Tell the reviewer to flag only gaps that affect correctness or the stated requirements, and treat the rest as optional.'\n\n**Why the others are wrong**\n\n- **B.** The session that wrote the code carries the reasoning that produced it, which is exactly the bias a fresh context removes. 'A fresh context improves code review since Claude won't be biased toward code it just wrote.'\n- **C.** The docs say the opposite: 'Claude stops when the work looks done. Without a check it can run, looks done is the only signal available.'\n- **D.** Compaction does not substitute for an independent check.",
+      "examTrick": "Adversarial review = FRESH context (subagent or second session), and constrain it to correctness gaps or you get over-engineering.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Adversarial Review", "Fresh Context", "Verification"]
+    },
+    {
+      "id": 18,
+      "question": "Which prompt best reflects the documented advice on providing specific context for a bug fix?",
+      "options": [
+        "'Users report login fails after session timeout. Check the auth flow in src/auth/, especially token refresh. Write a failing test that reproduces the issue, then fix it.'",
+        "'Fix the login bug.'",
+        "'Read every file in src/auth/ and tell me everything you find, then fix whatever looks wrong.'",
+        "'The login system has a bug somewhere. Use your judgement and make it work.'"
+      ],
+      "answer": "'Users report login fails after session timeout. Check the auth flow in src/auth/, especially token refresh. Write a failing test that reproduces the issue, then fix it.'",
+      "difficulty": "Easy",
+      "source": "NEW | Claude Code docs — Best practices: provide specific context",
+      "explanation": "This is the docs' own before/after pair for 'Describe the symptom. Provide the symptom, the likely location, and what fixed looks like.' It combines three documented practices: a concrete symptom, a scoped location, and a verification step Claude can run.\n\n**Why the others are wrong**\n\n- **B.** The docs' 'before' example — no symptom, no location, no definition of done.\n- **C.** Triggers the infinite exploration failure pattern by design, and still gives no success criterion.\n- **D.** Vague prompts have a legitimate exploratory use ('what would you improve in this file?'), but not for a bug with a known symptom.",
+      "examTrick": "Good bug prompt = symptom + likely location + what 'fixed' looks like (ideally a failing test). All three, not one.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Prompt Specificity", "Targeted Reading", "Verification Criteria"]
+    },
+    {
+      "id": 19,
+      "question": "For a large feature, the docs recommend having Claude interview you and write a spec. What should happen next, and why?",
+      "options": [
+        "Start a fresh session to execute the spec, so the new session has clean context focused entirely on implementation.",
+        "Continue in the same session, so Claude retains the reasoning behind each spec decision.",
+        "Compact the interview session and implement from the summary.",
+        "Paste the spec into CLAUDE.md so it loads into every future session."
+      ],
+      "answer": "Start a fresh session to execute the spec, so the new session has clean context focused entirely on implementation.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Best practices: let Claude interview you",
+      "explanation": "'Once the spec is complete, start a fresh session to execute it. The new session has clean context focused entirely on implementation, and you have a written spec to reference.' The docs also describe what makes a spec useful: 'The most useful specs are self-contained: they name the files and interfaces involved, state what is out of scope, and end with an end-to-end verification step that proves the feature works.'\n\n**Why the others are wrong**\n\n- **B.** The interview context is long and full of discarded alternatives; the spec file is the distilled artifact, which is the point of writing it to disk.\n- **C.** Compaction is lossy and unnecessary when a complete written spec already exists on disk.\n- **D.** CLAUDE.md is for durable project conventions loaded into every session, not one feature's spec.",
+      "examTrick": "Spec to a FILE, then a FRESH session. The file is the handoff; the interview context is disposable.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Spec Files", "Fresh Session", "Context Handoff"]
+    },
+    {
+      "id": 20,
+      "question": "A skill and a subagent both seem to fit a task. Which distinction decides it?",
+      "options": [
+        "A skill is reusable content that adds to your main context window; a subagent is an isolated worker with its own window that returns only a summary.",
+        "A skill can call tools; a subagent can only read and summarize.",
+        "A skill runs deterministically at a lifecycle event; a subagent runs when Claude decides it is relevant.",
+        "A skill is project-scoped; a subagent is always user-scoped."
+      ],
+      "answer": "A skill is reusable content that adds to your main context window; a subagent is an isolated worker with its own window that returns only a summary.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude Code docs — Extend Claude Code: Skill vs Subagent",
+      "explanation": "The comparison table: a skill is 'Reusable instructions, knowledge, or workflows' whose key benefit is 'Share content across contexts' and whose context impact is 'Adds to your main window'. A subagent is an 'Isolated worker with its own context', key benefit 'Context isolation... only summary returns', using 'a separate window with its own input and output tokens'. Use a subagent 'when you need context isolation or when your context window is getting full.'\n\n**Why the others are wrong**\n\n- **B.** Subagents run their own agentic loops with their own tool sets; they are not read-only.\n- **C.** That describes a HOOK, whose determinism column reads 'Always fires on its event; the trigger is guaranteed.' Skills are interpreted by Claude.\n- **D.** Both can be defined at user, project, or plugin level.\n\nThey also combine: a subagent can preload skills via its skills: field, and a skill can run in isolated context using context: fork.",
+      "examTrick": "Skill = content, costs main context. Subagent = isolation, separate window. Hook = deterministic trigger, zero context.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Skill vs Subagent", "Context Isolation", "Mechanism Selection"]
+    }
+  ]
+}

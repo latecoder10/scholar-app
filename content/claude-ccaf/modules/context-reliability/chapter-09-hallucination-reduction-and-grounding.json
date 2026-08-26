@@ -1,0 +1,315 @@
+{
+  "subject": "Claude CCAF: Context Management & Reliability",
+  "chapter": "5.9 Hallucination Reduction, Grounding & Provenance",
+  "exam": "Claude CCAF",
+  "paper": "Domain-5",
+  "description": "NEW TOPIC. Allowing uncertainty, quote-first grounding for long documents, citation verification and claim retraction, chain-of-thought and best-of-N verification, external knowledge restriction, and long-context prompt structure. Grounded in the official Claude API guidance on reducing hallucinations and long-context prompting.",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which basic technique does the documentation list first for minimising hallucinations?",
+      "options": [
+        "Explicitly give Claude permission to admit uncertainty — allow it to say 'I don't know'.",
+        "Lower the temperature to zero.",
+        "Increase max_tokens so the model has room to be thorough.",
+        "Ask the model to be confident and decisive."
+      ],
+      "answer": "Explicitly give Claude permission to admit uncertainty — allow it to say 'I don't know'.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Reduce hallucinations",
+      "explanation": "'Allow Claude to say \"I don't know\": Explicitly give Claude permission to admit uncertainty. This simple technique can drastically reduce false information.' The documented example instructs: 'If you're unsure about any aspect or if the report lacks necessary information, say \"I don't have enough information to confidently assess this.\"'\n\n**Why the others are wrong**\n\n- **B.** Temperature controls variability, not factuality; a low-temperature hallucination is simply a consistent one.\n- **C.** More room produces more text, not more accuracy.\n- **D.** Demanding confidence is the opposite of the documented technique and suppresses exactly the signal you want.\n\nNote the structural parallel to schema design: giving the model a legal way to express 'not known' is the same principle as a nullable field. In prose it is a permission; in a schema it is a null branch.",
+      "examTrick": "Permission to say 'I don't know' is technique #1. Same principle as a nullable field: make absence expressible.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Allow Uncertainty", "Hallucination Reduction", "Schema Parallel"]
+    },
+    {
+      "id": 2,
+      "question": "For a task over a document longer than 20k tokens, what grounding technique does the documentation recommend?",
+      "options": [
+        "Ask Claude to extract word-for-word quotes first, then perform the task based only on those quotes.",
+        "Summarize the document first, then answer from the summary.",
+        "Split the document into chunks and process each independently.",
+        "Increase max_tokens so the whole document can be restated."
+      ],
+      "answer": "Ask Claude to extract word-for-word quotes first, then perform the task based only on those quotes.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Reduce hallucinations: direct quotes for factual grounding",
+      "explanation": "'Use direct quotes for factual grounding: For tasks involving long documents (>20k tokens), ask Claude to extract word-for-word quotes first before performing its task. This grounds its responses in the actual text, reducing hallucinations.' The documented example is a two-step instruction: extract exact quotes relevant to the criteria — or state 'No relevant quotes found' — then 'Use the quotes to analyze... referencing the quotes by number. Only base your analysis on the extracted quotes.'\n\n**Why the others are wrong**\n\n- **B.** A summary is itself model output, so answering from it compounds any error rather than grounding it.\n- **C.** Chunking loses cross-document context and does not create verifiable provenance.\n- **D.** Restating the document wastes tokens and grounds nothing.\n\nThe 'No relevant quotes found' branch is the same allow-uncertainty principle applied to the extraction step.",
+      "examTrick": "Long documents: QUOTE FIRST, then analyse only from quotes. Include an explicit 'no relevant quotes' escape.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Quote Extraction", "Grounding", "20k Tokens"]
+    },
+    {
+      "id": 3,
+      "question": "How does the documentation make a generated document auditable and self-correcting?",
+      "options": [
+        "Have Claude review each claim after drafting, find a direct supporting quote, and remove any claim it cannot support — marking the removal.",
+        "Have Claude assign a confidence percentage to each sentence.",
+        "Have a second model rewrite the document.",
+        "Have Claude list its sources at the end without linking them to claims."
+      ],
+      "answer": "Have Claude review each claim after drafting, find a direct supporting quote, and remove any claim it cannot support — marking the removal.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Reduce hallucinations: verify with citations",
+      "explanation": "'Verify with citations: Make Claude's response auditable by having it cite quotes and sources for each of its claims. You can also have Claude verify each claim by finding a supporting quote after it generates a response. If it can't find a quote, it must retract the claim.' The documented example instructs: 'For each claim, find a direct quote from the documents that supports it. If you can't find a supporting quote for a claim, remove that claim from the press release and mark where it was removed with empty [] brackets.'\n\n**Why the others are wrong**\n\n- **B.** A self-reported confidence number is not evidence and cannot be audited.\n- **C.** A rewrite may preserve the unsupported claims.\n- **D.** A source list without claim-level linkage cannot be checked claim by claim.\n\nThe marked-removal detail matters: it makes the gap VISIBLE rather than leaving a silently shortened document.",
+      "examTrick": "Claim → find supporting quote → retract if none, and MARK the removal. Visible gaps beat silent ones.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Citation Verification", "Claim Retraction", "Auditability"]
+    },
+    {
+      "id": 4,
+      "question": "What is best-of-N verification, and what does it detect?",
+      "options": [
+        "Running the same prompt multiple times and comparing outputs; inconsistencies across outputs could indicate hallucinations.",
+        "Generating N answers and always keeping the longest.",
+        "Asking N different models and taking a majority vote as ground truth.",
+        "Running N retries until the output passes schema validation."
+      ],
+      "answer": "Running the same prompt multiple times and comparing outputs; inconsistencies across outputs could indicate hallucinations.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Reduce hallucinations: advanced techniques",
+      "explanation": "'Best-of-N verification: Run Claude through the same prompt multiple times and compare outputs. Inconsistencies across outputs could indicate hallucinations.' It is a detection signal, not a correction mechanism.\n\n**Why the others are wrong**\n\n- **B.** Length is unrelated to accuracy.\n- **C.** A majority vote can agree on the same wrong answer, so consensus is not ground truth — the technique flags DISAGREEMENT as suspicious rather than treating agreement as proof.\n- **D.** Retry-until-valid is a schema-conformance loop, which says nothing about factual accuracy.\n\nThe honest reading: inconsistency is evidence of a problem; consistency is weak evidence of correctness.",
+      "examTrick": "Best-of-N flags INCONSISTENCY as a hallucination signal. Consistency is not proof of correctness.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Best-of-N", "Detection Signal", "Consistency"]
+    },
+    {
+      "id": 5,
+      "question": "What is external knowledge restriction?",
+      "options": [
+        "Explicitly instructing Claude to use only information from the provided documents and not its general knowledge.",
+        "Disabling web search and other server tools.",
+        "Removing the model's training data from consideration via an API parameter.",
+        "Restricting the response to a fixed vocabulary."
+      ],
+      "answer": "Explicitly instructing Claude to use only information from the provided documents and not its general knowledge.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Reduce hallucinations: advanced techniques",
+      "explanation": "'External knowledge restriction: Explicitly instruct Claude to only use information from provided documents and not its general knowledge.' It is a prompt-level instruction, which is why it pairs so well with quote-first grounding: the quotes define what 'provided' means concretely.\n\n**Why the others are wrong**\n\n- **B.** Turning off tools removes retrieval, not the model's parametric knowledge.\n- **C.** No such parameter exists — this is the key point. The restriction is achieved by instruction, not configuration.\n- **D.** Vocabulary constraints are unrelated.\n\nBecause it is only an instruction, it is advisory — the same guidance-versus-enforcement distinction that runs through the whole exam. That is why the docs pair it with verification steps rather than trusting it alone.",
+      "examTrick": "External knowledge restriction is an INSTRUCTION, not a parameter. Advisory, so pair it with citation verification.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Knowledge Restriction", "Advisory Technique", "Grounding"]
+    },
+    {
+      "id": 6,
+      "question": "Where should long documents be placed in a prompt, per the long-context guidance?",
+      "options": [
+        "Near the top, above your query, instructions, and examples — this improves performance across all models.",
+        "At the bottom, immediately before the query, so it is freshest.",
+        "Interleaved between the instructions so each rule sits near its evidence.",
+        "In the system prompt rather than the user message."
+      ],
+      "answer": "Near the top, above your query, instructions, and examples — this improves performance across all models.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Prompting best practices: long context prompting",
+      "explanation": "'Put longform data at the top: Place your long documents and inputs near the top of your prompt, above your query, instructions, and examples. This improves performance across all models.' The guidance applies to large or data-rich inputs of roughly 20k+ tokens.\n\n**Why the others are wrong**\n\n- **B.** This is the common instinct and the documented guidance is the opposite.\n- **C.** Interleaving fragments the document and complicates parsing.\n- **D.** The system parameter is for instructions and role, not bulk data.\n\nThere is a second benefit that connects to caching: stable long documents placed at the top form a natural cacheable prefix, while a query placed last is the varying part — exactly the breakpoint placement prompt caching wants.",
+      "examTrick": "Long documents go at the TOP, query at the bottom. It also produces the ideal cache prefix shape.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Long Context", "Document Placement", "Cache Alignment"]
+    },
+    {
+      "id": 7,
+      "question": "How should multiple documents be structured in a long-context prompt?",
+      "options": [
+        "Wrap each in <document> tags with <document_content> and <source> subtags and other metadata for clarity.",
+        "Concatenate them with markdown horizontal rules between them.",
+        "Encode them as a single JSON array of strings.",
+        "Send each document in its own separate request."
+      ],
+      "answer": "Wrap each in <document> tags with <document_content> and <source> subtags and other metadata for clarity.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Prompting best practices: long context prompting",
+      "explanation": "'Structure document content and metadata with XML tags: When using multiple documents, wrap each document in <document> tags with <document_content> and <source> (and other metadata) subtags for clarity.' This sits inside the broader XML guidance: 'XML tags help Claude parse complex prompts unambiguously, especially when your prompt mixes instructions, context, examples, and variable inputs.'\n\n**Why the others are wrong**\n\n- **B.** Horizontal rules give no machine-readable boundary or source attribution.\n- **C.** A flat JSON array loses per-document metadata and is harder to reference by name.\n- **D.** Separate requests prevent cross-document reasoning.\n\nThe <source> subtag is what makes provenance possible: without it, a citation cannot name which document a quote came from.",
+      "examTrick": "<document><source>…</source><document_content>…</document_content></document>. The source subtag is what enables provenance.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "XML Tags", "Document Structure", "Provenance"]
+    },
+    {
+      "id": 8,
+      "question": "What is chain-of-thought verification used for?",
+      "options": [
+        "Asking Claude to explain its reasoning step by step before the final answer, which can reveal faulty logic or assumptions.",
+        "Asking Claude to rate its own confidence numerically.",
+        "Splitting the task into separate API calls for each step.",
+        "Having a second model check the answer."
+      ],
+      "answer": "Asking Claude to explain its reasoning step by step before the final answer, which can reveal faulty logic or assumptions.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Reduce hallucinations: advanced techniques",
+      "explanation": "'Chain-of-thought verification: Ask Claude to explain its reasoning step-by-step before giving a final answer. This can reveal faulty logic or assumptions.' The prompting guidance adds the structural advice: 'Use structured tags like <thinking> and <answer> to cleanly separate reasoning from the final output.'\n\n**Why the others are wrong**\n\n- **B.** Self-rated confidence is not reasoning and is not inspectable.\n- **C.** That is prompt chaining, a separate technique 'useful when you need to inspect intermediate outputs or enforce a specific pipeline structure.'\n- **D.** That is adversarial or LLM-based review.\n\nA current-model caveat from the docs: manual CoT is a fallback for when thinking is off, and 'On Claude Opus 5, prefer keeping thinking enabled at a lower effort level instead: with thinking disabled, the model can occasionally emit internal XML tags into its visible output.'",
+      "examTrick": "Manual CoT with <thinking>/<answer> tags is the FALLBACK when thinking is off. On Opus 5, prefer low-effort thinking instead.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Chain of Thought", "thinking Tags", "Model-Specific Caveat"]
+    },
+    {
+      "id": 9,
+      "question": "What caveat does the documentation attach to all hallucination-reduction techniques?",
+      "options": [
+        "They significantly reduce hallucinations but do not eliminate them entirely; always validate critical information, especially for high-stakes decisions.",
+        "They eliminate hallucinations when used together.",
+        "They apply only to documents under 20k tokens.",
+        "They are unnecessary on current models."
+      ],
+      "answer": "They significantly reduce hallucinations but do not eliminate them entirely; always validate critical information, especially for high-stakes decisions.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Reduce hallucinations",
+      "explanation": "'Remember, while these techniques significantly reduce hallucinations, they don't eliminate them entirely. Always validate critical information, especially for high-stakes decisions.'\n\n**Why the others are wrong**\n\n- **B.** Explicitly contradicted.\n- **C.** The 20k figure is the threshold for the quote-extraction technique specifically, not a scope limit on the guidance.\n- **D.** The guidance is current.\n\nThis is why confidence-based human review routing exists as a separate design concern: the techniques reduce the rate, and routing handles the residual. A system that relies on prompting alone has no plan for the cases prompting misses.",
+      "examTrick": "Techniques reduce, never eliminate. Human review routing handles the residual — that is why both objectives exist.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Residual Risk", "Human Validation", "High-Stakes"]
+    },
+    {
+      "id": 10,
+      "question": "A summarization system occasionally states figures absent from the source. Which combination most directly addresses it?",
+      "options": [
+        "Quote-first extraction with an explicit 'no relevant quotes found' branch, external knowledge restriction, and post-hoc claim verification with retraction.",
+        "Raising max_tokens and lowering temperature.",
+        "Switching to the Batches API for more consistent processing.",
+        "Adding more few-shot examples of good summaries."
+      ],
+      "answer": "Quote-first extraction with an explicit 'no relevant quotes found' branch, external knowledge restriction, and post-hoc claim verification with retraction.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Reduce hallucinations",
+      "explanation": "Fabricated figures are an ungrounded-generation problem, and the three documented remedies stack: grounding forces the model to locate the number in the text, restriction forbids supplying one from general knowledge, and verification catches whatever slips through by demanding a supporting quote for each claim.\n\n**Why the others are wrong**\n\n- **B.** Neither parameter affects grounding.\n- **C.** Processing mode has no bearing on factuality.\n- **D.** Few-shot examples shape FORMAT and STYLE reliably; they do not prevent the model from inventing content that fits the demonstrated shape. A well-formatted fabrication is still a fabrication.\n\nThe general diagnostic: match the technique to the failure MODE. Format problems take examples; grounding problems take quotes and verification.",
+      "examTrick": "Fabricated content = grounding failure. Few-shot fixes FORMAT, not factuality.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Failure Mode Matching", "Stacked Techniques", "Fabrication"]
+    },
+    {
+      "id": 11,
+      "question": "What is iterative refinement in the hallucination-reduction context?",
+      "options": [
+        "Using Claude's outputs as inputs to follow-up prompts that verify or expand on previous statements, catching and correcting inconsistencies.",
+        "Retrying the same prompt until two runs agree.",
+        "Fine-tuning the model on corrected outputs.",
+        "Progressively shortening the prompt until errors stop."
+      ],
+      "answer": "Using Claude's outputs as inputs to follow-up prompts that verify or expand on previous statements, catching and correcting inconsistencies.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Reduce hallucinations: advanced techniques",
+      "explanation": "'Iterative refinement: Use Claude's outputs as inputs for follow-up prompts, asking it to verify or expand on previous statements. This can catch and correct inconsistencies.'\n\n**Why the others are wrong**\n\n- **B.** That is best-of-N, which compares independent runs rather than feeding output back in.\n- **C.** Fine-tuning is not among the documented techniques here.\n- **D.** Prompt length is not the mechanism.\n\nNote how it differs from best-of-N: best-of-N samples independently and looks for disagreement, while iterative refinement feeds the output back for scrutiny. The first detects instability; the second attempts correction.",
+      "examTrick": "Best-of-N = independent samples, detect disagreement. Iterative refinement = feed output back, attempt correction.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Iterative Refinement", "Self-Verification", "Technique Contrast"]
+    },
+    {
+      "id": 12,
+      "question": "Why does asking for quotes 'by number' improve an analysis step?",
+      "options": [
+        "It creates an explicit, checkable link between each conclusion and the specific extracted text supporting it.",
+        "It reduces token usage by avoiding repeated quotation.",
+        "It forces the model to process quotes in order.",
+        "It is required syntax for the quote-extraction technique."
+      ],
+      "answer": "It creates an explicit, checkable link between each conclusion and the specific extracted text supporting it.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Reduce hallucinations: direct quotes",
+      "explanation": "The documented instruction is to 'Use the quotes to analyze the compliance of these policy sections, referencing the quotes by number. Only base your analysis on the extracted quotes.' Numbering converts a vague appeal to 'the document' into a specific, auditable reference a human or a script can verify.\n\n**Why the others are wrong**\n\n- **B.** Token savings are incidental at best.\n- **C.** Order is not the point.\n- **D.** It is documented guidance, not required syntax.\n\nThis is provenance in its simplest form, and it feeds directly into review routing: an analysis point with no quote number is exactly the item a reviewer should look at first.",
+      "examTrick": "Numbered quote references = auditable provenance. An unreferenced conclusion is the first thing to route for review.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Numbered References", "Provenance", "Review Routing"]
+    },
+    {
+      "id": 13,
+      "question": "Which structural technique does the documentation recommend when a prompt mixes instructions, context, examples, and variable inputs?",
+      "options": [
+        "Wrap each type of content in its own XML tag, such as <instructions>, <context>, and <input>, which reduces misinterpretation.",
+        "Separate sections with markdown headings and blank lines.",
+        "Put everything in the system prompt so it is clearly separated from the user turn.",
+        "Use JSON for the whole prompt so parsing is unambiguous."
+      ],
+      "answer": "Wrap each type of content in its own XML tag, such as <instructions>, <context>, and <input>, which reduces misinterpretation.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Prompting best practices: structure prompts with XML tags",
+      "explanation": "'XML tags help Claude parse complex prompts unambiguously, especially when your prompt mixes instructions, context, examples, and variable inputs. Wrapping each type of content in its own tag (for example, <instructions>, <context>, <input>) reduces misinterpretation.'\n\n**Why the others are wrong**\n\n- **B.** Markdown headings help readability but do not delimit variable content unambiguously — a user-supplied input containing a heading can blur the boundary.\n- **C.** The system prompt is for role and standing instructions, not bulk variable content.\n- **D.** Not the documented recommendation, and it makes long natural-language content awkward to embed.\n\nThe security angle is worth noting: clear delimiters around untrusted input make it easier for the model to treat that content as DATA rather than instructions.",
+      "examTrick": "XML tags delimit content TYPES. They also help keep untrusted input read as data, not instructions.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "XML Tags", "Prompt Structure", "Untrusted Input"]
+    },
+    {
+      "id": 14,
+      "question": "What makes few-shot examples effective, per the documentation?",
+      "options": [
+        "They are one of the most reliable ways to steer output format, tone, and structure; a few well-crafted examples improve accuracy and consistency.",
+        "The more examples the better, with no practical ceiling.",
+        "They should demonstrate only the ideal case, never edge cases.",
+        "They replace the need for explicit instructions."
+      ],
+      "answer": "They are one of the most reliable ways to steer output format, tone, and structure; a few well-crafted examples improve accuracy and consistency.",
+      "difficulty": "Medium",
+      "source": "NEW | Claude API docs — Prompting best practices: use examples effectively",
+      "explanation": "'Examples are one of the most reliable ways to steer Claude's output format, tone, and structure. A few well-crafted examples (known as few-shot or multishot prompting) improve accuracy and consistency.' Note what they steer: FORMAT, TONE, and STRUCTURE.\n\n**Why the others are wrong**\n\n- **B.** 'A few well-crafted' is the guidance; examples cost context on every request and can over-anchor the model on the demonstrated cases.\n- **C.** Edge cases are exactly where examples earn their keep — the extraction guidance uses them for varied document formats, and the eval guidance stresses designing for edge cases.\n- **D.** Examples complement instructions rather than replacing them.\n\nOne advanced note: 'Multishot examples work with thinking. Use <thinking> tags inside your few-shot examples to show Claude the reasoning pattern. It will generalize that style to its own extended thinking blocks.'",
+      "examTrick": "Few-shot steers format/tone/structure. A FEW well-crafted ones — not a growing pile. <thinking> tags inside examples shape reasoning style.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "Few-Shot", "Format Steering", "Example Count"]
+    },
+    {
+      "id": 15,
+      "question": "When is explicit prompt chaining still useful, given adaptive thinking and subagent orchestration?",
+      "options": [
+        "When you need to inspect intermediate outputs or enforce a specific pipeline structure.",
+        "Always — chaining is strictly better than a single call.",
+        "Never — modern models handle all multistep reasoning internally.",
+        "Only when the total input exceeds the context window."
+      ],
+      "answer": "When you need to inspect intermediate outputs or enforce a specific pipeline structure.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Prompting best practices: chain complex prompts",
+      "explanation": "'With adaptive thinking and subagent orchestration, Claude handles most multistep reasoning internally. Explicit prompt chaining (breaking a task into sequential API calls) is still useful when you need to inspect intermediate outputs or enforce a specific pipeline structure.'\n\n**Why the others are wrong**\n\n- **B.** Chaining adds latency, cost, and orchestration code; it is not a default.\n- **C.** 'Most' is not 'all', and the two named cases remain.\n- **D.** Context size is not the criterion.\n\nThe two named cases are both about CONTROL rather than capability: you chain when you must see or govern the middle of the process — for auditability, for a compliance gate, or to insert a human review step between stages.",
+      "examTrick": "Chain for CONTROL (inspect intermediates, enforce pipeline shape), not for capability. The model handles most multistep reasoning internally.",
+      "importance": "Medium",
+      "tags": ["NEW TOPIC", "Prompt Chaining", "Pipeline Control", "Intermediate Inspection"]
+    },
+    {
+      "id": 16,
+      "question": "A compliance review must be defensible to an auditor months later. Which design best supports that?",
+      "options": [
+        "Quote-first extraction with numbered references and <source> metadata per document, so every conclusion traces to a specific span in a specific document.",
+        "A high-confidence single-pass answer with a summary of sources at the end.",
+        "Best-of-N runs with the majority answer recorded.",
+        "A low-temperature run so the output is reproducible."
+      ],
+      "answer": "Quote-first extraction with numbered references and <source> metadata per document, so every conclusion traces to a specific span in a specific document.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Reduce hallucinations; long context prompting",
+      "explanation": "Defensibility requires provenance at claim granularity. The documented techniques compose into exactly that: <document> wrappers with <source> subtags identify WHERE, quote extraction captures WHAT the source says verbatim, and numbered references bind each conclusion to a specific quote.\n\n**Why the others are wrong**\n\n- **B.** A trailing source list cannot answer 'which sentence supports this specific conclusion'.\n- **C.** Best-of-N is a detection technique; a majority answer with no citations is still unciteable.\n- **D.** Reproducibility is not provenance — reproducing the same unsupported claim proves nothing.\n\nThis is the provenance-and-uncertainty objective in practice: record where each assertion came from, and make the absence of a source visible rather than silent.",
+      "examTrick": "Defensible = claim-level provenance: <source> + verbatim quote + numbered reference. Reproducibility ≠ provenance.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Provenance", "Auditability", "Compliance Review"]
+    },
+    {
+      "id": 17,
+      "question": "Which prompting principle does the documentation place first among general principles?",
+      "options": [
+        "Be clear and direct.",
+        "Give Claude a role.",
+        "Prefill the response.",
+        "Add more examples."
+      ],
+      "answer": "Be clear and direct.",
+      "difficulty": "Easy",
+      "source": "NEW | Claude API docs — Prompting best practices: general principles",
+      "explanation": "The general-principles section opens with 'Be clear and direct', followed by 'Add context to improve performance', 'Use examples effectively', 'Structure prompts with XML tags', and 'Give Claude a role'.\n\n**Why the others are wrong**\n\n- **B.** Role prompting is a documented technique but comes later in the ordering.\n- **C.** Prefill is being migrated away from: it is 'no longer supported' on the last assistant turn from Claude 4.6 models onward, returning a 400 error.\n- **D.** Examples matter, but clarity precedes them — examples of an unclear task do not rescue it.\n\nThe Claude Code guidance echoes the same ordering with concrete tests: 'write instructions that are concrete enough to verify', such as 'Use 2-space indentation' rather than 'Format code properly'.",
+      "examTrick": "Order: clear and direct → context → examples → XML structure → role. Clarity first, always.",
+      "importance": "High",
+      "tags": ["NEW TOPIC", "General Principles", "Clarity", "Technique Ordering"]
+    },
+    {
+      "id": 18,
+      "question": "Which statement about hallucination-reduction techniques and structured outputs is most accurate?",
+      "options": [
+        "They address different failure modes — structured outputs guarantee shape while grounding techniques address factual accuracy, and a schema-valid answer can still be fabricated.",
+        "Structured outputs eliminate hallucinations because the schema constrains the content.",
+        "Grounding techniques make structured outputs unnecessary.",
+        "Both solve the same problem, so either alone is sufficient."
+      ],
+      "answer": "They address different failure modes — structured outputs guarantee shape while grounding techniques address factual accuracy, and a schema-valid answer can still be fabricated.",
+      "difficulty": "Hard",
+      "source": "NEW | Claude API docs — Structured outputs; reduce hallucinations",
+      "explanation": "Structured outputs use grammar-constrained sampling to guarantee valid, parseable JSON matching your schema. That guarantee is entirely about SHAPE. Nothing in it verifies that a populated value appears in the source document — indeed an over-constrained schema actively CAUSES fabrication by leaving no legal way to express absence.\n\n**Why the others are wrong**\n\n- **B.** The opposite is closer to true for required non-nullable fields.\n- **C.** Without a schema you get parse failures and retry loops; grounding does not solve that.\n- **D.** Each leaves the other's failure mode uncovered.\n\nThe combined design is the exam's ideal answer: nullable and optional fields so absence is expressible, enums with an 'other' escape, quote-first grounding, per-field confidence in the schema, and confidence-based routing to human review.",
+      "examTrick": "Schema = shape guarantee. Grounding = factual accuracy. A schema-valid fabrication is the signature failure of using only one.",
+      "importance": "Critical",
+      "tags": ["NEW TOPIC", "Shape vs Truth", "Combined Design", "Schema-Valid Fabrication"]
+    }
+  ]
+}
