@@ -20,7 +20,7 @@ import { Subject, UserProgress, Question, Chapter, parseProgressKey } from "../t
 import { resolveExamForSubject } from "../../shared/exams";
 import RichText from "./RichText";
 import { fetchChapter } from "../lib/contentStore";
-import { shuffled } from "../lib/shuffle";
+import { shuffled, withShuffledOptions } from "../lib/shuffle";
 
 interface RevisionEngineProps {
   subjects: Subject[];
@@ -201,8 +201,11 @@ export default function RevisionEngine({ subjects, progress, selectedExam = "all
       console.error("Error fetching chapters for compilation", e);
     }
 
-    // Shuffle and slice to max count
-    const randomized = shuffled(compiledQuestions).slice(0, maxCount);
+    // Shuffle and slice to max count. Options are permuted here too: the
+    // mistake-book entries carry the option order from the attempt that got
+    // them wrong, and re-drilling that exact layout rehearses the position
+    // rather than the answer.
+    const randomized = shuffled(compiledQuestions).slice(0, maxCount).map(withShuffledOptions);
     setAsassembledSet(randomized);
   };
 

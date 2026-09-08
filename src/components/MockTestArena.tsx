@@ -31,7 +31,7 @@ import { EXAM_REGISTRY, resolveExamForSubject, resolveExamForEntry } from "../..
 import { getExamColorClasses, getColorClasses } from "../lib/examTheme";
 import RichText from "./RichText";
 import { fetchChapter } from "../lib/contentStore";
-import { shuffled } from "../lib/shuffle";
+import { shuffled, withShuffledOptions } from "../lib/shuffle";
 
 interface MockTestArenaProps {
   subjects: Subject[];
@@ -147,7 +147,7 @@ export default function MockTestArena({
         throw new Error(errorData.error || "Failed to expand mock exam.");
       }
       const data = await res.json();
-      setQuestions(shuffled(data.questions || []));
+      setQuestions(shuffled((data.questions || []).map(withShuffledOptions)));
       
       // Update selectedMock question count in-place
       selectedMock.questionsCount = data.totalCount;

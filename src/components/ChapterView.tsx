@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Chapter, UserProgress, Question, parseProgressKey } from "../types";
 import { fetchChapter } from "../lib/contentStore";
-import { shuffled } from "../lib/shuffle";
+import { shuffled, withShuffledOptions } from "../lib/shuffle";
 import { resolveExamForEntry } from "../../shared/exams";
 
 const SHUFFLE_PREF_KEY = "exam_scholar_shuffle_questions";
@@ -94,7 +94,7 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
         throw new Error(errorData.error || "Failed to expand chapter.");
       }
       const data = await res.json();
-      setQuestions(data.questions || []);
+      setQuestions((data.questions || []).map(withShuffledOptions));
       // Update chapter counts in the user's view
       chapter.questionsCount = data.totalCount;
       setExpansionStatus(`Done: added ${data.addedCount} questions. This chapter now has ${data.totalCount}.`);

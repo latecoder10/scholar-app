@@ -471,8 +471,6 @@
       "question": "*(Loop Control, Safety Backstops | Expert)* A teammate argues: \"Since the loop already checks `stop_reason` correctly, the 6-iteration cap serves no purpose and should be removed.\" Is this reasoning sound?",
       "options": [
         "Yes",
-        "No",
-        "Yes",
         "No"
       ],
       "answer": "No",

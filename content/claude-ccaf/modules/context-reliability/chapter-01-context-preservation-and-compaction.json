@@ -386,9 +386,12 @@
     {
       "question": "8K system prompt, 5 tool definitions at 2K each, user messages averaging 500 tokens, responses up to 4K, on a 200K model. Approximately how many turns before hitting the limit?",
       "options": [
-        "About 180 turns · **B.** About 20 turns · **C.** About 40 turns · **D.** Unlimited, because old messages are truncated automatically"
+        "About 180 turns",
+        "About 20 turns",
+        "About 40 turns",
+        "Unlimited, because old messages are truncated automatically"
       ],
-      "answer": "About 180 turns · **B.** About 20 turns · **C.** About 40 turns · **D.** Unlimited, because old messages are truncated automatically",
+      "answer": "About 40 turns",
       "difficulty": "Medium",
       "source": "Context windows · Token counting ---",
       "explanation": "The arithmetic:\n| Component | Tokens |\n|---|---|\n| System prompt | 8,000 |\n| 5 tools × 2,000 | 10,000 |\n| **Fixed overhead** | **18,000** |\n| Remaining budget | 200,000 − 18,000 = **182,000** |\n| Per turn (500 user + 4,000 response) | **4,500** |\n| Turns | 182,000 ÷ 4,500 ≈ **40** |\nThe key insight is that the fixed overhead is paid **once**, while each turn's tokens **accumulate** in history and are re-sent on every subsequent request.\n\nWhy distractors fail:\n- **A** — ~180 would follow from counting only the 500-token user messages, ignoring the 4K responses that dominate.\n- **B** — ~20 would follow from charging the 18K overhead per turn rather than once.\n- **D** — Nothing truncates automatically; exceeding the window is an error unless you implement compaction.",

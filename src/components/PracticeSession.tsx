@@ -211,6 +211,75 @@ export default function PracticeSession({
     setShowPalette(false);
   };
 
+  // Keyboard shortcuts: 1-4/A-D pick an option, Enter submits or advances,
+  // arrow keys move between questions, Escape closes the question palette.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+
+      if (e.key === "Escape") {
+        if (showPalette) {
+          e.preventDefault();
+          setShowPalette(false);
+        }
+        return;
+      }
+
+      if (!isAnswered) {
+        const letterIndex = "abcd".indexOf(e.key.toLowerCase());
+        const digitIndex = "1234".indexOf(e.key);
+        const optionIndex = digitIndex !== -1 ? digitIndex : letterIndex;
+        if (optionIndex !== -1 && optionIndex < currentQuestion.options.length) {
+          e.preventDefault();
+          handleOptionSelect(currentQuestion.options[optionIndex]);
+          return;
+        }
+
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (selectedOption && !isSubmitting) handleSubmit();
+          return;
+        }
+
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          goTo(currentIndex - 1);
+          return;
+        }
+
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          handleNext();
+          return;
+        }
+      } else {
+        if (e.key === "Enter" || e.key === "ArrowRight") {
+          e.preventDefault();
+          handleNext();
+          return;
+        }
+
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          goTo(currentIndex - 1);
+          return;
+        }
+
+        if (e.key.toLowerCase() === "r") {
+          e.preventDefault();
+          handleAnswerAgain();
+          return;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isAnswered, selectedOption, isSubmitting, currentIndex, questions.length, showPalette, currentQuestion]);
+
   const progressPercentage = Math.round((answeredCount / questions.length) * 100);
   const jumpTarget = nextUnansweredIndex();
 
@@ -457,6 +526,18 @@ export default function PracticeSession({
           </div>
         )}
 
+        {/* Keyboard shortcut hint */}
+        {!isAnswered && (
+          <div className="hidden sm:flex items-center gap-1.5 justify-end mt-2 text-[10px] text-slate-300">
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 font-mono">1-4</kbd> select
+            <span className="mx-0.5">·</span>
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 font-mono">Enter</kbd> submit
+            <span className="mx-0.5">·</span>
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 font-mono">←</kbd>
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 font-mono">→</kbd> navigate
+          </div>
+        )}
+
       </div>
 
       {/* Answer Screen / Explanations Panel (Appears after answer submitted) */}
@@ -555,6 +636,15 @@ export default function PracticeSession({
                 )}
               </button>
             </div>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-1.5 justify-end text-[10px] text-slate-300">
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 font-mono">Enter</kbd> next
+            <span className="mx-0.5">·</span>
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 font-mono">←</kbd>
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 font-mono">→</kbd> navigate
+            <span className="mx-0.5">·</span>
+            <kbd className="px-1.5 py-0.5 rounded border border-slate-200 font-mono">R</kbd> retry
           </div>
 
         </div>

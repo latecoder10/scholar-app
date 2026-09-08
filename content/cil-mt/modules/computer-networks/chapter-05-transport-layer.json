@@ -25,7 +25,7 @@
       "question": "A TCP connection is undergoing slow start. Suppose its cwnd is 32 segments and a packet timeout occurs. What are the new values of ssthresh and cwnd respectively (assuming standard TCP Tahoe)?",
       "options": [
         "ssthresh = 16, cwnd = 1",
-        "ssthresh = 16, cwnd = 1",
+        "ssthresh = 16, cwnd = 16",
         "ssthresh = 32, cwnd = 1",
         "ssthresh = 8, cwnd = 1"
       ],

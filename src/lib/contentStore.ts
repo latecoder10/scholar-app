@@ -14,6 +14,7 @@
  * never learn which one answered.
  */
 import type { Subject } from "../types";
+import { withShuffledOptions } from "./shuffle";
 
 export interface ChapterPayload {
   subject: string;
@@ -121,7 +122,12 @@ export async function fetchSubjects(): Promise<Subject[]> {
 }
 
 export async function fetchChapter(subjectName: string, chapterId: string): Promise<ChapterPayload> {
-  return (await getContentStore()).getChapter(subjectName, chapterId);
+  const payload = await (await getContentStore()).getChapter(subjectName, chapterId);
+  // De-bias the answer position here rather than in either adapter: the
+  // adapters stay faithful mirrors of their backend, and every screen that
+  // shows questions — practice, chapter view, mock arena, revision — reaches
+  // them through this one wrapper, so none of them can forget to do it.
+  return { ...payload, questions: (payload.questions || []).map(withShuffledOptions) };
 }
 
 /** Test seam: drop the cached backend choice. */
